@@ -1,0 +1,105 @@
+#
+# Copyright (C) 2006-2008 OpenWrt.org
+#
+# This is free software, licensed under the GNU General Public License v2.
+# See /LICENSE for more information.
+#
+
+include $(TOPDIR)/rules.mk
+
+PKG_NAME:=bcmkernel-3.4
+PKG_VERSION:=4.14
+PKG_RELEASE:=1
+
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
+PKG_SOURCE_URL:=ssh://inteno@ihgsp.inteno.se/home/inteno/private/git/bcmkernel-3.4.git
+PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
+PKG_SOURCE_VERSION:=$(PKG_REV)
+
+include $(INCLUDE_DIR)/package.mk
+include $(INCLUDE_DIR)/image.mk
+include $(INCLUDE_DIR)/kernel.mk
+
+export CONFIG_BCM_CHIP_ID
+export CONFIG_BCM_KERNEL_PROFILE
+
+BCM_BS_PROFILE = $(shell echo $(CONFIG_BCM_KERNEL_PROFILE) | sed s/\"//g)
+
+BCM_KERNEL_VERSION:=3.4.11-rt19
+BCM_SDK_VERSION:=4.14
+
+define Package/bcmkernel
+  SECTION:=net
+  CATEGORY:=Base system
+  TITLE:=Broadcom sdk 3.4 kernel
+  URL:=
+  MENU:=1
+endef
+
+define Package/bcmkernel/description
+	Broadcom kernel and userspace, compiled with the broadcom supplied tool-chain.
+endef
+
+define Package/bcmkernel/config
+	source "$(SOURCE)/Config.in"
+endef
+
+
+define Package/bcmkernel/removevoice
+	rm $(1)/lib/modules/$(BCM_KERNEL_VERSION)/endpointdd.ko
+endef
+
+ifeq ($(CONFIG_BCM_ENDPOINT_MODULE),y)
+define Package/bcmkernel/removevoice
+	echo not removing $(1)/lib/modules/$(BCM_KERNEL_VERSION)/endpointdd.ko
+endef
+endif
+
+
+define Package/bcmkernel/install
+	$(INSTALL_DIR) $(1)/usr/sbin
+	$(INSTALL_DIR) $(1)/usr/lib
+	$(INSTALL_DIR) $(1)/etc/adsl
+	$(INSTALL_DIR) $(1)/etc/wlan
+
+	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs.install/bin/* $(1)/usr/sbin/
+	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs.install/lib/* $(1)/usr/lib/
+	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs.install/lib/private/* $(1)/usr/lib/
+	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs.install/lib/public/* $(1)/usr/lib/
+
+	rm -rf $(1)/lib/modules/$(BCM_KERNEL_VERSION)/*
+	mkdir $(1)/lib/
+	mkdir $(1)/lib/modules/
+	mkdir $(1)/lib/modules/$(BCM_KERNEL_VERSION)/
+
+	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/modules/lib/modules/$(BCM_KERNEL_VERSION)/extra/*                          $(1)/lib/modules/$(BCM_KERNEL_VERSION)/
+	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/modules/lib/modules/$(BCM_KERNEL_VERSION)/kernel/crypto/*                  $(1)/lib/modules/$(BCM_KERNEL_VERSION)/
+	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/modules/lib/modules/$(BCM_KERNEL_VERSION)/kernel/drivers/scsi/*            $(1)/lib/modules/$(BCM_KERNEL_VERSION)/
+	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/modules/lib/modules/$(BCM_KERNEL_VERSION)/kernel/net/ipv4/netfilter/*      $(1)/lib/modules/$(BCM_KERNEL_VERSION)/
+#       cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/modules/lib/modules/$(BCM_KERNEL_VERSION)/kernel/net/ipv6/netfilter/*      $(1)/lib/modules/$(BCM_KERNEL_VERSION)/
+	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/modules/lib/modules/$(BCM_KERNEL_VERSION)/kernel/net/netfilter/*           $(1)/lib/modules/$(BCM_KERNEL_VERSION)/
+
+	touch $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/bcmdrivers/broadcom/char/adsl/impl1/adsl_phy.bin
+#	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/bcmdrivers/broadcom/char/adsl/impl1/adsl_phy.bin                                      $(1)/etc/adsl/adsl_phy.bin
+
+	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/etc/wlan/*_map.bin	$(1)/etc/wlan
+
+	rm -rf $(1)/lib/modules/$(BCM_KERNEL_VERSION)/bcm_usb.ko
+	rm -rf $(1)/usr/lib/libnvram.so
+
+	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/kernel/linux-3.4rt/vmlinux $(KDIR)/vmlinux.bcm.elf
+	$(KERNEL_CROSS)strip --remove-section=.note --remove-section=.comment $(KDIR)/vmlinux.bcm.elf
+	$(KERNEL_CROSS)objcopy $(OBJCOPY_STRIP) -O binary $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/kernel/linux-3.4rt/vmlinux $(KDIR)/vmlinux.bcm
+
+# bootloader nor
+#	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/cfe/build/broadcom/bcm63xx_rom/bcm9$(CONFIG_BCM_CHIP_ID)_cfe.w $(KDIR)/bcm_bootloader_cfe.w
+# ram part of the bootloader for nand boot
+	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/cfe/build/broadcom/bcm63xx_ram/cfe$(CONFIG_BCM_CHIP_ID).bin $(KDIR)/cferam.000
+	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/cfe/ $(KDIR)/cfe
+#	dd if=$(KDIR)/vmlinux.bcm.elf of=$(KDIR)/vmlinux.bcm bs=4096 count=1
+#	$(KERNEL_CROSS)objcopy $(OBJCOPY_STRIP) -S $(LINUX_DIR)/vmlinux $(KERNEL_BUILD_DIR)/vmlinux.elf
+
+	$(call Package/bcmkernel/removevoice,$(1))
+endef
+
+$(eval $(call BuildPackage,bcmkernel))
