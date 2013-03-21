@@ -17,7 +17,9 @@ $(strip \
           $(if $(filter cvs://%,$(1)),cvs, \
             $(if $(filter hg://%,$(1)),hg, \
               $(if $(filter sftp://%,$(1)),bzr, \
-                unknown \
+                $(if $(filter ssh://%,$(1)),ssh, \ 
+                  unknown \
+                ) \
               ) \
             ) \
           ) \
@@ -97,6 +99,21 @@ define DownloadMethod/git
 	)
 endef
 
+define DownloadMethod/ssh
+	$(call wrap_mirror, \
+		echo "Checking out files from the git repository..."; \
+		mkdir -p $(TMP_DIR)/dl && \
+		cd $(TMP_DIR)/dl && \
+		rm -rf $(SUBDIR) && \
+		[ \! -d $(SUBDIR) ] && \
+		git clone $(URL) $(SUBDIR) && \
+		echo "Packing checkout..." && \
+		$(call dl_pack,$(TMP_DIR)/dl/$(FILE),$(SUBDIR)) && \
+		mv $(TMP_DIR)/dl/$(FILE) $(DL_DIR)/ && \
+		rm -rf $(SUBDIR); \
+	)
+endef
+
 define DownloadMethod/bzr
 	$(call wrap_mirror, \
 		echo "Checking out files from the bzr repository..."; \
@@ -147,6 +164,7 @@ endef
 Validate/cvs=VERSION SUBDIR
 Validate/svn=VERSION SUBDIR
 Validate/git=VERSION SUBDIR
+Validate/ssh=SUBDIR
 Validate/bzr=VERSION SUBDIR
 Validate/hg=VERSION SUBDIR
 Validate/darcs=VERSION SUBDIR
