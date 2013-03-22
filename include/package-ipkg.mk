@@ -79,7 +79,6 @@ ifneq ($(PKG_NAME),toolchain)
 		if [ -f "$(PKG_INFO_DIR)/$(1).missing" ]; then \
 			echo "Package $(1) is missing dependencies for the following libraries:"; \
 			cat "$(PKG_INFO_DIR)/$(1).missing"; \
-			false; \
 		fi; \
 	)
   endef
