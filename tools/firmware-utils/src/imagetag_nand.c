@@ -269,9 +269,8 @@ int main(int argc, char **argv)
 	loadaddr = IMAGETAG_DEFAULT_LOADADDR;
 	flash_bs = DEFAULT_FLASH_BS;
 
-	printf("Broadcom image tagger - v0.2.0\n");
-	printf("Copyright (C) 2008 Axel Gembe\n");
-	printf("Copyright (C) 2009 Daniel Dickinson\n");
+	printf("Broadcom nand image tagger - v1.0.0\n");
+	printf("Copyright (C) 2013 Benjamin Larsson\n");
 
 	while ((c = getopt(argc, argv, "i:f:o:b:c:q:s:n:v:m:k:l:e:h:t:d:y:K")) != -1) {
 		switch (c) {
@@ -329,12 +328,9 @@ int main(int argc, char **argv)
 			case 'h':
 			default:
 				fprintf(stderr, "Usage: imagetag <parameters>\n\n");
-				fprintf(stderr, "	-i <kernel>		- The LZMA compressed kernel file to include in the image\n");
-				fprintf(stderr, "	-f <rootfs>		- The RootFS file to include in the image\n");
 				fprintf(stderr, "	-o <bin>		- The output file\n");
 				fprintf(stderr, "	-b <boardid>		- The board id to set in the image (i.e. \"96345GW2\")\n");
 				fprintf(stderr, "	-c <chipid>		- The chip id to set in the image (i.e. \"6345\")\n");
-				fprintf(stderr, "	-s <flashstart> 	- Flash start address (i.e. \"0xBFC00000\"\n");
 				fprintf(stderr, "	-q <flashtype>  	- Type of flash chip (i.e. \"nand16, nand256, nor\"\n");
 				fprintf(stderr, "	-K			- Write kernel header\n");
 				fprintf(stderr, "	-n <fwoffset>   	- \n");
@@ -343,9 +339,9 @@ int main(int argc, char **argv)
 				fprintf(stderr, "	-k <flash_bs>		- flash erase block size\n");
 				fprintf(stderr, "	-l <loadaddr>		- Address where the kernel expects to be loaded (defaults to 0x80010000)\n");
 				fprintf(stderr, "	-e <entry>		- Address where the kernel entry point will end up\n");
-				fprintf(stderr, "       -t <tagid> - type if imagetag to create, use 'list' to see available choices");
-				fprintf(stderr, "       -d <information> - vendor specific information, for those that need it");
-				fprintf(stderr, "       -y <layoutver> - Flash Layout Version (2.2x code versions need this)");
+				fprintf(stderr, "       -t <tagid> - type if imagetag to create, use 'list' to see available choices\n");
+				fprintf(stderr, "       -d <information> - vendor specific information, for those that need it\n");
+				fprintf(stderr, "       -y <layoutver> - Flash Layout Version (2.2x code versions need this)\n");
 				fprintf(stderr, "	-h			- Displays this text\n\n");
 				return 1;
 		}
@@ -355,14 +351,11 @@ int main(int argc, char **argv)
 		return write_kernel_header(kernel, bin, loadaddr, entry);
 	}
 
-	if (!boardid || !chipid) {
-		fprintf(stderr, "You need to specify the board (-b) and chip id (-c)!\n");
-		return 1;
-	}
 
 	if (flashtype && (!memcmp(flashtype, "NAND", 4) || !memcmp(flashtype, "NOR", 3))) {
 		return tag_w_file(rootfs, bin, chipid, flashtype, boardid);
+	} else {
+		fprintf(stderr, "Not all parameters set!\n");
 	}
-
 
 }
