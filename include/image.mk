@@ -53,7 +53,7 @@ ifeq ($(CONFIG_SQUASHFS_XZ),y)
   SQUASHFSCOMP := xz $(LZMA_XZ_OPTIONS)
 endif
 
-JFFS2_BLOCKSIZE ?= 64k 128k
+JFFS2_BLOCKSIZE ?= 128k
 
 define add_jffs2_mark
 	echo -ne '\xde\xad\xc0\xde' >> $(1)
@@ -77,7 +77,8 @@ else
   ifneq ($(CONFIG_TARGET_ROOTFS_JFFS2),)
     define Image/mkfs/jffs2/sub
 		# FIXME: removing this line will cause strange behaviour in the foreach loop below
-		$(STAGING_DIR_HOST)/bin/mkfs.jffs2 $(JFFS2OPTS) -e $(patsubst %k,%KiB,$(1)) -o $(KDIR)/root.jffs2-$(1) -d $(TARGET_DIR) -v 2>&1 1>/dev/null | awk '/^.+$$$$/'
+		touch $(KDIR)/nocomprlist
+		$(STAGING_DIR_HOST)/bin/mkfs.jffs2 $(JFFS2OPTS) -e $(patsubst %k,%KiB,$(1)) -o $(KDIR)/root.jffs2-$(1) -N $(KDIR)/nocomprlist -d $(TARGET_DIR) -v 2>&1 1>/dev/null | awk '/^.+$$$$/'
 		$(call add_jffs2_mark,$(KDIR)/root.jffs2-$(1))
 		$(call Image/Build,jffs2-$(1))
     endef
