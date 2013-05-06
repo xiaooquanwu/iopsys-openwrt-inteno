@@ -27,6 +27,7 @@ BCM_BS_PROFILE = $(shell echo $(CONFIG_BCM_KERNEL_PROFILE) | sed s/\"//g)
 
 BCM_KERNEL_VERSION:=3.4.11-rt19
 BCM_SDK_VERSION:=4.14
+RSTRIP:=true
 
 define Package/bcmkernel
   SECTION:=net
@@ -55,7 +56,7 @@ define Package/bcmkernel/removevoice
 endef
 endif
 
-#define Build/Prepare
+#define Package/bcmkernel/prepare
 #endif
 
 define Package/bcmkernel/install
@@ -64,22 +65,38 @@ define Package/bcmkernel/install
 	$(INSTALL_DIR) $(1)/etc/adsl
 	$(INSTALL_DIR) $(1)/etc/wlan
 
-	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs.install/bin/* $(1)/usr/sbin/
-	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs.install/lib/* $(1)/usr/lib/
-	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs.install/lib/private/* $(1)/usr/lib/
-	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs.install/lib/public/* $(1)/usr/lib/
+	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/bin/* $(1)/usr/sbin/
+	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/* $(1)/usr/lib/
+	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/gpl/* $(1)/usr/lib/
+	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/private/* $(1)/usr/lib/
+
+	rm -f $(1)/usr/lib/libcms_boardctl.so
+	rm -f $(1)/usr/lib/libcms_msg.so
+	rm -f $(1)/usr/lib/libcms_util.so
+	rm -f $(1)/usr/lib/libcrypto.so.0.9.7
+	rm -f $(1)/usr/lib/libssl.so.0.9.7
+
+	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/public/* $(1)/usr/lib/
+
+	rm -rf $(1)/usr/lib/modules
+	rm -rf $(1)/usr/lib/private
+	rm -rf $(1)/usr/lib/public
+	rm -rf $(1)/usr/lib/gpl
+
 
 	rm -rf $(1)/lib/modules/$(BCM_KERNEL_VERSION)/*
 	mkdir $(1)/lib/
 	mkdir $(1)/lib/modules/
 	mkdir $(1)/lib/modules/$(BCM_KERNEL_VERSION)/
 
-	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/modules/lib/modules/$(BCM_KERNEL_VERSION)/extra/*                          $(1)/lib/modules/$(BCM_KERNEL_VERSION)/
-	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/modules/lib/modules/$(BCM_KERNEL_VERSION)/kernel/crypto/*                  $(1)/lib/modules/$(BCM_KERNEL_VERSION)/
-	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/modules/lib/modules/$(BCM_KERNEL_VERSION)/kernel/drivers/scsi/*            $(1)/lib/modules/$(BCM_KERNEL_VERSION)/
-	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/modules/lib/modules/$(BCM_KERNEL_VERSION)/kernel/net/ipv4/netfilter/*      $(1)/lib/modules/$(BCM_KERNEL_VERSION)/
-#       cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/modules/lib/modules/$(BCM_KERNEL_VERSION)/kernel/net/ipv6/netfilter/*      $(1)/lib/modules/$(BCM_KERNEL_VERSION)/
-	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/modules/lib/modules/$(BCM_KERNEL_VERSION)/kernel/net/netfilter/*           $(1)/lib/modules/$(BCM_KERNEL_VERSION)/
+	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/extra/*                          $(1)/lib/modules/$(BCM_KERNEL_VERSION)/
+	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/crypto/*                  $(1)/lib/modules/$(BCM_KERNEL_VERSION)/
+	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/drivers/scsi/*            $(1)/lib/modules/$(BCM_KERNEL_VERSION)/
+	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/net/ipv4/netfilter/*      $(1)/lib/modules/$(BCM_KERNEL_VERSION)/
+	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/net/ipv6/netfilter/*      $(1)/lib/modules/$(BCM_KERNEL_VERSION)/
+	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/net/netfilter/*           $(1)/lib/modules/$(BCM_KERNEL_VERSION)/
+	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/drivers/char/hw_random/*  $(1)/lib/modules/$(BCM_KERNEL_VERSION)/
+
 
 	touch $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/bcmdrivers/broadcom/char/adsl/impl1/adsl_phy.bin
 #	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/bcmdrivers/broadcom/char/adsl/impl1/adsl_phy.bin                                      $(1)/etc/adsl/adsl_phy.bin
