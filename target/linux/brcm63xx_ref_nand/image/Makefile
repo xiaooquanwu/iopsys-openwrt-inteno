@@ -10,10 +10,7 @@ include $(INCLUDE_DIR)/image.mk
 KERNEL_ENTRY:= $(shell readelf -h $(KDIR)/vmlinux.bcm.elf | grep Entry | awk '{print $$4}')
 
 define Image/Build/REF
-
-	# Add jffs2 eof marker
-	echo -ne '\xde\xad\xc0\xde' >> $(KDIR)/root.$(1)
-
+	
 	# Tag the rootfs image
 	$(STAGING_DIR_HOST)/bin/imagetag_nand -f $(KDIR)/root.$(1) \
 		-o $(BIN_DIR)/IOPSYS-$(4).w \
