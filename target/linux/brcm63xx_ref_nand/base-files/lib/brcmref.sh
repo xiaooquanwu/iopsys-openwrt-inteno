@@ -24,37 +24,22 @@ bcm_dsl_annex() {
 brcm_insmod() {
 	echo Loading brcm modules
         test -e /lib/modules/3.4.11-rt19/extra/chipinfo.ko     && insmod /lib/modules/3.4.11-rt19/extra/chipinfo.ko
-	sleep 1
 	test -e /lib/modules/3.4.11-rt19/extra/bcm_ingqos.ko   && insmod /lib/modules/3.4.11-rt19/extra/bcm_ingqos.ko
-	sleep 1
 	test -e /lib/modules/3.4.11-rt19/extra/bcm_bpm.ko      && insmod /lib/modules/3.4.11-rt19/extra/bcm_bpm.ko
-	sleep 1
 	test -e /lib/modules/3.4.11-rt19/extra/pktflow.ko      && insmod /lib/modules/3.4.11-rt19/extra/pktflow.ko fcacheMaxEntries=1024
-	sleep 1
 	test -e /lib/modules/3.4.11-rt19/extra/pktcmf.ko       && insmod /lib/modules/3.4.11-rt19/extra/pktcmf.ko
-	sleep 1
 	test -e /lib/modules/3.4.11-rt19/extra/bcmfap.ko       && insmod /lib/modules/3.4.11-rt19/extra/bcmfap.ko
-	sleep 1
 	test -e /lib/modules/3.4.11-rt19/extra/bcmxtmcfg.ko    && insmod /lib/modules/3.4.11-rt19/extra/bcmxtmcfg.ko
-	sleep 1
 	test -e /lib/modules/3.4.11-rt19/extra/adsldd.ko       && insmod /lib/modules/3.4.11-rt19/extra/adsldd.ko
-	sleep 1
 	test -e /lib/modules/3.4.11-rt19/extra/i2c_bcm6xxx.ko  && insmod /lib/modules/3.4.11-rt19/extra/i2c_bcm6xxx.ko
-	sleep 1
 	test -e /lib/modules/3.4.11-rt19/extra/bcm_enet.ko     && insmod /lib/modules/3.4.11-rt19/extra/bcm_enet.ko
-	sleep 1
 	test -e /lib/modules/3.4.11-rt19/extra/nciTMSkmod.ko   && insmod /lib/modules/3.4.11-rt19/extra/nciTMSkmod.ko
-	sleep 1
 	test -e /lib/modules/3.4.11-rt19/extra/bcmsw.ko        && insmod /lib/modules/3.4.11-rt19/extra/bcmsw.ko
-	sleep 1
         test -e /lib/modules/3.4.11-rt19/extra/bcm_usb.ko      && insmod /lib/modules/3.4.11-rt19/extra/bcm_usb.ko
-	sleep 1
 	test -e /lib/modules/3.4.11-rt19/extra/bcmarl.ko       && insmod /lib/modules/3.4.11-rt19/extra/bcmarl.ko
-	sleep 1
+	/usr/bin/taskset 2>/dev/null
 	test -e /lib/modules/3.4.11-rt19/extra/wl.ko           && insmod /lib/modules/3.4.11-rt19/extra/wl.ko
-	sleep 1
 	test -e /lib/modules/3.4.11-rt19/extra/dect.ko         && insmod /lib/modules/3.4.11-rt19/extra/dect.ko
-	sleep 1
 	test -e /lib/modules/3.4.11-rt19/extra/dectshim.ko     && insmod /lib/modules/3.4.11-rt19/extra/dectshim.ko
 	test -e /lib/modules/3.4.11-rt19/extra/pcmshim.ko      && insmod /lib/modules/3.4.11-rt19/extra/pcmshim.ko
 	test -e /lib/modules/3.4.11-rt19/extra/endpointdd.ko   && insmod /lib/modules/3.4.11-rt19/extra/endpointdd.ko
