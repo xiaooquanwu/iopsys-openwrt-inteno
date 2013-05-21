@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # OpenWrt version: Attitude Adjustment (r36052)
-# Mon May 20 14:01:31 2013
+# Tue May 21 13:10:27 2013
 #
 CONFIG_HAVE_DOT_CONFIG=y
 # CONFIG_TARGET_ppc40x is not set
@@ -979,7 +979,7 @@ CONFIG_BUSYBOX_CONFIG_HWCLOCK=y
 # CONFIG_BUSYBOX_CONFIG_IPCS is not set
 # CONFIG_BUSYBOX_CONFIG_LOSETUP is not set
 # CONFIG_BUSYBOX_CONFIG_LSPCI is not set
-# CONFIG_BUSYBOX_CONFIG_LSUSB is not set
+CONFIG_BUSYBOX_CONFIG_LSUSB=y
 # CONFIG_BUSYBOX_CONFIG_MDEV is not set
 # CONFIG_BUSYBOX_CONFIG_MKSWAP is not set
 # CONFIG_BUSYBOX_CONFIG_MORE is not set
@@ -1402,7 +1402,6 @@ CONFIG_PACKAGE_uhttpd=y
 CONFIG_PACKAGE_uhttpd-mod-lua=y
 # CONFIG_PACKAGE_uhttpd-mod-tls is not set
 CONFIG_PACKAGE_uhttpd-mod-ubus=y
-CONFIG_PACKAGE_chat=y
 # CONFIG_PACKAGE_crda is not set
 # CONFIG_PACKAGE_etherwake is not set
 # CONFIG_PACKAGE_genl is not set
@@ -1418,15 +1417,8 @@ CONFIG_PACKAGE_chat=y
 # CONFIG_PACKAGE_noping is not set
 # CONFIG_PACKAGE_oping is not set
 # CONFIG_PACKAGE_p910nd is not set
-CONFIG_PACKAGE_ppp=y
-# CONFIG_PACKAGE_ppp-mod-pppoa is not set
-CONFIG_PACKAGE_ppp-mod-pppoe=y
-# CONFIG_PACKAGE_ppp-mod-pppol2tp is not set
-# CONFIG_PACKAGE_ppp-mod-pptp is not set
-# CONFIG_PACKAGE_ppp-mod-radius is not set
+# CONFIG_PACKAGE_ppp is not set
 # CONFIG_PACKAGE_ppp-multilink is not set
-# CONFIG_PACKAGE_pppdump is not set
-# CONFIG_PACKAGE_pppstats is not set
 # CONFIG_PACKAGE_rssileds is not set
 # CONFIG_PACKAGE_samba36-client is not set
 # CONFIG_PACKAGE_samba36-server is not set
@@ -1505,6 +1497,7 @@ CONFIG_PACKAGE_libdaemon=y
 # CONFIG_PACKAGE_libevent2-openssl is not set
 # CONFIG_PACKAGE_libevent2-pthreads is not set
 # CONFIG_PACKAGE_libexif is not set
+# CONFIG_PACKAGE_libexpat is not set
 # CONFIG_PACKAGE_libffmpeg-full is not set
 # CONFIG_PACKAGE_libffmpeg-mini is not set
 # CONFIG_PACKAGE_libflac is not set
@@ -1530,7 +1523,7 @@ CONFIG_PACKAGE_liblua=y
 # CONFIG_PACKAGE_libmount is not set
 # CONFIG_PACKAGE_libmysqlclient is not set
 # CONFIG_PACKAGE_libmysqlclient-r is not set
-# CONFIG_PACKAGE_libncurses is not set
+CONFIG_PACKAGE_libncurses=y
 # CONFIG_PACKAGE_libncursesw is not set
 # CONFIG_PACKAGE_libnet1 is not set
 # CONFIG_PACKAGE_libnetsnmp is not set
@@ -1546,7 +1539,7 @@ CONFIG_PACKAGE_libpcap=y
 #
 # CONFIG_PACKAGE_libpng is not set
 # CONFIG_PACKAGE_libpopt is not set
-# CONFIG_PACKAGE_libreadline is not set
+CONFIG_PACKAGE_libreadline=y
 # CONFIG_PACKAGE_librpc is not set
 # CONFIG_PACKAGE_librrd1 is not set
 # CONFIG_PACKAGE_libsensors is not set
@@ -1565,7 +1558,7 @@ CONFIG_PACKAGE_libuci-lua=y
 # CONFIG_PACKAGE_libvorbis is not set
 # CONFIG_PACKAGE_libxml2 is not set
 # CONFIG_PACKAGE_linux-atm is not set
-# CONFIG_PACKAGE_terminfo is not set
+CONFIG_PACKAGE_terminfo=y
 # CONFIG_PACKAGE_uclibcxx is not set
 # CONFIG_PACKAGE_zlib is not set
 
@@ -1609,44 +1602,34 @@ CONFIG_PACKAGE_luci-mod-admin-full=y
 # CONFIG_PACKAGE_luci-app-ahcp is not set
 # CONFIG_PACKAGE_luci-app-commands is not set
 # CONFIG_PACKAGE_luci-app-ddns is not set
-CONFIG_PACKAGE_luci-app-dect=y
 # CONFIG_PACKAGE_luci-app-diag-core is not set
 # CONFIG_PACKAGE_luci-app-diag-devinfo is not set
-CONFIG_PACKAGE_luci-app-dslstats=y
 CONFIG_PACKAGE_luci-app-firewall=y
 # CONFIG_PACKAGE_luci-app-freifunk-diagnostics is not set
 # CONFIG_PACKAGE_luci-app-freifunk-policyrouting is not set
 # CONFIG_PACKAGE_luci-app-freifunk-widgets is not set
 # CONFIG_PACKAGE_luci-app-hd-idle is not set
-CONFIG_PACKAGE_luci-app-iup=y
 # CONFIG_PACKAGE_luci-app-ltqtapi is not set
-CONFIG_PACKAGE_luci-app-mcpd=y
 # CONFIG_PACKAGE_luci-app-meshwizard is not set
 # CONFIG_PACKAGE_luci-app-mmc-over-gpio is not set
-# CONFIG_PACKAGE_luci-app-mount is not set
 # CONFIG_PACKAGE_luci-app-multiwan is not set
 # CONFIG_PACKAGE_luci-app-ntpc is not set
 # CONFIG_PACKAGE_luci-app-olsr is not set
 # CONFIG_PACKAGE_luci-app-p2pblock is not set
 # CONFIG_PACKAGE_luci-app-p910nd is not set
 # CONFIG_PACKAGE_luci-app-pbx is not set
-CONFIG_PACKAGE_luci-app-pbx-mod=y
 # CONFIG_PACKAGE_luci-app-polipo is not set
 # CONFIG_PACKAGE_luci-app-qos is not set
 CONFIG_PACKAGE_luci-app-radvd=y
-CONFIG_PACKAGE_luci-app-samba=y
-# CONFIG_PACKAGE_luci-app-siitwizard is not set
-# CONFIG_PACKAGE_luci-app-snmp is not set
-# CONFIG_PACKAGE_luci-app-software is not set
-CONFIG_PACKAGE_luci-app-speedtest=y
+# CONFIG_PACKAGE_luci-app-samba is not set
+CONFIG_PACKAGE_luci-app-siitwizard=y
 # CONFIG_PACKAGE_luci-app-splash is not set
 # CONFIG_PACKAGE_luci-app-statistics is not set
 # CONFIG_PACKAGE_luci-app-tinyproxy is not set
 # CONFIG_PACKAGE_luci-app-transmission is not set
-# CONFIG_PACKAGE_luci-app-upnp is not set
+CONFIG_PACKAGE_luci-app-upnp=y
 # CONFIG_PACKAGE_luci-app-vnstat is not set
-# CONFIG_PACKAGE_luci-app-voice-client is not set
-# CONFIG_PACKAGE_luci-app-voice-core is not set
+CONFIG_PACKAGE_luci-app-voice-core=y
 # CONFIG_PACKAGE_luci-app-watchcat is not set
 # CONFIG_PACKAGE_luci-app-wol is not set
 # CONFIG_PACKAGE_luci-app-wshaper is not set
@@ -1655,10 +1638,10 @@ CONFIG_PACKAGE_luci-app-speedtest=y
 # 4. Themes
 #
 CONFIG_PACKAGE_luci-theme-base=y
-CONFIG_PACKAGE_luci-theme-bootstrap=y
+# CONFIG_PACKAGE_luci-theme-bootstrap is not set
 # CONFIG_PACKAGE_luci-theme-freifunk-bno is not set
 # CONFIG_PACKAGE_luci-theme-freifunk-generic is not set
-# CONFIG_PACKAGE_luci-theme-openwrt is not set
+CONFIG_PACKAGE_luci-theme-openwrt=y
 
 #
 # 5. Translations
@@ -1687,9 +1670,8 @@ CONFIG_PACKAGE_luci-i18n-english=y
 #
 # 6. Protocols
 #
-# CONFIG_PACKAGE_luci-proto-3g is not set
+CONFIG_PACKAGE_luci-proto-6x4=y
 CONFIG_PACKAGE_luci-proto-core=y
-CONFIG_PACKAGE_luci-proto-ipv6=y
 CONFIG_PACKAGE_luci-proto-ppp=y
 # CONFIG_PACKAGE_luci-proto-relay is not set
 
@@ -1697,7 +1679,7 @@ CONFIG_PACKAGE_luci-proto-ppp=y
 # 7. Server Interfaces
 #
 CONFIG_PACKAGE_luci-sgi-cgi=y
-CONFIG_PACKAGE_luci-sgi-uhttpd=y
+# CONFIG_PACKAGE_luci-sgi-uhttpd is not set
 
 #
 # 8. Libraries
@@ -1956,7 +1938,7 @@ CONFIG_PACKAGE_kmod-ipt-nathelper=y
 # CONFIG_PACKAGE_kmod-pcnet32 is not set
 # CONFIG_PACKAGE_kmod-r6040 is not set
 # CONFIG_PACKAGE_kmod-r8169 is not set
-# CONFIG_PACKAGE_kmod-siit is not set
+CONFIG_PACKAGE_kmod-siit=y
 # CONFIG_PACKAGE_kmod-sis190 is not set
 # CONFIG_PACKAGE_kmod-sis900 is not set
 # CONFIG_PACKAGE_kmod-skge is not set
@@ -2249,19 +2231,18 @@ CONFIG_PACKAGE_ubusd=y
 # CONFIG_PACKAGE_sfdisk is not set
 # CONFIG_PACKAGE_swap-utils is not set
 # CONFIG_PACKAGE_wipefs is not set
-# CONFIG_PACKAGE_ami is not set
+CONFIG_PACKAGE_ami=y
 # CONFIG_PACKAGE_bash is not set
 # CONFIG_PACKAGE_bzip2 is not set
 # CONFIG_PACKAGE_cal is not set
 # CONFIG_PACKAGE_collectd is not set
-CONFIG_PACKAGE_comgt=y
 # CONFIG_PACKAGE_dmesg is not set
 # CONFIG_PACKAGE_dropbearconvert is not set
 # CONFIG_PACKAGE_endptctl is not set
 # CONFIG_PACKAGE_fconfig is not set
 # CONFIG_PACKAGE_flock is not set
-# CONFIG_PACKAGE_gdb is not set
-# CONFIG_PACKAGE_gdbserver is not set
+CONFIG_PACKAGE_gdb=y
+CONFIG_PACKAGE_gdbserver=y
 # CONFIG_PACKAGE_getopt is not set
 # CONFIG_PACKAGE_gpioctl is not set
 # CONFIG_PACKAGE_hwclock is not set
@@ -2287,6 +2268,7 @@ CONFIG_PACKAGE_ldd=y
 # CONFIG_PACKAGE_openssl-util is not set
 # CONFIG_PACKAGE_owipcalc is not set
 # CONFIG_PACKAGE_px5g is not set
+# CONFIG_PACKAGE_qrencode is not set
 # CONFIG_PACKAGE_rename is not set
 # CONFIG_PACKAGE_robocfg is not set
 # CONFIG_PACKAGE_rrdcgi1 is not set
@@ -2305,7 +2287,8 @@ CONFIG_PACKAGE_ldd=y
 # CONFIG_PACKAGE_spidev-test is not set
 # CONFIG_PACKAGE_tiff-utils is not set
 # CONFIG_PACKAGE_uboot-envtools is not set
-# CONFIG_PACKAGE_usbreset is not set
+# CONFIG_PACKAGE_usb-modeswitch is not set
+CONFIG_PACKAGE_usbreset=y
 # CONFIG_PACKAGE_uuidd is not set
 # CONFIG_PACKAGE_uuidgen is not set
 # CONFIG_PACKAGE_watchcat is not set
