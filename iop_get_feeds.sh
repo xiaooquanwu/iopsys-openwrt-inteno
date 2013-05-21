@@ -11,7 +11,7 @@
 ./scripts/feeds install libffmpeg
 ./scripts/feeds install libjpeg
 ./scripts/feeds install libusb
-./scripts/feeds install samba3
 ./scripts/feeds install usb-modeswitch-data
 ./scripts/feeds install usb-modeswitch
+./scripts/feeds install luci-proto-3g
 
