@@ -6,10 +6,6 @@
 START=41
 
 start() {
-        rm /lib/libc.so.0
-        ln -s /usr/lib/libc.so.0 /lib/libc.so.0
+	export LD_LIBRARY_PATH=/usr/lib
         /usr/sbin/swmdk &
-        sleep 3
-        rm /lib/libc.so.0
-        ln -s /lib/libuClibc-0.9.33.2.so /lib/libc.so.0
 }
