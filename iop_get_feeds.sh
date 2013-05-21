@@ -13,5 +13,4 @@
 ./scripts/feeds install libusb
 ./scripts/feeds install usb-modeswitch-data
 ./scripts/feeds install usb-modeswitch
-./scripts/feeds install luci-proto-3g
 
