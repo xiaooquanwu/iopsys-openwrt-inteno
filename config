@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # OpenWrt version: Attitude Adjustment (r36052)
-# Tue May 21 16:01:12 2013
+# Wed May 22 11:39:45 2013
 #
 CONFIG_HAVE_DOT_CONFIG=y
 # CONFIG_TARGET_ppc40x is not set
@@ -1560,7 +1560,7 @@ CONFIG_PACKAGE_libubox=y
 CONFIG_PACKAGE_libuci=y
 CONFIG_PACKAGE_libuci-lua=y
 # CONFIG_PACKAGE_libupnp is not set
-# CONFIG_PACKAGE_libusb is not set
+CONFIG_PACKAGE_libusb=y
 # CONFIG_PACKAGE_libusbpp is not set
 # CONFIG_PACKAGE_libuuid is not set
 # CONFIG_PACKAGE_libvorbis is not set
@@ -1610,16 +1610,21 @@ CONFIG_PACKAGE_luci-mod-admin-full=y
 # CONFIG_PACKAGE_luci-app-ahcp is not set
 # CONFIG_PACKAGE_luci-app-commands is not set
 # CONFIG_PACKAGE_luci-app-ddns is not set
+# CONFIG_PACKAGE_luci-app-dect is not set
 # CONFIG_PACKAGE_luci-app-diag-core is not set
 # CONFIG_PACKAGE_luci-app-diag-devinfo is not set
+# CONFIG_PACKAGE_luci-app-dslstats is not set
 CONFIG_PACKAGE_luci-app-firewall=y
 # CONFIG_PACKAGE_luci-app-freifunk-diagnostics is not set
 # CONFIG_PACKAGE_luci-app-freifunk-policyrouting is not set
 # CONFIG_PACKAGE_luci-app-freifunk-widgets is not set
 # CONFIG_PACKAGE_luci-app-hd-idle is not set
+# CONFIG_PACKAGE_luci-app-iup is not set
 # CONFIG_PACKAGE_luci-app-ltqtapi is not set
+# CONFIG_PACKAGE_luci-app-mcpd is not set
 # CONFIG_PACKAGE_luci-app-meshwizard is not set
 # CONFIG_PACKAGE_luci-app-mmc-over-gpio is not set
+# CONFIG_PACKAGE_luci-app-mount is not set
 # CONFIG_PACKAGE_luci-app-multiwan is not set
 # CONFIG_PACKAGE_luci-app-ntpc is not set
 # CONFIG_PACKAGE_luci-app-olsr is not set
@@ -1631,6 +1636,9 @@ CONFIG_PACKAGE_luci-app-firewall=y
 CONFIG_PACKAGE_luci-app-radvd=y
 # CONFIG_PACKAGE_luci-app-samba is not set
 CONFIG_PACKAGE_luci-app-siitwizard=y
+# CONFIG_PACKAGE_luci-app-snmp is not set
+# CONFIG_PACKAGE_luci-app-software is not set
+# CONFIG_PACKAGE_luci-app-speedtest is not set
 # CONFIG_PACKAGE_luci-app-splash is not set
 # CONFIG_PACKAGE_luci-app-statistics is not set
 # CONFIG_PACKAGE_luci-app-tinyproxy is not set
@@ -1646,10 +1654,10 @@ CONFIG_PACKAGE_luci-app-voice-core=y
 # 4. Themes
 #
 CONFIG_PACKAGE_luci-theme-base=y
-# CONFIG_PACKAGE_luci-theme-bootstrap is not set
+CONFIG_PACKAGE_luci-theme-bootstrap=y
 # CONFIG_PACKAGE_luci-theme-freifunk-bno is not set
 # CONFIG_PACKAGE_luci-theme-freifunk-generic is not set
-CONFIG_PACKAGE_luci-theme-openwrt=y
+# CONFIG_PACKAGE_luci-theme-openwrt is not set
 
 #
 # 5. Translations
@@ -1679,8 +1687,8 @@ CONFIG_PACKAGE_luci-i18n-english=y
 # 6. Protocols
 #
 CONFIG_PACKAGE_luci-proto-3g=y
-CONFIG_PACKAGE_luci-proto-6x4=y
 CONFIG_PACKAGE_luci-proto-core=y
+CONFIG_PACKAGE_luci-proto-ipv6=y
 CONFIG_PACKAGE_luci-proto-ppp=y
 # CONFIG_PACKAGE_luci-proto-relay is not set
 
@@ -2297,7 +2305,8 @@ CONFIG_PACKAGE_ldd=y
 # CONFIG_PACKAGE_spidev-test is not set
 # CONFIG_PACKAGE_tiff-utils is not set
 # CONFIG_PACKAGE_uboot-envtools is not set
-# CONFIG_PACKAGE_usb-modeswitch is not set
+CONFIG_PACKAGE_usb-modeswitch=y
+CONFIG_PACKAGE_usb-modeswitch-data=y
 CONFIG_PACKAGE_usbreset=y
 # CONFIG_PACKAGE_uuidd is not set
 # CONFIG_PACKAGE_uuidgen is not set
