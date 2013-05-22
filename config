@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # OpenWrt version: Attitude Adjustment (r36052)
-# Wed May 22 11:39:45 2013
+# Wed May 22 15:20:03 2013
 #
 CONFIG_HAVE_DOT_CONFIG=y
 # CONFIG_TARGET_ppc40x is not set
@@ -2303,6 +2303,7 @@ CONFIG_PACKAGE_ldd=y
 # CONFIG_PACKAGE_shadow-userdel is not set
 # CONFIG_PACKAGE_shadow-usermod is not set
 # CONFIG_PACKAGE_spidev-test is not set
+CONFIG_PACKAGE_strace=y
 # CONFIG_PACKAGE_tiff-utils is not set
 # CONFIG_PACKAGE_uboot-envtools is not set
 CONFIG_PACKAGE_usb-modeswitch=y
