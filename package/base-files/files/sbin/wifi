@@ -3,10 +3,42 @@
 . /lib/functions.sh
 . /usr/share/libubox/jshn.sh
 
+exec >/dev/null 2>&1
 
 local _c=0
-local allnetworks=""
 local vifs=""
+
+map_networks() {
+	local ifdev ifobj devtype
+	local devs=""
+	local _acnt=0
+	for ifobj in `ubus list network.interface.\*`; do
+		interface="${ifobj##network.interface.}"
+		(
+			[ "$_acnt" == "0" ] && _acnt=""
+			[ "$interface" == "loopback" ] && continue
+			json_load "$(ifstatus $interface)"
+			json_get_var ifdev device
+			if [[ -n "$ifdev" ]]; then
+				uci set broadcom.nvram.lan"$_acnt"_ifname="$ifdev"
+				json_load "$(devstatus $ifdev)"
+				json_get_var devtype type
+				if [[ "$devtype" = "Bridge" ]]; then
+					_i=1
+					json_select bridge-members
+					while json_get_var dev $_i; do
+						[ -z "$devs" ] && devs="$dev" || devs="$devs $dev"
+						_i=$(($_i + 1))
+					done
+					uci set broadcom.nvram.lan"$_acnt"_ifnames="$devs"
+				else
+					uci set broadcom.nvram.lan"$_acnt"_ifnames="$ifdev"
+				fi
+			fi
+		)
+		_acnt=$((_acnt+1))
+	done
+}
 
 
 find_network() {
@@ -47,18 +79,6 @@ create_qr_code() {
 	qrencode -o /www/luci-static/resources/icons/wqr_$wssd.png "WIFI:T:$wenc;S:$wssd;P:$wkey;H:$whid;"
 }
 
-get_networks() {
-	local _networks
-	fetch_networks() {
-		[ "$1" == "loopback" ] || {
-			[ -z "$_networks" ] && _networks="$1" || _networks="$_networks $1"
-		}
-	}
-	config_load network
-	config_foreach fetch_networks interface
-	echo "$_networks" && return
-}
-
 set_wifi_down() {
 	local device="$1"
 	local network
@@ -68,9 +88,8 @@ set_wifi_down() {
 
 	for iface in $(grep "$device" /proc/net/dev | awk -F':' '{print$1}'); do
 		network="$(find_network $iface)"
-		wlctl -i "$iface" bss down # NOT SURE
-		wlctl -i "$iface" ssid "" # NOT SURE
-
+		wlctl -i "$iface" bss down
+		wlctl -i "$iface" ssid ""
 		ifconfig "$iface" down 2>/dev/null >/dev/null && {
 			[ -n "$network" ] && ubus call network.interface."$network" remove_device "{ \"name\": \"$iface\" }" 2>/dev/null && uci_revert_state wireless "$iface"
 		}
@@ -143,7 +162,7 @@ set_wifi_iface() {
 		uci set broadcom.nvram."$nif"_infra=1
 
 		# Set MAC Filter
-		wlctl -i $iface macmode $macfilter
+		wlctl -i $iface macmode "${macfilter:-0}"
 		wlctl -i $iface mac none
 		[ -n "$maclist" ] && {
 			for mac in $maclist; do
@@ -289,31 +308,11 @@ set_wifi_iface() {
 		# Bring up and add to network
 		set_wifi_up "$vif" "$iface"
 		ifconfig "$iface" up 2>/dev/null >/dev/null && {
-			ubus call network.interface."$network" add_device "{ \"name\": \"$iface\" }"
+			ubus call network.interface."$network" add_device "{ \"name\": \"$iface\" }" 2>/dev/null
 		}
 		wlctl -i $device bss -C $_c up
 		ifconfig "$iface" hw ether $(wlctl -i $iface cur_etheraddr | awk '{print$2}') 2>/dev/null
 		uci set broadcom.nvram."$nif"_hwaddr="$(wlctl -i $iface cur_etheraddr | awk '{print$2}')"
-
-
-		local _wcnt=0
-		for anet in $allnetworks
-		do
-			if [ "$anet" == "$network" ]; then
-				[ $_wcnt -eq 0 ] && _wcnt=""
-				lanifnames="$(uci get broadcom.nvram.lan"$_wcnt"_ifnames)"
-				[ -z "$lanifnames" ] || lanifnames="$lanifnames "
-				case $lanifnames in
-					*$iface*)
-					;;
-					*)
-						uci set broadcom.nvram.lan"$_wcnt"_ifnames="$lanifnames$iface"
-					;;
-				esac
-				break
-			fi
-			_wcnt=$((_wcnt+1))
-		done
 
 		_c=$(($_c + 1))
 	fi
@@ -510,7 +509,7 @@ set_wifi() {
 	wlctl -i $device fragthresh "${frag:-2346}"
 	wlctl -i $device dtim "${dtim_period:-1}"
 	wlctl -i $device bi "${beacon_int:-100}"
-	wlctl -i $device frameburst ${frameburst:+frameburst $frameburst}
+	wlctl -i $device frameburst "${frameburst:-0}"
 
 
 	# Set Power Settings
@@ -527,32 +526,18 @@ set_wifi() {
 	wlctl -i $device up
 }
 
-include /lib/config
-
 # Kill related daemons
 killall -9 eapd 2>/dev/null
 killall -9 nas 2>/dev/null
 killall -15 wps_monitor 2>/dev/null
 
-# remove all QR code images
+# Remove all QR code images
 rm -f /www/luci-static/resources/icons/wqr_*
 
-# Delete NVRAM parameters
+# Clean NVRAM parameters and set debug mode
 sed -i '/option/ d' /etc/config/broadcom
 uci set broadcom.nvram.debug=0
 
-# Find all networks on this router
-allnetworks="$(get_networks)"
-local _acnt=0
-for anet in $allnetworks
-do
-	[ $_acnt -eq 0 ] && _acnt=""
-	json_load "$(ifstatus $anet)"
-	json_get_var ifdev device
-	uci set broadcom.nvram.lan"$_acnt"_ifname=$ifdev
-	uci set broadcom.nvram.lan"$_acnt"_ifnames="$(uci get network.$anet.ifname)"
-	_acnt=$((_acnt+1))
-done
 
 config_load wireless
 
@@ -564,13 +549,17 @@ case "$1" in
 	*)
 		config_foreach set_wifi_down wifi-device
 		config_foreach set_wifi wifi-device
+
+		# Map all interfaces to corresponding networks by nvram parameters
+		map_networks
 		[ -f /usr/sbin/ledctl ] && ledctl Wireless on 1>/dev/null
+
+		# Start related daemons
+		eapd
+		nas
+		wps_monitor &
 	;;
 esac
 
 uci commit broadcom
 
-# Start related daemons
-eapd 
-nas
-wps_monitor &
