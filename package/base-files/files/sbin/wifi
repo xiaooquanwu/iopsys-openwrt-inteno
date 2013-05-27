@@ -188,14 +188,16 @@ set_wifi_iface() {
 				case "$key" in
 					[1234])
 						for knr in 1 2 3 4; do
+							wlctl -i $iface rmwep $(($knr - 1))
 							config_get k "$vif" key$knr
-							[ "$knr" == "1" ] && qr_key="$k"
+							[ "$knr" == "$key" ] && qr_key="$k"
 							[ -n "$k" ] || continue
-							wlctl -i $iface addwep $knr $k
+							wlctl -i $iface addwep $(($knr - 1)) $k
 						done
+						wlctl -i $iface primary_key $(($key - 1))
 					;;
 					"");;
-					*) wlctl -i $iface addwep 1 $key; qr_key="$key";;
+					*) wlctl -i $iface addwep 0 $key; wlctl -i $iface primary_key 0; qr_key="$key";;
 				esac
 				qr_enc="WEP"
 			;;
@@ -340,7 +342,6 @@ set_wifi() {
 	config_get hwmode "$device" hwmode
 	config_get bandwidth "$device" bandwidth
 	config_get sideband "$device" sideband
-	config_get arate "$device" arate
 	config_get n20rate "$device" n20rate
 	config_get n40rate "$device" n40rate
 	config_get grate "$device" grate
@@ -359,17 +360,17 @@ set_wifi() {
 
 
 	# Base Settings	
-	#wlctl -i $device cap > /var/cap_$device
-#	wlctl -i $device phy_watchdog 0
-#	wlctl -i $device wds none
+	# wlctl -i $device cap > /var/cap_$device
+	# wlctl -i $device phy_watchdog 0
+	# wlctl -i $device wds none
 	wlctl -i $device up
 	wlctl -i $device down
-#	wlctl -i $device ap 1
-#	wlctl -i $device infra 1
-#	wlctl -i $device closed 0
+	# wlctl -i $device ap 1
+	# wlctl -i $device infra 1
+	# wlctl -i $device closed 0
 	wlctl -i $device country SE
 	wlctl -i $device band "${band:-b}"
-#	wlctl -i $device radar 0 2>/dev/null
+	# wlctl -i $device radar 0 2>/dev/null
 
 
 	# Regulatory and Spectrum Management Settings
@@ -453,31 +454,31 @@ set_wifi() {
 				[ "$n20rate" != "auto" ] && wlctl -i $device nrate $n20rate
 			elif [ "$bwidth" -eq "40" ]; then
 				wlctl -i $device mimo_bw_cap 1
+				wlctl -i $device obss_coex "${obss_coex:-1}"
 				[ "$n40rate" != "auto" ] && wlctl -i $device nrate $n40rate
 			fi
 		;;
 	esac
 	
 	wlctl -i $device rateset "${rateset:-default}"
-	wlctl -i $device rifs $rifs
-	wlctl -i $device rifs_advert $rifs_advert
-	wlctl -i $device obss_coex $obss_coex
+	wlctl -i $device rifs "${rifs:-0}"
+	wlctl -i $device rifs_advert "${rifs_advert:-0}"
 
 
 	# Set Channel
 	case "$channel" in
-		auto)
-			wlctl -i $device csscantimer $scantimer
+		1|2|12|13|14)
+			wlctl -i $device chanspec -b $bnd -c $channel -w 20 -s 0
+		;;
+		3|4|5|6|7|8|9|10|11)
+			wlctl -i $device chanspec -b $bnd -c $channel -w $bwidth -s $sband
+		;;
+		*)
+			wlctl -i $device csscantimer "${scantimer:-10}"
 			wlctl -i $device up
 			wlctl -i $device autochannel 1
 			wlctl -i $device autochannel 2
 			wlctl -i $device down
-		;;
-		1|2|12|13|14)
-			wlctl -i $device chanspec -b $bnd -c $channel -w 20 -s 0
-		;;
-		*)
-			wlctl -i $device chanspec -b $bnd -c $channel -w $bwidth -s $sband
 		;;
 	esac
 
@@ -558,12 +559,12 @@ config_load wireless
 case "$1" in
 	down)
 		config_foreach set_wifi_down wifi-device
-		ledctl Wireless off 1>/dev/null
+		[ -f /usr/sbin/ledctl ] && ledctl Wireless off 1>/dev/null
 	;;
 	*)
 		config_foreach set_wifi_down wifi-device
 		config_foreach set_wifi wifi-device
-		ledctl Wireless on 1>/dev/null
+		[ -f /usr/sbin/ledctl ] && ledctl Wireless on 1>/dev/null
 	;;
 esac
 
