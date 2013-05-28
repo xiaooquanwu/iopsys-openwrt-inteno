@@ -1,0 +1,11 @@
+#!/bin/sh
+
+[ -f /var/dectisregistering ] || {
+	touch /var/dectisregistering 2>/dev/null
+	/usr/bin/dectmngr -r
+	ledctl DECT blink
+	sleep 20
+	rm /var/dectisregistering 2>/dev/null
+	/usr/bin/dectmngr -s
+	ledctl DECT on
+}

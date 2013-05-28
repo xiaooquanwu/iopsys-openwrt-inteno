@@ -1,0 +1,39 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2008 OpenWrt.org
+START=97
+STOP=10
+
+DEST=
+DEFAULT=
+OPTIONS=""
+
+
+start() {
+	# avoid fp timing problem
+	echo 1 > /proc/sys/kernel/printk_with_interrupts_enabled
+	
+	# setup board specific dect parameters
+	cat /proc/nvram/rfpi | tr -d ' ' | atohx > /tmp/rfpi
+	cat /proc/nvram/fixed_emc | tr -d ' ' | atohx > /tmp/fixed_emc
+	cat /proc/nvram/bcm_def_freq | tr -d ' ' | atohx > /tmp/bcm_def_freq
+
+	if [ ! -f /etc/dect/nvs ]; then
+		cp /etc/dect/nvs_default /etc/dect/nvs
+		dd of=/etc/dect/nvs if=/tmp/rfpi conv=notrunc bs=1 seek=0
+		dd of=/etc/dect/nvs if=/tmp/fixed_emc conv=notrunc bs=1 seek=10
+		dd of=/etc/dect/nvs if=/tmp/bcm_def_freq conv=notrunc bs=1 seek=6
+	fi
+	
+	# init dectproxy
+	dectproxy &
+	dectmngr &
+}
+
+stop() {
+        killall -9 dectproxy
+	killall -9 dectmngr
+}
+
+restart() {
+	echo "restart dect"
+}

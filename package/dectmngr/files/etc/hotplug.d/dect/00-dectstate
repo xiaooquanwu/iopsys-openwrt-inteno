@@ -1,0 +1,14 @@
+#!/bin/sh
+
+if [ "$ACTION" == "reg_start" ]; then
+	/usr/sbin/ledctl DECT blink
+fi
+
+if [ "$ACTION" == "reg_stop" ]; then
+	/usr/sbin/ledctl DECT on
+fi
+
+if [ "$ACTION" == "dect_init" ]; then
+	/usr/sbin/ledctl DECT on
+fi
+
