@@ -7,6 +7,8 @@ CFLAGS += -I$(BUILD_DIR)/bcmopen-consumer/4.12/shared/opensource/include/bcm963x
 CFLAGS += -I$(BUILD_DIR)/bcmkernel-3.4-4.14/4.14/bcmdrivers/opensource/include/bcm963xx/
 CFLAGS += -I$(BUILD_DIR)/bcmkernel-3.4-4.14/4.14/shared/opensource/include/bcm963xx/
 
+%.o: %.c
+	$(CC) -c $(CFLAGS) -o $@ $<
 
 obj = brcm_fw_tool.o jffs2.o crc32.o
 obj.brcm47xx = $(obj.brcm)
