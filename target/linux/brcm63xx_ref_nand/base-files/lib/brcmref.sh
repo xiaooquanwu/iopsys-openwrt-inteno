@@ -23,13 +23,13 @@ bcm_dsl_annex() {
 
 brcm_db_setup() {
 # This should be moved later in the boot process so overlay will pick up the changes
-	if [ -f "/lib/db/config/board" ]
+	if [ -f "/lib/db/config/hw" ]
 	then
 		echo "Using previous board db"
 	else
 		echo "Initializing board db"
 # This will be a selector instead
-		cp /lib/db/boards/board /lib/db/config/board
+		cp /lib/db/boards/hw /lib/db/config/hw
 	fi
 }
 
