@@ -1,0 +1,95 @@
+#!/bin/sh /etc/rc.common
+
+. /lib/functions.sh
+
+START=31
+
+start() {
+local baseifname
+        echo "Setting Up Ethernet WAN"
+	config_load layer2_interface_ethernet
+	config_foreach addethernet ethernet_interface
+	  
+}
+stop ()
+{
+local ifname
+config_load layer2_interface_ethernet
+config_foreach removeethernet ethernet_interface
+
+}
+boot()
+{
+local $baseifname
+config_load layer2_interface_ethernet
+config_get baseifname  Wan baseifname
+config_load layer2_interface_ethernet
+/usr/sbin/ethswctl -c hw-switching -o enable
+if [ $baseifname ]; then
+  brcm_fw_tool set -d  $baseifname -p 1
+fi
+ifconfig  $baseifname up
+}
+removeethernet()
+{
+config_get ifname  $1 ifname
+vlanctl --if-delete $ifname
+config_load layer2_interface_vlan
+#kill all vlans related to this interface
+config_foreach removevlan vlan_interface
+}
+removevlan()
+{
+local baseifname
+local ifname
+local wan=`uci -q get layer2_interface_ethernet.Wan.baseifname`
+
+config_get baseifname  $1 baseifname
+config_get ifname  $1 ifname
+if [ "$wan" == "$baseifname" ]; then
+echo "vlanctl --if-delete $ifname"
+vlanctl --if-delete $ifname
+fi
+}
+addethernet()
+{
+  config_get baseifname  $1 baseifname
+  config_get ifname  $1 ifname
+  config_get bridge  $1 bridge
+  ifconfig $baseifname up
+	  if [ "$bridge" -eq 1 ]; then
+	     vlanctl --if-create  $baseifname 1
+	      vlanctl --if $baseifname --set-if-mode-rg
+	      vlanctl --if $baseifname --tx  --tags 0 --default-miss-drop
+	      vlanctl --if $baseifname --tx  --tags 1 --default-miss-drop
+	      vlanctl --if $baseifname --tx  --tags 2 --default-miss-drop
+	      # tags 0 tx
+	      vlanctl --if $baseifname  --tx  --tags 0 --filter-txif $ifname --rule-insert-before -1
+	      # tags 1 tx
+	      vlanctl --if $baseifname  --tx  --tags 1 --filter-txif $ifname --rule-insert-before -1
+	       # tags 2 tx
+	      vlanctl --if $baseifname  --tx  --tags 2 --filter-txif $ifname --rule-insert-before -1
+	      # tags 0 rx
+	      vlanctl --if $baseifname  --rx  --tags 0 --set-rxif $ifname   --rule-insert-last 
+	      # tags 1 rx
+	      vlanctl --if $baseifname --rx  --tags 1 --set-rxif $ifname    --rule-insert-last 
+	      # tags 2 rx
+	      vlanctl --if $baseifname  --rx  --tags 2 --set-rxif $ifname   --rule-insert-last 
+	    else
+	      vlanctl  --routed --if-create  $baseifname 1
+	      vlanctl --if $baseifname --set-if-mode-rg
+	      vlanctl --if $baseifname --tx  --tags 0 --default-miss-drop
+	      vlanctl --if $baseifname --tx  --tags 1 --default-miss-drop
+	      vlanctl --if $baseifname --tx  --tags 2 --default-miss-drop
+	       # tags 0 tx
+	      vlanctl --if $baseifname  --tx  --tags 0 --filter-txif $ifname  --rule-insert-before -1
+	      # tags 0 rx  
+	      vlanctl --if $baseifname  --rx  --tags 0 --set-rxif $ifname  --filter-vlan-dev-mac-addr 1 --rule-insert-before -1
+	      # tags 1 rx
+	      vlanctl --if $baseifname --rx  --tags 1 --set-rxif $ifname --filter-vlan-dev-mac-addr 0 --drop-frame   --rule-insert-before -1
+	      # tags 2 rx
+	      vlanctl --if $baseifname  --rx  --tags 2 --set-rxif $ifname --filter-vlan-dev-mac-addr 0 --drop-frame   --rule-insert-before -1
+	  fi  
+	  ifconfig $ifname up
+   	  ifconfig $ifname multicast	  
+}

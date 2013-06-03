@@ -21,7 +21,7 @@ start() {
 
 	sleep 5
 
-	/sbin/wifi down
+	#/sbin/wifi down
 	/sbin/wifi up
 }
 
@@ -42,6 +42,6 @@ stop() {
 
 reload() {
 	ubus call network reload
-	/sbin/wifi down
+	#/sbin/wifi down
 	/sbin/wifi up
 }

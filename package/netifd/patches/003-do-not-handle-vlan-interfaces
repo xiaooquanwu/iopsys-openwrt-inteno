@@ -1,0 +1,12 @@
+--- a/device.c
++++ b/device.c
+@@ -311,9 +311,6 @@ device_get(const char *name, int create)
+ {
+ 	struct device *dev;
+ 
+-	if (strchr(name, '.'))
+-		return get_vlan_device_chain(name, create);
+-
+ 	if (name[0] == '@')
+ 		return device_alias_get(name + 1);
+ 

@@ -1,0 +1,4 @@
+
+[ ifup = "$ACTION" -o ifdown = "$ACTION" ] && {
+	/sbin/testnet &
+}

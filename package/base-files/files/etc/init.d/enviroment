@@ -1,0 +1,54 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2006 OpenWrt.org
+
+START=11
+
+. /lib/network/config.sh
+
+start()
+{
+	local BMAC=$(cat /proc/nvram/BaseMacAddr | tr '[a-z]' '[A-Z]')
+	BMAC=${BMAC// /}
+	local MAC=$(printf "%X\n" $((0x$BMAC)))
+	local BSSID=$(printf "%X\n" $((0x$BMAC + 2)))
+	local WPAKEY=$(cat /proc/nvram/WpaKey)
+
+	local mac=$MAC
+	local mac2=${MAC:8:2}
+	local mac4=${MAC:6:4}
+	local mac6=${MAC:4:6}
+	local bssid=$BSSID
+	local bssid2=${BSSID:8:2}
+	local bssid4=${BSSID:6:4}
+	local bssid6=${BSSID:4:6}
+	local wpakey=$WPAKEY
+
+	local configs="passwords network wireless system"
+
+	for config in $configs; do
+		if [ -f /etc/config/$config ]; then
+			sed -i "s/\$MAC6/$mac6/g" /etc/config/$config
+			sed -i "s/\$MAC4/$mac4/g" /etc/config/$config
+			sed -i "s/\$MAC2/$mac2/g" /etc/config/$config
+			sed -i "s/\$MAC/$mac/g" /etc/config/$config
+			sed -i "s/\$BSSID6/$bssid6/g" /etc/config/$config
+			sed -i "s/\$BSSID4/$bssid4/g" /etc/config/$config
+			sed -i "s/\$BSSID2/$bssid2/g" /etc/config/$config
+			sed -i "s/\$BSSID/$bssid/g" /etc/config/$config
+			sed -i "s/\$WPAKEY/$wpakey/g" /etc/config/$config
+		fi
+	done
+
+	# temporary #
+	local lanports=$(lanports)
+	local wanport=$(wanport)
+	local wanports="ptm0.1 atm0.1 $wanport.1"
+
+	uci set network.lan.ifname="$lanports"
+	uci set network.wan.ifname="$wanports"
+	uci set layer2_interface_ethernet.Wan.baseifname="$wanport"
+	uci set layer2_interface_ethernet.Wan.ifname="$wanport.1"
+	uci commit
+	# --------- #
+}
+
