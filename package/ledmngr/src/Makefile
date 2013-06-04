@@ -12,7 +12,7 @@ CFLAGS += -I$(BUILD_DIR)/bcmkernel-3.4-4.14/4.14/shared/opensource/include/bcm96
 OBJS = ucix.o brcmdaemon.o ledmngr.o
 
 ledmngr: $(OBJS)
-	$(CC) $(LDFLAGS) -o ledmngr $(OBJS) -luci
+	$(CC) $(LDFLAGS) -o ledmngr $(OBJS) -luci -lubus -lubox -lblobmsg_json
 
 clean:
 	rm -f *.o
