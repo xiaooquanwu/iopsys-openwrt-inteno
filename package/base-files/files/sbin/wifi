@@ -1,98 +1,145 @@
 #!/bin/sh
+# Copyright (C) 2006 OpenWrt.org
 
 . /lib/functions.sh
-. /usr/share/libubox/jshn.sh
 
-exec >/dev/null 2>&1
+usage() {
+	cat <<EOF
+Usage: $0 [down|detect]
+enables (default), disables or detects a wifi configuration.
+EOF
+	exit 1
+}
 
-local _c=0
-local vifs=""
+find_net_config() {(
+	local vif="$1"
+	local cfg
+	local ifname
 
-map_networks() {
-	local ifdev ifobj devtype
-	local devs=""
-	local _acnt=0
-	for ifobj in `ubus list network.interface.\*`; do
-		interface="${ifobj##network.interface.}"
-		(
-			[ "$_acnt" == "0" ] && _acnt=""
-			[ "$interface" == "loopback" ] && continue
-			json_load "$(ifstatus $interface)"
-			json_get_var ifdev device
-			if [[ -n "$ifdev" ]]; then
-				uci set broadcom.nvram.lan"$_acnt"_ifname="$ifdev"
-				json_load "$(devstatus $ifdev)"
-				json_get_var devtype type
-				if [[ "$devtype" = "Bridge" ]]; then
-					_i=1
-					json_select bridge-members
-					while json_get_var dev $_i; do
-						[ -z "$devs" ] && devs="$dev" || devs="$devs $dev"
-						_i=$(($_i + 1))
-					done
-					uci set broadcom.nvram.lan"$_acnt"_ifnames="$devs"
+	config_get cfg "$vif" network
+
+	[ -z "$cfg" ] && {
+		include /lib/network
+		scan_interfaces
+
+		config_get ifname "$vif" ifname
+
+		cfg="$(find_config "$ifname")"
+	}
+	[ -z "$cfg" ] && return 0
+	echo "$cfg"
+)}
+
+
+bridge_interface() {(
+	local cfg="$1"
+	[ -z "$cfg" ] && return 0
+
+	include /lib/network
+	scan_interfaces
+
+	for cfg in $cfg; do
+		config_get iftype "$cfg" type
+		[ "$iftype" = bridge ] && config_get "$cfg" ifname
+		prepare_interface_bridge "$cfg"
+		return $?
+	done
+)}
+
+prepare_key_wep() {
+	local key="$1"
+	local hex=1
+
+	echo -n "$key" | grep -qE "[^a-fA-F0-9]" && hex=0
+	[ "${#key}" -eq 10 -a $hex -eq 1 ] || \
+	[ "${#key}" -eq 26 -a $hex -eq 1 ] || {
+		[ "${key:0:2}" = "s:" ] && key="${key#s:}"
+        	key="$(echo -n "$key" | hexdump -ve '1/1 "%02x" ""')"
+	}
+	echo "$key"
+}
+
+wifi_fixup_hwmode() {
+	local device="$1"
+	local default="$2"
+	local hwmode hwmode_11n
+
+	config_get channel "$device" channel
+	config_get hwmode "$device" hwmode
+	case "$hwmode" in
+		11bg) hwmode=bg;;
+		11a) hwmode=a;;
+		11b) hwmode=b;;
+		11g) hwmode=g;;
+		11n*)
+			hwmode_11n="${hwmode##11n}"
+			case "$hwmode_11n" in
+				a|g) ;;
+				default) hwmode_11n="$default"
+			esac
+			config_set "$device" hwmode_11n "$hwmode_11n"
+		;;
+		*)
+			hwmode=
+			if [ "${channel:-0}" -gt 0 ]; then 
+				if [ "${channel:-0}" -gt 14 ]; then
+					hwmode=a
 				else
-					uci set broadcom.nvram.lan"$_acnt"_ifnames="$ifdev"
+					hwmode=g
 				fi
-			fi
-		)
-		_acnt=$((_acnt+1))
-	done
-}
-
-find_network() {
-	local device="$1"
-	local ifdev ifl3dev ifobj devtype
-	for ifobj in `ubus list network.interface.\*`; do
-		interface="${ifobj##network.interface.}"
-		(
-			json_load "$(ifstatus $interface)"
-			json_get_var ifdev device
-			json_get_var ifl3dev l3_device
-			if [[ "$device" = "$ifdev" ]] || [[ "$device" = "$ifl3dev" ]]; then
-				echo "$interface"
-				exit 0
-			elif json_load "$(devstatus $ifdev)"; json_get_var devtype type; [[ "$devtype" = "Bridge" ]]; then
-				_i=1
-				json_select bridge-members
-				while json_get_var dev $_i; do
-					if [[ "$dev" = "$device" ]]; then
-						echo "$interface"
-						exit 0
-					fi
-					_i=$(($_i + 1))
-				done
 			else
-				exit 1
+				hwmode="$default"
 			fi
-		) && return
-	done
+		;;
+	esac
+	config_set "$device" hwmode "$hwmode"
 }
 
-create_qr_code() {
-	local wssd=$1
-	local wenc=$2
-	local wkey=$3
-	local whid=$4
-	qrencode -o /www/luci-static/resources/icons/wqr_$wssd.png "WIFI:T:$wenc;S:$wssd;P:$wkey;H:$whid;"
-}
-
-set_wifi_down() {
-	local device="$1"
-	local network
-
-	uci_revert_state wireless "$device"
-	wlctl -i $device down
-
-	for iface in $(grep "$device" /proc/net/dev | awk -F':' '{print$1}'); do
-		network="$(find_network $iface)"
-		wlctl -i "$iface" bss down
-		wlctl -i "$iface" ssid ""
-		ifconfig "$iface" down 2>/dev/null >/dev/null && {
-			[ -n "$network" ] && ubus call network.interface."$network" remove_device "{ \"name\": \"$iface\" }" 2>/dev/null && uci_revert_state wireless "$iface"
+wifi_updown() {
+	[ enable = "$1" ] && {
+		wifi_updown disable "$2"
+		scan_wifi
+	}
+	for device in ${2:-$DEVICES}; do (
+		config_get disabled "$device" disabled
+		[ 1 == "$disabled" ] && {
+			echo "'$device' is disabled"
+			set disable
 		}
-	done
+		config_get iftype "$device" type
+		if eval "type ${1}_$iftype" 2>/dev/null >/dev/null; then
+			eval "scan_$iftype '$device'"
+			eval "${1}_$iftype '$device'" || echo "$device($iftype): ${1} failed"
+		else
+			echo "$device($iftype): Interface type not supported"
+		fi
+	); done
 }
+
+wifi_detect() {
+	for driver in ${2:-$DRIVERS}; do (
+		if eval "type detect_$driver" 2>/dev/null >/dev/null; then
+			eval "detect_$driver" || echo "$driver: Detect failed" >&2
+		else
+			echo "$driver: Hardware detection not supported" >&2
+		fi
+	); done
+}
+
+start_net() {(
+	local iface="$1"
+	local config="$2"
+	local vifmac="$3"
+
+	[ -f "/var/run/$iface.pid" ] && kill "$(cat /var/run/${iface}.pid)" 2>/dev/null
+	[ -z "$config" ] || {
+		include /lib/network
+		scan_interfaces
+		for config in $config; do
+			setup_interface "$iface" "$config" "" "$vifmac"
+		done
+	}
+)}
 
 set_wifi_up() {
 	local cfg="$1"
@@ -101,448 +148,57 @@ set_wifi_up() {
 	uci_set_state wireless "$cfg" ifname "$ifname"
 }
 
-set_wifi_iface() {
-	local vif="$1"
-	config_get device "$vif" device
+set_wifi_down() {
+	local cfg="$1"
+	local vifs vif vifstr
 
+	[ -f "/var/run/wifi-${cfg}.pid" ] &&
+		kill "$(cat "/var/run/wifi-${cfg}.pid")" 2>/dev/null
+	uci_revert_state wireless "$cfg"
+	config_get vifs "$cfg" vifs
+	for vif in $vifs; do
+		uci_revert_state wireless "$vif"
+	done
+}
 
-	if [ "$2" == "$device" ]; then
-		config_get network "$vif" network
-		config_get mode "$vif" mode
-		config_get ssid "$vif" ssid
-		config_get macfilter "$vif" macfilter
-		local maclist="$(uci get wireless.@wifi-iface[$_c].maclist 2>/dev/null)" #config_get maclist "$vif" maclist
-		config_get_bool wmf_bss_enable "$vif" wmf_bss_enable
-		config_get_bool wmm_bss_disable "$vif" wmm_bss_disable
-		config_get bss_max "$vif" bss_max
-		config_get_bool isolate "$vif" isolate
-		config_get_bool hidden "$vif" hidden
-		config_get_bool disabled "$vif" disabled
-		config_get enc "$vif" encryption
-		local qr_enc="nopass"
-		local qr_hidden=false
-		local qr_key="no"
+scan_wifi() {
+	local cfgfile="$1"
+	DEVICES=
+	config_cb() {
+		local type="$1"
+		local section="$2"
 
-		if [ $_c -eq 0 ]; then
-			iface="$device"
-			nif="$device"
-		else
-			iface="$device"."$_c"
-			nif="$device"_"$_c"
-
-			# set NAS alternate if multi SSIDs are used
-			uci set broadcom.nvram.nas_alternate=1
-		fi
-
-		# set wireless VIFs in broadcom nvram
-		[ -z "$vifs" ] && vifs="$iface" || vifs="$vifs $iface"
-		uci set broadcom.nvram."$device"_vifs="$vifs"
-
-		# create wireless VIFs
-		wlctl -i $device bss -C $_c down
-		wlctl -i $device ssid -C $_c $ssid
-		uci set broadcom.nvram."$nif"_ifname=$iface
-		uci set broadcom.nvram."$nif"_ssid=$ssid
-
-		# check if VIF is disabled in config
-		if [ "$disabled" == "1" ]; then
-			uci set broadcom.nvram."$nif"_bss_enabled=0
-			_c=$(($_c + 1))
-			continue
-		else
-			uci set broadcom.nvram."$nif"_bss_enabled=1
-		fi
-
-		# set Mode Radio Infra
-		uci set broadcom.nvram."$nif"_mode=ap
-		uci set broadcom.nvram."$nif"_radio=1
-		uci set broadcom.nvram."$nif"_infra=1
-
-		# set MAC filter
-		wlctl -i $iface macmode "${macfilter:-0}"
-		wlctl -i $iface mac none
-		[ -n "$maclist" ] && {
-			for mac in $maclist; do
-				wlctl -i $iface mac $mac
-			done
-		}
-
-		# set WMF
-		wlctl -i $iface wmf_bss_enable "${wmf_bss_enable:-0}"
-
-		# set WME
-		wlctl -i $iface wme_bss_disable "${wmm_bss_disable:-0}"
-
-		# set BSS MAX assoc
-		wlctl -i $iface bss_maxassoc "${bss_max:-$(wlctl -i $device bss_maxassoc | awk '{print$1}')}"
-
-		# set AP isolate and hidden
-		wlctl -i $iface ap_isolate "${isolate:-0}"
-		wlctl -i $iface closed "${hidden:-0}"
-		[ "$hidden" == "1" ] && qr_hidden=true
-
-		# set VLAN mode
-		wlctl -i $iface vlan_mode 0
-
-		# set Encryption
-		key=
-		wsec_r=0
-		eap_r=0
-		wsec=0
-		auth=0
-		uci set broadcom.nvram."$nif"_wep=disabled
-		case "$enc" in
-			*wep*)
-				wsec_r=1
-				wsec=1
-				uci set broadcom.nvram."$nif"_wep=enabled
-				config_get key "$vif" key
-				case "$enc" in
-					*shared*) wlctl -i $iface auth 1; uci set broadcom.nvram."$nif"_auth=1;;
-					*) wlctl -i $iface auth 0; uci set broadcom.nvram."$nif"_auth=0;;
-				esac
-				case "$key" in
-					[1234])
-						for knr in 1 2 3 4; do
-							wlctl -i $iface rmwep $(($knr - 1))
-							config_get k "$vif" key$knr
-							[ "$knr" == "$key" ] && qr_key="$k"
-							[ -n "$k" ] || continue
-							wlctl -i $iface addwep $(($knr - 1)) $k
-						done
-						wlctl -i $iface primary_key $(($key - 1))
-					;;
-					"");;
-					*) wlctl -i $iface addwep 0 $key; wlctl -i $iface primary_key 0; qr_key="$key";;
-				esac
-				qr_enc="WEP"
-			;;
-			*psk*)
-				wsec_r=1
-				config_get key "$vif" key
-				config_get gtk "$vif" gtk_rekey
-
-				uci set broadcom.nvram."$nif"_auth=0
-				uci set broadcom.nvram."$nif"_wpa_gtk_rekey="${gtk:-3600}"
-
-				# psk version + default cipher
-				case "$enc" in
-					*mixed*|*psk+psk2*) auth=132; wsec=6; uci set broadcom.nvram."$nif"_akm='psk psk2'; uci set broadcom.nvram."$nif"_crypto=tkip+aes;;
-					*psk2*) auth=128; wsec=4; uci set broadcom.nvram."$nif"_akm=psk2; uci set broadcom.nvram."$nif"_crypto=aes;;
-					*) auth=4; wsec=2; uci set broadcom.nvram."$nif"_akm=psk; uci set broadcom.nvram."$nif"_crypto=tkip;;
-				esac
-
-				# cipher override
-				case "$enc" in
-					*tkip+aes*|*tkip+ccmp*|*aes+tkip*|*ccmp+tkip*) wsec=6; uci set broadcom.nvram."$nif"_crypto=tkip+aes;;
-					*aes*|*ccmp*) wsec=4; uci set broadcom.nvram."$nif"_crypto=aes;;
-					*tkip*) wsec=2; uci set broadcom.nvram."$nif"_crypto=tkip;;
-				esac
-				uci set broadcom.nvram."$nif"_wpa_psk=$key
-				uci set broadcom.nvram."$nif"_auth_mode=psk
-				qr_enc="WPA"
-				qr_key="$key"
-			;;
-			*wpa*)
-				wsec_r=1
-				eap_r=1
-				config_get key "$vif" key
-				#config_get server "$vif" server
-				#config_get port "$vif" port
-				config_get rad_serv "$vif" radius_server
-				config_get rad_port "$vif" radius_port
-				config_get rad_sec "$vif" radius_secret
-
-				# wpa version + default cipher
-				case "$enc" in
-					*mixed*|*wpa+wpa2*) auth=66; wsec=6; uci set broadcom.nvram."$nif"_akm='wpa wpa2'; uci set broadcom.nvram."$nif"_crypto=tkip+aes;;
-					*wpa2*) auth=64; wsec=4; uci set broadcom.nvram."$nif"_akm=wpa2; uci set broadcom.nvram."$nif"_crypto=aes;;
-					*) auth=2; wsec=2; uci set broadcom.nvram."$nif"_akm=wpa; uci set broadcom.nvram."$nif"_crypto=tkip;;
-				esac
-
-				# cipher override
-				case "$enc" in
-					*tkip+aes*|*tkip+ccmp*|*aes+tkip*|*ccmp+tkip*) wsec=6; uci set broadcom.nvram."$nif"_crypto=tkip+aes;;
-					*aes*|*ccmp*) wsec=4; uci set broadcom.nvram."$nif"_crypto=aes;;
-					*tkip*) wsec=2; uci set broadcom.nvram."$nif"_crypto=tkip;;
-				esac
-				uci set broadcom.nvram."$nif"_wpa_psk=$key
-				uci set broadcom.nvram."$nif"_auth_mode=radius
-				uci set broadcom.nvram."$nif"_radius_ipaddr=$rad_serv
-				uci set broadcom.nvram."$nif"_radius_port="${rad_port:-1812}"
-				uci set broadcom.nvram."$nif"_radius_key=$rad_sec
-				qr_enc="WPA"
-				qr_key="$key"
+		# section start
+		case "$type" in
+			wifi-device)
+				append DEVICES "$section"
+				config_set "$section" vifs ""
+				config_set "$section" ht_capab ""
 			;;
 		esac
-		wlctl -i $iface wsec $wsec
-		wlctl -i $iface wpa_auth $auth
-		wlctl -i $iface wsec_restrict $wsec_r
-		wlctl -i $iface eap_restrict $eap_r
 
-		# create QR code of the Wi-Fi network
-		create_qr_code $ssid $qr_enc $qr_key $qr_hidden
-
-		# set WPS
-		config_get wps_mode "$vif" wps_pbc
-		if [ "$wps_mode" == "1" ]; then
-			uci set broadcom.nvram."$nif"_wps_mode="enabled"
-			uci set broadcom.nvram.router_disable="0"
-			uci set broadcom.nvram.wps_modelnum="123456"
-			uci set broadcom.nvram.boardnum="1234"
-			uci set broadcom.nvram.wps_config_method="0x4"
-			uci set broadcom.nvram.wps_modelname="Broadcom"
-			uci set broadcom.nvram.wps_mfstring="Broadcom"
-			uci set broadcom.nvram.wps_device_name="$(uci get wireless.@wifi-iface[0].ssid)"
-			uci set broadcom.nvram.wps_version2="enabled"
-			uci set broadcom.nvram.lan_wps_reg="enabled"
-			uci set broadcom.nvram.lan_wps_oob="disabled"
-			uci set broadcom.nvram.wps_proc_status="0"
-		fi
-
-		# bring up the VIF and add to network
-		set_wifi_up "$vif" "$iface"
-		ifconfig "$iface" up 2>/dev/null >/dev/null && {
-			ubus call network.interface."$network" add_device "{ \"name\": \"$iface\" }" 2>/dev/null
-		}
-		wlctl -i $device bss -C $_c up
-		ifconfig "$iface" hw ether $(wlctl -i $iface cur_etheraddr | awk '{print$2}') 2>/dev/null
-		uci set broadcom.nvram."$nif"_hwaddr="$(wlctl -i $iface cur_etheraddr | awk '{print$2}')"
-
-		_c=$(($_c + 1))
-	fi
+		# section end
+		config_get TYPE "$CONFIG_SECTION" TYPE
+		case "$TYPE" in
+			wifi-iface)
+				config_get device "$CONFIG_SECTION" device
+				config_get vifs "$device" vifs 
+				append vifs "$CONFIG_SECTION"
+				config_set "$device" vifs "$vifs"
+			;;
+		esac
+	}
+	config_load "${cfgfile:-wireless}"
 }
 
-set_wifi() {
-	local device="$1"
-	config_get band "$device" band
-	config_get channel "$device" channel
-	config_get scantimer "$device" scantimer
-	config_get country "$device" country
-	config_get maxassoc "$device" maxassoc
-	config_get wds "$device" wds
-	config_get distance "$device" distance
-	config_get slottime "$device" slottime
-	config_get rxantenna "$device" rxantenna
-	config_get txantenna "$device" txantenna
-	config_get_bool frameburst "$device" frameburst
-	config_get macaddr "$device" macaddr
-	config_get txpower "$device" txpower
-	config_get pwr_percent "$device" pwr_percent
-	config_get frag "$device" frag
-	config_get rts "$device" rts
-	config_get dtim_period "$device" dtim_period
-	config_get beacon_int "$device" beacon_int
-	config_get hwmode "$device" hwmode
-	config_get bandwidth "$device" bandwidth
-	config_get sideband "$device" sideband
-	config_get n20rate "$device" n20rate
-	config_get n40rate "$device" n40rate
-	config_get grate "$device" grate
-	config_get brate "$device" brate
-	config_get rateset "$device" rateset
-	config_get rxchainps "$device" rxchainps
-	config_get rxchainps_qt "$device" rxchainps_qt
-	config_get rxchainps_pps "$device" rxchainps_pps
-	config_get rifs "$device" rifs
-	config_get rifs_advert "$device" rifs_advert
-	config_get obss_coex "$device" obss_coex
-	config_get wmm "$device" wmm
-	config_get wmm_noack "$device" wmm_noack
-	config_get wmm_apsd "$device" wmm_apsd
-	config_get doth "$device" doth
-
-	# BASE settings
-	# wlctl -i $device cap > /var/cap_$device
-	# wlctl -i $device phy_watchdog 0
-	# wlctl -i $device wds none
-	wlctl -i $device up
-	wlctl -i $device down
-	# wlctl -i $device ap 1
-	# wlctl -i $device infra 1
-	# wlctl -i $device closed 0
-	wlctl -i $device country SE
-	wlctl -i $device band "${band:-b}"
-	# wlctl -i $device radar 0 2>/dev/null
-
-	# regulatory and spectrum management settings
-	case "$doth" in
-		1)
-			wlctl -i $device regulatory 0
-			wlctl -i $device spect 1 2>/dev/null
-		;;
-		2)
-			wlctl -i $device regulatory 0
-			wlctl -i $device spect 2 2>/dev/null
-		;;
-		3)
-			wlctl -i $device regulatory 1
-			wlctl -i $device spect 0 2>/dev/null
-		;;
-		*)
-			wlctl -i $device regulatory 0
-			wlctl -i $device spect 0 2>/dev/null
-		;;
-	esac
-
-	# set HW mode and rate
-	local bnd=2
-	local bwidth=20
-	local sband=0
-
-	[ "$band" == "a" ] && bnd=5
-
-	[ -n "$bandwidth" ] && bwidth="$bandwidth"
-
-	case "$sideband" in
-		lower)
-			sband=-1
-		;;
-		upper)
-			sband=1
-		;;
-	esac
-
-	wlctl -i $device nmode -1
-#	wlctl -i $device mimo_bw_cap 1
-	wlctl -i $device gmode 1
-#	wlctl -i $device gmode_protection_override -1
-#	wlctl -i $device gmode_protection_control 2
-#	wlctl -i $device nmode_protection_override -1
-#	wlctl -i $device protection_control 2
-	wlctl -i $device nreqd 0
-	wlctl -i $device rate 0
-#	wlctl -i $device bg_rate 0
-#	wlctl -i $device mrate -1
-#	wlctl -i $device bg_mrate -1
-
-	case "$hwmode" in
-		*b)
-			wlctl -i $device nmode 0
-			wlctl -i $device gmode 0
-			wlctl -i $device rate $brate
-		;;
-		*bg)
-			wlctl -i $device gmode 1
-			wlctl -i $device rate $grate
-		;;
-		*g)
-			wlctl -i $device gmode 2
-			wlctl -i $device rate $grate
-		;;
-		*gst)
-			wlctl -i $device gmode 4
-			wlctl -i $device rate $grate
-		;;
-		*lrs)
-			wlctl -i $device gmode 5
-			wlctl -i $device rate $grate
-		;;
-		*n)
-			wlctl -i $device nmode 1
-			wlctl -i $device nreqd 1
-			if [ "$bwidth" == "20" ]; then
-				[ "$n20rate" != "auto" ] && wlctl -i $device nrate $n20rate
-			elif [ "$bwidth" == "40" ]; then
-				wlctl -i $device mimo_bw_cap 1
-				wlctl -i $device obss_coex "${obss_coex:-1}"
-				[ "$n40rate" != "auto" ] && wlctl -i $device nrate $n40rate
-			fi
-		;;
-	esac
-	wlctl -i $device rateset "${rateset:-default}"
-	wlctl -i $device rifs "${rifs:-0}"
-	wlctl -i $device rifs_advert "${rifs_advert:-0}"
-
-	# set channel
-	case "$channel" in
-		1|2|12|13|14)
-			wlctl -i $device chanspec -b $bnd -c $channel -w 20 -s 0
-		;;
-		3|4|5|6|7|8|9|10|11)
-			wlctl -i $device chanspec -b $bnd -c $channel -w $bwidth -s $sband
-		;;
-		*)
-			wlctl -i $device csscantimer "${scantimer:-10}"
-			wlctl -i $device up
-			wlctl -i $device autochannel 1
-			wlctl -i $device autochannel 2
-			wlctl -i $device down
-		;;
-	esac
-
-	# set MAX assoc
-	wlctl -i $device maxassoc "${maxassoc:-128}"
-
-	# create and configure wireless VIFs
-	wlctl -i $device down
-	wlctl -i $device mbss 1
-	config_foreach set_wifi_iface wifi-iface "$device"
-	_c=0
-
-	# WME settings
-	wlctl -i $device wme 0 2>/dev/null
-	wlctl -i $device afterburner_override 0 2>/dev/null
-	wlctl -i $device ampdu 1 2>/dev/null
-	wlctl -i $device amsdu 1 2>/dev/null
-	wlctl -i $device wme "${wmm:-0}" 2>/dev/null
-	wlctl -i $device wme_noack "${wmm_noack:-0}" 2>/dev/null
-	wlctl -i $device wme_apsd "${wmm_apsd:-1}" 2>/dev/null
-	wlctl -i $device wme_bss_disable "${wmm_bss_disable:-0}" 2>/dev/null
-
-	# tweak Settings
-	wlctl -i $device rtsthresh "${rts:-2347}"
-	wlctl -i $device fragthresh "${frag:-2346}"
-	wlctl -i $device dtim "${dtim_period:-1}"
-	wlctl -i $device bi "${beacon_int:-100}"
-	wlctl -i $device frameburst "${frameburst:-0}"
-
-	# power settings
-	wlctl -i $device antdiv "${rxantenna:-3}"
-	wlctl -i $device txant "${txantenna:-3}"
-	wlctl -i $device pwr_percent "${txpower:-100}"
-	wlctl -i $device rxchain_pwrsave_enable "${rxchainps:-0}"
-	wlctl -i $device rxchain_pwrsave_quiet_time "${rxchainps_qt:-10}"
-	wlctl -i $device rxchain_pwrsave_pps "${rxchainps_pps:-10}"
-
-	# bring up the wireless device
-	wlctl -i $device leddc 0 2>/dev/null
-	wlctl -i $device up
-}
-
-# kill related daemons
-killall -9 eapd 2>/dev/null
-killall -9 nas 2>/dev/null
-killall -15 wps_monitor 2>/dev/null
-
-# remove all QR code images
-rm -f /www/luci-static/resources/icons/wqr_*
-
-# clean NVRAM parameters and set debug mode
-sed -i '/option/ d' /etc/config/broadcom
-uci set broadcom.nvram.debug=0
-
-config_load wireless
+DEVICES=
+DRIVERS=
+include /lib/wifi
+scan_wifi
 
 case "$1" in
-	down)
-		config_foreach set_wifi_down wifi-device
-		[ -f /usr/sbin/ledctl ] && ledctl Wireless off 1>/dev/null
-	;;
-	*)
-		config_foreach set_wifi_down wifi-device
-		config_foreach set_wifi wifi-device
-
-		# map all interfaces to corresponding networks by nvram parameters
-		map_networks
-		[ -f /usr/sbin/ledctl ] && ledctl Wireless on 1>/dev/null
-
-		# start related daemons
-		eapd
-		nas
-		wps_monitor &
-	;;
+	down) wifi_updown "disable" "$2";;
+	detect) wifi_detect "$2";;
+	--help|help) usage;;
+	*) wifi_updown "enable" "$2";;
 esac
-
-uci commit broadcom
-
