@@ -43,11 +43,14 @@ static struct leds_configuration* led_cfg;
 #define LED_FUNCTIONS 13
 #define MAX_LEDS 20
 #define SR_MAX 16
+
+
 enum {
     OFF,
     ON,
     BLINK_SLOW,
     BLINK_FAST,
+    LED_STATES_MAX,
 };
 
 enum {
@@ -68,6 +71,15 @@ enum {
     ACTIVE_LOW,
 };
 
+enum {
+    LED_OK,
+    LED_NOTICE,
+    LED_ALERT,
+    LED_ERROR,
+    LED_OFF,
+    LED_ACTION_MAX,
+};
+
 struct led_config {
     /* Configuration */
     char*   name;
@@ -81,34 +93,35 @@ struct led_config {
     int     blink_state;
 } led_config;
 
+struct led_action {
+    int     led_index;
+    int     led_state;
+} led_action;
+
 struct led_map {
     char*   led_function;
     char*   led_name;
+    int     led_actions_nr;
+    struct led_action led_actions[LED_ACTION_MAX];
 };
 
-static struct led_map led_map_config[LED_FUNCTIONS] = {
-    {"dsl",NULL},
-    {"wifi",NULL},
-    {"wps",NULL},
-    {"lan",NULL},
-    {"status",NULL},
-    {"dect",NULL},
-    {"tv",NULL},
-    {"usb",NULL},
-    {"wan",NULL},
-    {"internet",NULL},
-    {"voice1",NULL},
-    {"voice2",NULL},
-    {"eco",NULL},
-};
+
+static char* fn_actions[LED_ACTION_MAX] = { "ok", "notice", "alert", "error", "off",};
+static char* led_functions[LED_FUNCTIONS] = { "dsl", "wifi", "wps", "lan", "status", "dect", "tv", "usb", "wan", "internet", "voice1", "voice2", "eco"};
+static char* led_states[LED_STATES_MAX] = { "off", "on", "blink_slow", "blink_fast" };
 
 struct leds_configuration {
     int             leds_nr;
     struct led_config**  leds;
     int fd;
     int shift_register_state[SR_MAX];
-    struct led_map* led_map_cfg;
+    int led_fn_action[LED_FUNCTIONS];
+    struct led_map led_map_config[LED_FUNCTIONS][LED_ACTION_MAX];
 } leds_configuration;
+
+static int get_led_index_by_name(struct leds_configuration* led_cfg, char* led_name);
+
+
 
 static int add_led(struct leds_configuration* led_cfg, char* led_name, const char* led_config, int color) {
 
@@ -161,8 +174,21 @@ static void open_ioctl(struct leds_configuration* led_cfg) {
 }
 
 
-struct leds_configuration* get_led_config(void) {
+static int get_state_by_name(char* state_name) {
     int i;
+
+    for (i=0 ; i<LED_STATES_MAX ; i++) {
+        if (!strcasecmp(state_name, led_states[i]))
+            return i;
+    }
+
+
+    printf("state name %s not found!\n", state_name);
+    return -1;
+}
+
+static struct leds_configuration* get_led_config(void) {
+    int i,j,k;
     struct uci_context *ctx = NULL;
     const char *led_names;
     const char *led_config;
@@ -189,7 +215,7 @@ struct leds_configuration* get_led_config(void) {
 
         printf("%s\n", p);
 
-        snprintf(led_name_color, 256, "%s_green", p);               
+        snprintf(led_name_color, 256, "%s_green", p);
         led_config = ucix_get_option(ctx, "hw", "leds", led_name_color);
         add_led(led_cfg, led_name_color, led_config, GREEN);
         //printf("%s_green = %s\n", p, led_config);
@@ -215,16 +241,43 @@ struct leds_configuration* get_led_config(void) {
     //reset shift register states
     for (i=0 ; i<SR_MAX ; i++) led_cfg->shift_register_state[i] = 0;
 
-    //populate led mapping
-    led_cfg->led_map_cfg = led_map_config;
+    //populate led mappings
     for (i=0 ; i<LED_FUNCTIONS ; i++) {
-        const char *conf_led;
+        const char *led_fn_actions;
+        char fn_name_action[256];
+        char l1[256],s1[256];
+        for (j=0 ; j<LED_ACTION_MAX ; j++) {
+            snprintf(fn_name_action, 256, "%s_%s", led_functions[i], fn_actions[j]);
+            led_fn_actions = ucix_get_option(ctx, "hw", "led_map", fn_name_action);
+            printf("fn name action |%s| = %s\n", fn_name_action, led_fn_actions);
 
-        conf_led = ucix_get_option(ctx, "hw", "led_map", led_cfg->led_map_cfg[i].led_function);
-        if (conf_led)
-            led_cfg->led_map_cfg[i].led_name = strdup(conf_led);
-        if (led_cfg->led_map_cfg[i].led_name)
-            printf("led map %s - %s\n", led_cfg->led_map_cfg[i].led_function, conf_led?conf_led:"(null)");
+
+            // reset led actions
+            for(k=0 ; k<LED_ACTION_MAX ; k++) {
+                led_cfg->led_map_config[i][j].led_actions[k].led_index = -1;
+                led_cfg->led_map_config[i][j].led_actions[k].led_state = -1;
+            }
+
+            if (led_fn_actions) {
+                int l=0, m;
+                ptr = (char *)led_fn_actions;
+                p = strtok_r(ptr, " ", &rest);
+                while(p != NULL) {
+                    m = sscanf(ptr, "%[^=]=%s", l1, s1);
+                    printf("m=%d ptr=%s l1=%s s1=%s\n", m,ptr,l1,s1);
+
+                    led_cfg->led_map_config[i][j].led_actions[l].led_index = get_led_index_by_name(led_cfg, l1);
+                    led_cfg->led_map_config[i][j].led_actions[l].led_state = get_state_by_name(s1);
+                    led_cfg->led_map_config[i][j].led_actions_nr++;
+                    printf("[%d] -> %d, %d\n", led_cfg->led_map_config[i][j].led_actions_nr, led_cfg->led_map_config[i][j].led_actions[l].led_index, led_cfg->led_map_config[i][j].led_actions[l].led_state);
+                    /* Get next */
+                    ptr = rest;
+                    p = strtok_r(NULL, " ", &rest);
+                    l++;
+                }
+
+            }
+        }
 
     }
 
@@ -308,11 +361,9 @@ static void shift_register3_set(struct leds_configuration* led_cfg, int address,
     board_ioctl(led_cfg->fd, BOARD_IOCTL_SET_GPIO, 0, 0, NULL, 23, 1);
 }
 
-static int led_set(struct leds_configuration* led_cfg, char* led_name, int state) {
-    int led_idx;
+static int led_set(struct leds_configuration* led_cfg, int led_idx, int state) {
     struct led_config* lc;
 
-    led_idx = get_led_index_by_name(led_cfg, led_name);
     lc = led_cfg->leds[led_idx];
 
     //printf("Led index: %d\n", led_idx);
@@ -327,11 +378,18 @@ static int led_set(struct leds_configuration* led_cfg, char* led_name, int state
     return 0;
 }
 
+static void led_set_state(struct leds_configuration* led_cfg, int led_idx, int state) {
+    struct led_config* lc;
+
+    lc = led_cfg->leds[led_idx];
+    lc->state = state;
+}
+
 static void all_leds_off(struct leds_configuration* led_cfg) {
     int i;
     for (i=0 ; i<led_cfg->leds_nr ; i++) {
         
-        led_set(led_cfg, led_cfg->leds[i]->name, OFF);
+        led_set(led_cfg, i, OFF);
     }
 }
 
@@ -339,7 +397,7 @@ static void all_leds_on(struct leds_configuration* led_cfg) {
     int i;
     for (i=0 ; i<led_cfg->leds_nr ; i++) {
         
-        led_set(led_cfg, led_cfg->leds[i]->name, ON);
+        led_set(led_cfg, i, ON);
     }
 }
 
@@ -347,9 +405,9 @@ static void all_leds_test(struct leds_configuration* led_cfg) {
     int i;
     //all_leds_off(led_cfg);
     for (i=0 ; i<led_cfg->leds_nr ; i++) {
-        led_set(led_cfg, led_cfg->leds[i]->name, ON);
+        led_set(led_cfg, i, ON);
         sleep(1);        
-        led_set(led_cfg, led_cfg->leds[i]->name, OFF);
+        led_set(led_cfg, i, OFF);
     }
     all_leds_off(led_cfg);
     sleep(1);
@@ -369,7 +427,7 @@ void blink_led(struct leds_configuration* led_cfg, int state) {
         struct led_config* lc = led_cfg->leds[i];
         if (lc->state == state) {
             //printf("Blinking %s\n", lc->name);
-            led_set(led_cfg, lc->name, lc->blink_state?0:1);
+            led_set(led_cfg, i, lc->blink_state?0:1);
         }
     }
 }
@@ -378,7 +436,6 @@ void blink_led(struct leds_configuration* led_cfg, int state) {
 static void blink_handler(struct uloop_timeout *timeout);
 static struct uloop_timeout blink_inform_timer = { .cb = blink_handler };
 static unsigned int cnt = 0;
-
 
 static void blink_handler(struct uloop_timeout *timeout)
 {
@@ -393,41 +450,48 @@ static void blink_handler(struct uloop_timeout *timeout)
 	uloop_timeout_set(&blink_inform_timer, 100);
     
     //printf("Timer\n");
-
 }
 
+static int index_from_action(const char* action) {
+    int i;
+    for (i=0 ; i<LED_ACTION_MAX ; i++) {
+        if (!strcasecmp(action, fn_actions[i]))
+            return i;
+    }
+
+    printf("action %s not found!\n", action);
+    return -1;
+};
 
 
-void set_function_led(struct leds_configuration* led_cfg, char* fn_name, const char* color, const char* state) {
+static void set_function_led(struct leds_configuration* led_cfg, char* fn_name, const char* action) {
     int i, led_idx;
     char* led_name = NULL;
-    char led_name_color[256];
-    int istate = -1;
+    int led_fn_idx = -1;
+    int action_idx;
+    struct led_map *map;
 
     for (i=0 ; i<LED_FUNCTIONS ; i++) {
-        if (!strcmp(fn_name, led_cfg->led_map_cfg[i].led_function))
-            led_name = led_cfg->led_map_cfg[i].led_name;
+        if (!strcmp(fn_name, led_functions[i])) {
+            led_name = led_functions[i];
+            led_fn_idx = i;
+        }
     }
     if (!(led_name)) return;
 
-    snprintf(led_name_color, 256, "%s_%s", led_name, color);  
+printf("Action\n");
 
-    if (!strcmp(state,"ON")) istate = ON;
-    if (!strcmp(state,"OFF")) istate = OFF;
-    if (!strcmp(state,"BLINK_SLOW")) istate = BLINK_SLOW;
-    if (!strcmp(state,"BLINK_FAST")) istate = BLINK_FAST;
-    printf("Timer1\n");
 
-    /* Set led structure state */
-    led_idx = get_led_index_by_name(led_cfg, led_name_color);
-    if (led_idx == -1) return;
-    led_cfg->leds[led_idx]->state = istate;
+//    snprintf(led_name_color, 256, "%s_%s", led_name, color);  
+    action_idx = index_from_action(action);
+    led_cfg->led_fn_action[led_fn_idx] = action_idx;
 
-    printf("Timer\n");
-
-    /* Set the led state */
-    if ((istate == ON) || (istate==OFF))
-        led_set(led_cfg, led_name_color, istate);
+    map = &led_cfg->led_map_config[led_fn_idx][action_idx];
+    for (i=0 ; i<map->led_actions_nr ; i++) {
+        led_set(led_cfg, map->led_actions[i].led_index, map->led_actions[i].led_state);
+        led_set_state(led_cfg, map->led_actions[i].led_index, map->led_actions[i].led_state);
+        printf("[%d] %d %d\n", map->led_actions_nr,  map->led_actions[i].led_index, map->led_actions[i].led_state);
+    }
 }
 
 
@@ -439,18 +503,11 @@ enum {
 };
 
 enum {
-	LED_COLOR,
 	LED_STATE,
 	__LED_MAX
 };
 
-static const struct blobmsg_policy hello_policy[] = {
-	[HELLO_ID] = { .name = "id", .type = BLOBMSG_TYPE_INT32 },
-	[HELLO_MSG] = { .name = "msg", .type = BLOBMSG_TYPE_STRING },
-};
-
 static const struct blobmsg_policy led_policy[] = {
-	[LED_COLOR] = { .name = "color", .type = BLOBMSG_TYPE_STRING },
 	[LED_STATE] = { .name = "state", .type = BLOBMSG_TYPE_STRING },
 };
 
@@ -483,13 +540,13 @@ static int test_hello(struct ubus_context *ctx, struct ubus_object *obj,
 
 	blobmsg_parse(led_policy, ARRAY_SIZE(led_policy), tb, blob_data(msg), blob_len(msg));
 
-	if ((tb[LED_STATE]) && (tb[LED_COLOR])) {
+	if (tb[LED_STATE]) {
         char *fn_name = strchr(obj->name, '.') + 1;
 		state = blobmsg_data(tb[LED_STATE]);
-		color = blobmsg_data(tb[LED_COLOR]);
-    	fprintf(stderr, "Led %s method: %s color %s state %s\n", fn_name, method, color, state);
+    	fprintf(stderr, "Led %s method: %s state %s\n", fn_name, method, state);
         
-        set_function_led(led_cfg, fn_name, color, state);
+        set_function_led(led_cfg, fn_name, state);
+        
     }
 
     
@@ -534,23 +591,28 @@ static int test_watch(struct ubus_context *ctx, struct ubus_object *obj,
 		      struct ubus_request_data *req, const char *method,
 		      struct blob_attr *msg)
 {
-	struct blob_attr *tb[__WATCH_MAX];
-	int ret;
+	struct hello_request *hreq;
+	struct blob_attr *tb[__LED_MAX];
+	const char *format = "%s received a message: %s";
+	const char *msgstr = "(unknown)";
+    const char *state, *color;
 
 	blobmsg_parse(watch_policy, __WATCH_MAX, tb, blob_data(msg), blob_len(msg));
 	if (!tb[WATCH_ID])
 		return UBUS_STATUS_INVALID_ARGUMENT;
 
-	test_event.remove_cb = test_handle_remove;
-	test_event.cb = test_notify;
-	ret = ubus_subscribe(ctx, &test_event, blobmsg_get_u32(tb[WATCH_ID]));
-	fprintf(stderr, "Watching object %08x: %s\n", blobmsg_get_u32(tb[WATCH_ID]), ubus_strerror(ret));
-	return ret;
+	hreq = calloc(1, sizeof(*hreq) + strlen(format) + strlen(obj->name) + strlen(msgstr) + 1);
+	sprintf(hreq->data, format, obj->name, msgstr);
+	ubus_defer_request(ctx, req, &hreq->req);
+	hreq->timeout.cb = test_hello_reply;
+	uloop_timeout_set(&hreq->timeout, 1000);
+
+	return 0;
 }
 
 static const struct ubus_method test_methods[] = {
-	UBUS_METHOD("status", test_hello, led_policy),
-	UBUS_METHOD("set", test_watch, led_policy),
+	UBUS_METHOD("set", test_hello, led_policy),
+    { .name = "status", .handler = test_watch },
 };
 
 static struct ubus_object_type test_object_type =
