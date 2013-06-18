@@ -120,7 +120,7 @@ struct leds_configuration {
 } leds_configuration;
 
 static int get_led_index_by_name(struct leds_configuration* led_cfg, char* led_name);
-
+static int led_set(struct leds_configuration* led_cfg, int led_idx, int state);
 
 
 static int add_led(struct leds_configuration* led_cfg, char* led_name, const char* led_config, int color) {
@@ -186,6 +186,16 @@ static int get_state_by_name(char* state_name) {
     printf("state name %s not found!\n", state_name);
     return -1;
 }
+
+
+static void all_leds_off(struct leds_configuration* led_cfg) {
+    int i;
+    for (i=0 ; i<led_cfg->leds_nr ; i++) {
+        
+        led_set(led_cfg, i, OFF);
+    }
+}
+
 
 static struct leds_configuration* get_led_config(void) {
     int i,j,k;
@@ -278,7 +288,14 @@ static struct leds_configuration* get_led_config(void) {
 
             }
         }
+    }
 
+    /* Turn off all leds */
+    all_leds_off(led_cfg);
+
+    /* Set all function states to off */
+    for (i=0 ; i<LED_FUNCTIONS ; i++) {
+        led_cfg->led_fn_action[i] = LED_OFF;
     }
 
     return led_cfg;
@@ -385,14 +402,6 @@ static void led_set_state(struct leds_configuration* led_cfg, int led_idx, int s
     lc->state = state;
 }
 
-static void all_leds_off(struct leds_configuration* led_cfg) {
-    int i;
-    for (i=0 ; i<led_cfg->leds_nr ; i++) {
-        
-        led_set(led_cfg, i, OFF);
-    }
-}
-
 static void all_leds_on(struct leds_configuration* led_cfg) {
     int i;
     for (i=0 ; i<led_cfg->leds_nr ; i++) {
@@ -479,7 +488,7 @@ static void set_function_led(struct leds_configuration* led_cfg, char* fn_name, 
     }
     if (!(led_name)) return;
 
-printf("Action\n");
+//printf("Action\n");
 
 
 //    snprintf(led_name_color, 256, "%s_%s", led_name, color);  
@@ -490,17 +499,10 @@ printf("Action\n");
     for (i=0 ; i<map->led_actions_nr ; i++) {
         led_set(led_cfg, map->led_actions[i].led_index, map->led_actions[i].led_state);
         led_set_state(led_cfg, map->led_actions[i].led_index, map->led_actions[i].led_state);
-        printf("[%d] %d %d\n", map->led_actions_nr,  map->led_actions[i].led_index, map->led_actions[i].led_state);
+  //      printf("[%d] %d %d\n", map->led_actions_nr,  map->led_actions[i].led_index, map->led_actions[i].led_state);
     }
 }
 
-
-
-enum {
-	HELLO_ID,
-	HELLO_MSG,
-	__HELLO_MAX
-};
 
 enum {
 	LED_STATE,
@@ -517,102 +519,72 @@ struct hello_request {
 	char data[];
 };
 
-static void test_hello_reply(struct uloop_timeout *t)
-{
-	struct hello_request *req = container_of(t, struct hello_request, timeout);
 
-	blob_buf_init(&b, 0);
-	blobmsg_add_string(&b, "message", req->data);
-	ubus_send_reply(ctx, &req->req, b.head);
-	ubus_complete_deferred_request(ctx, &req->req, 0);
-	free(req);
-}
 
-static int test_hello(struct ubus_context *ctx, struct ubus_object *obj,
+static int led_set_method(struct ubus_context *ctx, struct ubus_object *obj,
 		      struct ubus_request_data *req, const char *method,
 		      struct blob_attr *msg)
 {
 	struct hello_request *hreq;
 	struct blob_attr *tb[__LED_MAX];
-	const char *format = "%s received a message: %s";
-	const char *msgstr = "(unknown)";
-    const char *state, *color;
+    char* state;
 
 	blobmsg_parse(led_policy, ARRAY_SIZE(led_policy), tb, blob_data(msg), blob_len(msg));
 
 	if (tb[LED_STATE]) {
         char *fn_name = strchr(obj->name, '.') + 1;
 		state = blobmsg_data(tb[LED_STATE]);
-    	fprintf(stderr, "Led %s method: %s state %s\n", fn_name, method, state);
+//    	fprintf(stderr, "Led %s method: %s state %s\n", fn_name, method, state);
         
         set_function_led(led_cfg, fn_name, state);
-        
     }
 
-    
-
-	hreq = calloc(1, sizeof(*hreq) + strlen(format) + strlen(obj->name) + strlen(msgstr) + 1);
-	sprintf(hreq->data, format, obj->name, msgstr);
-	ubus_defer_request(ctx, req, &hreq->req);
-	hreq->timeout.cb = test_hello_reply;
-	uloop_timeout_set(&hreq->timeout, 1000);
-
 	return 0;
 }
 
-enum {
-	WATCH_ID,
-	WATCH_COUNTER,
-	__WATCH_MAX
-};
 
-static const struct blobmsg_policy watch_policy[__WATCH_MAX] = {
-	[WATCH_ID] = { .name = "id", .type = BLOBMSG_TYPE_INT32 },
-	[WATCH_COUNTER] = { .name = "counter", .type = BLOBMSG_TYPE_INT32 },
-};
-
-static void
-test_handle_remove(struct ubus_context *ctx, struct ubus_subscriber *s,
-                   uint32_t id)
+static void led_status_reply(struct uloop_timeout *t)
 {
-	fprintf(stderr, "Object %08x went away\n", id);
+	struct hello_request *req = container_of(t, struct hello_request, timeout);
+
+	blob_buf_init(&b, 0);
+	blobmsg_add_string(&b, "status", req->data);
+	ubus_send_reply(ctx, &req->req, b.head);
+	ubus_complete_deferred_request(ctx, &req->req, 0);
+	free(req);
 }
 
-static int
-test_notify(struct ubus_context *ctx, struct ubus_object *obj,
-	    struct ubus_request_data *req, const char *method,
-	    struct blob_attr *msg)
-{
-
-	return 0;
-}
-
-static int test_watch(struct ubus_context *ctx, struct ubus_object *obj,
+static int led_status_method(struct ubus_context *ctx, struct ubus_object *obj,
 		      struct ubus_request_data *req, const char *method,
 		      struct blob_attr *msg)
 {
 	struct hello_request *hreq;
 	struct blob_attr *tb[__LED_MAX];
-	const char *format = "%s received a message: %s";
-	const char *msgstr = "(unknown)";
-    const char *state, *color;
+    int action, i, led_fn_idx;
+    char *fn_name = strchr(obj->name, '.') + 1;
 
-	blobmsg_parse(watch_policy, __WATCH_MAX, tb, blob_data(msg), blob_len(msg));
-	if (!tb[WATCH_ID])
-		return UBUS_STATUS_INVALID_ARGUMENT;
+    for (i=0 ; i<LED_FUNCTIONS ; i++) {
+        if (!strcmp(fn_name, led_functions[i])) {
+            led_fn_idx = i;
+        }
+    }
 
-	hreq = calloc(1, sizeof(*hreq) + strlen(format) + strlen(obj->name) + strlen(msgstr) + 1);
-	sprintf(hreq->data, format, obj->name, msgstr);
+    action = led_cfg->led_fn_action[led_fn_idx];
+
+    fprintf(stderr, "Led %s method: %s action %d\n", fn_name, method, action);
+
+	hreq = calloc(1, sizeof(*hreq) +  100);
+	sprintf(hreq->data, "%s", fn_actions[action]);
 	ubus_defer_request(ctx, req, &hreq->req);
-	hreq->timeout.cb = test_hello_reply;
+	hreq->timeout.cb = led_status_reply;
 	uloop_timeout_set(&hreq->timeout, 1000);
 
 	return 0;
 }
 
 static const struct ubus_method test_methods[] = {
-	UBUS_METHOD("set", test_hello, led_policy),
-    { .name = "status", .handler = test_watch },
+	UBUS_METHOD("set", led_set_method, led_policy),
+    { .name = "status", .handler = led_status_method },
 };
 
 static struct ubus_object_type test_object_type =
