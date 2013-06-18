@@ -35,7 +35,6 @@
 #include "ucix.h"
 
 static struct ubus_context *ctx;
-static struct ubus_subscriber test_event;
 static struct blob_buf b;
 
 static struct leds_configuration* led_cfg;
@@ -80,6 +79,13 @@ enum {
     LED_ACTION_MAX,
 };
 
+enum {
+    LEDS_NORMAL,
+    LEDS_ECO,
+    LEDS_TEST,
+    LEDS_MAX,
+};
+
 struct led_config {
     /* Configuration */
     char*   name;
@@ -109,6 +115,7 @@ struct led_map {
 static char* fn_actions[LED_ACTION_MAX] = { "ok", "notice", "alert", "error", "off",};
 static char* led_functions[LED_FUNCTIONS] = { "dsl", "wifi", "wps", "lan", "status", "dect", "tv", "usb", "wan", "internet", "voice1", "voice2", "eco"};
 static char* led_states[LED_STATES_MAX] = { "off", "on", "blink_slow", "blink_fast" };
+static char* leds_states[LEDS_MAX] = { "normal", "eco", "test" };
 
 struct leds_configuration {
     int             leds_nr;
@@ -117,6 +124,8 @@ struct leds_configuration {
     int shift_register_state[SR_MAX];
     int led_fn_action[LED_FUNCTIONS];
     struct led_map led_map_config[LED_FUNCTIONS][LED_ACTION_MAX];
+    int leds_state;
+    int test_state;
 } leds_configuration;
 
 static int get_led_index_by_name(struct leds_configuration* led_cfg, char* led_name);
@@ -290,6 +299,9 @@ static struct leds_configuration* get_led_config(void) {
         }
     }
 
+    led_cfg->leds_state = LEDS_NORMAL;
+    led_cfg->test_state = 0;
+
     /* Turn off all leds */
     all_leds_off(led_cfg);
 
@@ -381,14 +393,19 @@ static void shift_register3_set(struct leds_configuration* led_cfg, int address,
 static int led_set(struct leds_configuration* led_cfg, int led_idx, int state) {
     struct led_config* lc;
 
+    if (led_idx > led_cfg->leds_nr-1)
+        printf("Led index: %d out of bounds, nr_leds = %d\n", led_idx, led_cfg->leds_nr);
+
     lc = led_cfg->leds[led_idx];
 
     //printf("Led index: %d\n", led_idx);
 
-    if (lc->type == GPIO) {
-        board_ioctl(led_cfg->fd, BOARD_IOCTL_SET_GPIO, 0, 0, NULL, lc->address, state^lc->active);
-    } else if (lc->type == SHIFTREG3){
-        shift_register3_set(led_cfg, lc->address, state, lc->active);
+    if (!(led_cfg->leds_state == LEDS_ECO)) {
+        if (lc->type == GPIO) {
+            board_ioctl(led_cfg->fd, BOARD_IOCTL_SET_GPIO, 0, 0, NULL, lc->address, state^lc->active);
+        } else if (lc->type == SHIFTREG3) {
+            shift_register3_set(led_cfg, lc->address, state, lc->active);
+        }
     }
     lc->blink_state = state;
 
@@ -441,6 +458,39 @@ void blink_led(struct leds_configuration* led_cfg, int state) {
     }
 }
 
+static void leds_test(struct leds_configuration* led_cfg) {
+    if (led_cfg->test_state == 0)
+        all_leds_on(led_cfg);
+    if (led_cfg->test_state == 1)
+        all_leds_off(led_cfg);
+    if (led_cfg->test_state == 2)
+        all_leds_on(led_cfg);
+    if (led_cfg->test_state == 3)
+        all_leds_off(led_cfg);
+
+    if ((led_cfg->test_state > 4) && (led_cfg->test_state < led_cfg->leds_nr+4)) {
+        led_set(led_cfg, led_cfg->test_state-5, OFF);
+    }
+
+    if ((led_cfg->test_state > 3) && (led_cfg->test_state < led_cfg->leds_nr+3)) {
+        led_set(led_cfg, led_cfg->test_state-4, ON);
+    }
+
+    if (led_cfg->test_state == (led_cfg->leds_nr+5))
+        all_leds_on(led_cfg);
+    if (led_cfg->test_state == (led_cfg->leds_nr+6))
+        all_leds_off(led_cfg);
+    if (led_cfg->test_state == (led_cfg->leds_nr+7))
+        all_leds_on(led_cfg);
+    if (led_cfg->test_state == (led_cfg->leds_nr+8))
+        all_leds_off(led_cfg);
+
+    //printf("T state = %d\n", led_cfg->test_state);
+
+    led_cfg->test_state++;
+    if (led_cfg->test_state >  led_cfg->leds_nr+8)
+        led_cfg->test_state = 0;
+}
 
 static void blink_handler(struct uloop_timeout *timeout);
 static struct uloop_timeout blink_inform_timer = { .cb = blink_handler };
@@ -450,11 +500,16 @@ static void blink_handler(struct uloop_timeout *timeout)
 {
     cnt++;
 
-    if (!(cnt%4))
-        blink_led(led_cfg, BLINK_FAST);
+    if (led_cfg->leds_state == LEDS_TEST) {
+        if (!(cnt%3))
+            leds_test(led_cfg);
+    } else if (led_cfg->leds_state == LEDS_NORMAL){
+        if (!(cnt%4))
+            blink_led(led_cfg, BLINK_FAST);
 
-    if (!(cnt%8))
-        blink_led(led_cfg, BLINK_SLOW);
+        if (!(cnt%8))
+            blink_led(led_cfg, BLINK_SLOW);
+    }       
 
 	uloop_timeout_set(&blink_inform_timer, 100);
     
@@ -582,30 +637,105 @@ static int led_status_method(struct ubus_context *ctx, struct ubus_object *obj,
 	return 0;
 }
 
-static const struct ubus_method test_methods[] = {
+
+static int leds_set_method(struct ubus_context *ctx, struct ubus_object *obj,
+		      struct ubus_request_data *req, const char *method,
+		      struct blob_attr *msg)
+{
+	struct hello_request *hreq;
+	struct blob_attr *tb[__LED_MAX];
+    char* state;
+    int i,j;
+
+	blobmsg_parse(led_policy, ARRAY_SIZE(led_policy), tb, blob_data(msg), blob_len(msg));
+
+	if (tb[LED_STATE]) {
+		state = blobmsg_data(tb[LED_STATE]);
+
+        for (i=0 ; i<LEDS_MAX ; i++) {
+            if (!strcasecmp(state, leds_states[i]))
+                break;
+        }
+
+        if (i == LEDS_ECO) {
+            all_leds_off(led_cfg);
+            set_function_led(led_cfg, "eco", "ok");
+        }
+
+
+        led_cfg->leds_state = i;
+
+
+        if (i == LEDS_TEST) {
+            all_leds_off(led_cfg);
+        }
+
+
+        if (i == LEDS_NORMAL) {
+            all_leds_off(led_cfg);
+            set_function_led(led_cfg, "eco", "off");
+            for (j=0 ; j<LED_FUNCTIONS ; j++) {
+                set_function_led(led_cfg, led_functions[j], fn_actions[led_cfg->led_fn_action[j]]);
+            }
+        }
+
+    }
+
+	return 0;
+}
+
+
+static int leds_status_method(struct ubus_context *ctx, struct ubus_object *obj,
+		      struct ubus_request_data *req, const char *method,
+		      struct blob_attr *msg)
+{
+	struct hello_request *hreq;
+
+	hreq = calloc(1, sizeof(*hreq) +  100);
+	sprintf(hreq->data, "%s", leds_states[led_cfg->leds_state]);
+	ubus_defer_request(ctx, req, &hreq->req);
+	hreq->timeout.cb = led_status_reply;
+	uloop_timeout_set(&hreq->timeout, 1000);
+
+	return 0;
+}
+
+static const struct ubus_method led_methods[] = {
 	UBUS_METHOD("set", led_set_method, led_policy),
     { .name = "status", .handler = led_status_method },
 };
 
-static struct ubus_object_type test_object_type =
-	UBUS_OBJECT_TYPE("led", test_methods);
+static struct ubus_object_type led_object_type =
+	UBUS_OBJECT_TYPE("led", led_methods);
 
-#define LED_OBJECTS 13
+
+
+static const struct ubus_method leds_methods[] = {
+	UBUS_METHOD("set", leds_set_method, led_policy),
+    { .name = "status", .handler = leds_status_method },
+};
+
+static struct ubus_object_type leds_object_type =
+	UBUS_OBJECT_TYPE("leds", leds_methods);
+
+
+#define LED_OBJECTS 14
 
 static struct ubus_object led_objects[LED_OBJECTS] = {
-    { .name = "led.dsl",	.type = &test_object_type, .methods = test_methods, .n_methods = ARRAY_SIZE(test_methods), },
-    { .name = "led.wifi",	.type = &test_object_type, .methods = test_methods, .n_methods = ARRAY_SIZE(test_methods), },
-    { .name = "led.wps",	.type = &test_object_type, .methods = test_methods, .n_methods = ARRAY_SIZE(test_methods), },
-    { .name = "led.lan",	.type = &test_object_type, .methods = test_methods, .n_methods = ARRAY_SIZE(test_methods), },
-    { .name = "led.status",	.type = &test_object_type, .methods = test_methods, .n_methods = ARRAY_SIZE(test_methods), },
-    { .name = "led.dect",	.type = &test_object_type, .methods = test_methods, .n_methods = ARRAY_SIZE(test_methods), },
-    { .name = "led.tv",	.type = &test_object_type, .methods = test_methods, .n_methods = ARRAY_SIZE(test_methods), },
-    { .name = "led.usb",	.type = &test_object_type, .methods = test_methods, .n_methods = ARRAY_SIZE(test_methods), },
-    { .name = "led.wan",	.type = &test_object_type, .methods = test_methods, .n_methods = ARRAY_SIZE(test_methods), },
-    { .name = "led.internet",	.type = &test_object_type, .methods = test_methods, .n_methods = ARRAY_SIZE(test_methods), },
-    { .name = "led.voice1",	.type = &test_object_type, .methods = test_methods, .n_methods = ARRAY_SIZE(test_methods), },
-    { .name = "led.voice2",	.type = &test_object_type, .methods = test_methods, .n_methods = ARRAY_SIZE(test_methods), },
-    { .name = "led.eco",	.type = &test_object_type, .methods = test_methods, .n_methods = ARRAY_SIZE(test_methods), },
+    { .name = "leds",	    .type = &leds_object_type, .methods = leds_methods, .n_methods = ARRAY_SIZE(leds_methods), },    
+    { .name = "led.dsl",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
+    { .name = "led.wifi",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
+    { .name = "led.wps",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
+    { .name = "led.lan",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
+    { .name = "led.status",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
+    { .name = "led.dect",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
+    { .name = "led.tv",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
+    { .name = "led.usb",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
+    { .name = "led.wan",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
+    { .name = "led.internet",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
+    { .name = "led.voice1",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
+    { .name = "led.voice2",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
+    { .name = "led.eco",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
 };
 
 
@@ -619,9 +749,6 @@ static void server_main(struct leds_configuration* led_cfg)
 	    if (ret)
 		    fprintf(stderr, "Failed to add object: %s\n", ubus_strerror(ret));
     }
-	    ret = ubus_register_subscriber(ctx, &test_event);
-	    if (ret)
-		    fprintf(stderr, "Failed to add watch handler: %s\n", ubus_strerror(ret));
 
 
     uloop_timeout_set(&blink_inform_timer, 100);
