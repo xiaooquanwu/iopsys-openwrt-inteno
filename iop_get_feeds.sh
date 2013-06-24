@@ -14,3 +14,5 @@
 ./scripts/feeds install usb-modeswitch-data
 ./scripts/feeds install usb-modeswitch
 ./scripts/feeds install strace
+./scripts/feeds install libevent
+
