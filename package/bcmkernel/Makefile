@@ -9,10 +9,10 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=bcmkernel-3.4
 PKG_VERSION:=4.14
-PKG_RELEASE:=1
+PKG_RELEASE:=2
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=ssh://inteno@ihgsp.inteno.se/home/inteno/private/git/bcmkernel-3.4.git
+PKG_SOURCE_URL:=ssh://inteno@ihgsp.inteno.se/home/inteno/private/git/bcmkernel-4.12L.02.git
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
 PKG_SOURCE_VERSION:=$(PKG_REV)
 
@@ -26,7 +26,7 @@ export CONFIG_BCM_KERNEL_PROFILE
 BCM_BS_PROFILE = $(shell echo $(CONFIG_BCM_KERNEL_PROFILE) | sed s/\"//g)
 
 BCM_KERNEL_VERSION:=3.4.11-rt19
-BCM_SDK_VERSION:=4.14
+BCM_SDK_VERSION:=bcm963xx
 RSTRIP:=true
 
 define Package/bcmkernel
