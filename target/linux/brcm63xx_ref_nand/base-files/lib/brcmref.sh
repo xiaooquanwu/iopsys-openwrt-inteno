@@ -38,7 +38,7 @@ brcm_insmod() {
         test -e /lib/modules/3.4.11-rt19/extra/chipinfo.ko     && insmod /lib/modules/3.4.11-rt19/extra/chipinfo.ko
 	test -e /lib/modules/3.4.11-rt19/extra/bcm_ingqos.ko   && insmod /lib/modules/3.4.11-rt19/extra/bcm_ingqos.ko
 	test -e /lib/modules/3.4.11-rt19/extra/bcm_bpm.ko      && insmod /lib/modules/3.4.11-rt19/extra/bcm_bpm.ko
-	test -e /lib/modules/3.4.11-rt19/extra/pktflow.ko      && insmod /lib/modules/3.4.11-rt19/extra/pktflow.ko fcacheMaxEntries=1024
+	test -e /lib/modules/3.4.11-rt19/extra/pktflow.ko      && insmod /lib/modules/3.4.11-rt19/extra/pktflow.ko
 	test -e /lib/modules/3.4.11-rt19/extra/pktcmf.ko       && insmod /lib/modules/3.4.11-rt19/extra/pktcmf.ko
 	test -e /lib/modules/3.4.11-rt19/extra/bcmfap.ko       && insmod /lib/modules/3.4.11-rt19/extra/bcmfap.ko
 	test -e /lib/modules/3.4.11-rt19/extra/bcmxtmcfg.ko    && insmod /lib/modules/3.4.11-rt19/extra/bcmxtmcfg.ko
