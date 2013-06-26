@@ -1,5 +1,5 @@
 /*
- * ledmngr.c -- Led manager for Inteno CPE's
+ * ledmngr.c -- Led and button manager for Inteno CPE's
  *
  * Copyright (C) 2012-2013 Inteno Broadband Technology AB. All rights reserved.
  *
@@ -25,7 +25,7 @@
 #include <stdlib.h>
 #include <sys/ioctl.h>
 #include <fcntl.h>
-
+#include <syslog.h>
 #include <unistd.h>
 
 #include <libubox/blobmsg_json.h>
@@ -34,15 +34,17 @@
 #include <board.h>
 #include "ucix.h"
 
-static struct ubus_context *ctx;
+static struct ubus_context *ubus_ctx = NULL;
 static struct blob_buf b;
 
 static struct leds_configuration* led_cfg;
+static struct button_configuration* butt_cfg;
+static struct uci_context *uci_ctx = NULL;
 
 #define LED_FUNCTIONS 13
 #define MAX_LEDS 20
 #define SR_MAX 16
-
+#define MAX_BUTTON 10
 
 enum {
     OFF,
@@ -128,6 +130,22 @@ struct leds_configuration {
     int test_state;
 } leds_configuration;
 
+struct button_config {
+    char*   name;
+    int     address;
+    int     active;
+    char*   command;
+    int     pressed_state;
+};
+
+struct button_configuration {
+    int         button_nr;
+    struct button_config**  buttons;
+    
+} button_configuration;
+
+
+
 static int get_led_index_by_name(struct leds_configuration* led_cfg, char* led_name);
 static int led_set(struct leds_configuration* led_cfg, int led_idx, int state);
 
@@ -208,7 +226,7 @@ static void all_leds_off(struct leds_configuration* led_cfg) {
 
 static struct leds_configuration* get_led_config(void) {
     int i,j,k;
-    struct uci_context *ctx = NULL;
+
     const char *led_names;
     const char *led_config;
     char *p, *ptr, *rest;
@@ -217,13 +235,13 @@ static struct leds_configuration* get_led_config(void) {
     led_cfg->leds_nr = 0;
     led_cfg->leds = malloc(MAX_LEDS * sizeof(struct led_config*));
     /* Initialize */
-	ctx = ucix_init_path("/lib/db/config/", "hw");
-    if(!ctx) {
+	uci_ctx = ucix_init_path("/lib/db/config/", "hw");
+    if(!uci_ctx) {
         printf("Failed to load config file \"hw\"\n");
         return NULL;
     }
     
-    led_names = ucix_get_option(ctx, "hw", "board", "lednames");
+    led_names = ucix_get_option(uci_ctx, "hw", "board", "lednames");
 //    printf("Led names: %s\n", led_names);
 
     /* Populate led configuration structure */
@@ -235,17 +253,17 @@ static struct leds_configuration* get_led_config(void) {
         printf("%s\n", p);
 
         snprintf(led_name_color, 256, "%s_green", p);
-        led_config = ucix_get_option(ctx, "hw", "leds", led_name_color);
+        led_config = ucix_get_option(uci_ctx, "hw", "leds", led_name_color);
         add_led(led_cfg, led_name_color, led_config, GREEN);
         //printf("%s_green = %s\n", p, led_config);
 
         snprintf(led_name_color,   256, "%s_red", p); 
-        led_config = ucix_get_option(ctx, "hw", "leds", led_name_color);
+        led_config = ucix_get_option(uci_ctx, "hw", "leds", led_name_color);
         add_led(led_cfg, led_name_color, led_config, RED);
         //printf("%s_red = %s\n", p, led_config);
 
         snprintf(led_name_color,  256, "%s_blue", p);
-        led_config = ucix_get_option(ctx, "hw", "leds", led_name_color);
+        led_config = ucix_get_option(uci_ctx, "hw", "leds", led_name_color);
         add_led(led_cfg, led_name_color, led_config, BLUE);
         //printf("%s_blue = %s\n", p, led_config);
 
@@ -267,7 +285,7 @@ static struct leds_configuration* get_led_config(void) {
         char l1[256],s1[256];
         for (j=0 ; j<LED_ACTION_MAX ; j++) {
             snprintf(fn_name_action, 256, "%s_%s", led_functions[i], fn_actions[j]);
-            led_fn_actions = ucix_get_option(ctx, "hw", "led_map", fn_name_action);
+            led_fn_actions = ucix_get_option(uci_ctx, "hw", "led_map", fn_name_action);
             printf("fn name action |%s| = %s\n", fn_name_action, led_fn_actions);
 
 
@@ -346,7 +364,7 @@ static int get_led_index_by_function_color(struct leds_configuration* led_cfg, c
     return -1;
 }
 
-static void board_ioctl(int fd, int ioctl_id, int action, int hex, char* string_buf, int string_buf_len, int offset) {
+static int board_ioctl(int fd, int ioctl_id, int action, int hex, char* string_buf, int string_buf_len, int offset) {
     BOARD_IOCTL_PARMS IoctlParms;
     IoctlParms.string = string_buf;
     IoctlParms.strLen = string_buf_len;
@@ -357,6 +375,7 @@ static void board_ioctl(int fd, int ioctl_id, int action, int hex, char* string_
         fprintf(stderr, "ioctl: %d failed\n", ioctl_id);
         exit(1);
     }
+    return IoctlParms.result;
 }
 
 static void shift_register3_set(struct leds_configuration* led_cfg, int address, int state, int active) {
@@ -496,6 +515,29 @@ static void blink_handler(struct uloop_timeout *timeout);
 static struct uloop_timeout blink_inform_timer = { .cb = blink_handler };
 static unsigned int cnt = 0;
 
+static void check_buttons() {
+    int button, i;
+    struct button_config* bc;
+
+    for (i=0 ; i<butt_cfg->button_nr ; i++) {
+        bc = butt_cfg->buttons[i];
+        button = board_ioctl(led_cfg->fd, BOARD_IOCTL_GET_GPIO, 0, 0, NULL, bc->address, 0);
+        if (button^bc->active) {
+            printf("Button %s pressed\n",bc->name);
+            bc->pressed_state = 1;
+        }
+        if ((!(button^bc->active)) && (bc->pressed_state)) {
+            char str[512] = {0};
+            printf("Button %s released, executing hotplug command: %s\n",bc->name, bc->command);
+            sprintf(str, "ACTION=register INTERFACE=%s /sbin/hotplug-call button",bc->command);
+            system(str);
+            syslog(LOG_INFO, "ACTION=register INTERFACE=%s /sbin/hotplug-call button", bc->command);
+            bc->pressed_state = 0;
+        }
+    }
+
+}
+
 static void blink_handler(struct uloop_timeout *timeout)
 {
     cnt++;
@@ -509,7 +551,10 @@ static void blink_handler(struct uloop_timeout *timeout)
 
         if (!(cnt%8))
             blink_led(led_cfg, BLINK_SLOW);
-    }       
+    }
+
+    if (!(cnt%4))
+        check_buttons();
 
 	uloop_timeout_set(&blink_inform_timer, 100);
     
@@ -529,7 +574,7 @@ static int index_from_action(const char* action) {
 
 
 static void set_function_led(struct leds_configuration* led_cfg, char* fn_name, const char* action) {
-    int i, led_idx;
+    int i;
     char* led_name = NULL;
     int led_fn_idx = -1;
     int action_idx;
@@ -576,11 +621,10 @@ struct hello_request {
 
 
 
-static int led_set_method(struct ubus_context *ctx, struct ubus_object *obj,
+static int led_set_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
 		      struct ubus_request_data *req, const char *method,
 		      struct blob_attr *msg)
 {
-	struct hello_request *hreq;
 	struct blob_attr *tb[__LED_MAX];
     char* state;
 
@@ -604,18 +648,17 @@ static void led_status_reply(struct uloop_timeout *t)
 
 	blob_buf_init(&b, 0);
 	blobmsg_add_string(&b, "status", req->data);
-	ubus_send_reply(ctx, &req->req, b.head);
-	ubus_complete_deferred_request(ctx, &req->req, 0);
+	ubus_send_reply(ubus_ctx, &req->req, b.head);
+	ubus_complete_deferred_request(ubus_ctx, &req->req, 0);
 	free(req);
 }
 
-static int led_status_method(struct ubus_context *ctx, struct ubus_object *obj,
+static int led_status_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
 		      struct ubus_request_data *req, const char *method,
 		      struct blob_attr *msg)
 {
 	struct hello_request *hreq;
-	struct blob_attr *tb[__LED_MAX];
-    int action, i, led_fn_idx;
+    int action, i, led_fn_idx=0;
     char *fn_name = strchr(obj->name, '.') + 1;
 
     for (i=0 ; i<LED_FUNCTIONS ; i++) {
@@ -630,7 +673,7 @@ static int led_status_method(struct ubus_context *ctx, struct ubus_object *obj,
 
 	hreq = calloc(1, sizeof(*hreq) +  100);
 	sprintf(hreq->data, "%s", fn_actions[action]);
-	ubus_defer_request(ctx, req, &hreq->req);
+	ubus_defer_request(ubus_ctx, req, &hreq->req);
 	hreq->timeout.cb = led_status_reply;
 	uloop_timeout_set(&hreq->timeout, 1000);
 
@@ -638,11 +681,10 @@ static int led_status_method(struct ubus_context *ctx, struct ubus_object *obj,
 }
 
 
-static int leds_set_method(struct ubus_context *ctx, struct ubus_object *obj,
+static int leds_set_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
 		      struct ubus_request_data *req, const char *method,
 		      struct blob_attr *msg)
 {
-	struct hello_request *hreq;
 	struct blob_attr *tb[__LED_MAX];
     char* state;
     int i,j;
@@ -685,7 +727,7 @@ static int leds_set_method(struct ubus_context *ctx, struct ubus_object *obj,
 }
 
 
-static int leds_status_method(struct ubus_context *ctx, struct ubus_object *obj,
+static int leds_status_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
 		      struct ubus_request_data *req, const char *method,
 		      struct blob_attr *msg)
 {
@@ -693,7 +735,7 @@ static int leds_status_method(struct ubus_context *ctx, struct ubus_object *obj,
 
 	hreq = calloc(1, sizeof(*hreq) +  100);
 	sprintf(hreq->data, "%s", leds_states[led_cfg->leds_state]);
-	ubus_defer_request(ctx, req, &hreq->req);
+	ubus_defer_request(ubus_ctx, req, &hreq->req);
 	hreq->timeout.cb = led_status_reply;
 	uloop_timeout_set(&hreq->timeout, 1000);
 
@@ -745,7 +787,7 @@ static void server_main(struct leds_configuration* led_cfg)
 	int ret, i;
 
     for (i=0 ; i<LED_OBJECTS ; i++) {
-	    ret = ubus_add_object(ctx, &led_objects[i]);
+	    ret = ubus_add_object(ubus_ctx, &led_objects[i]);
 	    if (ret)
 		    fprintf(stderr, "Failed to add object: %s\n", ubus_strerror(ret));
     }
@@ -757,32 +799,94 @@ static void server_main(struct leds_configuration* led_cfg)
 }
 
 
+static struct button_configuration* get_button_config(void) {
+    int i;
+    const char *butt_names;
+    const char *butt_config;
+    char *p, *ptr, *rest;
+
+    struct button_configuration* butt_cfg = malloc(sizeof(struct button_configuration));
+    butt_cfg->button_nr = 0;
+    butt_cfg->buttons = malloc(MAX_BUTTON * sizeof(struct button_config*));
+    /* Initialize */
+
+    if(!uci_ctx) {
+        printf("Failed to load uci config file \"hw\"\n");
+        return NULL;
+    }
+
+    butt_names = ucix_get_option(uci_ctx, "hw", "board", "buttonnames");
+    if (!butt_names) {
+        printf("No hw.board.buttonnames entry found\n");
+        return NULL;
+    }
+
+    /* Populate led configuration structure */
+    ptr = (char *)butt_names;
+    p = strtok_r(ptr, " ", &rest);
+    while(p != NULL) {
+        struct button_config* bc;
+        char active[256];
+        char command[256];
+        int  address;
+
+//        printf("%s\n", p);
+
+        butt_config = ucix_get_option(uci_ctx, "hw", "buttons", p);
+
+        bc = malloc(sizeof(struct button_config));
+        bc->name = strdup(p);
+        sscanf(butt_config, "%d %s %s", &address, active, command);
+
+        if (!strcmp(active, "al"))   bc->active = ACTIVE_LOW;
+        if (!strcmp(active, "ah"))   bc->active = ACTIVE_HIGH;
+
+        bc->command = strdup(command);
+        bc->address = address;
+        bc->pressed_state = 0;
+
+        /* Get next */
+        ptr = rest;
+        p = strtok_r(NULL, " ", &rest);
+
+        if (butt_cfg->button_nr >= MAX_BUTTON) {
+            printf("Too many buttons configured! Only adding the %d first\n", MAX_BUTTON);
+            return NULL;
+        }
+        butt_cfg->buttons[butt_cfg->button_nr] = bc;
+        butt_cfg->button_nr++;
+    }
+    for (i=0 ; i<butt_cfg->button_nr ; i++) {
+        printf("%s button adr: %d active:%d command: %s\n",butt_cfg->buttons[i]->name, butt_cfg->buttons[i]->address, butt_cfg->buttons[i]->active, butt_cfg->buttons[i]->command);
+    }
+    return butt_cfg;
+}
+
 int ledmngr(void) {
-    int ret;
 	const char *ubus_socket = NULL;
 
 
-    led_cfg = get_led_config();
-
+    led_cfg  = get_led_config();
+    butt_cfg = get_button_config();
 
     /* initialize ubus */
 
 	uloop_init();
 
-	ctx = ubus_connect(ubus_socket);
-	if (!ctx) {
+	ubus_ctx = ubus_connect(ubus_socket);
+	if (!ubus_ctx) {
 		fprintf(stderr, "Failed to connect to ubus\n");
 		return -1;
 	}
 
-	ubus_add_uloop(ctx);
+	ubus_add_uloop(ubus_ctx);
 
 	server_main(led_cfg);
 
 
     //all_leds_test(led_cfg);
 
-	ubus_free(ctx);
+	ubus_free(ubus_ctx);
 	uloop_done();
 
 	return 0;
