@@ -12,6 +12,6 @@
 #include <assert.h>
 #include <signal.h>
  
-#define DAEMON_NAME "brcmnetlink"
-#define PID_FILE "/var/run/brcmnetlink.pid"
+#define DAEMON_NAME "iopsys_ledmngr"
+#define PID_FILE "/var/run/iopsys_ledmngr.pid"
 #endif
