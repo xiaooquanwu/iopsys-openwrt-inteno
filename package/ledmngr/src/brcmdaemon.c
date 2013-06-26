@@ -66,13 +66,14 @@ void signal_handler(int sig) {
     Returns:
         returns integer which is passed back to the parent process
 **************************************************************************/
-int main(int argc, char *argv[]) {
- 
+
 #if defined(DEBUG)
     int daemonize = 0;
 #else
     int daemonize = 1;
 #endif
+
+int main(int argc, char *argv[]) {
  
     // Setup signal handling before we start
     signal(SIGHUP, signal_handler);
