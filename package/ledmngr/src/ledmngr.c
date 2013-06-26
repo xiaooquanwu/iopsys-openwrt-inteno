@@ -41,6 +41,8 @@ static struct leds_configuration* led_cfg;
 static struct button_configuration* butt_cfg;
 static struct uci_context *uci_ctx = NULL;
 
+int fd;
+
 #define LED_FUNCTIONS 13
 #define MAX_LEDS 20
 #define SR_MAX 16
@@ -190,13 +192,14 @@ static int add_led(struct leds_configuration* led_cfg, char* led_name, const cha
 }
 
 
-static void open_ioctl(struct leds_configuration* led_cfg) {
+void open_ioctl() {
 
-    led_cfg->fd = open("/dev/brcmboard", O_RDWR);
-    if ( led_cfg->fd == -1 ) {
+    fd = open("/dev/brcmboard", O_RDWR);
+    if ( fd == -1 ) {
         fprintf(stderr, "failed to open: /dev/brcmboard\n");
         return;
     }
+    printf("ioctl fd %d allocated\n", fd);
     return;
 }
 
@@ -234,6 +237,7 @@ static struct leds_configuration* get_led_config(void) {
     struct leds_configuration* led_cfg = malloc(sizeof(struct leds_configuration));
     led_cfg->leds_nr = 0;
     led_cfg->leds = malloc(MAX_LEDS * sizeof(struct led_config*));
+
     /* Initialize */
 	uci_ctx = ucix_init_path("/lib/db/config/", "hw");
     if(!uci_ctx) {
@@ -273,7 +277,7 @@ static struct leds_configuration* get_led_config(void) {
     }
 //    printf("%d leds added to config\n", led_cfg->leds_nr);
 
-    open_ioctl(led_cfg);
+    //open_ioctl();
 
     //reset shift register states
     for (i=0 ; i<SR_MAX ; i++) led_cfg->shift_register_state[i] = 0;
@@ -365,7 +369,7 @@ static int get_led_index_by_function_color(struct leds_configuration* led_cfg, c
 }
 
 static int board_ioctl(int fd, int ioctl_id, int action, int hex, char* string_buf, int string_buf_len, int offset) {
-    BOARD_IOCTL_PARMS IoctlParms;
+    BOARD_IOCTL_PARMS IoctlParms = {0};
     IoctlParms.string = string_buf;
     IoctlParms.strLen = string_buf_len;
     IoctlParms.offset = offset;
@@ -389,7 +393,7 @@ static void shift_register3_set(struct leds_configuration* led_cfg, int address,
     led_cfg->shift_register_state[address] = state^active;
 
     // pull down shift register load (load gpio 23)
-    board_ioctl(led_cfg->fd, BOARD_IOCTL_SET_GPIO, 0, 0, NULL, 23, 0);
+    board_ioctl(fd, BOARD_IOCTL_SET_GPIO, 0, 0, NULL, 23, 0);
 
 //    for (i=0 ; i<SR_MAX ; i++) printf("%d ", led_cfg->shift_register_state[SR_MAX-1-i]);
 //    printf("\n");
@@ -398,15 +402,15 @@ static void shift_register3_set(struct leds_configuration* led_cfg, int address,
     for (i=0 ; i<SR_MAX ; i++) {
 
         //set clock low
-        board_ioctl(led_cfg->fd, BOARD_IOCTL_SET_GPIO, 0, 0, NULL, 0, 0);
+        board_ioctl(fd, BOARD_IOCTL_SET_GPIO, 0, 0, NULL, 0, 0);
         //place bit on data line
-        board_ioctl(led_cfg->fd, BOARD_IOCTL_SET_GPIO, 0, 0, NULL, 1, led_cfg->shift_register_state[SR_MAX-1-i]);
+        board_ioctl(fd, BOARD_IOCTL_SET_GPIO, 0, 0, NULL, 1, led_cfg->shift_register_state[SR_MAX-1-i]);
         //set clock high
-        board_ioctl(led_cfg->fd, BOARD_IOCTL_SET_GPIO, 0, 0, NULL, 0, 1);
+        board_ioctl(fd, BOARD_IOCTL_SET_GPIO, 0, 0, NULL, 0, 1);
     }
 
     // issue shift register load
-    board_ioctl(led_cfg->fd, BOARD_IOCTL_SET_GPIO, 0, 0, NULL, 23, 1);
+    board_ioctl(fd, BOARD_IOCTL_SET_GPIO, 0, 0, NULL, 23, 1);
 }
 
 static int led_set(struct leds_configuration* led_cfg, int led_idx, int state) {
@@ -421,7 +425,7 @@ static int led_set(struct leds_configuration* led_cfg, int led_idx, int state) {
 
     if (!(led_cfg->leds_state == LEDS_ECO)) {
         if (lc->type == GPIO) {
-            board_ioctl(led_cfg->fd, BOARD_IOCTL_SET_GPIO, 0, 0, NULL, lc->address, state^lc->active);
+            board_ioctl(fd, BOARD_IOCTL_SET_GPIO, 0, 0, NULL, lc->address, state^lc->active);
         } else if (lc->type == SHIFTREG3) {
             shift_register3_set(led_cfg, lc->address, state, lc->active);
         }
@@ -521,15 +525,17 @@ static void check_buttons() {
 
     for (i=0 ; i<butt_cfg->button_nr ; i++) {
         bc = butt_cfg->buttons[i];
-        button = board_ioctl(led_cfg->fd, BOARD_IOCTL_GET_GPIO, 0, 0, NULL, bc->address, 0);
+        button = board_ioctl(fd, BOARD_IOCTL_GET_GPIO, 0, 0, NULL, bc->address, 0);
         if (button^bc->active) {
             printf("Button %s pressed\n",bc->name);
+            syslog(LOG_INFO, "Button %s pressed\n",bc->name);
             bc->pressed_state = 1;
         }
         if ((!(button^bc->active)) && (bc->pressed_state)) {
             char str[512] = {0};
             printf("Button %s released, executing hotplug command: %s\n",bc->name, bc->command);
-            sprintf(str, "ACTION=register INTERFACE=%s /sbin/hotplug-call button",bc->command);
+            snprintf(str, 512, "ACTION=register INTERFACE=%s /sbin/hotplug-call button",bc->command);
+            syslog(LOG_INFO, "before system\n");
             system(str);
             syslog(LOG_INFO, "ACTION=register INTERFACE=%s /sbin/hotplug-call button", bc->command);
             bc->pressed_state = 0;
@@ -865,6 +871,7 @@ static struct button_configuration* get_button_config(void) {
 int ledmngr(void) {
 	const char *ubus_socket = NULL;
 
+    open_ioctl();
 
     led_cfg  = get_led_config();
     butt_cfg = get_button_config();
