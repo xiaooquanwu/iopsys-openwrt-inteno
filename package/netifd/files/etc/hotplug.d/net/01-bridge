@@ -7,7 +7,7 @@ case "$ACTION" in
                         networkname=$(get_network_of "$INTERFACE")
                         for net in $networkname; do
                                 type=$(uci get network."$net".type)
-                                if [ "$type" == "multiwan" ]; then
+                                if [ "$type" == "anywan" ]; then
                                         json_load "$(ifstatus $net)"
                                         json_get_var device device
                                         json_get_var up up
@@ -23,7 +23,7 @@ case "$ACTION" in
                                 type=$(uci get network."$net".type)
                                 if [ "$type" == "bridge" ]; then
                                         /sbin/ifup "$net"
-                                elif [ "$type" == "multiwan" ]; then
+                                elif [ "$type" == "anywan" ]; then
                                         json_load "$(ifstatus $net)"
                                         json_get_var device device
                                         [ "$INTERFACE" == "$device" ] && /sbin/ifup "$net"

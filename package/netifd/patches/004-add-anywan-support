@@ -4,7 +4,7 @@
  	bool autostart;
  	bool config_autostart;
  	bool device_config;
-+	bool multiwan;
++	bool anywan;
  
  	time_t start_time;
  	enum interface_state state;
@@ -28,12 +28,12 @@
  	} else if (iface->ifname &&
  		!(iface->proto_handler->flags & PROTO_FLAG_NODEV)) {
 -		dev = device_get(iface->ifname, true);
-+		if (!iface->multiwan)
++		if (!iface->anywan)
 +			dev = device_get(iface->ifname, true);
  	}
  
 -	if (dev)
-+	if (iface->multiwan) {
++	if (iface->anywan) {
 +		strcpy(ifnames, iface->ifname);
 +		devnames = strtok(ifnames, " ");
 +		while (devnames != NULL)
@@ -61,7 +61,7 @@
  
  	interface_clear_errors(iface);
 +
-+	if (iface->multiwan && !iface->available) {
++	if (iface->anywan && !iface->available) {
 +		interface_claim_device(iface);
 +	}
 +
@@ -72,7 +72,7 @@
 	if_old->ifname = if_new->ifname;
 	if_old->parent_ifname = if_new->parent_ifname;
 	if_old->proto_handler = if_new->proto_handler;
-+	if_old->multiwan = if_new->multiwan;
++	if_old->anywan = if_new->anywan;
 
 	if_old->proto_ip.no_dns = if_new->proto_ip.no_dns;
 	interface_replace_dns(&if_old->config_ip, &if_new->config_ip);
@@ -83,7 +83,7 @@
  	struct blob_attr *config;
  	struct device *dev;
  	bool bridge = false;
-+	bool multiwan = false;
++	bool anywan = false;
  
  	blob_buf_init(&b, 0);
  
@@ -91,8 +91,8 @@
  
  		bridge = true;
  	}
-+	else if (type && !strcmp(type, "multiwan")) {
-+		multiwan = true;
++	else if (type && !strcmp(type, "anywan")) {
++		anywan = true;
 +	}
  
  	uci_to_blob(&b, s, &interface_attr_list);
@@ -101,8 +101,8 @@
  	if (!bridge && uci_to_blob(&b, s, simple_device_type.config_params))
  		iface->device_config = true;
  
-+	if (multiwan)
-+		iface->multiwan = true;
++	if (anywan)
++		iface->anywan = true;
 +
  	config = malloc(blob_pad_len(b.head));
  	if (!config)
@@ -114,7 +114,7 @@
 		free(name);
 		obj->name = NULL;
 	}
-+	if (iface->multiwan)
++	if (iface->anywan)
 +		netifd_ubus_interface_event(iface, true);
  }
  

@@ -351,6 +351,7 @@ set_wifi() {
 	config_get wmm_noack "$device" wmm_noack
 	config_get wmm_apsd "$device" wmm_apsd
 	config_get doth "$device" doth
+	config_get radio "$device" radio
 
 	# BASE settings
 	# wlctl -i $device cap > /var/cap_$device
@@ -506,8 +507,13 @@ set_wifi() {
 	wlctl -i $device rxchain_pwrsave_pps "${rxchainps_pps:-10}"
 
 	# bring up the wireless device
-	wlctl -i $device leddc 0 2>/dev/null
-	wlctl -i $device up
+	if [ "$radio" == "off" ]; then
+		wlctl -i $device down
+	else
+		wlctl -i $device leddc 0 2>/dev/null
+		[ -f /usr/sbin/ledctl ] && ledctl wireless on 1>/dev/null
+		wlctl -i $device up
+	fi
 }
 
 # kill related daemons
@@ -527,7 +533,7 @@ config_load wireless
 case "$1" in
 	down)
 		config_foreach set_wifi_down wifi-device
-		[ -f /usr/sbin/ledctl ] && ledctl Wireless off 1>/dev/null
+		[ -f /usr/sbin/ledctl ] && ledctl wireless off 1>/dev/null
 	;;
 	*)
 		config_foreach set_wifi_down wifi-device
@@ -535,7 +541,6 @@ case "$1" in
 
 		# map all interfaces to corresponding networks by nvram parameters
 		map_networks
-		[ -f /usr/sbin/ledctl ] && ledctl Wireless on 1>/dev/null
 
 		# start related daemons
 		eapd

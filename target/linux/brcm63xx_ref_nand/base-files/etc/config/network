@@ -14,9 +14,8 @@ config 'interface' 'lan'
 	option 'ifname' 'eth1 eth2 eth3 eth4'
 
 config 'interface' 'wan'
-	option 'type' 'multiwan'
+	option 'type' 'anywan'
 	option 'ifname' 'ptm0.1 atm0.1 eth0.1'
-	option 'vendorid' 'DG301A-W7P2U-INTENO'
 	option 'proto' 'dhcp'
 	option 'hostname' 'Inteno_$MAC4'
 
