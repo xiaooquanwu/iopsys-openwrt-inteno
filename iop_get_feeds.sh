@@ -15,4 +15,5 @@
 ./scripts/feeds install usb-modeswitch
 ./scripts/feeds install strace
 ./scripts/feeds install libevent
+./scripts/feeds install libpng
 
