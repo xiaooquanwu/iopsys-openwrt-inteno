@@ -29,6 +29,7 @@ endef
 define Build/Prepare
 	mkdir -p $(PKG_BUILD_DIR)
 	$(CP) ./src/* $(PKG_BUILD_DIR)/
+	$(CP) ./files/* $(PKG_BUILD_DIR)/
 endef
 
 target=$(firstword $(subst -, ,$(BOARD)))
@@ -39,6 +40,9 @@ TARGET_CFLAGS += -Dtarget_$(target)=1 -Wall
 
 define Package/bcmhotproxy/install
 	$(INSTALL_DIR) $(1)/sbin
+	$(INSTALL_DIR) $(1)/etc/
+	$(INSTALL_DIR) $(1)/etc/init.d/
+
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/bcmhotproxy $(1)/sbin/
 endef
 

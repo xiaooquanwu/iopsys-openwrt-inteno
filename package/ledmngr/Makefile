@@ -37,6 +37,7 @@ endef
 define Build/Prepare
 	mkdir -p $(PKG_BUILD_DIR)
 	$(CP) ./src/* $(PKG_BUILD_DIR)/
+	$(CP) ./files/* $(PKG_BUILD_DIR)/
 endef
 
 
@@ -44,6 +45,8 @@ define Package/ledmngr/install
 #	$(CP) ./files/* $(1)/
 	$(INSTALL_DIR) $(1)/usr/lib
 	$(INSTALL_DIR) $(1)/usr/bin
+	$(INSTALL_DIR) $(1)/etc/
+	$(INSTALL_DIR) $(1)/etc/init.d/
 	cp $(PKG_BUILD_DIR)/ledmngr $(1)/usr/bin/
 endef
 
