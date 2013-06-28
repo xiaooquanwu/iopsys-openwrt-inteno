@@ -1,7 +1,7 @@
 case "$ACTION" in
         add|register)
         [ "resetbutton" == "$INTERFACE" ] && {
-                ledctl All on
+                ubus call leds set '{ "state": "test"}'
                 printf "\n\n*** Restore to default settings ***\n\n" > /dev/console
                 mtd_overlay=$(grep "\"rootfs_data\"" /proc/mtd | awk -F: '{print $1}')
                 if [ "$(cat /sys/devices/virtual/mtd/$mtd_overlay/type)" == "nand" ]; then
@@ -16,14 +16,12 @@ case "$ACTION" in
                         uci set wireless.wl0.radio=on
                         printf "\n\nEnabling Wi-Fi\n\n" > /dev/console
                         wlctl -i wl0 up
-                        ledctl eco off 1>/dev/null
-                        ledctl wireless on 1>/dev/null
+                        ubus call leds set '{ "state": "normal"}'
                 } || {
                         uci set wireless.wl0.radio=off
                         printf "\n\nDisabling Wi-Fi\n\n" > /dev/console
-                        wlctl -i wl0 down
-                        ledctl wireless off 1>/dev/null
-                        ledctl eco on 1>/dev/null
+
+                        ubus call leds set '{ "state": "eco"}'
                 }
                 uci commit wireless
         }
@@ -33,10 +31,11 @@ case "$ACTION" in
         }
         [ "dectbutton" == "$INTERFACE" ] && {
                 printf "\n\nRegistering DECT\n\n" > /dev/console
-		dect -r > /dev/null
+                ubus call led.dect set '{ "state": "notice"}'
         }
         [ "infobutton" == "$INTERFACE" ] && {
                 printf "\n\nINFO button is pressed\n\n" > /dev/console
+                ubus call led.dect set '{ "state": "off"}'
         }
         ;;
         remove|unregister)
