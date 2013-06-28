@@ -520,25 +520,27 @@ static void blink_handler(struct uloop_timeout *timeout);
 static struct uloop_timeout blink_inform_timer = { .cb = blink_handler };
 static unsigned int cnt = 0;
 
-static void check_buttons() {
+static void check_buttons(int initialize) {
     int button, i;
     struct button_config* bc;
 
     for (i=0 ; i<butt_cfg->button_nr ; i++) {
         bc = butt_cfg->buttons[i];
         button = board_ioctl(fd, BOARD_IOCTL_GET_GPIO, 0, 0, NULL, bc->address, 0);
-        if (button^bc->active) {
-            DEBUG_PRINT("Button %s pressed\n",bc->name);
-            //syslog(LOG_INFO, "Button %s pressed\n",bc->name);
-            bc->pressed_state = 1;
-        }
-        if ((!(button^bc->active)) && (bc->pressed_state)) {
-            char str[512] = {0};
-            DEBUG_PRINT("Button %s released, executing hotplug button command: %s\n",bc->name, bc->command);
-            snprintf(str, 512, "ACTION=register INTERFACE=%s /sbin/hotplug-call button",bc->command);
-            system(str);
-            syslog(LOG_INFO, "ACTION=register INTERFACE=%s /sbin/hotplug-call button", bc->command);
-            bc->pressed_state = 0;
+        if (!initialize) {
+            if (button^bc->active) {
+                DEBUG_PRINT("Button %s pressed\n",bc->name);
+                //syslog(LOG_INFO, "Button %s pressed\n",bc->name);
+                bc->pressed_state = 1;
+            }
+            if ((!(button^bc->active)) && (bc->pressed_state)) {
+                char str[512] = {0};
+                DEBUG_PRINT("Button %s released, executing hotplug button command: %s\n",bc->name, bc->command);
+                snprintf(str, 512, "ACTION=register INTERFACE=%s /sbin/hotplug-call button &",bc->command);
+                system(str);
+                syslog(LOG_INFO, "ACTION=register INTERFACE=%s /sbin/hotplug-call button", bc->command);
+                bc->pressed_state = 0;
+            }
         }
     }
 
@@ -560,7 +562,7 @@ static void blink_handler(struct uloop_timeout *timeout)
     }
 
     if (!(cnt%4))
-        check_buttons();
+        check_buttons(0);
 
 	uloop_timeout_set(&blink_inform_timer, 100);
     
@@ -653,7 +655,7 @@ static void led_status_reply(struct uloop_timeout *t)
 	struct hello_request *req = container_of(t, struct hello_request, timeout);
 
 	blob_buf_init(&b, 0);
-	blobmsg_add_string(&b, "status", req->data);
+	blobmsg_add_string(&b, "state", req->data);
 	ubus_send_reply(ubus_ctx, &req->req, b.head);
 	ubus_complete_deferred_request(ubus_ctx, &req->req, 0);
 	free(req);
@@ -811,7 +813,7 @@ static struct button_configuration* get_button_config(void) {
     const char *butt_config;
     char *p, *ptr, *rest;
 
-    struct button_configuration* butt_cfg = malloc(sizeof(struct button_configuration));
+    butt_cfg = malloc(sizeof(struct button_configuration));
     butt_cfg->button_nr = 0;
     butt_cfg->buttons = malloc(MAX_BUTTON * sizeof(struct button_config*));
     /* Initialize */
@@ -865,6 +867,12 @@ static struct button_configuration* get_button_config(void) {
     for (i=0 ; i<butt_cfg->button_nr ; i++) {
         DEBUG_PRINT("%s button adr: %d active:%d command: %s\n",butt_cfg->buttons[i]->name, butt_cfg->buttons[i]->address, butt_cfg->buttons[i]->active, butt_cfg->buttons[i]->command);
     }
+
+    /* Initialize the buttons, sometimes the button gpios are left in a pressed state, reading them 10 times should fix that */
+    for (i=0 ; i<10 ; i++)
+        check_buttons(1);
+    DEBUG_PRINT("Buttons initialized\n");
+
     return butt_cfg;
 }
 
