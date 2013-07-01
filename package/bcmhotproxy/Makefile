@@ -43,6 +43,7 @@ define Package/bcmhotproxy/install
 	$(INSTALL_DIR) $(1)/etc/
 	$(INSTALL_DIR) $(1)/etc/init.d/
 
+	$(INSTALL_BIN)  $(PKG_BUILD_DIR)/etc/init.d/* $(1)/etc/init.d/
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/bcmhotproxy $(1)/sbin/
 endef
 
