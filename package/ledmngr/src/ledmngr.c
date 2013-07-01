@@ -396,8 +396,8 @@ static void shift_register3_set(struct leds_configuration* led_cfg, int address,
     // pull down shift register load (load gpio 23)
     board_ioctl(fd, BOARD_IOCTL_SET_GPIO, 0, 0, NULL, 23, 0);
 
-//    for (i=0 ; i<SR_MAX ; i++) printf("%d ", led_cfg->shift_register_state[SR_MAX-1-i]);
-//    printf("\n");
+    //for (i=0 ; i<SR_MAX ; i++) DEBUG_PRINT("%d ", led_cfg->shift_register_state[SR_MAX-1-i]);
+    //DEBUG_PRINT("\n");
 
     // clock in bits
     for (i=0 ; i<SR_MAX ; i++) {
@@ -601,13 +601,15 @@ static void set_function_led(struct leds_configuration* led_cfg, char* fn_name, 
 
 //    snprintf(led_name_color, 256, "%s_%s", led_name, color);  
     action_idx = index_from_action(action);
+    if (action_idx == -1) return;
+
     led_cfg->led_fn_action[led_fn_idx] = action_idx;
 
     map = &led_cfg->led_map_config[led_fn_idx][action_idx];
     for (i=0 ; i<map->led_actions_nr ; i++) {
         led_set(led_cfg, map->led_actions[i].led_index, map->led_actions[i].led_state);
         led_set_state(led_cfg, map->led_actions[i].led_index, map->led_actions[i].led_state);
-  //      printf("[%d] %d %d\n", map->led_actions_nr,  map->led_actions[i].led_index, map->led_actions[i].led_state);
+        DEBUG_PRINT("[%d] %d %d\n", map->led_actions_nr,  map->led_actions[i].led_index, map->led_actions[i].led_state);
     }
 }
 
@@ -642,6 +644,7 @@ static int led_set_method(struct ubus_context *ubus_ctx, struct ubus_object *obj
         char *fn_name = strchr(obj->name, '.') + 1;
 		state = blobmsg_data(tb[LED_STATE]);
 //    	fprintf(stderr, "Led %s method: %s state %s\n", fn_name, method, state);
+        syslog(LOG_INFO, "Led %s method: %s state %s", fn_name, method, state);
         
         set_function_led(led_cfg, fn_name, state);
     }
