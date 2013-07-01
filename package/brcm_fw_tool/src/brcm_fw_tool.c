@@ -191,7 +191,7 @@ static int write_flash_image(const char *in_file, int cfe, int fs) {
     return 0;
 }
 
-static int get_info(int memdump, int chip_id, int flash_size, int chip_rev, int cfe_version, int wan_interfaces) {
+static int get_info(int memdump, int chip_id, int flash_size, int chip_rev, int cfe_version, int wan_interfaces, int status) {
     char ioctl_buf[64]={0};
     fd = open("/dev/brcmboard", O_RDWR);
     if ( fd == -1 ) {
@@ -202,6 +202,8 @@ static int get_info(int memdump, int chip_id, int flash_size, int chip_rev, int 
     if (chip_id)       board_ioctl(BOARD_IOCTL_GET_CHIP_ID ,          0, 1, NULL, 0, 0);
     if (flash_size)    board_ioctl(BOARD_IOCTL_FLASH_READ  , FLASH_SIZE, 0, NULL, 0, 0);
     if (chip_rev)      board_ioctl(BOARD_IOCTL_GET_CHIP_REV,          0, 1, NULL, 0, 0);
+    if (status)        board_ioctl(BOARD_IOCTL_GET_STATUS,            0, 1, NULL, 0, 0);
+
 //    if (set_gpio)      board_ioctl(BOARD_IOCTL_SET_GPIO,              0, 0, NULL, var1, var2);
     if (cfe_version) {
         board_ioctl(BOARD_IOCTL_GET_CFE_VER,           0, 0, ioctl_buf, 64, 0);
@@ -768,6 +770,7 @@ int main (int argc, char **argv)
     int  write_cfe         = 0;
     int  write_fs          = 0;
     int  wan_interfaces    = 0;
+    int  status            = 0;
 	char *in_file          = NULL;
 	char *mtd_device       = NULL;
 	char *sequence_number  = NULL;
@@ -786,7 +789,7 @@ int main (int argc, char **argv)
 
 	while ((ch = getopt(argc, argv,
 
-			"g:lefriyqjbtkvwVzmac:d:s:n:o:h:x:u:p:")) != -1)
+			"g:SlefriyqjbtkvwVzmac:d:s:n:o:h:x:u:p:")) != -1)
 		switch (ch) {
             case 'h':
                 led = atoi(optarg)+1;
@@ -871,6 +874,9 @@ int main (int argc, char **argv)
             case 'q':
                 write_cfe = 1;
                 break;
+            case 'S':
+                status = 1;
+                break;
             case '?':
 			default:
 				usage();
@@ -915,7 +921,7 @@ int main (int argc, char **argv)
             break;
         case CMD_GET_INFO:
             if (verbose) fprintf(stderr, "Getting kernel info.\n");
-            get_info(memdump_addr, kernel_chip_id, kernel_flash_size, kernel_chip_rev, kernel_cfe_ver, wan_interfaces);
+            get_info(memdump_addr, kernel_chip_id, kernel_flash_size, kernel_chip_rev, kernel_cfe_ver, wan_interfaces, status);
             break;
         case CMD_SET_INFO:
             if (verbose) fprintf(stderr, "Setting kernel info.\n");
