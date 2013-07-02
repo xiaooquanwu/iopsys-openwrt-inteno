@@ -49,7 +49,7 @@ define Package/ledmngr/install
 	$(INSTALL_DIR) $(1)/etc/init.d/
 
 	$(INSTALL_BIN)  $(PKG_BUILD_DIR)/etc/init.d/* $(1)/etc/init.d/
-	cp $(PKG_BUILD_DIR)/ledmngr $(1)/usr/bin/
+	cp $(PKG_BUILD_DIR)/ledmngr $(1)/sbin/
 endef
 
 $(eval $(call BuildPackage,ledmngr))
