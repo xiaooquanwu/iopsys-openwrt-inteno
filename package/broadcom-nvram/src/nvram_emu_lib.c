@@ -18,14 +18,18 @@ OF THIS SOFTWARE.
 */
 
 
-
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-int nvram_inited = 0;
+#include "uci.h"
+
+
 struct uci_context *ctx = NULL;
-int nvram_debug = 0;
+struct uci_ptr ptr;
+
+static int nvram_inited = 0;
+static int nvram_debug = 0;
 
 /** Function prototypes are taken from bcmnvram.h Copyright Broadcom Corporation.
  *  Only some of the nvram_* functions exposed from libnvram.so are implemented.
@@ -35,7 +39,7 @@ int nvram_debug = 0;
 
 /* uci does not support . in the key part, replace it with _ */
 
-const char* filter_dots_in_string(char* key) {
+static const char * filter_dots_in_string(char *key) {
 	int length = 0;
 	int i;
 	length = strlen(key);
@@ -46,26 +50,39 @@ const char* filter_dots_in_string(char* key) {
 	return key;
 }
 
+static void nvram_display_section(struct uci_section *s)
+{
+	struct uci_element *e;
+	struct uci_option *o;
 
+	printf("%s.%s=%s\n", s->package->e.name, s->e.name, s->type);
+	uci_foreach_element(&s->options, e) {
+		o = uci_to_option(e);
+		printf("%s.%s.%s=%s\n", o->section->package->e.name, o->section->e.name, o->e.name, o->v.string);
+	}
+}
 
-void nvram_init() {
-	if (!nvram_inited) {
+static void nvram_init() {
+	ctx = ucix_init("broadcom");
+	if(!ctx) {
+		printf("Failed to load config file \"broadcom\"\n");
+		return;
+	}
+
+	nvram_debug = ucix_get_option_int(ctx, "broadcom", "nvram", "debug");
+
+	nvram_inited = ucix_get_option_int(ctx, "broadcom", "nvram", "init");
+	if (nvram_inited != 1) {
 		const char *ucitmp;
-	
-		ctx = ucix_init("broadcom");
-		if(!ctx) {
-			printf("Failed to load config file \"broadcom\"\n");
-			return;
-		}
+
 		ucix_add_section(ctx, "broadcom", "nvram", "broadcom");
 		ucix_add_option(ctx, "broadcom", "nvram", "init", "1");
 		ucix_commit(ctx, "broadcom");
-		nvram_debug = ucix_get_option_int(ctx, "broadcom", "nvram", "debug");
-		nvram_inited = 1;
-		if (nvram_debug)
+		if (nvram_debug == 1)
 			printf("nvram_init()\n");
 	}
 }
+
 
 /*
  * Get the value of an NVRAM variable. The pointer returned may be
@@ -77,10 +94,10 @@ const char * nvram_get(const char *name) {
 	const char *ucitmp;
 	nvram_init();
 	ucitmp = ucix_get_option(ctx, "broadcom", "nvram", filter_dots_in_string(name));
-	if (nvram_debug)
+	if (nvram_debug == 1)
 		printf("%s=nvram_get(%s)\n", ucitmp, name);
 
-    return ucitmp;
+	return ucitmp;
 }
 
 
@@ -96,9 +113,9 @@ const char * nvram_get(const char *name) {
 int nvram_set(const char *name, const char *value) {
 	nvram_init();
 	ucix_add_option(ctx, "broadcom", "nvram", filter_dots_in_string(name), value);
-	if (nvram_debug)
+	ucix_commit(ctx, "broadcom");
+	if (nvram_debug == 1)
 		printf("nvram_set(%s, %s)\n", filter_dots_in_string(name), value);
-
 	return 0;
 }
 
@@ -112,6 +129,10 @@ int nvram_set(const char *name, const char *value) {
  */
 int nvram_unset(const char *name){
 	nvram_init();
+	ucix_del(ctx, "broadcom", "nvram", filter_dots_in_string(name));
+	ucix_commit(ctx, "broadcom");
+	if (nvram_debug == 1)
+		printf("nvram_unset(%s)\n", filter_dots_in_string(name));
 	return 0;
 }
 
@@ -125,7 +146,7 @@ int nvram_unset(const char *name){
 int nvram_commit(void){
 	nvram_init();
 	ucix_commit(ctx, "broadcom");
-	if (nvram_debug)
+	if (nvram_debug == 1)
 		printf("nvram_commit()\n");
 
 	return 0;
@@ -140,6 +161,18 @@ int nvram_commit(void){
  */
 int nvram_getall(char *nvram_buf, int count) {
 	nvram_init();
+
+	ptr.package = "broadcom";
+	ptr.section = "nvram";
+
+	if (uci_lookup_ptr(ctx, &ptr, NULL, true) != UCI_OK)
+		return 1;
+
+	if (!(ptr.flags & UCI_LOOKUP_COMPLETE))
+		return 1;
+
+	nvram_display_section(ptr.s);
+
 	return 0;
 }
 

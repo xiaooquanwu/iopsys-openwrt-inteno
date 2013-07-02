@@ -40,6 +40,31 @@ start()
 	done
 
 	# temporary #
+        if [ ! -f /etc/config/network ]; then
+                touch /etc/config/network
+                chmod 644 /etc/config/network
+		cat > /etc/config/network <<EOF
+config 'interface' 'loopback'
+	option 'is_lan' 1
+	option 'ifname' 'lo'
+	option 'proto' 'static'
+	option 'ipaddr' '127.0.0.1'
+	option 'netmask' '255.0.0.0'
+
+config 'interface' 'lan'
+	option 'is_lan' 1
+	option 'type' 'bridge'
+	option 'proto' 'static'
+	option 'ipaddr' '192.168.1.1'
+	option 'netmask' '255.255.255.0'
+
+config 'interface' 'wan'
+	option 'type' 'anywan'
+	option 'proto' 'dhcp'
+	option 'hostname' 'Inteno_$MAC4'
+EOF
+	fi
+
 	local lanports=$(lanports)
 	local wanport=$(wanport)
 	local wanports="ptm0.1 atm0.1 $wanport.1"
