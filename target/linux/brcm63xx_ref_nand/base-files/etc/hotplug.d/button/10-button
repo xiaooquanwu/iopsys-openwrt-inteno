@@ -1,3 +1,7 @@
+#!/bin/sh
+
+. /usr/share/libubox/jshn.sh
+
 case "$ACTION" in
         add|register)
         [ "resetbutton" == "$INTERFACE" ] && {
@@ -16,12 +20,12 @@ case "$ACTION" in
                         uci set wireless.wl0.radio=on
                         printf "\n\nEnabling Wi-Fi\n\n" > /dev/console
                         wlctl -i wl0 up
-                        ubus call leds set '{ "state": "normal"}'
+                        ubus call led.wifi set '{ "state": "ok"}'
                 } || {
                         uci set wireless.wl0.radio=off
                         printf "\n\nDisabling Wi-Fi\n\n" > /dev/console
 
-                        ubus call leds set '{ "state": "eco"}'
+                        ubus call led.wifi set '{ "state": "off"}'
                 }
                 uci commit wireless
         }
@@ -31,11 +35,28 @@ case "$ACTION" in
         }
         [ "dectbutton" == "$INTERFACE" ] && {
                 printf "\n\nRegistering DECT\n\n" > /dev/console
-                ubus call led.dect set '{ "state": "notice"}'
+                local parsed=$(ubus call led.dect status)
+                json_load "$parsed"
+                json_get_var ledstate state
+
+                [ "$ledstate" == "off" ] && {
+                        ubus call led.dect set '{ "state": "notice"}'
+                } || {
+                        ubus call led.dect set '{ "state": "off"}'
+                }
+                echo $ledstate
         }
         [ "infobutton" == "$INTERFACE" ] && {
                 printf "\n\nINFO button is pressed\n\n" > /dev/console
-                ubus call led.dect set '{ "state": "off"}'
+                local parsed=$(ubus call leds status)
+                json_load "$parsed"
+                json_get_var ledstate state
+
+                [ "$ledstate" == "normal" ] && {
+                        ubus call leds set '{ "state": "info"}'
+                } || {
+                        ubus call leds set '{ "state": "normal"}'
+                }
         }
         ;;
         remove|unregister)
