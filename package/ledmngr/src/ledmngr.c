@@ -87,7 +87,7 @@ enum {
 
 enum {
     LEDS_NORMAL,
-    LEDS_ECO,
+    LEDS_INFO,
     LEDS_TEST,
     LEDS_MAX,
 };
@@ -121,7 +121,7 @@ struct led_map {
 static char* fn_actions[LED_ACTION_MAX] = { "ok", "notice", "alert", "error", "off",};
 static char* led_functions[LED_FUNCTIONS] = { "dsl", "wifi", "wps", "lan", "status", "dect", "tv", "usb", "wan", "internet", "voice1", "voice2", "eco"};
 static char* led_states[LED_STATES_MAX] = { "off", "on", "blink_slow", "blink_fast" };
-static char* leds_states[LEDS_MAX] = { "normal", "eco", "test" };
+static char* leds_states[LEDS_MAX] = { "normal", "info", "test" };
 
 struct leds_configuration {
     int             leds_nr;
@@ -424,12 +424,10 @@ static int led_set(struct leds_configuration* led_cfg, int led_idx, int state) {
 
     //printf("Led index: %d\n", led_idx);
 
-    if (!(led_cfg->leds_state == LEDS_ECO)) {
-        if (lc->type == GPIO) {
-            board_ioctl(fd, BOARD_IOCTL_SET_GPIO, 0, 0, NULL, lc->address, state^lc->active);
-        } else if (lc->type == SHIFTREG3) {
-            shift_register3_set(led_cfg, lc->address, state, lc->active);
-        }
+    if (lc->type == GPIO) {
+        board_ioctl(fd, BOARD_IOCTL_SET_GPIO, 0, 0, NULL, lc->address, state^lc->active);
+    } else if (lc->type == SHIFTREG3) {
+        shift_register3_set(led_cfg, lc->address, state, lc->active);
     }
     lc->blink_state = state;
 
@@ -496,7 +494,7 @@ static void leds_test(struct leds_configuration* led_cfg) {
         led_set(led_cfg, led_cfg->test_state-5, OFF);
     }
 
-    if ((led_cfg->test_state > 3) && (led_cfg->test_state < led_cfg->leds_nr+3)) {
+    if ((led_cfg->test_state > 3) && (led_cfg->test_state < led_cfg->leds_nr+4)) {
         led_set(led_cfg, led_cfg->test_state-4, ON);
     }
 
@@ -607,9 +605,11 @@ static void set_function_led(struct leds_configuration* led_cfg, char* fn_name, 
 
     map = &led_cfg->led_map_config[led_fn_idx][action_idx];
     for (i=0 ; i<map->led_actions_nr ; i++) {
-        led_set(led_cfg, map->led_actions[i].led_index, map->led_actions[i].led_state);
-        led_set_state(led_cfg, map->led_actions[i].led_index, map->led_actions[i].led_state);
-        DEBUG_PRINT("[%d] %d %d\n", map->led_actions_nr,  map->led_actions[i].led_index, map->led_actions[i].led_state);
+        if (led_cfg->leds_state != LEDS_INFO) {
+            led_set(led_cfg, map->led_actions[i].led_index, map->led_actions[i].led_state);
+        }
+            led_set_state(led_cfg, map->led_actions[i].led_index, map->led_actions[i].led_state);
+            DEBUG_PRINT("[%d] %d %d\n", map->led_actions_nr,  map->led_actions[i].led_index, map->led_actions[i].led_state);
     }
 }
 
@@ -710,7 +710,7 @@ static int leds_set_method(struct ubus_context *ubus_ctx, struct ubus_object *ob
                 break;
         }
 
-        if (i == LEDS_ECO) {
+        if (i == LEDS_INFO) {
             all_leds_off(led_cfg);
             set_function_led(led_cfg, "eco", "ok");
         }
