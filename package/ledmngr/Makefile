@@ -44,7 +44,7 @@ endef
 define Package/ledmngr/install
 #	$(CP) ./files/* $(1)/
 	$(INSTALL_DIR) $(1)/usr/lib
-	$(INSTALL_DIR) $(1)/usr/bin
+	$(INSTALL_DIR) $(1)/sbin/
 	$(INSTALL_DIR) $(1)/etc/
 	$(INSTALL_DIR) $(1)/etc/init.d/
 
