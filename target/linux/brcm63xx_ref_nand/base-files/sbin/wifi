@@ -5,8 +5,21 @@
 
 exec >/dev/null 2>&1
 
+local _enWps=0
 local _c=0
 local vifs=""
+
+eco_led() {
+	if [ -f /usr/sbin/ledctl ]; then
+		if [ "$1" == "on" ]; then
+			ledctl eco on 1>/dev/null
+			ledctl status eco 1>/dev/null
+		elif [ "$1" == "off" ]; then
+			ledctl eco off 1>/dev/null
+			ledctl status on 1>/dev/null
+		fi
+	fi
+}
 
 map_networks() {
 	local ifdev ifobj devtype
@@ -20,7 +33,7 @@ map_networks() {
 			json_load "$(ifstatus $interface)"
 			json_get_var ifdev device
 			if [[ -n "$ifdev" ]]; then
-				uci set broadcom.nvram.lan"$_acnt"_ifname="$ifdev"
+				nvram set lan"$_acnt"_ifname="$ifdev"
 				json_load "$(devstatus $ifdev)"
 				json_get_var devtype type
 				if [[ "$devtype" = "Bridge" ]]; then
@@ -30,9 +43,9 @@ map_networks() {
 						[ -z "$devs" ] && devs="$dev" || devs="$devs $dev"
 						_i=$(($_i + 1))
 					done
-					uci set broadcom.nvram.lan"$_acnt"_ifnames="$devs"
+					nvram set lan"$_acnt"_ifnames="$devs"
 				else
-					uci set broadcom.nvram.lan"$_acnt"_ifnames="$ifdev"
+					nvram set lan"$_acnt"_ifnames="$ifdev"
 				fi
 			fi
 		)
@@ -92,6 +105,7 @@ set_wifi_down() {
 			[ -n "$network" ] && ubus call network.interface."$network" remove_device "{ \"name\": \"$iface\" }" 2>/dev/null && uci_revert_state wireless "$iface"
 		}
 	done
+	[ -f /usr/sbin/ledctl ] && ledctl wireless off 1>/dev/null
 }
 
 set_wifi_up() {
@@ -111,7 +125,7 @@ set_wifi_iface() {
 		config_get mode "$vif" mode
 		config_get ssid "$vif" ssid
 		config_get macfilter "$vif" macfilter
-		local maclist="$(uci get wireless.@wifi-iface[$_c].maclist 2>/dev/null)" #config_get maclist "$vif" maclist
+		local maclist="$(uci -q get wireless.@wifi-iface[$_c].maclist)" #config_get maclist "$vif" maclist
 		config_get_bool wmf_bss_enable "$vif" wmf_bss_enable
 		config_get_bool wmm_bss_disable "$vif" wmm_bss_disable
 		config_get bss_max "$vif" bss_max
@@ -131,32 +145,32 @@ set_wifi_iface() {
 			nif="$device"_"$_c"
 
 			# set NAS alternate if multi SSIDs are used
-			uci set broadcom.nvram.nas_alternate=1
+			nvram set nas_alternate=1
 		fi
 
 		# set wireless VIFs in broadcom nvram
 		[ -z "$vifs" ] && vifs="$iface" || vifs="$vifs $iface"
-		uci set broadcom.nvram."$device"_vifs="$vifs"
+		nvram set "$device"_vifs="$vifs"
 
 		# create wireless VIFs
 		wlctl -i $device bss -C $_c down
 		wlctl -i $device ssid -C $_c $ssid
-		uci set broadcom.nvram."$nif"_ifname=$iface
-		uci set broadcom.nvram."$nif"_ssid=$ssid
+		nvram set "$nif"_ifname=$iface
+		nvram set "$nif"_ssid=$ssid
 
 		# check if VIF is disabled in config
 		if [ "$disabled" == "1" ]; then
-			uci set broadcom.nvram."$nif"_bss_enabled=0
+			nvram set "$nif"_bss_enabled=0
 			_c=$(($_c + 1))
 			continue
 		else
-			uci set broadcom.nvram."$nif"_bss_enabled=1
+			nvram set "$nif"_bss_enabled=1
 		fi
 
 		# set Mode Radio Infra
-		uci set broadcom.nvram."$nif"_mode=ap
-		uci set broadcom.nvram."$nif"_radio=1
-		uci set broadcom.nvram."$nif"_infra=1
+		nvram set "$nif"_mode=ap
+		nvram set "$nif"_radio=1
+		nvram set "$nif"_infra=1
 
 		# set MAC filter
 		wlctl -i $iface macmode "${macfilter:-0}"
@@ -190,16 +204,16 @@ set_wifi_iface() {
 		eap_r=0
 		wsec=0
 		auth=0
-		uci set broadcom.nvram."$nif"_wep=disabled
+		nvram set "$nif"_wep=disabled
 		case "$enc" in
 			*wep*)
 				wsec_r=1
 				wsec=1
-				uci set broadcom.nvram."$nif"_wep=enabled
+				nvram set "$nif"_wep=enabled
 				config_get key "$vif" key
 				case "$enc" in
-					*shared*) wlctl -i $iface auth 1; uci set broadcom.nvram."$nif"_auth=1;;
-					*) wlctl -i $iface auth 0; uci set broadcom.nvram."$nif"_auth=0;;
+					*shared*) wlctl -i $iface auth 1; nvram set "$nif"_auth=1;;
+					*) wlctl -i $iface auth 0; nvram set "$nif"_auth=0;;
 				esac
 				case "$key" in
 					[1234])
@@ -222,24 +236,24 @@ set_wifi_iface() {
 				config_get key "$vif" key
 				config_get gtk "$vif" gtk_rekey
 
-				uci set broadcom.nvram."$nif"_auth=0
-				uci set broadcom.nvram."$nif"_wpa_gtk_rekey="${gtk:-3600}"
+				nvram set "$nif"_auth=0
+				nvram set "$nif"_wpa_gtk_rekey="${gtk:-3600}"
 
 				# psk version + default cipher
 				case "$enc" in
-					*mixed*|*psk+psk2*) auth=132; wsec=6; uci set broadcom.nvram."$nif"_akm='psk psk2'; uci set broadcom.nvram."$nif"_crypto=tkip+aes;;
-					*psk2*) auth=128; wsec=4; uci set broadcom.nvram."$nif"_akm=psk2; uci set broadcom.nvram."$nif"_crypto=aes;;
-					*) auth=4; wsec=2; uci set broadcom.nvram."$nif"_akm=psk; uci set broadcom.nvram."$nif"_crypto=tkip;;
+					*mixed*|*psk+psk2*) auth=132; wsec=6; nvram set "$nif"_akm='psk psk2'; nvram set "$nif"_crypto=tkip+aes;;
+					*psk2*) auth=128; wsec=4; nvram set "$nif"_akm=psk2; nvram set "$nif"_crypto=aes;;
+					*) auth=4; wsec=2; nvram set "$nif"_akm=psk; nvram set "$nif"_crypto=tkip;;
 				esac
 
 				# cipher override
 				case "$enc" in
-					*tkip+aes*|*tkip+ccmp*|*aes+tkip*|*ccmp+tkip*) wsec=6; uci set broadcom.nvram."$nif"_crypto=tkip+aes;;
-					*aes*|*ccmp*) wsec=4; uci set broadcom.nvram."$nif"_crypto=aes;;
-					*tkip*) wsec=2; uci set broadcom.nvram."$nif"_crypto=tkip;;
+					*tkip+aes*|*tkip+ccmp*|*aes+tkip*|*ccmp+tkip*) wsec=6; nvram set "$nif"_crypto=tkip+aes;;
+					*aes*|*ccmp*) wsec=4; nvram set "$nif"_crypto=aes;;
+					*tkip*) wsec=2; nvram set "$nif"_crypto=tkip;;
 				esac
-				uci set broadcom.nvram."$nif"_wpa_psk=$key
-				uci set broadcom.nvram."$nif"_auth_mode=psk
+				nvram set "$nif"_wpa_psk=$key
+				nvram set "$nif"_auth_mode=psk
 				qr_enc="WPA"
 				qr_key="$key"
 			;;
@@ -255,22 +269,22 @@ set_wifi_iface() {
 
 				# wpa version + default cipher
 				case "$enc" in
-					*mixed*|*wpa+wpa2*) auth=66; wsec=6; uci set broadcom.nvram."$nif"_akm='wpa wpa2'; uci set broadcom.nvram."$nif"_crypto=tkip+aes;;
-					*wpa2*) auth=64; wsec=4; uci set broadcom.nvram."$nif"_akm=wpa2; uci set broadcom.nvram."$nif"_crypto=aes;;
-					*) auth=2; wsec=2; uci set broadcom.nvram."$nif"_akm=wpa; uci set broadcom.nvram."$nif"_crypto=tkip;;
+					*mixed*|*wpa+wpa2*) auth=66; wsec=6; nvram set "$nif"_akm='wpa wpa2'; nvram set "$nif"_crypto=tkip+aes;;
+					*wpa2*) auth=64; wsec=4; nvram set "$nif"_akm=wpa2; nvram set "$nif"_crypto=aes;;
+					*) auth=2; wsec=2; nvram set "$nif"_akm=wpa; nvram set "$nif"_crypto=tkip;;
 				esac
 
 				# cipher override
 				case "$enc" in
-					*tkip+aes*|*tkip+ccmp*|*aes+tkip*|*ccmp+tkip*) wsec=6; uci set broadcom.nvram."$nif"_crypto=tkip+aes;;
-					*aes*|*ccmp*) wsec=4; uci set broadcom.nvram."$nif"_crypto=aes;;
-					*tkip*) wsec=2; uci set broadcom.nvram."$nif"_crypto=tkip;;
+					*tkip+aes*|*tkip+ccmp*|*aes+tkip*|*ccmp+tkip*) wsec=6; nvram set "$nif"_crypto=tkip+aes;;
+					*aes*|*ccmp*) wsec=4; nvram set "$nif"_crypto=aes;;
+					*tkip*) wsec=2; nvram set "$nif"_crypto=tkip;;
 				esac
-				uci set broadcom.nvram."$nif"_wpa_psk=$key
-				uci set broadcom.nvram."$nif"_auth_mode=radius
-				uci set broadcom.nvram."$nif"_radius_ipaddr=$rad_serv
-				uci set broadcom.nvram."$nif"_radius_port="${rad_port:-1812}"
-				uci set broadcom.nvram."$nif"_radius_key=$rad_sec
+				nvram set "$nif"_wpa_psk=$key
+				nvram set "$nif"_auth_mode=radius
+				nvram set "$nif"_radius_ipaddr=$rad_serv
+				nvram set "$nif"_radius_port="${rad_port:-1812}"
+				nvram set "$nif"_radius_key=$rad_sec
 				qr_enc="WPA"
 				qr_key="$key"
 			;;
@@ -286,18 +300,19 @@ set_wifi_iface() {
 		# set WPS
 		config_get wps_mode "$vif" wps_pbc
 		if [ "$wps_mode" == "1" ]; then
-			uci set broadcom.nvram."$nif"_wps_mode="enabled"
-			uci set broadcom.nvram.router_disable="0"
-			uci set broadcom.nvram.wps_modelnum="123456"
-			uci set broadcom.nvram.boardnum="1234"
-			uci set broadcom.nvram.wps_config_method="0x4"
-			uci set broadcom.nvram.wps_modelname="Broadcom"
-			uci set broadcom.nvram.wps_mfstring="Broadcom"
-			uci set broadcom.nvram.wps_device_name="$(uci get wireless.@wifi-iface[0].ssid)"
-			uci set broadcom.nvram.wps_version2="enabled"
-			uci set broadcom.nvram.lan_wps_reg="enabled"
-			uci set broadcom.nvram.lan_wps_oob="disabled"
-			uci set broadcom.nvram.wps_proc_status="0"
+			nvram set "$nif"_wps_mode="enabled"
+			nvram set router_disable="0"
+			nvram set wps_modelnum="123456"
+			nvram set boardnum="1234"
+			nvram set wps_config_method="0x4"
+			nvram set wps_modelname="Broadcom"
+			nvram set wps_mfstring="Broadcom"
+			nvram set wps_device_name="$(uci -q get wireless.@wifi-iface[0].ssid)"
+			nvram set wps_version2="enabled"
+			nvram set lan_wps_reg="enabled"
+			nvram set lan_wps_oob="disabled"
+			nvram set wps_proc_status="0"
+			_enWps=$(($_enWps + 1))
 		fi
 
 		# bring up the VIF and add to network
@@ -307,7 +322,7 @@ set_wifi_iface() {
 		}
 		wlctl -i $device bss -C $_c up
 		ifconfig "$iface" hw ether $(wlctl -i $iface cur_etheraddr | awk '{print$2}') 2>/dev/null
-		uci set broadcom.nvram."$nif"_hwaddr="$(wlctl -i $iface cur_etheraddr | awk '{print$2}')"
+		nvram set "$nif"_hwaddr="$(wlctl -i $iface cur_etheraddr | awk '{print$2}')"
 
 		_c=$(($_c + 1))
 	fi
@@ -352,6 +367,13 @@ set_wifi() {
 	config_get wmm_apsd "$device" wmm_apsd
 	config_get doth "$device" doth
 	config_get radio "$device" radio
+
+	if [ "$radio" == "off" ]; then
+		eco_led "on"
+		exit
+	else
+		eco_led "off"
+	fi
 
 	# BASE settings
 	# wlctl -i $device cap > /var/cap_$device
@@ -507,13 +529,9 @@ set_wifi() {
 	wlctl -i $device rxchain_pwrsave_pps "${rxchainps_pps:-10}"
 
 	# bring up the wireless device
-	if [ "$radio" == "off" ]; then
-		wlctl -i $device down
-	else
-		wlctl -i $device leddc 0 2>/dev/null
-		[ -f /usr/sbin/ledctl ] && ledctl wireless on 1>/dev/null
-		wlctl -i $device up
-	fi
+	wlctl -i $device leddc 0 2>/dev/null
+	[ -f /usr/sbin/ledctl ] && ledctl wireless on 1>/dev/null
+	wlctl -i $device up
 }
 
 # kill related daemons
@@ -526,14 +544,14 @@ rm -f /www/luci-static/resources/icons/wqr_*
 
 # clean NVRAM parameters and set debug mode
 sed -i '/option/ d' /etc/config/broadcom
-uci set broadcom.nvram.debug=0
+nvram set init=1
+nvram set debug=0
 
 config_load wireless
 
 case "$1" in
 	down)
 		config_foreach set_wifi_down wifi-device
-		[ -f /usr/sbin/ledctl ] && ledctl wireless off 1>/dev/null
 	;;
 	*)
 		config_foreach set_wifi_down wifi-device
@@ -545,9 +563,7 @@ case "$1" in
 		# start related daemons
 		eapd
 		nas
-		wps_monitor &
+		[ $_enWps -gt 0 ] && wps_monitor &
 	;;
 esac
-
-uci commit broadcom
 
