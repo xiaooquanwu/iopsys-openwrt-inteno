@@ -44,7 +44,6 @@ case "$ACTION" in
                 } || {
                         ubus call led.dect set '{ "state": "off"}'
                 }
-                echo $ledstate
         }
         [ "infobutton" == "$INTERFACE" ] && {
                 printf "\n\nINFO button is pressed\n\n" > /dev/console
