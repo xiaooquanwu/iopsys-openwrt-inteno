@@ -27,9 +27,8 @@ OF THIS SOFTWARE.
 
 struct uci_context *ctx = NULL;
 struct uci_ptr ptr;
-
-static int nvram_inited = 0;
-static int nvram_debug = 0;
+int nvram_inited = 0;
+int nvram_debug = 0;
 
 /** Function prototypes are taken from bcmnvram.h Copyright Broadcom Corporation.
  *  Only some of the nvram_* functions exposed from libnvram.so are implemented.
@@ -62,23 +61,19 @@ static void nvram_display_section(struct uci_section *s)
 	}
 }
 
-static void nvram_init() {
-	ctx = ucix_init("broadcom");
-	if(!ctx) {
-		printf("Failed to load config file \"broadcom\"\n");
-		return;
-	}
-
-	nvram_debug = ucix_get_option_int(ctx, "broadcom", "nvram", "debug");
-
-	nvram_inited = ucix_get_option_int(ctx, "broadcom", "nvram", "init");
-	if (nvram_inited != 1) {
-		const char *ucitmp;
-
+void nvram_init() {
+	if (!nvram_inited) {
+		ctx = ucix_init("broadcom");
+		if(!ctx) {
+			printf("Failed to load config file \"broadcom\"\n");
+			return;
+		}
 		ucix_add_section(ctx, "broadcom", "nvram", "broadcom");
 		ucix_add_option(ctx, "broadcom", "nvram", "init", "1");
 		ucix_commit(ctx, "broadcom");
-		if (nvram_debug == 1)
+		nvram_debug = ucix_get_option_int(ctx, "broadcom", "nvram", "debug");
+		nvram_inited = 1;
+		if (nvram_debug)
 			printf("nvram_init()\n");
 	}
 }
@@ -94,7 +89,7 @@ const char * nvram_get(const char *name) {
 	const char *ucitmp;
 	nvram_init();
 	ucitmp = ucix_get_option(ctx, "broadcom", "nvram", filter_dots_in_string(name));
-	if (nvram_debug == 1)
+	if (nvram_debug)
 		printf("%s=nvram_get(%s)\n", ucitmp, name);
 
 	return ucitmp;
@@ -114,7 +109,7 @@ int nvram_set(const char *name, const char *value) {
 	nvram_init();
 	ucix_add_option(ctx, "broadcom", "nvram", filter_dots_in_string(name), value);
 	ucix_commit(ctx, "broadcom");
-	if (nvram_debug == 1)
+	if (nvram_debug)
 		printf("nvram_set(%s, %s)\n", filter_dots_in_string(name), value);
 	return 0;
 }
@@ -131,7 +126,7 @@ int nvram_unset(const char *name){
 	nvram_init();
 	ucix_del(ctx, "broadcom", "nvram", filter_dots_in_string(name));
 	ucix_commit(ctx, "broadcom");
-	if (nvram_debug == 1)
+	if (nvram_debug)
 		printf("nvram_unset(%s)\n", filter_dots_in_string(name));
 	return 0;
 }
@@ -146,7 +141,7 @@ int nvram_unset(const char *name){
 int nvram_commit(void){
 	nvram_init();
 	ucix_commit(ctx, "broadcom");
-	if (nvram_debug == 1)
+	if (nvram_debug)
 		printf("nvram_commit()\n");
 
 	return 0;

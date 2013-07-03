@@ -1,0 +1,86 @@
+
+include /lib/network
+
+addif() {
+	# check if wan had a event and start all related services
+	wan=`uci -q get layer2_interface_ethernet.Wan.baseifname`
+	if [ "$INTERFACE" == "$wan" ]; then
+		/etc/init.d/layer2_interface_ethernet start
+		/etc/init.d/layer2_interface_vlan start
+	fi
+}
+
+delif() {
+	##remove ethernet wan and nuke any vlans associated
+	wan=`uci -q get layer2_interface_ethernet.Wan.baseifname`
+	if [ "$INTERFACE" == "$wan"  ]; then
+		/etc/init.d/layer2_interface_ethernet stop
+	fi
+}
+
+ethtest () {
+	local landev=$(lanports)
+	local ledontest
+	for dev in $landev; do
+		ledontest=$(cat /sys/class/net/"$dev"/carrier)
+		if [ "$ledontest" -eq 1 ]; then
+			return 1
+		fi
+	done
+	return 0
+}
+
+case "$ACTION" in
+	add|register)
+		case "$PHYSDEVDRIVER" in
+			natsemi) sleep 1 ;;
+		esac
+		local interfname=$(interfacename $INTERFACE)
+		local speed=$(interfacespeed $INTERFACE)
+		ledon=$(cat /sys/class/net/"$INTERFACE"/carrier)$interfname$speed
+		case "$ledon" in
+			1GB21000BT)
+				/usr/sbin/ledctl GbE-G on ;;
+			1GBE1000BT)
+				/usr/sbin/ledctl GbE-G on
+				/usr/sbin/ledctl Ethernet on ;;
+			#1WAN1000BT)
+			1WAN1000BT|WAN1000BT)
+				/usr/sbin/ledctl WAN-G on ;;
+			1GB2100baseTx-FD.)
+				/usr/sbin/ledctl GbE-Y on ;;
+			1GBE100baseTx-FD.)
+				/usr/sbin/ledctl GbE-Y on
+				/usr/sbin/ledctl Ethernet on;;
+			#1WAN100baseTx-FD.)
+			1WAN100baseTx-FD.|WAN100baseTx-FD.)
+				/usr/sbin/ledctl WAN-Y on ;;
+			1LAN[1-4]*)
+				/usr/sbin/ledctl Ethernet on ;;
+		esac
+		addif
+	;;
+	remove|unregister)
+		local interfname=$(interfacename $INTERFACE)
+		ledon=$(cat /sys/class/net/"$INTERFACE"/carrier)$interfname
+		case "$ledon" in
+			0GB2)
+				/usr/sbin/ledctl GbE-G off
+				/usr/sbin/ledctl GbE-Y off ;;
+			0GBE)
+				/usr/sbin/ledctl GbE-G off
+				/usr/sbin/ledctl GbE-Y off
+				if $(ethtest); then
+					/usr/sbin/ledctl Ethernet off
+				fi ;;
+			0WAN)
+				/usr/sbin/ledctl WAN-G off
+				/usr/sbin/ledctl WAN-Y off ;;
+			0LAN[1-4])
+				if $(ethtest); then
+					/usr/sbin/ledctl Ethernet off
+				fi ;;
+		esac
+		delif
+	;;
+esac
