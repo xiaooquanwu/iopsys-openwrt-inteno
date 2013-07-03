@@ -16,4 +16,5 @@
 ./scripts/feeds install strace
 ./scripts/feeds install libevent
 ./scripts/feeds install libpng
+./scripts/feeds install iperf
 
