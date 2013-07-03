@@ -13,7 +13,7 @@ start()
 	local BSSID=$(printf "%X\n" $((0x$BMAC + 2)))
 	local WPAKEY=$(cat /proc/nvram/WpaKey)
 
-	local mac=$MAC
+	local mac=$BMAC
 	local mac2=${MAC:8:2}
 	local mac4=${MAC:6:4}
 	local mac6=${MAC:4:6}
@@ -39,7 +39,7 @@ start()
 		fi
 	done
 
-	# temporary #
+	# create/modify network config #
         if [ ! -f /etc/config/network ]; then
                 touch /etc/config/network
                 chmod 644 /etc/config/network
@@ -61,7 +61,7 @@ config 'interface' 'lan'
 config 'interface' 'wan'
 	option 'type' 'anywan'
 	option 'proto' 'dhcp'
-	option 'hostname' 'Inteno_$MAC4'
+	option 'hostname' 'Inteno_$mac4'
 EOF
 	fi
 
@@ -74,6 +74,6 @@ EOF
 	uci set layer2_interface_ethernet.Wan.baseifname="$wanport"
 	uci set layer2_interface_ethernet.Wan.ifname="$wanport.1"
 	uci commit
-	# --------- #
+	# ----------------------------- #
 }
 
