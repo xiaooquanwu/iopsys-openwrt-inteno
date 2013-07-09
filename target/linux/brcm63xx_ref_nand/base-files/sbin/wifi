@@ -312,6 +312,7 @@ set_wifi_iface() {
 			nvram set lan_wps_reg="enabled"
 			nvram set lan_wps_oob="disabled"
 			nvram set wps_proc_status="0"
+			nvram set wps_button_gpio=`db get hw.board.wpsButtonGpio`
 			_enWps=$(($_enWps + 1))
 		fi
 

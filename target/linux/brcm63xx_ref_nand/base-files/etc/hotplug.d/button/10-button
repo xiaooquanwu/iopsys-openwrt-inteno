@@ -30,8 +30,7 @@ case "$ACTION" in
                 uci commit wireless
         }
         [ "wpsbutton" == "$INTERFACE" ] && {
-		printf "\n\nWPS button pressed\n\n" > /dev/console
-		[ $(grep wps_pbc /etc/config/wireless | grep -c '1') -ge 1 ] && touch /var/wps_btn_pressed
+		        printf "\n\nWPS button pressed\n\n" > /dev/console
         }
         [ "dectbutton" == "$INTERFACE" ] && {
                 printf "\n\nRegistering DECT\n\n" > /dev/console
