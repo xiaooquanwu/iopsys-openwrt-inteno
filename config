@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # OpenWrt version: Attitude Adjustment (r36052)
-# Thu Jun 27 11:44:31 2013
+# Wed Jul 10 12:37:09 2013
 #
 CONFIG_HAVE_DOT_CONFIG=y
 # CONFIG_TARGET_ppc40x is not set
@@ -978,7 +978,7 @@ CONFIG_BUSYBOX_CONFIG_HWCLOCK=y
 # CONFIG_BUSYBOX_CONFIG_IPCRM is not set
 # CONFIG_BUSYBOX_CONFIG_IPCS is not set
 # CONFIG_BUSYBOX_CONFIG_LOSETUP is not set
-# CONFIG_BUSYBOX_CONFIG_LSPCI is not set
+CONFIG_BUSYBOX_CONFIG_LSPCI=y
 CONFIG_BUSYBOX_CONFIG_LSUSB=y
 # CONFIG_BUSYBOX_CONFIG_MDEV is not set
 # CONFIG_BUSYBOX_CONFIG_MKSWAP is not set
@@ -1351,6 +1351,8 @@ CONFIG_PACKAGE_chat=y
 # CONFIG_PACKAGE_hostapd is not set
 # CONFIG_PACKAGE_hostapd-mini is not set
 # CONFIG_PACKAGE_ifenslave is not set
+# CONFIG_PACKAGE_iperf is not set
+CONFIG_PACKAGE_iperf-mt=y
 # CONFIG_PACKAGE_iw is not set
 CONFIG_PACKAGE_ppp=y
 # CONFIG_PACKAGE_ppp-mod-pppoa is not set
@@ -1476,7 +1478,7 @@ CONFIG_PACKAGE_libusb=y
 # CONFIG_PACKAGE_libvorbis is not set
 # CONFIG_PACKAGE_linux-atm is not set
 CONFIG_PACKAGE_terminfo=y
-# CONFIG_PACKAGE_uclibcxx is not set
+CONFIG_PACKAGE_uclibcxx=y
 CONFIG_PACKAGE_zlib=y
 
 #
@@ -1519,17 +1521,17 @@ CONFIG_PACKAGE_luci-mod-admin-full=y
 # CONFIG_PACKAGE_luci-app-dect is not set
 # CONFIG_PACKAGE_luci-app-diag-core is not set
 # CONFIG_PACKAGE_luci-app-diag-devinfo is not set
-# CONFIG_PACKAGE_luci-app-dslstats is not set
+CONFIG_PACKAGE_luci-app-dslstats=y
 CONFIG_PACKAGE_luci-app-firewall=y
 # CONFIG_PACKAGE_luci-app-freifunk-diagnostics is not set
 # CONFIG_PACKAGE_luci-app-freifunk-policyrouting is not set
 # CONFIG_PACKAGE_luci-app-freifunk-widgets is not set
 # CONFIG_PACKAGE_luci-app-hd-idle is not set
-# CONFIG_PACKAGE_luci-app-iup is not set
+CONFIG_PACKAGE_luci-app-iup=y
 # CONFIG_PACKAGE_luci-app-ltqtapi is not set
-# CONFIG_PACKAGE_luci-app-mcpd is not set
+CONFIG_PACKAGE_luci-app-mcpd=y
 # CONFIG_PACKAGE_luci-app-meshwizard is not set
-# CONFIG_PACKAGE_luci-app-minidlna is not set
+CONFIG_PACKAGE_luci-app-minidlna=y
 # CONFIG_PACKAGE_luci-app-mmc-over-gpio is not set
 # CONFIG_PACKAGE_luci-app-mount is not set
 # CONFIG_PACKAGE_luci-app-multiwan is not set
@@ -1543,9 +1545,9 @@ CONFIG_PACKAGE_luci-app-firewall=y
 CONFIG_PACKAGE_luci-app-radvd=y
 # CONFIG_PACKAGE_luci-app-samba is not set
 CONFIG_PACKAGE_luci-app-siitwizard=y
-# CONFIG_PACKAGE_luci-app-snmp is not set
+CONFIG_PACKAGE_luci-app-snmp=y
 # CONFIG_PACKAGE_luci-app-software is not set
-# CONFIG_PACKAGE_luci-app-speedtest is not set
+CONFIG_PACKAGE_luci-app-speedtest=y
 # CONFIG_PACKAGE_luci-app-splash is not set
 # CONFIG_PACKAGE_luci-app-statistics is not set
 # CONFIG_PACKAGE_luci-app-tinyproxy is not set
@@ -2132,7 +2134,7 @@ CONFIG_PACKAGE_comgt=y
 # CONFIG_PACKAGE_dectmngr is not set
 # CONFIG_PACKAGE_dmesg is not set
 # CONFIG_PACKAGE_dropbearconvert is not set
-CONFIG_PACKAGE_endptctl=y
+# CONFIG_PACKAGE_endptctl is not set
 # CONFIG_PACKAGE_fconfig is not set
 # CONFIG_PACKAGE_flock is not set
 CONFIG_PACKAGE_gdb=y
