@@ -10,14 +10,10 @@ local _c=0
 local vifs=""
 
 eco_led() {
-	if [ -f /usr/sbin/ledctl ]; then
-		if [ "$1" == "on" ]; then
-			ledctl eco on 1>/dev/null
-			ledctl status eco 1>/dev/null
-		elif [ "$1" == "off" ]; then
-			ledctl eco off 1>/dev/null
-			ledctl status on 1>/dev/null
-		fi
+	if [ "$1" == "on" ]; then
+		ubus call led.eco set '{"state":"ok"}' &
+	elif [ "$1" == "off" ]; then
+		ubus call led.eco set '{"state":"off"}' &
 	fi
 }
 
@@ -105,7 +101,7 @@ set_wifi_down() {
 			[ -n "$network" ] && ubus call network.interface."$network" remove_device "{ \"name\": \"$iface\" }" 2>/dev/null && uci_revert_state wireless "$iface"
 		}
 	done
-	[ -f /usr/sbin/ledctl ] && ledctl wireless off 1>/dev/null
+	ubus call led.wifi set '{"state":"off"}' &
 }
 
 set_wifi_up() {
@@ -531,7 +527,7 @@ set_wifi() {
 
 	# bring up the wireless device
 	wlctl -i $device leddc 0 2>/dev/null
-	[ -f /usr/sbin/ledctl ] && ledctl wireless on 1>/dev/null
+	ubus call led.wifi set '{"state":"ok"}' &
 	wlctl -i $device up
 }
 

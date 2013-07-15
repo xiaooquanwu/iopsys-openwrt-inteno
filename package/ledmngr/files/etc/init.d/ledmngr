@@ -3,9 +3,14 @@
 # Copyright (C) 2009 OpenWrt.org
 #
 
-START=39
+START=19
 
 start() {
         /sbin/ledmngr
+        sleep 1
+        /bin/ubus call led.status set '{"state":"ok"}' &
 }
 
+stop() {
+        killall -9 ledmngr
+}
