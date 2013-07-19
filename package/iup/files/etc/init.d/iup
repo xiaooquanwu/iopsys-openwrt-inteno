@@ -1,0 +1,56 @@
+#!/bin/sh /etc/rc.common
+# iup at boot
+# Copyright (C) 2007 OpenWrt.org
+START=98
+STOP=15
+
+. /lib/functions.sh
+
+include /lib/network
+
+CRONPATH="/etc/crontabs/root"
+RANGE=60
+
+boot() {
+	local interval
+	local starttime
+	local nummber
+	number=$RANDOM
+
+	if [ -f $CRONPATH ]; then
+		echo "File $CRONPATH exists"
+	else
+		echo  "File $CRONPATH did not exists"
+		touch $CRONPATH
+	fi
+
+	config_load provisioning
+	config_get interval  polling  interval
+	config_get starttime  polling  starttime
+	if [ $interval == "weekly" ]; then
+		interval="0"
+	else
+		interval='*'
+	fi
+        let "number %= $RANGE"
+	if grep -q "$starttime  \* \* \\$interval     /sbin/iup" "$CRONPATH" ; then
+		echo "IUP is scheduled $starttime  \* \* \\$interval "
+	else 
+		if grep -q "iup" "$CRONPATH" ; then
+			sed -i "/iup/d" $CRONPATH
+		fi
+		echo "$number $starttime  * * $interval     /sbin/iup > /dev/null 2>&1" >> $CRONPATH
+		/etc/init.d/cron restart
+	fi
+}                 
+start() {
+	boot
+	test_default_route
+	if [ "$?" -eq 0 ]; then
+		/sbin/iup &
+	fi
+}
+
+restart() {
+	/sbin/iup &
+}

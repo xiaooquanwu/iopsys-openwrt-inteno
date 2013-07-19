@@ -1,0 +1,15 @@
+package 'provisioning'
+
+config 'general' 'polling'
+        option 'enabled' 'on'
+        option 'starttime' '03'
+        option 'interval' 'daily'
+
+config 'server' 'configserver'
+        option enabled          on
+        option url 'http://ihgsp.inteno.se/ihgsp/config/$MAC.tar.gz'
+
+
+config 'server' 'iup'
+        option 'enabled' 'on'
+
