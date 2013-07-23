@@ -17,4 +17,6 @@
 ./scripts/feeds install libevent
 ./scripts/feeds install libpng
 ./scripts/feeds install iperf
-
+./scripts/feeds install curl
+./scripts/feeds install libcurl
+./scripts/feeds install libmicroxml
