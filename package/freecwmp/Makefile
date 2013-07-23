@@ -69,8 +69,10 @@ TARGET_CFLAGS += \
 	
 ifneq ($(CWMP_REVISION)_,_)
 ifneq ($(CWMP_REVISION),exported)
+ifneq ($(CWMP_REVISION),Unversioned directory)
 TARGET_CFLAGS += "-DCWMP_REVISION=\\\"$(CWMP_REVISION)\\\""
 TARGET_LDFLAGS += "-DCWMP_REVISION=\\\"$(CWMP_REVISION)\\\""
+endif
 endif
 endif
 
