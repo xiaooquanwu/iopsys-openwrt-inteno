@@ -20,3 +20,4 @@
 ./scripts/feeds install curl
 ./scripts/feeds install libcurl
 ./scripts/feeds install libmicroxml
+./scripts/feeds install liblzo
