@@ -1,0 +1,813 @@
+--- a/channels/chan_sip.c
++++ b/channels/chan_sip.c
+@@ -699,7 +699,7 @@ static struct sip_settings sip_cfg;		/*!
+ /*!< use this macro when ast_uri_decode is dependent on pedantic checking to be on. */
+ #define SIP_PEDANTIC_DECODE(str)	\
+ 	if (sip_cfg.pedanticsipchecking && !ast_strlen_zero(str)) {	\
+-		ast_uri_decode(str);	\
++		ast_uri_decode(str, ast_uri_sip_user);	\
+ 	}	\
+ 
+ static unsigned int chan_idx;       /*!< used in naming sip channel */
+@@ -6847,7 +6847,7 @@ static struct ast_channel *sip_new(struc
+ 		ast_copy_string(tmp->exten, i->exten, sizeof(tmp->exten));
+ 	} else {
+ 		decoded_exten = ast_strdupa(i->exten);
+-		ast_uri_decode(decoded_exten);
++		ast_uri_decode(decoded_exten, ast_uri_sip_user);
+ 		ast_copy_string(tmp->exten, decoded_exten, sizeof(tmp->exten));
+ 	}
+ 
+@@ -10428,7 +10428,7 @@ static int add_rpid(struct sip_request *
+ 		lid_name = lid_num;
+ 	fromdomain = S_OR(p->fromdomain, ast_sockaddr_stringify_host(&p->ourip));
+ 
+-	lid_num = ast_uri_encode(lid_num, tmp2, sizeof(tmp2), 1);
++	lid_num = ast_uri_encode(lid_num, tmp2, sizeof(tmp2), ast_uri_sip_user);
+ 
+ 	if (ast_test_flag(&p->flags[0], SIP_SENDRPID_PAI)) {
+ 		if ((lid_pres & AST_PRES_RESTRICTION) != AST_PRES_ALLOWED) {
+@@ -11368,7 +11368,7 @@ static void extract_uri(struct sip_pvt *
+ static void build_contact(struct sip_pvt *p)
+ {
+ 	char tmp[SIPBUFSIZE];
+-	char *user = ast_uri_encode(p->exten, tmp, sizeof(tmp), 0);
++	char *user = ast_uri_encode(p->exten, tmp, sizeof(tmp), ast_uri_sip_user);
+ 
+ 	if (p->socket.type == SIP_TRANSPORT_UDP) {
+ 		ast_string_field_build(p, our_contact, "<sip:%s%s%s>", user,
+@@ -11507,9 +11507,9 @@ static void initreqprep(struct sip_reque
+ 		ast_string_field_set(p, fromname, n);
+ 
+ 	if (sip_cfg.pedanticsipchecking) {
+-		ast_uri_encode(n, tmp_n, sizeof(tmp_n), 0);
++		ast_escape_quoted(n, tmp_n, sizeof(tmp_n));
+ 		n = tmp_n;
+-		ast_uri_encode(l, tmp_l, sizeof(tmp_l), 0);
++		ast_uri_encode(l, tmp_l, sizeof(tmp_l), ast_uri_sip_user);
+ 		l = tmp_l;
+ 	}
+ 
+@@ -11533,7 +11533,7 @@ static void initreqprep(struct sip_reque
+ 			if (!ast_strlen_zero(p->username)) {
+ 				n = p->username;
+ 				if (sip_cfg.pedanticsipchecking) {
+-					ast_uri_encode(n, tmp_n, sizeof(tmp_n), 0);
++					ast_uri_encode(n, tmp_n, sizeof(tmp_n), ast_uri_sip_user);
+ 					n = tmp_n;
+ 				}
+ 				ast_str_append(&invite, 0, "%s@", n);
+@@ -14748,7 +14748,7 @@ static enum sip_get_dest_result get_dest
+ 	/* Since extensions.conf can have unescaped characters, try matching a
+ 	 * decoded uri in addition to the non-decoded uri. */
+ 	decoded_uri = ast_strdupa(uri);
+-	ast_uri_decode(decoded_uri);
++	ast_uri_decode(decoded_uri, ast_uri_sip_user);
+ 
+ 	/* If this is a subscription we actually just need to see if a hint exists for the extension */
+ 	if (req->method == SIP_SUBSCRIBE) {
+@@ -14976,7 +14976,7 @@ static int get_refer_info(struct sip_pvt
+ 		/* This is an attended transfer */
+ 		referdata->attendedtransfer = 1;
+ 		ast_copy_string(referdata->replaces_callid, ptr+9, sizeof(referdata->replaces_callid));
+-		ast_uri_decode(referdata->replaces_callid);
++		ast_uri_decode(referdata->replaces_callid, ast_uri_sip_user);
+ 		if ((ptr = strchr(referdata->replaces_callid, ';'))) 	/* Find options */ {
+ 			*ptr++ = '\0';
+ 		}
+@@ -18928,7 +18928,7 @@ static void parse_moved_contact(struct s
+ 		separator = strchr(contact_number, ';');	/* And username ; parameters? */
+ 		if (separator)
+ 			*separator = '\0';
+-		ast_uri_decode(contact_number);
++		ast_uri_decode(contact_number, ast_uri_sip_user);
+ 		if (set_call_forward) {
+ 			ast_debug(2, "Received 302 Redirect to extension '%s' (domain %s)\n", contact_number, domain);
+ 			if (p->owner) {
+@@ -21404,7 +21404,7 @@ static int handle_request_invite(struct
+ 			ast_debug(3, "INVITE part of call transfer. Replaces [%s]\n", p_replaces);
+ 		/* Create a buffer we can manipulate */
+ 		replace_id = ast_strdupa(p_replaces);
+-		ast_uri_decode(replace_id);
++		ast_uri_decode(replace_id, ast_uri_sip_user);
+ 
+ 		if (!p->refer && !sip_refer_allocate(p)) {
+ 			transmit_response_reliable(p, "500 Server Internal Error", req);
+@@ -21718,7 +21718,7 @@ static int handle_request_invite(struct
+ 				{
+ 					char *decoded_exten = ast_strdupa(p->exten);
+ 					transmit_response_reliable(p, "404 Not Found", req);
+-					ast_uri_decode(decoded_exten);
++					ast_uri_decode(decoded_exten, ast_uri_sip_user);
+ 					ast_log(LOG_NOTICE, "Call from '%s' to extension"
+ 						" '%s' rejected because extension not found in context '%s'.\n",
+ 						S_OR(p->username, p->peername), decoded_exten, p->context);
+--- a/channels/sip/reqresp_parser.c
++++ b/channels/sip/reqresp_parser.c
+@@ -873,7 +873,7 @@ int get_name_and_number(const char *hdr,
+ 
+ 	/* number is not option, and must be present at this point */
+ 	*number = ast_strdup(tmp_number);
+-	ast_uri_decode(*number);
++	ast_uri_decode(*number, ast_uri_sip_user);
+ 
+ 	/* name is optional and may not be present at this point */
+ 	if (!ast_strlen_zero(tmp_name)) {
+@@ -2073,8 +2073,8 @@ int sip_uri_cmp(const char *input1, cons
+ 	uri1 = ast_strdupa(input1);
+ 	uri2 = ast_strdupa(input2);
+ 
+-	ast_uri_decode(uri1);
+-	ast_uri_decode(uri2);
++	ast_uri_decode(uri1, ast_uri_sip_user);
++	ast_uri_decode(uri2, ast_uri_sip_user);
+ 
+ 	uri_scheme1 = strsep(&uri1, ":");
+ 	uri_scheme2 = strsep(&uri2, ":");
+--- a/funcs/func_curl.c
++++ b/funcs/func_curl.c
+@@ -534,8 +534,8 @@ static int acf_curl_helper(struct ast_ch
+ 				if (!piece) {
+ 					piece = "";
+ 				}
+-				ast_uri_decode(piece);
+-				ast_uri_decode(name);
++				ast_uri_decode(piece, ast_uri_http);
++				ast_uri_decode(name, ast_uri_http);
+ 				ast_str_append(&fields, 0, "%s%s", rowcount ? "," : "", name);
+ 				ast_str_append(&values, 0, "%s%s", rowcount ? "," : "", piece);
+ 				rowcount++;
+--- a/funcs/func_uri.c
++++ b/funcs/func_uri.c
+@@ -76,7 +76,7 @@ static int uriencode(struct ast_channel
+ 		return -1;
+ 	}
+ 
+-	ast_uri_encode(data, buf, len, 1);
++	ast_uri_encode(data, buf, len, ast_uri_http);
+ 
+ 	return 0;
+ }
+@@ -91,7 +91,7 @@ static int uridecode(struct ast_channel
+ 	}
+ 
+ 	ast_copy_string(buf, data, len);
+-	ast_uri_decode(buf);
++	ast_uri_decode(buf, ast_uri_http);
+ 
+ 	return 0;
+ }
+--- a/include/asterisk/utils.h
++++ b/include/asterisk/utils.h
+@@ -248,30 +248,58 @@ int ast_base64encode(char *dst, const un
+  */
+ int ast_base64decode(unsigned char *dst, const char *src, int max);
+ 
+-/*! \brief Turn text string to URI-encoded %XX version 
++#define AST_URI_ALPHANUM     (1 << 0)
++#define AST_URI_MARK         (1 << 1)
++#define AST_URI_UNRESERVED   (AST_URI_ALPHANUM | AST_URI_MARK)
++#define AST_URI_LEGACY_SPACE (1 << 2)
++
++#define AST_URI_SIP_USER_UNRESERVED (1 << 20)
++
++extern const struct ast_flags ast_uri_http;
++extern const struct ast_flags ast_uri_http_legacy;
++extern const struct ast_flags ast_uri_sip_user;
++
++/*!
++ * \brief Turn text string to URI-encoded %XX version
+  *
+- * \note 
+- *  At this point, this function is encoding agnostic; it does not
+- *  check whether it is fed legal UTF-8. We escape control
+- *  characters (\x00-\x1F\x7F), '%', and all characters above 0x7F.
+- *  If do_special_char == 1 we will convert all characters except alnum
+- *  and the mark set.
+- *  Outbuf needs to have more memory allocated than the instring
+- *  to have room for the expansion. Every char that is converted
+- *  is replaced by three ASCII characters.
+- *
+- *  \param string	String to be converted
+- *  \param outbuf	Resulting encoded string
+- *  \param buflen	Size of output buffer
+- *  \param do_special_char	Convert all non alphanum characters execept
+- *         those in the mark set as defined by rfc 3261 section 25.1
++ * This function encodes characters according to the rules presented in RFC
++ * 2396 and/or RFC 3261 section 19.1.2 and section 25.1.
++ *
++ * Outbuf needs to have more memory allocated than the instring to have room
++ * for the expansion. Every byte that is converted is replaced by three ASCII
++ * characters.
++ *
++ * \param string string to be converted
++ * \param outbuf resulting encoded string
++ * \param buflen size of output buffer
++ * \param spec flags describing how the encoding should be performed
++ * \return a pointer to the uri encoded string
+  */
+-char *ast_uri_encode(const char *string, char *outbuf, int buflen, int do_special_char);
++char *ast_uri_encode(const char *string, char *outbuf, int buflen, struct ast_flags spec);
+ 
+-/*!	\brief Decode URI, URN, URL (overwrite string)
+-	\param s	String to be decoded 
++/*!
++ * \brief Decode URI, URN, URL (overwrite string)
++ *
++ * \note The ast_uri_http_legacy decode spec flag will cause this function to
++ * decode '+' as ' '.
++ *
++ * \param s string to be decoded
++ * \param spec flags describing how the decoding should be performed
++ */
++void ast_uri_decode(char *s, struct ast_flags spec);
++
++/*!
++ * \brief Escape characters found in a quoted string.
++ *
++ * \note This function escapes quoted characters based on the 'qdtext' set of
++ * allowed characters from RFC 3261 section 25.1.
++ *
++ * \param string string to be escaped
++ * \param outbuf resulting escaped string
++ * \param buflen size of output buffer
++ * \return a pointer to the escaped string
+  */
+-void ast_uri_decode(char *s);
++char *ast_escape_quoted(const char *string, char *outbuf, int buflen);
+ 
+ static force_inline void ast_slinear_saturated_add(short *input, short *value)
+ {
+--- a/main/http.c
++++ b/main/http.c
+@@ -579,24 +579,6 @@ void ast_http_uri_unlink_all_with_key(co
+ }
+ 
+ /*
+- * Decode special characters in http uri.
+- * We have ast_uri_decode to handle %XX sequences, but spaces
+- * are encoded as a '+' so we need to replace them beforehand.
+- */
+-static void http_decode(char *s)
+-{
+-	char *t;
+-
+-	for (t = s; *t; t++) {
+-		if (*t == '+') {
+-			*t = ' ';
+-		}
+-	}
+-
+-	ast_uri_decode(s);
+-}
+-
+-/*
+  * get post variables from client Request Entity-Body, if content type is
+  * application/x-www-form-urlencoded
+  */
+@@ -637,11 +619,11 @@ struct ast_variable *ast_http_get_post_v
+ 	while ((val = strsep(&buf, "&"))) {
+ 		var = strsep(&val, "=");
+ 		if (val) {
+-			http_decode(val);
++			ast_uri_decode(val, ast_uri_http_legacy);
+ 		} else  {
+ 			val = "";
+ 		}
+-		http_decode(var);
++		ast_uri_decode(var, ast_uri_http_legacy);
+ 		if ((v = ast_variable_new(var, val, ""))) {
+ 			if (post_vars) {
+ 				prev->next = v;
+@@ -675,11 +657,11 @@ static int handle_uri(struct ast_tcptls_
+ 		while ((val = strsep(&params, "&"))) {
+ 			var = strsep(&val, "=");
+ 			if (val) {
+-				http_decode(val);
++				ast_uri_decode(val, ast_uri_http_legacy);
+ 			} else  {
+ 				val = "";
+ 			}
+-			http_decode(var);
++			ast_uri_decode(var, ast_uri_http_legacy);
+ 			if ((v = ast_variable_new(var, val, ""))) {
+ 				if (get_vars) {
+ 					prev->next = v;
+@@ -690,7 +672,7 @@ static int handle_uri(struct ast_tcptls_
+ 			}
+ 		}
+ 	}
+-	http_decode(uri);
++	ast_uri_decode(uri, ast_uri_http_legacy);
+ 
+ 	AST_RWLIST_RDLOCK(&uri_redirects);
+ 	AST_RWLIST_TRAVERSE(&uri_redirects, redirect, entry) {
+--- a/main/utils.c
++++ b/main/utils.c
+@@ -371,35 +371,34 @@ static void base64_init(void)
+ 	b2a[(int)'/'] = 63;
+ }
+ 
+-/*! \brief Turn text string to URI-encoded %XX version 
+- *
+- * \note 
+- *  At this point, this function is encoding agnostic; it does not
+- *  check whether it is fed legal UTF-8. We escape control
+- *  characters (\x00-\x1F\x7F), '%', and all characters above 0x7F.
+- *  If do_special_char == 1 we will convert all characters except alnum
+- *  and mark.
+- *  Outbuf needs to have more memory allocated than the instring
+- *  to have room for the expansion. Every char that is converted
+- *  is replaced by three ASCII characters.
+- */
+-char *ast_uri_encode(const char *string, char *outbuf, int buflen, int do_special_char)
++const struct ast_flags ast_uri_http = {AST_URI_UNRESERVED};
++const struct ast_flags ast_uri_http_legacy = {AST_URI_LEGACY_SPACE | AST_URI_UNRESERVED};
++const struct ast_flags ast_uri_sip_user = {AST_URI_UNRESERVED | AST_URI_SIP_USER_UNRESERVED};
++
++char *ast_uri_encode(const char *string, char *outbuf, int buflen, struct ast_flags spec)
+ {
+ 	const char *ptr  = string;	/* Start with the string */
+ 	char *out = outbuf;
+ 	const char *mark = "-_.!~*'()"; /* no encode set, RFC 2396 section 2.3, RFC 3261 sec 25 */
++	const char *user_unreserved = "&=+$,;?/"; /* user-unreserved set, RFC 3261 sec 25 */
+ 
+ 	while (*ptr && out - outbuf < buflen - 1) {
+-		if ((const signed char) *ptr < 32 || *ptr == 0x7f || *ptr == '%' ||
+-				(do_special_char &&
+-				!(*ptr >= '0' && *ptr <= '9') &&      /* num */
+-				!(*ptr >= 'A' && *ptr <= 'Z') &&      /* ALPHA */
+-				!(*ptr >= 'a' && *ptr <= 'z') &&      /* alpha */
+-				!strchr(mark, *ptr))) {               /* mark set */
++		if (ast_test_flag(&spec, AST_URI_LEGACY_SPACE) && *ptr == ' ') {
++			/* for legacy encoding, encode spaces as '+' */
++			*out = '+';
++			out++;
++		} else if (!(ast_test_flag(&spec, AST_URI_MARK)
++				&& strchr(mark, *ptr))
++			&& !(ast_test_flag(&spec, AST_URI_ALPHANUM)
++				&& ((*ptr >= '0' && *ptr <= '9')
++				|| (*ptr >= 'A' && *ptr <= 'Z')
++				|| (*ptr >= 'a' && *ptr <= 'z')))
++			&& !(ast_test_flag(&spec, AST_URI_SIP_USER_UNRESERVED)
++				&& strchr(user_unreserved, *ptr))) {
++
+ 			if (out - outbuf >= buflen - 3) {
+ 				break;
+ 			}
+-
+ 			out += sprintf(out, "%%%02X", (unsigned char) *ptr);
+ 		} else {
+ 			*out = *ptr;	/* Continue copying the string */
+@@ -415,14 +414,16 @@ char *ast_uri_encode(const char *string,
+ 	return outbuf;
+ }
+ 
+-/*! \brief  ast_uri_decode: Decode SIP URI, URN, URL (overwrite the string)  */
+-void ast_uri_decode(char *s) 
++void ast_uri_decode(char *s, struct ast_flags spec)
+ {
+ 	char *o;
+ 	unsigned int tmp;
+ 
+ 	for (o = s; *s; s++, o++) {
+-		if (*s == '%' && s[1] != '\0' && s[2] != '\0' && sscanf(s + 1, "%2x", &tmp) == 1) {
++		if (ast_test_flag(&spec, AST_URI_LEGACY_SPACE) && *s == '+') {
++			/* legacy mode, decode '+' as space */
++			*o = ' ';
++		} else if (*s == '%' && s[1] != '\0' && s[2] != '\0' && sscanf(s + 1, "%2x", &tmp) == 1) {
+ 			/* have '%', two chars and correct parsing */
+ 			*o = tmp;
+ 			s += 2;	/* Will be incremented once more when we break out */
+@@ -432,6 +433,35 @@ void ast_uri_decode(char *s)
+ 	*o = '\0';
+ }
+ 
++char *ast_escape_quoted(const char *string, char *outbuf, int buflen)
++{
++	const char *ptr  = string;
++	char *out = outbuf;
++	char *allow = "\t\v !"; /* allow LWS (minus \r and \n) and "!" */
++
++	while (*ptr && out - outbuf < buflen - 1) {
++		if (!(strchr(allow, *ptr))
++			&& !(*ptr >= '#' && *ptr <= '[') /* %x23 - %x5b */
++			&& !(*ptr >= ']' && *ptr <= '~') /* %x5d - %x7e */
++			&& !(*ptr > 0x7f)) {             /* UTF8-nonascii */
++
++			if (out - outbuf >= buflen - 2) {
++				break;
++			}
++			out += sprintf(out, "\\%c", (unsigned char) *ptr);
++		} else {
++			*out = *ptr;
++			out++;
++		}
++		ptr++;
++	}
++
++	if (buflen) {
++		*out = '\0';
++	}
++
++	return outbuf;
++}
+ /*! \brief  ast_inet_ntoa: Recursive thread safe replacement of inet_ntoa */
+ const char *ast_inet_ntoa(struct in_addr ia)
+ {
+--- a/res/res_agi.c
++++ b/res/res_agi.c
+@@ -1254,7 +1254,7 @@ static enum agi_result launch_asyncagi(s
+ 	/* encode it and send it thru the manager so whoever is going to take
+ 	   care of AGI commands on this channel can decide which AGI commands
+ 	   to execute based on the setup info */
+-	ast_uri_encode(agi_buffer, ami_buffer, AMI_BUF_SIZE, 1);
++	ast_uri_encode(agi_buffer, ami_buffer, AMI_BUF_SIZE, ast_uri_http);
+ 	manager_event(EVENT_FLAG_AGI, "AsyncAGI", "SubEvent: Start\r\nChannel: %s\r\nEnv: %s\r\n", chan->name, ami_buffer);
+ 	while (1) {
+ 		/* bail out if we need to hangup */
+@@ -1286,7 +1286,7 @@ static enum agi_result launch_asyncagi(s
+ 			   manager. Include the CommandID if it was specified
+ 			   when the command was added */
+ 			agi_buffer[res] = '\0';
+-			ast_uri_encode(agi_buffer, ami_buffer, AMI_BUF_SIZE, 1);
++			ast_uri_encode(agi_buffer, ami_buffer, AMI_BUF_SIZE, ast_uri_http);
+ 			if (ast_strlen_zero(cmd->cmd_id))
+ 				manager_event(EVENT_FLAG_AGI, "AsyncAGI", "SubEvent: Exec\r\nChannel: %s\r\nResult: %s\r\n", chan->name, ami_buffer);
+ 			else
+--- a/res/res_config_curl.c
++++ b/res/res_config_curl.c
+@@ -65,7 +65,6 @@ static struct ast_variable *realtime_cur
+ 	char *stringp, *pair, *key;
+ 	int i;
+ 	struct ast_variable *var = NULL, *prev = NULL;
+-	const int EncodeSpecialChars = 1;
+ 
+ 	if (!ast_custom_function_find("CURL")) {
+ 		ast_log(LOG_ERROR, "func_curl.so must be loaded in order to use res_config_curl.so!!\n");
+@@ -84,8 +83,8 @@ static struct ast_variable *realtime_cur
+ 
+ 	for (i = 0; (newparam = va_arg(ap, const char *)); i++) {
+ 		newval = va_arg(ap, const char *);
+-		ast_uri_encode(newparam, buf1, sizeof(buf1), EncodeSpecialChars);
+-		ast_uri_encode(newval, buf2, sizeof(buf2), EncodeSpecialChars);
++		ast_uri_encode(newparam, buf1, sizeof(buf1), ast_uri_http);
++		ast_uri_encode(newval, buf2, sizeof(buf2), ast_uri_http);
+ 		ast_str_append(&query, 0, "%s%s=%s", i > 0 ? "&" : "", buf1, buf2);
+ 	}
+ 	va_end(ap);
+@@ -101,9 +100,9 @@ static struct ast_variable *realtime_cur
+ 	stringp = ast_str_buffer(buffer);
+ 	while ((pair = strsep(&stringp, "&"))) {
+ 		key = strsep(&pair, "=");
+-		ast_uri_decode(key);
++		ast_uri_decode(key, ast_uri_http);
+ 		if (pair) {
+-			ast_uri_decode(pair);
++			ast_uri_decode(pair, ast_uri_http);
+ 		}
+ 
+ 		if (!ast_strlen_zero(key)) {
+@@ -137,7 +136,6 @@ static struct ast_config *realtime_multi
+ 	const char *newparam, *newval;
+ 	char *stringp, *line, *pair, *key, *initfield = NULL;
+ 	int i;
+-	const int EncodeSpecialChars = 1;
+ 	struct ast_variable *var = NULL;
+ 	struct ast_config *cfg = NULL;
+ 	struct ast_category *cat = NULL;
+@@ -165,8 +163,8 @@ static struct ast_config *realtime_multi
+ 			if ((op = strchr(initfield, ' ')))
+ 				*op = '\0';
+ 		}
+-		ast_uri_encode(newparam, buf1, sizeof(buf1), EncodeSpecialChars);
+-		ast_uri_encode(newval, buf2, sizeof(buf2), EncodeSpecialChars);
++		ast_uri_encode(newparam, buf1, sizeof(buf1), ast_uri_http);
++		ast_uri_encode(newval, buf2, sizeof(buf2), ast_uri_http);
+ 		ast_str_append(&query, 0, "%s%s=%s", i > 0 ? "&" : "", buf1, buf2);
+ 	}
+ 	va_end(ap);
+@@ -193,9 +191,9 @@ static struct ast_config *realtime_multi
+ 
+ 		while ((pair = strsep(&line, "&"))) {
+ 			key = strsep(&pair, "=");
+-			ast_uri_decode(key);
++			ast_uri_decode(key, ast_uri_http);
+ 			if (pair) {
+-				ast_uri_decode(pair);
++				ast_uri_decode(pair, ast_uri_http);
+ 			}
+ 
+ 			if (!strcasecmp(key, initfield) && pair) {
+@@ -235,7 +233,6 @@ static int update_curl(const char *url,
+ 	const char *newparam, *newval;
+ 	char *stringp;
+ 	int i, rowcount = -1;
+-	const int EncodeSpecialChars = 1;
+ 
+ 	if (!ast_custom_function_find("CURL")) {
+ 		ast_log(LOG_ERROR, "func_curl.so must be loaded in order to use res_config_curl.so!!\n");
+@@ -250,14 +247,14 @@ static int update_curl(const char *url,
+ 		return -1;
+ 	}
+ 
+-	ast_uri_encode(keyfield, buf1, sizeof(buf1), EncodeSpecialChars);
+-	ast_uri_encode(lookup, buf2, sizeof(buf2), EncodeSpecialChars);
++	ast_uri_encode(keyfield, buf1, sizeof(buf1), ast_uri_http);
++	ast_uri_encode(lookup, buf2, sizeof(buf2), ast_uri_http);
+ 	ast_str_set(&query, 0, "${CURL(%s/update?%s=%s,", url, buf1, buf2);
+ 
+ 	for (i = 0; (newparam = va_arg(ap, const char *)); i++) {
+ 		newval = va_arg(ap, const char *);
+-		ast_uri_encode(newparam, buf1, sizeof(buf1), EncodeSpecialChars);
+-		ast_uri_encode(newval, buf2, sizeof(buf2), EncodeSpecialChars);
++		ast_uri_encode(newparam, buf1, sizeof(buf1), ast_uri_http);
++		ast_uri_encode(newval, buf2, sizeof(buf2), ast_uri_http);
+ 		ast_str_append(&query, 0, "%s%s=%s", i > 0 ? "&" : "", buf1, buf2);
+ 	}
+ 	va_end(ap);
+@@ -286,7 +283,6 @@ static int update2_curl(const char *url,
+ 	const char *newparam, *newval;
+ 	char *stringp;
+ 	int rowcount = -1, lookup = 1, first = 1;
+-	const int EncodeSpecialChars = 1;
+ 
+ 	if (!ast_custom_function_find("CURL")) {
+ 		ast_log(LOG_ERROR, "func_curl.so must be loaded in order to use res_config_curl.so!!\n");
+@@ -315,8 +311,8 @@ static int update2_curl(const char *url,
+ 			}
+ 		}
+ 		newval = va_arg(ap, const char *);
+-		ast_uri_encode(newparam, buf1, sizeof(buf1), EncodeSpecialChars);
+-		ast_uri_encode(newval, buf2, sizeof(buf2), EncodeSpecialChars);
++		ast_uri_encode(newparam, buf1, sizeof(buf1), ast_uri_http);
++		ast_uri_encode(newval, buf2, sizeof(buf2), ast_uri_http);
+ 		ast_str_append(&query, 0, "%s%s=%s", first ? "" : "&", buf1, buf2);
+ 		first = 0;
+ 	}
+@@ -363,7 +359,6 @@ static int store_curl(const char *url, c
+ 	const char *newparam, *newval;
+ 	char *stringp;
+ 	int i, rowcount = -1;
+-	const int EncodeSpecialChars = 1;
+ 
+ 	if (!ast_custom_function_find("CURL")) {
+ 		ast_log(LOG_ERROR, "func_curl.so must be loaded in order to use res_config_curl.so!!\n");
+@@ -382,8 +377,8 @@ static int store_curl(const char *url, c
+ 
+ 	for (i = 0; (newparam = va_arg(ap, const char *)); i++) {
+ 		newval = va_arg(ap, const char *);
+-		ast_uri_encode(newparam, buf1, sizeof(buf1), EncodeSpecialChars);
+-		ast_uri_encode(newval, buf2, sizeof(buf2), EncodeSpecialChars);
++		ast_uri_encode(newparam, buf1, sizeof(buf1), ast_uri_http);
++		ast_uri_encode(newval, buf2, sizeof(buf2), ast_uri_http);
+ 		ast_str_append(&query, 0, "%s%s=%s", i > 0 ? "&" : "", buf1, buf2);
+ 	}
+ 	va_end(ap);
+@@ -426,7 +421,6 @@ static int destroy_curl(const char *url,
+ 	const char *newparam, *newval;
+ 	char *stringp;
+ 	int i, rowcount = -1;
+-	const int EncodeSpecialChars = 1;
+ 
+ 	if (!ast_custom_function_find("CURL")) {
+ 		ast_log(LOG_ERROR, "func_curl.so must be loaded in order to use res_config_curl.so!!\n");
+@@ -441,14 +435,14 @@ static int destroy_curl(const char *url,
+ 		return -1;
+ 	}
+ 
+-	ast_uri_encode(keyfield, buf1, sizeof(buf1), EncodeSpecialChars);
+-	ast_uri_encode(lookup, buf2, sizeof(buf2), EncodeSpecialChars);
++	ast_uri_encode(keyfield, buf1, sizeof(buf1), ast_uri_http);
++	ast_uri_encode(lookup, buf2, sizeof(buf2), ast_uri_http);
+ 	ast_str_set(&query, 0, "${CURL(%s/destroy,%s=%s&", url, buf1, buf2);
+ 
+ 	for (i = 0; (newparam = va_arg(ap, const char *)); i++) {
+ 		newval = va_arg(ap, const char *);
+-		ast_uri_encode(newparam, buf1, sizeof(buf1), EncodeSpecialChars);
+-		ast_uri_encode(newval, buf2, sizeof(buf2), EncodeSpecialChars);
++		ast_uri_encode(newparam, buf1, sizeof(buf1), ast_uri_http);
++		ast_uri_encode(newval, buf2, sizeof(buf2), ast_uri_http);
+ 		ast_str_append(&query, 0, "%s%s=%s", i > 0 ? "&" : "", buf1, buf2);
+ 	}
+ 	va_end(ap);
+@@ -475,7 +469,6 @@ static int require_curl(const char *url,
+ 	struct ast_str *query, *buffer;
+ 	char *elm, field[256];
+ 	int type, size;
+-	const int EncodeSpecialChars = 1;
+ 
+ 	if (!ast_custom_function_find("CURL")) {
+ 		ast_log(LOG_ERROR, "func_curl.so must be loaded in order to use res_config_curl.so!!\n");
+@@ -495,7 +488,7 @@ static int require_curl(const char *url,
+ 	while ((elm = va_arg(ap, char *))) {
+ 		type = va_arg(ap, require_type);
+ 		size = va_arg(ap, int);
+-		ast_uri_encode(elm, field, sizeof(field), EncodeSpecialChars);
++		ast_uri_encode(elm, field, sizeof(field), ast_uri_http);
+ 		ast_str_append(&query, 0, "%s=%s%%3A%d", field,
+ 			type == RQ_CHAR ? "char" :
+ 			type == RQ_INTEGER1 ? "integer1" :
+@@ -525,7 +518,6 @@ static struct ast_config *config_curl(co
+ 	struct ast_str *query, *buffer;
+ 	char buf1[200];
+ 	char *stringp, *line, *pair, *key;
+-	const int EncodeSpecialChars = 1;
+ 	int last_cat_metric = -1, cat_metric = -1;
+ 	struct ast_category *cat = NULL;
+ 	char *cur_cat = "";
+@@ -545,7 +537,7 @@ static struct ast_config *config_curl(co
+ 		return NULL;
+ 	}
+ 
+-	ast_uri_encode(file, buf1, sizeof(buf1), EncodeSpecialChars);
++	ast_uri_encode(file, buf1, sizeof(buf1), ast_uri_http);
+ 	ast_str_set(&query, 0, "${CURL(%s/static?file=%s)}", url, buf1);
+ 
+ 	/* Do the CURL query */
+@@ -562,9 +554,9 @@ static struct ast_config *config_curl(co
+ 
+ 		while ((pair = strsep(&line, "&"))) {
+ 			key = strsep(&pair, "=");
+-			ast_uri_decode(key);
++			ast_uri_decode(key, ast_uri_http);
+ 			if (pair) {
+-				ast_uri_decode(pair);
++				ast_uri_decode(pair, ast_uri_http);
+ 			}
+ 
+ 			if (!strcasecmp(key, "category")) {
+--- a/tests/test_utils.c
++++ b/tests/test_utils.c
+@@ -45,9 +45,47 @@ AST_TEST_DEFINE(uri_encode_decode_test)
+ {
+ 	int res = AST_TEST_PASS;
+ 	const char *in = "abcdefghijklmnopurstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 1234567890 ~`!@#$%^&*()_-+={[}]|\\:;\"'<,>.?/";
+-	const char *expected1 = "abcdefghijklmnopurstuvwxyz%20ABCDEFGHIJKLMNOPQRSTUVWXYZ%201234567890%20~%60!%40%23%24%25%5E%26*()_-%2B%3D%7B%5B%7D%5D%7C%5C%3A%3B%22'%3C%2C%3E.%3F%2F";
+-	const char *expected2 = "abcdefghijklmnopurstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 1234567890 ~`!@#$%25^&*()_-+={[}]|\\:;\"'<,>.?/";
+ 	char out[256] = { 0 };
++	char small[4] = { 0 };
++	const struct ast_flags none = {0};
++	int i = 0;
++
++	static struct {
++		const char *spec_str;
++		struct ast_flags spec;
++
++		char *buf;
++		size_t buflen;
++
++		const char *input;
++		const char *output;
++		const char *decoded_output;
++	} tests[5];
++
++#define INIT_ENCODE_TEST(s, buffer, in, out, dec_out) do { \
++	if (i < ARRAY_LEN(tests)) { \
++		tests[i].spec_str = #s; \
++		tests[i].spec = s; \
++		tests[i].buf = buffer; \
++		tests[i].buflen = sizeof(buffer); \
++		tests[i].input = in; \
++		tests[i].output = out; \
++		tests[i].decoded_output = dec_out; \
++		i++; \
++	} else { \
++			ast_test_status_update(test, "error: 'tests' array too small\n"); \
++			res = AST_TEST_FAIL; \
++	} \
++	} while (0)
++
++	INIT_ENCODE_TEST(ast_uri_http, out, in,
++		"abcdefghijklmnopurstuvwxyz%20ABCDEFGHIJKLMNOPQRSTUVWXYZ%201234567890%20~%60!%40%23%24%25%5E%26*()_-%2B%3D%7B%5B%7D%5D%7C%5C%3A%3B%22'%3C%2C%3E.%3F%2F", in);
++	INIT_ENCODE_TEST(ast_uri_http_legacy, out, in,
++		"abcdefghijklmnopurstuvwxyz+ABCDEFGHIJKLMNOPQRSTUVWXYZ+1234567890+~%60!%40%23%24%25%5E%26*()_-%2B%3D%7B%5B%7D%5D%7C%5C%3A%3B%22'%3C%2C%3E.%3F%2F", in);
++	INIT_ENCODE_TEST(ast_uri_sip_user, out, in,
++		"abcdefghijklmnopurstuvwxyz%20ABCDEFGHIJKLMNOPQRSTUVWXYZ%201234567890%20~%60!%40%23$%25%5E&*()_-+=%7B%5B%7D%5D%7C%5C%3A;%22'%3C,%3E.?/", in);
++	INIT_ENCODE_TEST(none, small, in, "%61", "a");
++	INIT_ENCODE_TEST(ast_uri_http, small, in, "abc", "abc");
+ 
+ 	switch (cmd) {
+ 	case TEST_INIT:
+@@ -60,43 +98,73 @@ AST_TEST_DEFINE(uri_encode_decode_test)
+ 		break;
+ 	}
+ 
+-	ast_test_status_update(test, "Input before executing ast_uri_encode:\n%s\n", in);
+-	ast_test_status_update(test, "Output expected for ast_uri_encode with enabling do_special_char: %s\n", expected1);
+-	ast_test_status_update(test, "Output expected for ast_uri_encode with out enabling do_special_char: %s\n\n", expected2);
+-
+-	/* Test with do_special_char enabled */
+-	ast_uri_encode(in, out, sizeof(out), 1);
+-	ast_test_status_update(test, "Output after enabling do_special_char:\n%s\n", out);
+-	if (strcmp(expected1, out)) {
+-		ast_test_status_update(test, "ENCODE DOES NOT MATCH EXPECTED, FAIL\n");
+-		res = AST_TEST_FAIL;
+-	}
++	for (i = 0; i < ARRAY_LEN(tests); i++) {
++		ast_uri_encode(tests[i].input, tests[i].buf, tests[i].buflen, tests[i].spec);
++		if (strcmp(tests[i].output, tests[i].buf)) {
++			ast_test_status_update(test, "encoding with %s did not match expected output, FAIL\n", tests[i].spec_str);
++			ast_test_status_update(test, "original: %s\n", tests[i].input);
++			ast_test_status_update(test, "expected: %s\n", tests[i].output);
++			ast_test_status_update(test, "result: %s\n", tests[i].buf);
++			res = AST_TEST_FAIL;
++			continue;
++		}
+ 
+-	/* Verify uri decode matches original */
+-	ast_uri_decode(out);
+-	if (strcmp(in, out)) {
+-		ast_test_status_update(test, "Decoded string did not match original input\n");
+-		res = AST_TEST_FAIL;
+-	} else {
+-		ast_test_status_update(test, "Decoded string matched original input\n");
++		ast_uri_decode(tests[i].buf, tests[i].spec);
++		if (strcmp(tests[i].decoded_output, tests[i].buf)) {
++			ast_test_status_update(test, "decoding with %s did not match the original input (or expected decoded output)\n", tests[i].spec_str);
++			ast_test_status_update(test, "original: %s\n", tests[i].input);
++			ast_test_status_update(test, "expected: %s\n", tests[i].decoded_output);
++			ast_test_status_update(test, "decoded: %s\n", tests[i].buf);
++			res = AST_TEST_FAIL;
++		}
+ 	}
+ 
+-	/* Test with do_special_char disabled */
+-	out[0] = '\0';
+-	ast_uri_encode(in, out, sizeof(out), 0);
+-	ast_test_status_update(test, "Output after disabling do_special_char: %s\n", out);
+-	if (strcmp(expected2, out)) {
+-		ast_test_status_update(test, "ENCODE DOES NOT MATCH EXPECTED, FAIL\n");
+-		res = AST_TEST_FAIL;
++	return res;
++}
++
++AST_TEST_DEFINE(quoted_escape_test)
++{
++	int res = AST_TEST_PASS;
++	const char *in = "a\"bcdefg\"hijkl\\mnopqrs tuv\twxyz";
++	char out[256] = { 0 };
++	char small[4] = { 0 };
++	int i;
++
++	static struct {
++		char *buf;
++		const size_t buflen;
++
++		const char *output;
++	} tests[] = {
++		{0, sizeof(out),
++			"a\\\"bcdefg\\\"hijkl\\\\mnopqrs tuv\twxyz"},
++		{0, sizeof(small),
++			"a\\\""},
++	};
++
++	tests[0].buf = out;
++	tests[1].buf = small;
++
++	switch (cmd) {
++	case TEST_INIT:
++		info->name = "quoted_escape_test";
++		info->category = "/main/utils/";
++		info->summary = "escape a quoted string";
++		info->description = "Escape a string to be quoted and check the result.";
++		return AST_TEST_NOT_RUN;
++	case TEST_EXECUTE:
++		break;
+ 	}
+ 
+-	/* Verify uri decode matches original */
+-	ast_uri_decode(out);
+-	if (strcmp(in, out)) {
+-		ast_test_status_update(test, "Decoded string did not match original input\n");
+-		res = AST_TEST_FAIL;
+-	} else {
+-		ast_test_status_update(test, "Decoded string matched original input\n");
++	for (i = 0; i < ARRAY_LEN(tests); i++) {
++		ast_escape_quoted(in, tests[i].buf, tests[i].buflen);
++		if (strcmp(tests[i].output, tests[i].buf)) {
++			ast_test_status_update(test, "ESCAPED DOES NOT MATCH EXPECTED, FAIL\n");
++			ast_test_status_update(test, "original: %s\n", in);
++			ast_test_status_update(test, "expected: %s\n", tests[i].output);
++			ast_test_status_update(test, "result: %s\n", tests[i].buf);
++			res = AST_TEST_FAIL;
++		}
+ 	}
+ 
+ 	return res;
+@@ -348,6 +416,7 @@ AST_TEST_DEFINE(agi_loaded_test)
+ static int unload_module(void)
+ {
+ 	AST_TEST_UNREGISTER(uri_encode_decode_test);
++	AST_TEST_UNREGISTER(quoted_escape_test);
+ 	AST_TEST_UNREGISTER(md5_test);
+ 	AST_TEST_UNREGISTER(sha1_test);
+ 	AST_TEST_UNREGISTER(base64_test);
+@@ -360,6 +429,7 @@ static int unload_module(void)
+ static int load_module(void)
+ {
+ 	AST_TEST_REGISTER(uri_encode_decode_test);
++	AST_TEST_REGISTER(quoted_escape_test);
+ 	AST_TEST_REGISTER(md5_test);
+ 	AST_TEST_REGISTER(sha1_test);
+ 	AST_TEST_REGISTER(base64_test);

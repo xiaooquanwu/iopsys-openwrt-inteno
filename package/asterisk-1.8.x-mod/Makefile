@@ -14,7 +14,7 @@ PKG_RELEASE:=1.0.2
 PKG_SOURCE:=asterisk-$(PKG_VERSION)-mod.tar.gz
 PKG_SOURCE_URL:=ssh://inteno@ihgsp.inteno.se/home/inteno/private/git/asterisk-1.8.x.git
 PKG_MD5SUM:=bc2a1168603815c23f204927d1e73239
-PKG_SOURCE_VERSION:=2d7aa48701688a4199dd9a4be35e456651030c13
+PKG_SOURCE_VERSION:=413e27be4d20d03bdba6338a159bc8a5577fb5c4
 PKG_SOURCE_SUBDIR:=asterisk-$(PKG_VERSION)
 
 PKG_BUILD_DIR=$(BUILD_DIR)/asterisk-$(PKG_VERSION)
@@ -41,7 +41,7 @@ define Package/asterisk18-mod
 $(call Package/asterisk18-mod/Default)
   TITLE:=Complete open source PBX, v1.8x
   MENU:=1
-  DEPENDS:= +libopenssl +libncurses +libpopt +libpthread +zlib @!TARGET_avr32
+  DEPENDS:= +bcmkernel +libopenssl +libncurses +libpopt +libpthread +zlib @!TARGET_avr32
 endef
 
 define Package/asterisk18-mod/description
@@ -307,6 +307,34 @@ CONFIGURE_ARGS+= \
 EXTRA_CFLAGS+= $(TARGET_CPPFLAGS)
 EXTRA_LDFLAGS+= $(TARGET_LDFLAGS)
 
+BCMKERNEL_DIR=$(BUILD_DIR)/bcmkernel-3.4-4.14/bcm963xx/
+EXTRA_CFLAGS += -I$(BCMKERNEL_DIR)/bcmdrivers/broadcom/include/bcm963xx/
+EXTRA_CFLAGS += -I$(BCMKERNEL_DIR)/bcmdrivers/opensource/include/bcm963xx/
+EXTRA_CFLAGS += -I$(BCMKERNEL_DIR)/xChange/dslx_common/voice_res_gw/endpt/inc/
+EXTRA_CFLAGS += -I$(BCMKERNEL_DIR)/xChange/dslx_common/voice_res_gw/inc
+EXTRA_CFLAGS += -I$(BCMKERNEL_DIR)/xChange/dslx_common/voice_res_gw/codec
+EXTRA_CFLAGS += -I$(BCMKERNEL_DIR)/xChange/dslx_common/xchg_common/bos/publicInc/
+EXTRA_CFLAGS += -I$(BCMKERNEL_DIR)/xChange/dslx_common/voice_res_gw/casCtl/inc/
+EXTRA_CFLAGS += -I$(BCMKERNEL_DIR)/xChange/dslx_common/xchg_drivers/inc
+
+DECTD_DIR=$(BCMKERNEL_DIR)/userspace/private/apps/dectd
+EXTRA_CFLAGS += -I$(DECTD_DIR)
+EXTRA_CFLAGS += -I$(DECTD_DIR)/inc
+EXTRA_CFLAGS += -I$(DECTD_DIR)/dectI/inc
+EXTRA_CFLAGS += -I$(DECTD_DIR)/dectI/inc/Phoenix
+EXTRA_CFLAGS += -I$(DECTD_DIR)/dectI/inc/Phoenix/Api
+EXTRA_CFLAGS += -I$(DECTD_DIR)/dectI/inc/Phoenix/Api/CodecList
+EXTRA_CFLAGS += -I$(DECTD_DIR)/dectI/inc/Phoenix/Api/FpCc
+EXTRA_CFLAGS += -I$(DECTD_DIR)/dectI/inc/Phoenix/Api/FpFwu
+EXTRA_CFLAGS += -I$(DECTD_DIR)/dectI/inc/Phoenix/Api/FpMm
+EXTRA_CFLAGS += -I$(DECTD_DIR)/dectI/inc/Phoenix/Api/FpNoEmission
+EXTRA_CFLAGS += -I$(DECTD_DIR)/dectI/inc/Phoenix/Api/GenEveNot
+EXTRA_CFLAGS += -I$(DECTD_DIR)/dectI/inc/Phoenix/Api/FpGeneral
+EXTRA_CFLAGS += -I$(DECTD_DIR)/dectI/inc/Phoenix/Api/Las
+EXTRA_CFLAGS += -I$(DECTD_DIR)/dectI/inc/Phoenix/Api/LasDb
+EXTRA_CFLAGS += -I$(DECTD_DIR)/dectI/inc/Phoenix/Api/Project
+EXTRA_CFLAGS += -I$(DECTD_DIR)/dectI/inc/Phoenix/Api/Types
+EXTRA_CFLAGS += -DBOS_OS_LINUXUSER -DBOS_CFG_TIME -DNTR_SUPPORT
 
 define Build/Configure
 	-rm $(PKG_BUILD_DIR)/menuselect.makeopts
