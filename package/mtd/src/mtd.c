@@ -53,6 +53,7 @@
 #define JFFS2_DEFAULT_DIR	"" /* directory name without /, empty means root dir */
 
 static char *buf = NULL;
+static char *buf2 = NULL;
 static char *imagefile = NULL;
 static char *jffs2file = NULL, *jffs2dir = JFFS2_DEFAULT_DIR;
 static int buflen = 0;
@@ -60,6 +61,7 @@ int quiet;
 int no_erase;
 int mtdsize = 0;
 int erasesize = 0;
+int padding = 0;
 
 int mtd_open(const char *mtd, bool block)
 {
@@ -393,8 +395,12 @@ resume:
 				}
 			}
 
-			if (r == 0)
-				break;
+			if (r == 0 && padding) {
+                memset(buf+buflen, 0xff, erasesize-buflen);
+                break;
+            }
+            else if (r == 0)
+                break;
 
 			buflen += r;
 		}
@@ -470,9 +476,17 @@ resume:
 		if (!quiet)
 			fprintf(stderr, "\b\b\b[w]");
 
-		if ((result = write(fd, buf + offset, buflen)) < buflen) {
+        if (padding)
+            result = write(fd, buf + offset, erasesize);
+        else {
+            result = write(fd, buf + offset, buflen);
+        }
+
+        if (result < buflen) {
 			if (result < 0) {
 				fprintf(stderr, "Error writing image.\n");
+                if (!padding)
+                    fprintf(stderr, "Use padding option -x\n");
 				exit(1);
 			} else {
 				fprintf(stderr, "Insufficient space.\n");
@@ -531,6 +545,7 @@ static void usage(void)
 	"                                           twice: no status messages)\n"
 	"        -n                      write without first erasing the blocks\n"
 	"        -r                      reboot after successful command\n"
+	"        -x                      Pad to page size\n"
 	"        -f                      force write without trx checks\n"
 	"        -e <device>             erase <device> before executing the command\n"
 	"        -d <name>               directory for jffs2write, defaults to \"tmp\"\n"
@@ -593,7 +608,7 @@ int main (int argc, char **argv)
 #ifdef FIS_SUPPORT
 			"F:"
 #endif
-			"frnqe:d:j:p:o:")) != -1)
+			"frnqxe:d:j:p:o:")) != -1)
 		switch (ch) {
 			case 'f':
 				force = 1;
@@ -628,6 +643,9 @@ int main (int argc, char **argv)
 					fprintf(stderr, "-p: illegal numeric string\n");
 					usage();
 				}
+				break;
+			case 'x':
+				padding = 1;
 				break;
 			case 'o':
 				if (!mtd_fixtrx) {
