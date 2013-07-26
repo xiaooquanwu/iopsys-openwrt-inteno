@@ -4,8 +4,8 @@ PKG_BRANCH:=svn-0.11
 PKG_NAME:=luci
 PKG_RELEASE:=1.0.1
 
-PKG_VERSION:=inteno-1.0.13
-PKG_SOURCE_VERSION:=af0d2a7b8d1c50cb7027df8755c7aba4be209232
+PKG_VERSION:=inteno-1.0.23
+PKG_SOURCE_VERSION:=f7a7e69f5f08ff76775c9e919389c1331762fddf
 ifeq ($(CONFIG_PACKAGE_bcmkernel),y)
 PKG_SOURCE_URL:=ssh://inteno@ihgsp.inteno.se/home/inteno/public/git/luci-inteno.git
 else
@@ -312,6 +312,19 @@ define Package/luci-app-diag-devinfo/conffiles
 /etc/config/luci_devinfo
 endef
 
+$(eval $(call application,voice-client,LuCI Voice Interface (client),\
+	+asterisk18-mod \
+	+asterisk18-mod-func-channel \
+	+asterisk18-mod-func-db \
+	+asterisk18-mod-app-transfer \
+	+asterisk18-mod-app-read \
+	+asterisk18-mod-func-shell \
+	+asterisk18-mod-pbx-spool \
+	+asterisk18-mod-app-playtones \
+	+asterisk18-mod-sounds \
+	+brcminfo))
+
+$(eval $(call application,voice-pbx,LuCI Voice Interface (pbx)))
 
 $(eval $(call application,siitwizard,SIIT IPv4-over-IPv6 configuration wizard,\
 	+PACKAGE_luci-app-siitwizard:kmod-siit))
