@@ -21,18 +21,6 @@ bcm_dsl_annex() {
         fi
 }
 
-brcm_db_setup() {
-# This should be moved later in the boot process so overlay will pick up the changes
-	if [ -f "/lib/db/config/hw" ]
-	then
-		echo "Using previous board db"
-	else
-		echo "Initializing board db"
-# This will be a selector instead
-		cp /lib/db/boards/hw /lib/db/config/hw
-	fi
-}
-
 brcm_insmod() {
 	echo Loading brcm modules
         test -e /lib/modules/3.4.11-rt19/extra/chipinfo.ko     && insmod /lib/modules/3.4.11-rt19/extra/chipinfo.ko
@@ -234,4 +222,4 @@ mknod /dev/sdh4 b 8 116
 brcm_env
 brcm_insmod
 #bcm_dsl_annex
-brcm_db_setup
+

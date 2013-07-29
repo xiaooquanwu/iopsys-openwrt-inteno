@@ -139,7 +139,7 @@ define Package/base-files/install
 	chmod 1777 $(1)/tmp
 
 	$(call ImageConfigOptions,$(1))
-	$(call Package/base-files/install-target,$(1))
+#	$(call Package/base-files/install-target,$(1))
 	for conffile in $(1)/etc/config/*; do \
 		if [ -f "$$$$conffile" ]; then \
 			grep "$$$${conffile##$(1)}" $(1)/CONTROL/conffiles || \
