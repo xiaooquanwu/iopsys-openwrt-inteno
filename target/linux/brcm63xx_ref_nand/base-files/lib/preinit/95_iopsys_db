@@ -7,6 +7,7 @@ iopsys_initialize_db() {
 	else
 		echo "Setting up static db"
 		BOARDID=`cat /proc/nvram/BoardId`
+		[ -d "/lib/db/config" ] || mkdir /lib/db/config
 		cp /lib/db/boards/$BOARDID /lib/db/config/hw
 
 		echo "Populating dynamic db parameters"
