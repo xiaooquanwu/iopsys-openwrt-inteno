@@ -1,0 +1,63 @@
+#!/bin/sh
+
+iopsys_generate_default_config() {
+
+    local net_ifname=$(uci get -q network.wan.ifname)
+    if [ "$net_ifname" == "" ]; then
+        echo "Setting default network config"
+
+	    local lanports       =$(uci get -q /lib/db/config/hw.board.ethernetLanPorts)
+	    local wanEthernetPort=$(uci get -q /lib/db/config/hw.board.ethernetWanPort)
+        local wanAdslPort    =$(uci get -q /lib/db/config/hw.board.adslWanPort)
+        local wanVdslPort    =$(uci get -q /lib/db/config/hw.board.vdslWanPort)
+
+        if [ "$wanEthernetPort" != "" ]; then
+            wanEthernetPort_dot=$wanEthernetPort.1
+        fi
+        if [ "$wanAdslPort" != "" ]; then
+            wanAdslPort_dot=$wanAdslPort.1
+        fi
+        if [ "$wanVdslPort" != "" ]; then
+            wanVdslPort_dot=$wanVdslPort.1
+        fi
+
+	    local wanports="$wanEthernetPort_dot $wanAdslPort_dot $wanVdslPort_dot"
+
+	    #uci set network.lan.ifname="$lanports"
+	    uci set network.wan.ifname="$wanports"
+	    uci commit
+        sync
+        sleep 2
+	fi
+
+    local l2_ifname=$(uci get -q layer2_interface_ethernet.Wan.ifname)
+    if [ "$l2_ifname" != "" ]; then
+        echo "Setting layer2_interface_ethernet config"
+
+	    local wanEthernetPort=$(uci get -q /lib/db/config/hw.board.ethernetWanPort)
+        local wanAdslPort    =$(uci get -q /lib/db/config/hw.board.adslWanPort)
+        local wanVdslPort    =$(uci get -q /lib/db/config/hw.board.vdslWanPort)
+
+        if [ "$wanEthernetPort" != "" ]; then
+            wanEthernetPort_dot=$wanEthernetPort.1
+        fi
+        if [ "$wanAdslPort" != "" ]; then
+            wanAdslPort_dot=$wanAdslPort.1
+        fi
+        if [ "$wanVdslPort" != "" ]; then
+            wanVdslPort_dot=$wanVdslPort.1
+        fi
+
+	    local wanports="$wanEthernetPort_dot $wanAdslPort_dot $wanVdslPort_dot"
+
+        uci set layer2_interface_ethernet.Wan.baseifname="$wanEthernetPort"
+        uci set layer2_interface_ethernet.Wan.ifname="$wanports"
+        uci set layer2_interface_ethernet.Wan.name="WANGB1"
+        uci commit
+        sync
+        sleep 2
+    fi
+}
+
+boot_hook_add preinit_main iopsys_generate_default_config
+
