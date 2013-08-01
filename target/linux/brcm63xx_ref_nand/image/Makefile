@@ -54,9 +54,10 @@ define Image/Prepare
 	cp $(TOPDIR)/target/linux/brcm63xx_ref_nand/base-files/etc/banner $(BUILD_DIR_ROOT)/etc/banner
 	sed -i '/^IOP Version:/d' $(BUILD_DIR_ROOT)/etc/banner
 	sed -i '7iIOP Version: $(IHGSP_BUILD_VERSION)' $(BUILD_DIR_ROOT)/etc/banner
-	echo $(IHGSP_BUILD_VERSION)  > $(BUILD_DIR_ROOT)/etc/ihgsp_version
-	echo $(IHGSP_BUILD_VERSION)  > $(BUILD_DIR_ROOT)/etc/iop_version
-	echo $(CONFIG_TARGET_IBOARDID)> $(BUILD_DIR_ROOT)/etc/iop_iboardid
+	mkdir $(BUILD_DIR_ROOT)/lib/db/version
+	echo $(IHGSP_BUILD_VERSION)  > $(BUILD_DIR_ROOT)/lib/db/version/iop_version
+	echo $(CONFIG_TARGET_IBOARDID)> $(BUILD_DIR_ROOT)/lib/db/version/iop_iboardid
+
 endef
 
 define Image/Build
