@@ -6,24 +6,26 @@
 #
 include $(TOPDIR)/rules.mk
 include $(INCLUDE_DIR)/image.mk
-
+IHGSP_VERSION:=$(CONFIG_TARGET_MODEL_NAME)_$(CONFIG_TARGET_CUSTOMER)$(CONFIG_TARGET_VERSION)-$(shell date '+%y%m%d-%H%M')
+IHGSP_BUILD_VERSION:=$(shell echo $(IHGSP_VERSION) | sed s/\"//g)
+BUILD_DIR_ROOT=$(BUILD_DIR)/root-brcmref_nand
 KERNEL_ENTRY:= $(shell readelf -h $(KDIR)/vmlinux.bcm.elf | grep Entry | awk '{print $$4}')
 
 define Image/Build/REF
 	
 	# Tag the rootfs image
 	$(STAGING_DIR_HOST)/bin/imagetag_nand -f $(KDIR)/root.$(1) \
-		-o $(BIN_DIR)/IOPSYS-$(4).w \
+		-o $(BIN_DIR)/$(IHGSP_BUILD_VERSION)_fs_image \
 		-b $(2) \
                 -c $(3) \
 		-q NAND128
 
 	# Concat the cfe and rootfs together
-	cat $(BIN_DIR)/IOPSYS-$(3)_cfe.w $(KDIR)/root.$(1) > $(KDIR)/cfe_fs_image_128
+	cat $(BIN_DIR)/$(IHGSP_BUILD_VERSION)_cfe $(KDIR)/root.$(1) > $(KDIR)/cfe_fs_image_128
 
 	# Tag the combined image
 	$(STAGING_DIR_HOST)/bin/imagetag_nand -f $(KDIR)/cfe_fs_image_128 \
-		-o $(BIN_DIR)/IOPSYS-$(4)_cfe.w \
+		-o $(BIN_DIR)/$(IHGSP_BUILD_VERSION).w \
 		-b $(2) \
                 -c $(3) \
 		-q NAND128	
@@ -33,7 +35,7 @@ endef
 define Image/Build/CFE
 	# Tag the cfe image
 	$(STAGING_DIR_HOST)/bin/imagetag_nand -f $(KDIR)/cfe$(2)_nand.v \
-		-o $(BIN_DIR)/IOPSYS-$(2)_cfe.w \
+		-o $(BIN_DIR)/$(IHGSP_BUILD_VERSION)_cfe \
 		-b $(1) \
                 -c $(2) \
 		-q NAND128
@@ -52,8 +54,8 @@ endef
 
 define Image/Build
 	$(call Image/Build/CFE,963268,63268)
-	$(call Image/Build/REF,$(1),963268,63268,VG50-WU7U)
-	$(call Image/Build/REF,$(1),963268,63268,DG301-W7P2U)
+	#$(call Image/Build/REF,$(1),963268,63268,VG50-WU7U)
+	$(call Image/Build/REF,$(1),963268,63268)
 endef
 
 $(eval $(call BuildImage))
