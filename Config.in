@@ -130,6 +130,8 @@ menu "Target Images"
 		default 5
 		help
 		    Allows you to change the percentage of reserved blocks in the root filesystem
+ 	
+	source "target/linux/brcm63xx_ref_nand/Config.in"
 
 endmenu
 
@@ -536,7 +538,6 @@ menuconfig TARGET_OPTIONS
 		  Most people will answer N.
 
 source "toolchain/Config.in"
-
 source "target/imagebuilder/Config.in"
 source "target/sdk/Config.in"
 source "target/toolchain/Config.in"

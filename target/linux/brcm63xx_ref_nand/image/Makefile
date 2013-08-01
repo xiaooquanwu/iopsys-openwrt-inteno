@@ -8,7 +8,7 @@ include $(TOPDIR)/rules.mk
 include $(INCLUDE_DIR)/image.mk
 IHGSP_VERSION:=$(CONFIG_TARGET_MODEL_NAME)_$(CONFIG_TARGET_CUSTOMER)$(CONFIG_TARGET_VERSION)-$(shell date '+%y%m%d-%H%M')
 IHGSP_BUILD_VERSION:=$(shell echo $(IHGSP_VERSION) | sed s/\"//g)
-BUILD_DIR_ROOT=$(BUILD_DIR)/root-brcmref_nand
+BUILD_DIR_ROOT=$(BUILD_DIR)/root-brcm63xx_ref_nand
 KERNEL_ENTRY:= $(shell readelf -h $(KDIR)/vmlinux.bcm.elf | grep Entry | awk '{print $$4}')
 
 define Image/Build/REF
@@ -50,6 +50,13 @@ define Image/Prepare
 	echo -e "/vmlinux.lz" >> $(KDIR)/nocomprlist
 	touch $(TARGET_DIR)/cferam.000
 	cp $(KDIR)/vmlinux.lz $(TARGET_DIR)/
+	touch -c $(TOPDIR)/target/linux/brcm63xx_ref_nand/base-files/etc/banner
+	cp $(TOPDIR)/target/linux/brcm63xx_ref_nand/base-files/etc/banner $(BUILD_DIR_ROOT)/etc/banner
+	sed -i '/^IOP Version:/d' $(BUILD_DIR_ROOT)/etc/banner
+	sed -i '7iIOP Version: $(IHGSP_BUILD_VERSION)' $(BUILD_DIR_ROOT)/etc/banner
+	echo $(IHGSP_BUILD_VERSION)  > $(BUILD_DIR_ROOT)/etc/ihgsp_version
+	echo $(IHGSP_BUILD_VERSION)  > $(BUILD_DIR_ROOT)/etc/iop_version
+	echo $(CONFIG_TARGET_IBOARDID)> $(BUILD_DIR_ROOT)/etc/iop_iboardid
 endef
 
 define Image/Build
