@@ -1,0 +1,36 @@
+comment "Image naming"
+
+        config TARGET_MODEL_NAME
+       string
+       prompt "Model name + configuration"
+       default "IHGSP"
+       help
+                First part of image name
+
+        config TARGET_VERSION
+       string
+       prompt "Model version"
+       default "INT0.5RC1"
+       help
+                Second part of image name
+	
+	 config TARGET_CUSTOMER
+        string
+        prompt "Customer ID"
+        default "INT"
+        help
+         A Customer id that is added to software file name
+	
+
+        config TARGET_IBOARDID
+       string
+       prompt "Board ID"
+       default "DGXX"
+       help
+        4 letter id code used in the trailer or header to ensure the firmware to be flashed
+        is for the correct board. This id is also used in the bcmkernel package to ensure
+        that proper data tables are used when applicable. For example:
+        D301 -> DG301
+        VG50 -> VG50
+        D201 -> DG201
+
