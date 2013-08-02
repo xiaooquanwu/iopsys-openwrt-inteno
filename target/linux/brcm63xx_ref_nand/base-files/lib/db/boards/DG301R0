@@ -1,6 +1,6 @@
 
 config board 'board'
-        option modelname 'DG301'
+        option hardware 'DG301'
         option hasAdsl '1'
         option hasVdsl '1'
         option hasVoice '1'

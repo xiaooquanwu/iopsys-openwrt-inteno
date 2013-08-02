@@ -1,0 +1,768 @@
+/*
+ * questd -- router info daemon for Inteno CPEs
+ *
+ * Copyright (C) 2012-2013 Inteno Broadband Technology AB. All rights reserved.
+ *
+ * Author: sukru.senli@inteno.se
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA
+ */
+
+#include <libubox/blobmsg.h>
+#include <libubox/uloop.h>
+#include <libubox/ustream.h>
+#include <libubox/utils.h>
+
+#include <libubus.h>
+
+#include "questd.h"
+
+#define DEFAULT_SLEEP	5000000
+
+static struct uci_context *uci_ctx;
+static struct uci_package *uci_network, *uci_wireless;
+static struct ubus_context *ctx = NULL;
+static struct blob_buf bb;
+static const char *ubus_path;
+
+static Network network[MAX_NETWORK];
+static Client clients[MAX_CLIENT];
+static Router router;
+static Memory memory;
+static Key keys;
+static Spec spec;
+
+pthread_t tid[1];
+static long sleep_time = DEFAULT_SLEEP;
+
+void recalc_sleep_time(bool calc, long dec)
+{
+	if (!calc)
+		sleep_time = DEFAULT_SLEEP;
+	else if(sleep_time >= dec)
+		sleep_time -= dec;
+}
+
+static struct uci_package *
+init_package(const char *config)
+{
+	struct uci_context *ctx = uci_ctx;
+	struct uci_package *p = NULL;
+
+	if (!ctx) {
+		ctx = uci_alloc_context();
+		uci_ctx = ctx;
+	} else {
+		p = uci_lookup_package(ctx, config);
+		if (p)
+			uci_unload(ctx, p);
+	}
+
+	if (uci_load(ctx, config, &p))
+		return NULL;
+
+	return p;
+}
+
+static void 
+system_fd_set_cloexec(int fd)
+{
+#ifdef FD_CLOEXEC
+	fcntl(fd, F_SETFD, fcntl(fd, F_GETFD) | FD_CLOEXEC);
+#endif
+}
+
+static bool
+wdev_already_there(char *ifname, char *wdev)
+{
+	bool ret = false;
+	char *token;
+	char ifbuf[32];
+
+	strcpy(ifbuf, ifname);
+
+	token = strtok(ifbuf, " ");
+	while (token != NULL)
+	{
+		if(!strcmp(token, wdev)) {
+			ret = true;
+			break;
+		}
+		token = strtok (NULL, " ");
+	}
+
+	return ret;
+}
+
+static void
+get_wifs(char *netname, char *ifname, unsigned char **wifs)
+{
+	struct uci_element *e;
+	const char *device = NULL;
+	const char *network = NULL;
+	char wdev[8];
+	char wrl[64];
+	int vif = 0;
+
+	*wifs = NULL;
+
+	memset(wrl, '\0', sizeof(wrl));
+	if(uci_wireless = init_package("wireless")) {
+		uci_foreach_element(&uci_wireless->sections, e) {
+			struct uci_section *s = uci_to_section(e);
+
+			if (!strcmp(s->type, "wifi-iface")) {
+				device = uci_lookup_option_string(uci_ctx, s, "device");
+				network = uci_lookup_option_string(uci_ctx, s, "network");
+				if (network && device && !strcmp(network, netname)) {
+					if (vif > 0)
+						sprintf(wdev, "%s.%d", device, vif);
+					else
+						strcpy(wdev, device);
+
+					if(wdev_already_there(ifname, wdev))
+						continue;
+
+					strcat(wrl, " ");
+					strcat(wrl, wdev);
+					*wifs = strdup(wrl);
+				}
+				vif++;
+			}
+		}
+	}
+}
+
+static void
+load_networks()
+{
+	struct uci_element *e;
+	const char *is_lan = NULL;
+	const char *type = NULL;
+	const char *proto = NULL;
+	const char *ipaddr = NULL;
+	const char *netmask = NULL;
+	const char *ifname = NULL;
+	unsigned char *wifs;
+	int nno = 0;
+
+	memset(network, '\0', sizeof(network));
+
+	if(uci_network = init_package("network")) {
+		uci_foreach_element(&uci_network->sections, e) {
+			struct uci_section *s = uci_to_section(e);
+
+			network[nno].exists = false;
+			if (!strcmp(s->type, "interface")) {
+				is_lan = uci_lookup_option_string(uci_ctx, s, "is_lan");
+				type = uci_lookup_option_string(uci_ctx, s, "type");
+				proto = uci_lookup_option_string(uci_ctx, s, "proto");
+				ipaddr = uci_lookup_option_string(uci_ctx, s, "ipaddr");
+				netmask = uci_lookup_option_string(uci_ctx, s, "netmask");
+				ifname = uci_lookup_option_string(uci_ctx, s, "ifname");
+				if(!(ifname))
+					ifname = "";
+				get_wifs(s->e.name, ifname, &wifs);
+				if ((ifname && strcmp(ifname, "lo")) || wifs) {
+					network[nno].exists = true;
+					if(is_lan && !strcmp(is_lan, "1"))
+						network[nno].is_lan = true;
+					network[nno].name = s->e.name;
+					(type) ? (network[nno].type = type) : (network[nno].type = "");
+					(proto) ? (network[nno].proto = proto) : (network[nno].proto = "");
+					if(proto && !strcmp(network[nno].proto, "static")) {
+						(ipaddr) ? (network[nno].ipaddr = ipaddr) : (network[nno].ipaddr = "");
+						(netmask) ? (network[nno].netmask = netmask) : (network[nno].netmask = "");
+					}
+					if(wifs)
+						sprintf(network[nno].ifname, "%s%s", ifname, wifs);
+					else
+						strcpy(network[nno].ifname, ifname);
+					nno++;
+				}
+			}
+		}
+	}
+}
+
+static void
+match_client_to_network(Network *lan, char *hostaddr, unsigned int *local, unsigned char **dev)
+{
+
+	struct in_addr ip, mask, snet, host, rslt;
+	const char *device;
+	char devbuf[8];
+
+	inet_pton(AF_INET, lan->ipaddr, &(ip.s_addr));
+	inet_pton(AF_INET, lan->netmask, &(mask.s_addr));
+	inet_pton(AF_INET, hostaddr, &(host.s_addr));
+
+	snet.s_addr = (ip.s_addr & mask.s_addr);
+	rslt.s_addr = (host.s_addr & mask.s_addr);
+
+	if((snet.s_addr ^ rslt.s_addr) == 0) {
+		*local = 1;
+		if (lan->type && !strcmp(lan->type, "bridge")) {
+			sprintf(devbuf, "br-%s", lan->name);
+			device = strdup(devbuf);
+			*dev = device;
+		}
+		else
+			*dev = lan->ifname;
+	}
+}
+
+static void
+handle_client(Client *clnt)
+{
+	unsigned int local = 0;
+	unsigned char *dev;
+	int ip[4];
+	int netno;
+
+	clnt->local = false;
+	if (sscanf(clnt->hostaddr, "%d.%d.%d.%d", &ip[0], &ip[1], &ip[2], &ip[3]) == 4) {
+		for (netno=0; network[netno].exists; netno++) {
+			if (network[netno].is_lan) {
+				match_client_to_network(&network[netno], clnt->hostaddr, &local, &dev);
+				if (local) {
+					clnt->local = true;
+					sprintf(&clnt->network, network[netno].name);
+					sprintf(&clnt->device, dev);
+					break;
+				}
+			}
+		}
+	}
+}
+
+static void
+populate_clients()
+{
+	FILE *leases, *arpt;
+	char line[1028];
+	int cno = 0;
+	int lno = 0;
+	int hw;
+	int flag;
+	char mask[32];
+	int i;
+	bool nothere;
+
+	if (leases = fopen("/var/dhcp.leases", "r")) {
+		while(fgets(line, sizeof(line), leases) != NULL)
+		{
+			remove_newline(line);
+			clients[cno].exists = false;
+			if (sscanf(line, "%s %s %s %s %s", clients[cno].leaseno, clients[cno].macaddr, clients[cno].hostaddr, clients[cno].hostname, clients[cno].hwaddr) == 5) {
+				clients[cno].exists = true;
+				clients[cno].dhcp = true;
+				handle_client(&clients[cno]);
+				clients[cno].connected = arping(clients[cno].hostaddr, clients[cno].device);
+				cno++;
+			}
+		}
+		fclose(leases);
+	}
+
+	if (arpt = fopen("/proc/net/arp", "r")) {
+		while(fgets(line, sizeof(line), arpt) != NULL)
+		{
+			remove_newline(line);
+			nothere = true;
+			clients[cno].exists = false;
+			if ((lno > 0) && sscanf(line, "%s 0x%d 0x%d %s %s", clients[cno].hostaddr, &hw, &flag, clients[cno].macaddr, mask, clients[cno].device)) {
+				for (i=0; i < cno; i++) {
+					if (!strcmp(clients[cno].hostaddr, clients[i].hostaddr)) {
+						nothere = false;
+						break;
+					}
+				}
+				if (nothere) {
+					handle_client(&clients[cno]);
+					if(clients[cno].local) {
+						clients[cno].exists = true;
+						clients[cno].dhcp = false;
+						clients[cno].connected = arping(clients[cno].hostaddr, clients[cno].device);
+						cno++;
+					}
+				}
+			}
+			lno++;
+		}
+		fclose(arpt);
+	}
+
+	for (i=0; i < cno-1; i++) {
+		if (clients[i].dhcp && !strcmp(clients[cno-1].macaddr, clients[i].macaddr))
+			strcpy(clients[cno-1].hostname, clients[i].hostname);
+	}
+}
+
+static void
+router_dump_specs(struct blob_buf *b, bool table)
+{
+	void *t;
+
+	if (table) t = blobmsg_open_table(b, "specs");
+	blobmsg_add_u8(b, "wifi", spec.wifi);
+	blobmsg_add_u8(b, "adsl", spec.adsl);
+	blobmsg_add_u8(b, "vdsl", spec.vdsl);
+	blobmsg_add_u8(b, "voice", spec.voice);
+	blobmsg_add_u32(b, "voice_ports", spec.vports);
+	blobmsg_add_u32(b, "eth_ports", spec.eports);
+	if (table) blobmsg_close_table(b, t);
+}
+
+static void
+router_dump_keys(struct blob_buf *b, bool table)
+{
+	void *t;
+
+	if (table) t = blobmsg_open_table(b, "keys");
+	blobmsg_add_string(b, "auth", keys.auth);
+	blobmsg_add_string(b, "des", keys.des);
+	blobmsg_add_string(b, "wpa", keys.wpa);
+	if (table) blobmsg_close_table(b, t);
+}
+
+static void
+router_dump_system_info(struct blob_buf *b, bool table)
+{
+	void *t;
+
+	if (table) t = blobmsg_open_table(b, "system");
+	blobmsg_add_string(b, "name", router.name);
+	blobmsg_add_string(b, "hardware", router.hardware);
+	blobmsg_add_string(b, "model", router.model);
+	blobmsg_add_string(b, "firmware", router.firmware);
+	blobmsg_add_string(b, "brcmver", router.brcmver);
+	blobmsg_add_string(b, "socmod", router.socmod);
+	blobmsg_add_string(b, "socrev", router.socrev);
+	blobmsg_add_string(b, "cfever", router.cfever);
+	blobmsg_add_string(b, "kernel", router.kernel);
+	blobmsg_add_string(b, "basemac", router.basemac);
+	blobmsg_add_string(b, "serialno", router.serialno);
+	blobmsg_add_string(b, "uptime", router.uptime);
+	blobmsg_add_u32(b, "procs", router.procs);
+	blobmsg_add_u32(b, "cpu_per", router.cpu);
+	if (table) blobmsg_close_table(b, t);
+}
+
+static void
+router_dump_memory_info(struct blob_buf *b, bool table)
+{
+	void *t;
+
+	if (table) t = blobmsg_open_table(b, "memory(kB)");
+	blobmsg_add_u64(b, "total", memory.total);
+	blobmsg_add_u64(b, "used", memory.used);
+	blobmsg_add_u64(b, "free", memory.free);
+	blobmsg_add_u64(b, "shared", memory.shared);
+	blobmsg_add_u64(b, "buffers", memory.buffers);
+	if (table) blobmsg_close_table(b, t);
+}
+
+static void
+router_dump_networks(struct blob_buf *b)
+{
+    void *a, *t;
+    int i;
+
+	a = blobmsg_open_array(b, "networks");
+	for (i = 0; i < MAX_NETWORK; i++) {
+		if (!network[i].exists)
+			break;
+		t = blobmsg_open_table(b, NULL);
+		blobmsg_add_string(b, "name", network[i].name);
+		blobmsg_add_u8(b, "is_lan", network[i].is_lan);
+		blobmsg_add_string(b, "type", network[i].type);
+		blobmsg_add_string(b, "proto", network[i].proto);
+		if (!strcmp(network[i].proto, "static")) {
+			blobmsg_add_string(b, "ipaddr", network[i].ipaddr);
+			blobmsg_add_string(b, "netmask", network[i].netmask);
+		}
+		blobmsg_add_string(b, "ifname", network[i].ifname);
+		blobmsg_close_table(b, t);
+	}
+	blobmsg_close_array(b, a);
+}
+
+static void
+router_dump_clients(struct blob_buf *b)
+{
+    void *a, *t;
+    int i;
+
+	a = blobmsg_open_array(b, "clients");
+	for (i = 0; i < MAX_CLIENT; i++) {
+		if (!clients[i].exists)
+			break;
+		t = blobmsg_open_table(b, NULL);
+		blobmsg_add_u8(b, "dhcp", clients[i].dhcp);
+		blobmsg_add_string(b, "hostname", clients[i].hostname);
+		blobmsg_add_string(b, "ipaddr", clients[i].hostaddr);
+		blobmsg_add_string(b, "macaddr", clients[i].macaddr);
+		blobmsg_add_string(b, "network", clients[i].network);
+		blobmsg_add_string(b, "device", clients[i].device);
+		blobmsg_add_u8(b, "connected", clients[i].connected);
+		blobmsg_close_table(b, t);
+	}
+	blobmsg_close_array(b, a);
+}
+
+static void
+network_dump_leases(struct blob_buf *b, char *leasenet)
+{
+    void *a, *t;
+    int i;
+
+	a = blobmsg_open_array(b, "leases");
+	for (i = 0; i < MAX_CLIENT; i++) {
+		if (!clients[i].exists)
+			break;
+		if (clients[i].dhcp && !strcmp(clients[i].network, leasenet)) {
+			t = blobmsg_open_table(b, NULL);
+			blobmsg_add_string(b, "leaseno", clients[i].leaseno);
+			blobmsg_add_string(b, "hostname", clients[i].hostname);
+			blobmsg_add_string(b, "ipaddr", clients[i].hostaddr);
+			blobmsg_add_string(b, "macaddr", clients[i].macaddr);
+			blobmsg_add_string(b, "device", clients[i].device);
+			blobmsg_add_u8(b, "connected", clients[i].connected);
+			blobmsg_close_table(b, t);
+		}
+	}
+	blobmsg_close_array(b, a);
+}
+
+static void
+host_dump_status(struct blob_buf *b, char *addr, bool byIP)
+{
+    int i;
+
+	if(byIP) {
+		for (i=0; clients[i].exists; i++)
+			if(!strcmp(clients[i].hostaddr, addr)) {
+				blobmsg_add_string(b, "hostname", clients[i].hostname);
+				blobmsg_add_string(b, "macaddr", clients[i].macaddr);
+				blobmsg_add_string(b, "network", clients[i].network);
+				blobmsg_add_string(b, "device", clients[i].device);
+				blobmsg_add_u8(b, "connected", clients[i].connected);
+				break;
+			}
+	}
+	else {
+		for (i=0; clients[i].exists; i++)
+			if(!strcasecmp(clients[i].macaddr, addr)) {
+				blobmsg_add_string(b, "hostname", clients[i].hostname);
+				blobmsg_add_string(b, "ipaddr", clients[i].hostaddr);
+				blobmsg_add_string(b, "network", clients[i].network);
+				blobmsg_add_string(b, "device", clients[i].device);
+				blobmsg_add_u8(b, "connected", clients[i].connected);
+				break;
+			}
+	}
+}
+
+enum {
+	QUEST_NAME,
+	__QUEST_MAX,
+};
+
+static const struct blobmsg_policy quest_policy[__QUEST_MAX] = {
+	[QUEST_NAME] = { .name = "info", .type = BLOBMSG_TYPE_STRING },
+};
+
+static int
+quest_router_specific(struct ubus_context *ctx, struct ubus_object *obj,
+		  struct ubus_request_data *req, const char *method,
+		  struct blob_attr *msg)
+{
+	struct blob_attr *tb[__QUEST_MAX];
+
+	blobmsg_parse(quest_policy, __QUEST_MAX, tb, blob_data(msg), blob_len(msg));
+
+	if (!(tb[QUEST_NAME]) || (strcmp(blobmsg_data(tb[QUEST_NAME]), "system") && strcmp(blobmsg_data(tb[QUEST_NAME]), "memory")
+		&& strcmp(blobmsg_data(tb[QUEST_NAME]), "keys") && strcmp(blobmsg_data(tb[QUEST_NAME]), "specs")))
+		return UBUS_STATUS_INVALID_ARGUMENT;
+
+	blob_buf_init(&bb, 0);
+
+	if (!strcmp(blobmsg_data(tb[QUEST_NAME]), "system"))
+		router_dump_system_info(&bb, false);
+	else if (!strcmp(blobmsg_data(tb[QUEST_NAME]), "memory"))
+		router_dump_memory_info(&bb, false);
+	else if (!strcmp(blobmsg_data(tb[QUEST_NAME]), "keys"))
+		router_dump_keys(&bb, false);
+	else if (!strcmp(blobmsg_data(tb[QUEST_NAME]), "specs"))
+		router_dump_specs(&bb, false);
+
+	ubus_send_reply(ctx, req, bb.head);
+
+	return 0;
+}
+
+static int
+quest_router_info(struct ubus_context *ctx, struct ubus_object *obj,
+		  struct ubus_request_data *req, const char *method,
+		  struct blob_attr *msg)
+{
+	struct blob_attr *tb[__QUEST_MAX];
+
+	blobmsg_parse(quest_policy, __QUEST_MAX, tb, blob_data(msg), blob_len(msg));
+
+	blob_buf_init(&bb, 0);
+	router_dump_system_info(&bb, true);
+	router_dump_memory_info(&bb, true);
+	router_dump_keys(&bb, true);
+	router_dump_specs(&bb, true);
+	ubus_send_reply(ctx, req, bb.head);
+
+	return 0;
+}
+
+static int
+quest_router_networks(struct ubus_context *ctx, struct ubus_object *obj,
+		  struct ubus_request_data *req, const char *method,
+		  struct blob_attr *msg)
+{
+	struct blob_attr *tb[__QUEST_MAX];
+
+	blobmsg_parse(quest_policy, __QUEST_MAX, tb, blob_data(msg), blob_len(msg));
+
+	blob_buf_init(&bb, 0);
+	router_dump_networks(&bb);
+	ubus_send_reply(ctx, req, bb.head);
+
+	return 0;
+}
+
+static int
+quest_router_clients(struct ubus_context *ctx, struct ubus_object *obj,
+		  struct ubus_request_data *req, const char *method,
+		  struct blob_attr *msg)
+{
+	struct blob_attr *tb[__QUEST_MAX];
+
+	blobmsg_parse(quest_policy, __QUEST_MAX, tb, blob_data(msg), blob_len(msg));
+
+	blob_buf_init(&bb, 0);
+	router_dump_clients(&bb);
+	ubus_send_reply(ctx, req, bb.head);
+
+	return 0;
+}
+
+enum {
+	LEASE_NAME,
+	__LEASE_MAX,
+};
+
+static const struct blobmsg_policy lease_policy[__LEASE_MAX] = {
+	[LEASE_NAME] = { .name = "network", .type = BLOBMSG_TYPE_STRING },
+};
+
+static int
+quest_network_leases(struct ubus_context *ctx, struct ubus_object *obj,
+		  struct ubus_request_data *req, const char *method,
+		  struct blob_attr *msg)
+{
+	struct blob_attr *tb[__LEASE_MAX];
+	bool nthere = false;
+	int i;
+
+	blobmsg_parse(lease_policy, __LEASE_MAX, tb, blob_data(msg), blob_len(msg));
+
+	if (!(tb[LEASE_NAME]))
+		return UBUS_STATUS_INVALID_ARGUMENT;
+
+	for (i=0; network[i].is_lan; i++)
+		if(!strcmp(network[i].name, blobmsg_data(tb[LEASE_NAME])))
+			nthere = true;
+
+	if (!(nthere))
+		return UBUS_STATUS_INVALID_ARGUMENT;
+
+	blob_buf_init(&bb, 0);
+	network_dump_leases(&bb, blobmsg_data(tb[LEASE_NAME]));
+	ubus_send_reply(ctx, req, bb.head);
+
+	return 0;
+}
+
+enum {
+	IP_ADDR,
+	MAC_ADDR,
+	__HOST_MAX,
+};
+
+static const struct blobmsg_policy host_policy[__HOST_MAX] = {
+	[IP_ADDR] = { .name = "ipaddr", .type = BLOBMSG_TYPE_STRING },
+	[MAC_ADDR] = { .name = "macaddr", .type = BLOBMSG_TYPE_STRING },
+};
+
+static int
+quest_host_status(struct ubus_context *ctx, struct ubus_object *obj,
+		  struct ubus_request_data *req, const char *method,
+		  struct blob_attr *msg)
+{
+	struct blob_attr *tb[__HOST_MAX];
+
+	blobmsg_parse(host_policy, __HOST_MAX, tb, blob_data(msg), blob_len(msg));
+
+	if (!(tb[IP_ADDR]) && !(tb[MAC_ADDR]))
+		return UBUS_STATUS_INVALID_ARGUMENT;
+
+	blob_buf_init(&bb, 0);
+	if (tb[IP_ADDR])
+		host_dump_status(&bb, blobmsg_data(tb[IP_ADDR]), true);
+	else
+		host_dump_status(&bb, blobmsg_data(tb[MAC_ADDR]), false);
+	ubus_send_reply(ctx, req, bb.head);
+
+	return 0;
+}
+
+static int
+quest_reload(struct ubus_context *ctx, struct ubus_object *obj,
+		  struct ubus_request_data *req, const char *method,
+		  struct blob_attr *msg)
+{
+	dump_hostname(&router);
+	load_networks();
+	return 0;
+}
+
+static struct ubus_method router_object_methods[] = {
+	{ .name = "info", .handler = quest_router_info },
+	UBUS_METHOD("quest", quest_router_specific, quest_policy),
+	{ .name = "networks", .handler = quest_router_networks },
+	{ .name = "clients", .handler = quest_router_clients },
+	UBUS_METHOD("lease", quest_network_leases, lease_policy),
+	UBUS_METHOD("host", quest_host_status, host_policy),
+	{ .name = "reload", .handler = quest_reload },
+};
+
+static struct ubus_object_type router_object_type =
+	UBUS_OBJECT_TYPE("system", router_object_methods);
+
+static struct ubus_object router_object = {
+	.name = "router",
+	.type = &router_object_type,
+	.methods = router_object_methods,
+	.n_methods = ARRAY_SIZE(router_object_methods),
+};
+
+static void
+quest_ubus_add_fd(void)
+{
+	ubus_add_uloop(ctx);
+	system_fd_set_cloexec(ctx->sock.fd);
+}
+
+static void
+quest_ubus_reconnect_timer(struct uloop_timeout *timeout)
+{
+	static struct uloop_timeout retry = {
+		.cb = quest_ubus_reconnect_timer,
+	};
+	int t = 2;
+
+	if (ubus_reconnect(ctx, ubus_path) != 0) {
+		printf("failed to reconnect, trying again in %d seconds\n", t);
+		uloop_timeout_set(&retry, t * 1000);
+		return;
+	}
+
+	printf("reconnected to ubus, new id: %08x\n", ctx->local_id);
+	quest_ubus_add_fd();
+}
+
+static void
+quest_ubus_connection_lost(struct ubus_context *ctx)
+{
+	quest_ubus_reconnect_timer(NULL);
+}
+
+static void
+quest_add_object(struct ubus_object *obj)
+{
+	int ret = ubus_add_object(ctx, obj);
+
+	if (ret != 0)
+		fprintf(stderr, "Failed to publish object '%s': %s\n", obj->name, ubus_strerror(ret));
+}
+
+
+static int
+quest_ubus_init(const char *path)
+{
+	uloop_init();
+	ubus_path = path;
+
+	ctx = ubus_connect(path);
+	if (!ctx)
+		return -EIO;
+
+	printf("connected as %08x\n", ctx->local_id);
+	ctx->connection_lost = quest_ubus_connection_lost;
+	quest_ubus_add_fd();
+
+	quest_add_object(&router_object);
+
+	return 0;
+}
+
+void* dump_router_info(void *arg)
+{
+	jiffy_counts_t cur_jif, prev_jif;
+
+	init_db_hw_config();
+	load_networks();
+	dump_keys(&keys);
+	dump_specs(&spec);
+	dump_static_router_info(&router);
+	dump_hostname(&router);
+	while (true) {
+		dump_sysinfo(&router, &memory);
+		dump_cpuinfo(&router, &prev_jif, &cur_jif);
+		populate_clients(&clients);
+		get_jif_val(&prev_jif);
+		usleep(sleep_time);
+		recalc_sleep_time(false, 0);
+		get_jif_val(&cur_jif);
+	}
+
+	return NULL;
+}
+
+int main(int argc, char **argv)
+{
+	int pt;
+
+	if (quest_ubus_init(NULL) < 0) {
+		fprintf(stderr, "Failed to connect to ubus\n");
+		return 1;
+	}
+        if (pt = pthread_create(&(tid[0]), NULL, &dump_router_info, NULL) != 0) {
+		fprintf(stderr, "Failed to create thread\n");
+		return 1;
+	}
+	uloop_run();
+	ubus_free(ctx);
+
+	return 0;
+}
+
