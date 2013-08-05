@@ -22,3 +22,4 @@
 ./scripts/feeds install libmicroxml
 ./scripts/feeds install liblzo
 ./scripts/feeds install miniupnpd
+./scripts/feeds install minidlna
