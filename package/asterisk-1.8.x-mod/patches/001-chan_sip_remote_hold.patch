@@ -1,0 +1,459 @@
+--- a/channels/chan_sip.c
++++ b/channels/chan_sip.c
+@@ -1299,7 +1299,7 @@ static void try_suggested_sip_codec(stru
+ static const char *get_sdp_iterate(int* start, struct sip_request *req, const char *name);
+ static char get_sdp_line(int *start, int stop, struct sip_request *req, const char **value);
+ static int find_sdp(struct sip_request *req);
+-static int process_sdp(struct sip_pvt *p, struct sip_request *req, int t38action);
++static int process_sdp(struct sip_pvt *p, struct sip_request *req, int t38action, int oastate);
+ static int process_sdp_o(const char *o, struct sip_pvt *p);
+ static int process_sdp_c(const char *c, struct ast_sockaddr *addr);
+ static int process_sdp_a_sendonly(const char *a, int *sendonly);
+@@ -6914,12 +6914,39 @@ static int sip_indicate(struct ast_chann
+ 		res = -1;
+ 		break;
+ 	case AST_CONTROL_HOLD:
+-		ast_rtp_instance_update_source(p->rtp);
+-		ast_moh_start(ast, data, p->mohinterpret);
++		if(ast_test_flag(&p->flags[2], SIP_PAGE3_REMOTE_HOLD)) {
++			if (ast_test_flag(&p->flags[2], SIP_PAGE3_REMOTE_HOLD_STATUS)) {
++				/* We are already put on hold, can't be more on hold */
++				ast_debug(1, "--- HOLD - Double hold???? \n");
++			} else {
++				/* Send re-invite and put the call on hold */
++				ast_set_flag(&p->flags[2], SIP_PAGE3_REMOTE_HOLD_STATUS);
++				ast_debug(1, "--- HOLD - Activated remote hold \n");
++				if (T38_ENABLED == p->t38.state) {
++					transmit_reinvite_with_sdp(p, TRUE, TRUE);
++				} else {
++					transmit_reinvite_with_sdp(p, FALSE, TRUE);
++				}
++			}
++		} else {
++			ast_rtp_instance_update_source(p->rtp);
++			ast_moh_start(ast, data, p->mohinterpret);
++		}
+ 		break;
+ 	case AST_CONTROL_UNHOLD:
+-		ast_rtp_instance_update_source(p->rtp);
+-		ast_moh_stop(ast);
++		if(ast_test_flag(&p->flags[2], SIP_PAGE3_REMOTE_HOLD_STATUS)) {
++			/* Send re-invite and put the call off hold */
++			ast_clear_flag(&p->flags[2], SIP_PAGE3_REMOTE_HOLD_STATUS);
++			ast_debug(1, "--- HOLD - cleared remote hold \n");
++			if (T38_ENABLED == p->t38.state) {
++				transmit_reinvite_with_sdp(p, TRUE, TRUE);
++			} else {
++				transmit_reinvite_with_sdp(p, FALSE, TRUE);
++			}
++		} else {
++			ast_rtp_instance_update_source(p->rtp);
++			ast_moh_stop(ast);
++		}
+ 		break;
+ 	case AST_CONTROL_VIDUPDATE:	/* Request a video frame update */
+ 		if (p->vrtp && !p->novideo) {
+@@ -8652,20 +8679,66 @@ static int find_sdp(struct sip_request *
+ 	return FALSE;
+ }
+ 
+-/*! \brief Change hold state for a call */
++/*! \brief Change hold state for a call 
++	We can get a hold state both as a response to our offer or in an offer 
++	\para holdstate TRUE if we're put off hold by peer
++*/
+ static void change_hold_state(struct sip_pvt *dialog, struct sip_request *req, int holdstate, int sendonly)
+ {
+-	if (sip_cfg.notifyhold && (!holdstate || !ast_test_flag(&dialog->flags[1], SIP_PAGE2_CALL_ONHOLD)))
++	char *hold ="Off";
++	char *holdtype = "None";	/* Local, Remote, Both, None */
++	
++	/* Figure out our total hold state
++		sendonly indicates the change
++
++		3 = accept of our remote hold
++		0 = Other side put us off hold
++		1 = Other side put us on hold
++		2 = Other side made us inactive
++	*/
++	if (ast_test_flag(&dialog->flags[2], SIP_PAGE3_REMOTE_HOLD_STATUS)) {
++		/* We have put them on hold */
++		if (sendonly == 0) {
++			hold = "On";
++			holdtype = "Local";
++		} else if (sendonly == 1 || sendonly == 2) {
++			hold = "On";
++			holdtype = "Both";
++		}
++		ast_log(LOG_DEBUG, "--- Remote hold and hold %s type %s sendonly %d\n", hold, holdtype, sendonly);
++	} else {
++		/* We have no hold */
++		if (sendonly == 0) {
++			hold = "Off";
++			holdtype = "None";
++		} else if (sendonly == 1 || sendonly == 2) {
++			hold  = "On";
++			holdtype = "Remote";
++		}
++		ast_log(LOG_DEBUG, "--- Hold %s type %s sendonly %d\n", hold, holdtype, sendonly);
++	}
++	
++
++	if (sip_cfg.notifyhold && (!holdstate || !ast_test_flag(&dialog->flags[1], SIP_PAGE2_CALL_ONHOLD))) {
++		/* XXX Check this for remote hold */
+ 		sip_peer_hold(dialog, holdstate);
+-	if (sip_cfg.callevents)
++	}
++	if (sip_cfg.callevents) {
+ 		manager_event(EVENT_FLAG_CALL, "Hold",
+ 			      "Status: %s\r\n"
++			      "Holdtype: %s\r\n"
+ 			      "Channel: %s\r\n"
+ 			      "Uniqueid: %s\r\n",
+-			      holdstate ? "On" : "Off",
++			      hold,
++			      holdtype,
+ 			      dialog->owner->name,
+ 			      dialog->owner->uniqueid);
+-	append_history(dialog, holdstate ? "Hold" : "Unhold", "%s", req->data->str);
++	}
++	append_history(dialog, "Hold", "%s %s", holdtype, ast_str_buffer(req->data));
++	if (sendonly == 3) {
++		return;
++	}
++
+ 	if (!holdstate) {	/* Put off remote hold */
+ 		ast_clear_flag(&dialog->flags[1], SIP_PAGE2_CALL_ONHOLD);	/* Clear both flags */
+ 		return;
+@@ -8676,7 +8749,7 @@ static void change_hold_state(struct sip
+ 		ast_set_flag(&dialog->flags[1], SIP_PAGE2_CALL_ONHOLD_ONEDIR);
+ 	else if (sendonly == 2)	/* Inactive stream */
+ 		ast_set_flag(&dialog->flags[1], SIP_PAGE2_CALL_ONHOLD_INACTIVE);
+-	else
++	else if (sendonly == 0)	/* We're back from peer hold */
+ 		ast_set_flag(&dialog->flags[1], SIP_PAGE2_CALL_ONHOLD_ACTIVE);
+ 	return;
+ }
+@@ -8750,12 +8823,13 @@ static int sockaddr_is_null_or_any(const
+ 	return ast_sockaddr_isnull(addr) || ast_sockaddr_is_any(addr);
+ }
+ 
+-/*! \brief Process SIP SDP offer, select formats and activate RTP channels
++/*! \brief Process SIP SDP offer/answer, select formats and activate media channels
+ 	If offer is rejected, we will not change any properties of the call
+  	Return 0 on success, a negative value on errors.
+ 	Must be called after find_sdp().
++	OAstate is 1 for new offer from remote, 0 for answer
+ */
+-static int process_sdp(struct sip_pvt *p, struct sip_request *req, int t38action)
++static int process_sdp(struct sip_pvt *p, struct sip_request *req, int t38action, int oastate)
+ {
+ 	/* Iterators for SDP parsing */
+ 	int start = req->sdp_start;
+@@ -9369,12 +9443,19 @@ static int process_sdp(struct sip_pvt *p
+ 		ast_set_write_format(p->owner, p->owner->writeformat);
+ 	}
+ 	
++	if (oastate != TRUE) {
++		/* If this is an SDP answer, don't bother with hold states */
++		/* This might be wrong though. */
++		return 0;
++	}
+ 	if (ast_test_flag(&p->flags[1], SIP_PAGE2_CALL_ONHOLD) && (!ast_sockaddr_isnull(sa) || !ast_sockaddr_isnull(vsa) || !ast_sockaddr_isnull(tsa) || !ast_sockaddr_isnull(isa)) && (!sendonly || sendonly == -1)) {
++		/* If we have been on hold and is now put off hold, make sure the other side understand it */
+ 		ast_queue_control(p->owner, AST_CONTROL_UNHOLD);
+ 		/* Activate a re-invite */
+ 		ast_queue_frame(p->owner, &ast_null_frame);
+ 		change_hold_state(p, req, FALSE, sendonly);
+ 	} else if ((sockaddr_is_null_or_any(sa) && sockaddr_is_null_or_any(vsa) && sockaddr_is_null_or_any(tsa) && sockaddr_is_null_or_any(isa)) || (sendonly && sendonly != -1)) {
++		/* We are put on hold by the other end */
+ 		ast_queue_control_data(p->owner, AST_CONTROL_HOLD,
+ 				       S_OR(p->mohsuggest, NULL),
+ 				       !ast_strlen_zero(p->mohsuggest) ? strlen(p->mohsuggest) + 1 : 0);
+@@ -9384,6 +9465,8 @@ static int process_sdp(struct sip_pvt *p
+ 		/* Activate a re-invite */
+ 		ast_queue_frame(p->owner, &ast_null_frame);
+ 		change_hold_state(p, req, TRUE, sendonly);
++	} else if (sendonly == 3) {
++		change_hold_state(p, req, FALSE, sendonly);
+ 	}
+ 	
+ 	return 0;
+@@ -9511,6 +9594,11 @@ static int process_sdp_a_sendonly(const
+ 		if (*sendonly == -1)
+ 			*sendonly = 0;
+ 		found = TRUE;
++	}  else if (!strcasecmp(a, "recvonly")) {
++		/* We have put their side on hold */
++		if (*sendonly == -1)
++			*sendonly = 3;
++		found = TRUE;
+ 	}
+ 	return found;
+ }
+@@ -11326,14 +11414,34 @@ static enum sip_result add_sdp(struct si
+ 		 ast_sockaddr_stringify_addr_remote(&dest));
+ 
+ 	if (add_audio) {
+-		if (ast_test_flag(&p->flags[1], SIP_PAGE2_CALL_ONHOLD) == SIP_PAGE2_CALL_ONHOLD_ONEDIR) {
+-			hold = "a=recvonly\r\n";
+-			doing_directmedia = FALSE;
+-		} else if (ast_test_flag(&p->flags[1], SIP_PAGE2_CALL_ONHOLD) == SIP_PAGE2_CALL_ONHOLD_INACTIVE) {
+-			hold = "a=inactive\r\n";
+-			doing_directmedia = FALSE;
++		/* The SIP_PAGE2_CALL_ONHOLD flag indicates if the other party has put us on hold or inactive. 
++ 		   The SIP_PAGE3_REMOTE_HOLD_STATUS flag indicates if we have put them on hold or not.
++		 */
++		if (ast_test_flag(&p->flags[2], SIP_PAGE3_REMOTE_HOLD) && ast_test_flag(&p->flags[2], SIP_PAGE3_REMOTE_HOLD_STATUS)) {
++			/* We have put the channel on hold */
++			if (ast_test_flag(&p->flags[1], SIP_PAGE2_CALL_ONHOLD) == SIP_PAGE2_CALL_ONHOLD_ONEDIR) {
++				/* They have too */
++				hold = "a=inactive\r\n";
++				doing_directmedia = FALSE;
++			} else if (ast_test_flag(&p->flags[1], SIP_PAGE2_CALL_ONHOLD) == SIP_PAGE2_CALL_ONHOLD_INACTIVE) {
++				/* They have declared us inactive. We too */
++				hold = "a=inactive\r\n";
++				doing_directmedia = FALSE;
++			} else {
++				/* We put them on hold now */
++				hold = "a=sendonly\r\n";
++				doing_directmedia = FALSE;
++			}
+ 		} else {
+-			hold = "a=sendrecv\r\n";
++			if (ast_test_flag(&p->flags[1], SIP_PAGE2_CALL_ONHOLD) == SIP_PAGE2_CALL_ONHOLD_ONEDIR) {
++				hold = "a=recvonly\r\n";
++				doing_directmedia = FALSE;
++			} else if (ast_test_flag(&p->flags[1], SIP_PAGE2_CALL_ONHOLD) == SIP_PAGE2_CALL_ONHOLD_INACTIVE) {
++				hold = "a=inactive\r\n";
++				doing_directmedia = FALSE;
++			} else {
++				hold = "a=sendrecv\r\n";
++			}
+ 		}
+ 
+ 		capability = p->jointcapability;
+@@ -11801,6 +11909,52 @@ static int determine_firstline_parts(str
+ 	return 1;
+ }
+ 
++/* \brief Remove URI parameters at end of URI, not in username part though */
++static char *remove_uri_parameters(char *uri)
++{
++	char *atsign;
++	atsign = strchr(uri, '@');	/* First, locate the at sign */
++	if (!atsign) {
++		atsign = uri;	/* Ok hostname only, let's stick with the rest */
++	}
++	atsign = strchr(atsign, ';');	/* Locate semi colon */
++	if (atsign)
++		*atsign = '\0';	/* Kill at the semi colon */
++	return uri;
++}
++
++/*! \brief Check Contact: URI of SIP message */
++static void extract_uri(struct sip_pvt *p, struct sip_request *req)
++{
++	char stripped[SIPBUFSIZE];
++	char *c;
++
++	ast_copy_string(stripped, get_header(req, "Contact"), sizeof(stripped));
++	c = get_in_brackets(stripped);
++	/* Cut the URI at the at sign after the @, not in the username part */
++	c = remove_uri_parameters(c);
++	if (!ast_strlen_zero(c)) {
++		ast_string_field_set(p, uri, c);
++	}
++
++}
++
++/*! \brief Build contact header - the contact header we send out */
++static void build_contact(struct sip_pvt *p)
++{
++	char tmp[SIPBUFSIZE];
++	char *user = ast_uri_encode(p->exten, tmp, sizeof(tmp), 0);
++
++	if (p->socket.type == SIP_TRANSPORT_UDP) {
++		ast_string_field_build(p, our_contact, "<sip:%s%s%s>", user,
++			ast_strlen_zero(user) ? "" : "@", ast_sockaddr_stringify(&p->ourip));
++	} else {
++		ast_string_field_build(p, our_contact, "<sip:%s%s%s;transport=%s>", user,
++			ast_strlen_zero(user) ? "" : "@", ast_sockaddr_stringify(&p->ourip),
++			get_transport(p->socket.type));
++	}
++}
++
+ /*! \brief Transmit reinvite with SDP
+ \note 	A re-invite is basically a new INVITE with the same CALL-ID and TAG as the
+ 	INVITE that opened the SIP dialogue
+@@ -11852,52 +12006,6 @@ static int transmit_reinvite_with_sdp(st
+ 	return send_request(p, &req, XMIT_CRITICAL, p->ocseq);
+ }
+ 
+-/* \brief Remove URI parameters at end of URI, not in username part though */
+-static char *remove_uri_parameters(char *uri)
+-{
+-	char *atsign;
+-	atsign = strchr(uri, '@');	/* First, locate the at sign */
+-	if (!atsign) {
+-		atsign = uri;	/* Ok hostname only, let's stick with the rest */
+-	}
+-	atsign = strchr(atsign, ';');	/* Locate semi colon */
+-	if (atsign)
+-		*atsign = '\0';	/* Kill at the semi colon */
+-	return uri;
+-}
+-
+-/*! \brief Check Contact: URI of SIP message */
+-static void extract_uri(struct sip_pvt *p, struct sip_request *req)
+-{
+-	char stripped[SIPBUFSIZE];
+-	char *c;
+-
+-	ast_copy_string(stripped, get_header(req, "Contact"), sizeof(stripped));
+-	c = get_in_brackets(stripped);
+-	/* Cut the URI at the at sign after the @, not in the username part */
+-	c = remove_uri_parameters(c);
+-	if (!ast_strlen_zero(c)) {
+-		ast_string_field_set(p, uri, c);
+-	}
+-
+-}
+-
+-/*! \brief Build contact header - the contact header we send out */
+-static void build_contact(struct sip_pvt *p)
+-{
+-	char tmp[SIPBUFSIZE];
+-	char *user = ast_uri_encode(p->exten, tmp, sizeof(tmp), 0);
+-
+-	if (p->socket.type == SIP_TRANSPORT_UDP) {
+-		ast_string_field_build(p, our_contact, "<sip:%s%s%s>", user,
+-			ast_strlen_zero(user) ? "" : "@", ast_sockaddr_stringify_remote(&p->ourip));
+-	} else {
+-		ast_string_field_build(p, our_contact, "<sip:%s%s%s;transport=%s>", user,
+-			ast_strlen_zero(user) ? "" : "@", ast_sockaddr_stringify_remote(&p->ourip),
+-			get_transport(p->socket.type));
+-	}
+-}
+-
+ /*! \brief Initiate new SIP request to peer/user */
+ static void initreqprep(struct sip_request *req, struct sip_pvt *p, int sipmethod, const char * const explicit_uri)
+ {
+@@ -20001,7 +20109,7 @@ static void handle_response_invite(struc
+ 		if (find_sdp(req)) {
+ 			if (p->invitestate != INV_CANCELLED)
+ 				p->invitestate = INV_EARLY_MEDIA;
+-			res = process_sdp(p, req, SDP_T38_NONE);
++			res = process_sdp(p, req, SDP_T38_NONE, FALSE);
+ 			if (!req->ignore && p->owner) {
+ 				/* Queue a progress frame only if we have SDP in 180 or 182 */
+ 				ast_queue_control(p->owner, AST_CONTROL_PROGRESS);
+@@ -20073,7 +20181,7 @@ static void handle_response_invite(struc
+ 		if (find_sdp(req)) {
+ 			if (p->invitestate != INV_CANCELLED)
+ 				p->invitestate = INV_EARLY_MEDIA;
+-			res = process_sdp(p, req, SDP_T38_NONE);
++			res = process_sdp(p, req, SDP_T38_NONE, FALSE);
+ 			if (!req->ignore && p->owner) {
+ 				/* Queue a progress frame */
+ 				ast_queue_control(p->owner, AST_CONTROL_PROGRESS);
+@@ -20096,7 +20204,7 @@ static void handle_response_invite(struc
+ 			ast_log(LOG_WARNING, "Unable to cancel SIP destruction.  Expect bad things.\n");
+ 		p->authtries = 0;
+ 		if (find_sdp(req)) {
+-			if ((res = process_sdp(p, req, SDP_T38_ACCEPT)) && !req->ignore)
++			if ((res = process_sdp(p, req, SDP_T38_ACCEPT, FALSE)) && !req->ignore)
+ 				if (!reinvite)
+ 					/* This 200 OK's SDP is not acceptable, so we need to ack, then hangup */
+ 					/* For re-invites, we try to recover */
+@@ -21219,7 +21327,7 @@ static void handle_response(struct sip_p
+ 					if (!req->ignore && sip_cancel_destroy(p))
+ 						ast_log(LOG_WARNING, "Unable to cancel SIP destruction.  Expect bad things.\n");
+ 					if (find_sdp(req))
+-						process_sdp(p, req, SDP_T38_NONE);
++						process_sdp(p, req, SDP_T38_NONE, FALSE);
+ 					if (p->owner) {
+ 						/* Queue a progress frame */
+ 						ast_queue_control(p->owner, AST_CONTROL_PROGRESS);
+@@ -22468,7 +22576,7 @@ static int handle_request_invite(struct
+ 			}
+ 			/* Handle SDP here if we already have an owner */
+ 			if (find_sdp(req)) {
+-				if (process_sdp(p, req, SDP_T38_INITIATE)) {
++				if (process_sdp(p, req, SDP_T38_INITIATE, TRUE)) {
+ 					if (!ast_strlen_zero(get_header(req, "Content-Encoding"))) {
+ 						/* Asterisk does not yet support any Content-Encoding methods.  Always
+ 						 * attempt to process the sdp, but return a 415 if a Content-Encoding header
+@@ -22539,7 +22647,7 @@ static int handle_request_invite(struct
+ 
+ 		/* We have a successful authentication, process the SDP portion if there is one */
+ 		if (find_sdp(req)) {
+-			if (process_sdp(p, req, SDP_T38_INITIATE)) {
++			if (process_sdp(p, req, SDP_T38_INITIATE, TRUE)) {
+ 				/* Asterisk does not yet support any Content-Encoding methods.  Always
+ 				 * attempt to process the sdp, but return a 415 if a Content-Encoding header
+ 				 * was present after processing fails. */
+@@ -25168,7 +25276,7 @@ static int handle_incoming(struct sip_pv
+ 			p->pendinginvite = 0;
+ 			acked = __sip_ack(p, seqno, 1 /* response */, 0);
+ 			if (find_sdp(req)) {
+-				if (process_sdp(p, req, SDP_T38_NONE))
++				if (process_sdp(p, req, SDP_T38_NONE, FALSE))
+ 					return -1;
+ 			}
+ 			check_pendings(p);
+@@ -26794,6 +26902,9 @@ static int handle_common_options(struct
+ 	} else if (!strcasecmp(v->name, "buggymwi")) {
+ 		ast_set_flag(&mask[1], SIP_PAGE2_BUGGY_MWI);
+ 		ast_set2_flag(&flags[1], ast_true(v->value), SIP_PAGE2_BUGGY_MWI);
++	} else if (!strcasecmp(v->name, "remotehold")) {
++		ast_set_flag(&mask[2], SIP_PAGE3_REMOTE_HOLD);
++		ast_set2_flag(&flags[2], ast_true(v->value), SIP_PAGE3_REMOTE_HOLD);
+ 	} else
+ 		res = 0;
+ 
+--- a/channels/sip/include/sip.h
++++ b/channels/sip/include/sip.h
+@@ -328,10 +328,10 @@
+ #define SIP_PAGE2_T38SUPPORT_UDPTL_FEC      (2 << 17)   /*!< GDP: T.38 Fax Support (FEC error correction) */
+ #define SIP_PAGE2_T38SUPPORT_UDPTL_REDUNDANCY   (3 << 17)   /*!< GDP: T.38 Fax Support (redundancy error correction) */
+ 
+-#define SIP_PAGE2_CALL_ONHOLD               (3 << 19)   /*!< D: Call hold states: */
+-#define SIP_PAGE2_CALL_ONHOLD_ACTIVE        (1 << 19)   /*!< D: Active hold */
+-#define SIP_PAGE2_CALL_ONHOLD_ONEDIR        (2 << 19)   /*!< D: One directional hold */
+-#define SIP_PAGE2_CALL_ONHOLD_INACTIVE      (3 << 19)   /*!< D: Inactive hold */
++#define SIP_PAGE2_CALL_ONHOLD               (3 << 18)   /*!< D: Call hold states: Incoming hold */
++#define SIP_PAGE2_CALL_ONHOLD_ACTIVE        (1 << 18)   /*!< D: Active hold  Incoming hold*/
++#define SIP_PAGE2_CALL_ONHOLD_ONEDIR        (2 << 18)   /*!< D: One directional hold  Incoming hold*/
++#define SIP_PAGE2_CALL_ONHOLD_INACTIVE      (3 << 18)   /*!< D: Inactive hold  Incoming hold*/
+ 
+ #define SIP_PAGE2_RFC2833_COMPENSATE        (1 << 21)   /*!< DP: Compensate for buggy RFC2833 implementations */
+ #define SIP_PAGE2_BUGGY_MWI                 (1 << 22)   /*!< DP: Buggy CISCO MWI fix */
+@@ -357,9 +357,12 @@
+ 
+ 
+ #define SIP_PAGE3_SNOM_AOC               (1 << 0)  /*!< DPG: Allow snom aoc messages */
++#define SIP_PAGE3_REMOTE_HOLD           (1 << 15)  /*!< DPG: Do not generate hold music, send remote hold (config)*/
++#define SIP_PAGE3_REMOTE_HOLD_STATUS    (1 << 16)  /*!< D: True if dialog is put on hold by pbx core */
++
+ 
+ #define SIP_PAGE3_FLAGS_TO_COPY \
+-	(SIP_PAGE3_SNOM_AOC)
++	(SIP_PAGE3_SNOM_AOC | SIP_PAGE3_REMOTE_HOLD)
+ 
+ /*@}*/
+ 
+--- a/configs/sip.conf.sample
++++ b/configs/sip.conf.sample
+@@ -312,6 +312,11 @@ srvlookup=yes                   ; Enable
+ ; a per-user or per-peer basis.
+ ;
+ ;mohsuggest=default
++
++; Instead of playing moh for a device on hold, Asterisk can forward the hold
++; and use SIP to put the device on hold. This setting is available on a device
++; level too. Defaults to no - off.
++; remotehold=yes
+ ;
+ ;parkinglot=plaza               ; Sets the default parking lot for call parking
+                                 ; This may also be set for individual users/peers
