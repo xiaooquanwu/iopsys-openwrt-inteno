@@ -22,6 +22,8 @@ include $(INCLUDE_DIR)/kernel.mk
 
 export CONFIG_BCM_CHIP_ID
 export CONFIG_BCM_KERNEL_PROFILE
+export CONFIG_SECURE_BOOT_CFE
+
 
 BCM_BS_PROFILE = $(shell echo $(CONFIG_BCM_KERNEL_PROFILE) | sed s/\"//g)
 
