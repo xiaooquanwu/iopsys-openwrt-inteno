@@ -14,7 +14,7 @@
 ./scripts/feeds install usb-modeswitch-data
 ./scripts/feeds install usb-modeswitch
 ./scripts/feeds install strace
-./scripts/feeds install libevent
+./scripts/feeds install libevent2
 ./scripts/feeds install libpng
 ./scripts/feeds install iperf
 ./scripts/feeds install curl
@@ -23,3 +23,5 @@
 ./scripts/feeds install liblzo
 ./scripts/feeds install miniupnpd
 ./scripts/feeds install minidlna
+
+
