@@ -1,4 +1,3 @@
-. /lib/upgrade/brcm.sh
 platform_check_image_size() {
 	[ "$(check_image_size "$1")" == "SIZE_OK" ] || {
 		return 1
@@ -17,8 +16,6 @@ platform_check_image() {
 		http://*|ftp://*) get_image "$1" "cat" > /tmp/firmware.img; from=/tmp/firmware.img;;
 		*) from=$1;;
 	esac
-
-	
 
 	[ "$(check_crc "$from")" == "CRC_OK" ] || {
 		echo "CRC check failed" > /dev/console
