@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2008-2012 OpenWrt.org
+# Copyright (C) 2008-2010 OpenWrt.org
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,18 +8,17 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=asterisk18-mod
-PKG_VERSION:=1.8.10.1
-PKG_RELEASE:=2
+PKG_VERSION:=1.8.4.4
+PKG_RELEASE:=1.0.3
 
-PKG_SOURCE_URL:=git@ihgsp.inteno.se:asterisk-aa
-PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=58690a01c60b9ddfaf78badf959a8c745d49051e
-PKG_SOURCE_SUBDIR:=asterisk-$(PKG_VERSION)
 PKG_SOURCE:=asterisk-$(PKG_VERSION)-mod.tar.gz
+PKG_SOURCE_URL:=ssh://inteno@ihgsp.inteno.se/home/inteno/private/git/asterisk-1.8.x.git
+PKG_MD5SUM:=bc2a1168603815c23f204927d1e73239
+PKG_SOURCE_VERSION:=413e27be4d20d03bdba6338a159bc8a5577fb5c4
+PKG_SOURCE_SUBDIR:=asterisk-$(PKG_VERSION)
 
 PKG_BUILD_DIR=$(BUILD_DIR)/asterisk-$(PKG_VERSION)
 
-include $(INCLUDE_DIR)/ltqtapi.mk
 include $(INCLUDE_DIR)/package.mk
 
 define Package/asterisk18-mod/Default
@@ -27,6 +26,7 @@ define Package/asterisk18-mod/Default
   SECTION:=net
   CATEGORY:=Network
   URL:=http://www.asterisk.org/
+  MAINTAINER:=Hans Zandbelt <hans.zandbelt@gmail.com>
 endef
 
 define Package/asterisk18-mod/Default/description
@@ -58,6 +58,7 @@ define Package/asterisk18-mod-sounds/description
 $(call Package/asterisk18-mod/Default/description)
  This package contains sound files for Asterisk.
 endef
+
 
 define Package/asterisk18-mod-voicemail
 $(call Package/asterisk18-mod/Default)
@@ -119,7 +120,7 @@ endef
 define Package/asterisk18-mod-cdr
 $(call Package/asterisk18-mod/Default)
   TITLE:=CDR support
-  DEPENDS:= asterisk18-mod @BROKEN
+  DEPENDS:= asterisk18-mod
 endef
 
 define Package/asterisk18-mod-cdr/description
@@ -137,18 +138,6 @@ endef
 define Package/asterisk18-mod-res-musiconhold/description
 $(call Package/asterisk18-mod/Default/description)
  This package provides Music On Hold support to
- Asterisk.
-endef
-
-define Package/asterisk18-mod-res-srtp
-$(call Package/asterisk18-mod/Default)
-  TITLE:=SRTP support
-  DEPENDS:= asterisk18-mod libsrtp +asterisk18-mod-res-crypto
-endef
-
-define Package/asterisk18-mod-res-srtp/description
-$(call Package/asterisk18-mod/Default/description)
- This package provides SRTP support to
  Asterisk.
 endef
 
@@ -173,30 +162,6 @@ endef
 define Package/asterisk18-mod-chan-mobile/description
 $(call Package/asterisk18-mod/Default/description)
  This package provides the channel chan_mobile support to Asterisk.
-endef
-
-define Package/asterisk18-mod-res-timing-timerfd
-$(call Package/asterisk18-mod/Default)
-  TITLE:= Timerfd Timing Interface
-  DEPENDS:= asterisk18-mod
-endef
-
-define Package/asterisk18-mod-res-timing-pthread
-$(call Package/asterisk18-mod/Default)
-  TITLE:= pthread Timing Interface
-  DEPENDS:= asterisk18-mod
-endef
-
-define Package/asterisk18-mod-res-fax
-$(call Package/asterisk18-mod/Default)
-  TITLE:=Generic FAX Resource for FAX technology resource modules
-  DEPENDS:= asterisk18-mod +asterisk18-mod-res-timing-pthread
-endef
-
-define Package/asterisk18-mod-res-fax-spandsp
-$(call Package/asterisk18-mod/Default)
-  TITLE:=Spandsp T.38 and G.711 FAX Resource
-  DEPENDS:= asterisk18-mod +asterisk18-mod-res-fax +libspandsp
 endef
 
 define Package/asterisk18-mod-chan-mgcp
@@ -256,19 +221,6 @@ $(call Package/asterisk18-mod/Default/description)
  support to Asterisk.
 endef
 
-define Package/asterisk18-mod-chan-lantiq
-$(call Package/asterisk18-mod/Default)
-  TITLE:=Lantiq TAPI support
-  DEPENDS:= asterisk18-mod $(LTQ_TAPI_DEPENDS)
-  URL:=http://git.nanl.de/?p=asterisk_channel_lantiq.git
-  MAINTAINER:=Mirko Vogt <mirko@openwrt.org>
-endef
-
-define Package/asterisk18-mod-chan-lantiq/description
-$(call Package/asterisk18-mod/Default/description)
- This package provides the channel chan_lantiq support to Asterisk.
-endef
-
 CONFIGURE_ARGS+= \
 	--without-inotify
 
@@ -309,28 +261,12 @@ else
 	--without-mysqlclient
 endif
 
-ifneq ($(SDK)$(CONFIG_PACKAGE_asterisk18-mod-res-fax-spandsp),)
-  CONFIGURE_ARGS+= \
-    --with-spandsp="$(STAGING_DIR)/usr"
-else
-  CONFIGURE_ARGS+= \
-    --without-spandsp
-endif
-
 ifneq ($(SDK)$(CONFIG_PACKAGE_asterisk18-mod-chan-mobile),)
   CONFIGURE_ARGS+= \
 	--with-bluetooth="$(STAGING_DIR)/usr"
 else
   CONFIGURE_ARGS+= \
 	--without-bluetooth
-endif
-
-ifneq ($(SDK)$(CONFIG_PACKAGE_asterisk18-mod-res-srtp),)
-  CONFIGURE_ARGS+= \
-	--with-srtp="$(STAGING_DIR)/usr"
-else
-  CONFIGURE_ARGS+= \
-	--without-srtp
 endif
 
 ifeq ($(CONFIG_TARGET_IBOARDID),"D301")
@@ -340,7 +276,6 @@ endif
 CONFIGURE_ARGS+= \
 	--without-curses \
 	--with-gsm=internal \
-	--without-cap \
 	--without-gtk \
 	--without-gtk2 \
 	--without-isdnnet \
@@ -358,6 +293,7 @@ CONFIGURE_ARGS+= \
 	--without-qt \
 	--without-radius \
 	--without-sdl \
+	--without-spandsp \
 	--without-suppserv \
 	--without-tds \
 	--without-termcap \
@@ -371,42 +307,15 @@ CONFIGURE_ARGS+= \
 EXTRA_CFLAGS+= $(TARGET_CPPFLAGS)
 EXTRA_LDFLAGS+= $(TARGET_LDFLAGS)
 
-BCMKERNEL_DIR=$(BUILD_DIR)/bcmkernel-3.4-4.14/bcm963xx/
-EXTRA_CFLAGS += -I$(BCMKERNEL_DIR)/bcmdrivers/broadcom/include/bcm963xx/
-EXTRA_CFLAGS += -I$(BCMKERNEL_DIR)/bcmdrivers/opensource/include/bcm963xx/
-EXTRA_CFLAGS += -I$(BCMKERNEL_DIR)/xChange/dslx_common/voice_res_gw/endpt/inc/
-EXTRA_CFLAGS += -I$(BCMKERNEL_DIR)/xChange/dslx_common/voice_res_gw/inc
-EXTRA_CFLAGS += -I$(BCMKERNEL_DIR)/xChange/dslx_common/voice_res_gw/codec
-EXTRA_CFLAGS += -I$(BCMKERNEL_DIR)/xChange/dslx_common/xchg_common/bos/publicInc/
-EXTRA_CFLAGS += -I$(BCMKERNEL_DIR)/xChange/dslx_common/voice_res_gw/casCtl/inc/
-EXTRA_CFLAGS += -I$(BCMKERNEL_DIR)/xChange/dslx_common/xchg_drivers/inc
-
-DECTD_DIR=$(BCMKERNEL_DIR)/userspace/private/apps/dectd
-EXTRA_CFLAGS += -I$(DECTD_DIR)
-EXTRA_CFLAGS += -I$(DECTD_DIR)/inc
-EXTRA_CFLAGS += -I$(DECTD_DIR)/dectI/inc
-EXTRA_CFLAGS += -I$(DECTD_DIR)/dectI/inc/Phoenix
-EXTRA_CFLAGS += -I$(DECTD_DIR)/dectI/inc/Phoenix/Api
-EXTRA_CFLAGS += -I$(DECTD_DIR)/dectI/inc/Phoenix/Api/CodecList
-EXTRA_CFLAGS += -I$(DECTD_DIR)/dectI/inc/Phoenix/Api/FpCc
-EXTRA_CFLAGS += -I$(DECTD_DIR)/dectI/inc/Phoenix/Api/FpFwu
-EXTRA_CFLAGS += -I$(DECTD_DIR)/dectI/inc/Phoenix/Api/FpMm
-EXTRA_CFLAGS += -I$(DECTD_DIR)/dectI/inc/Phoenix/Api/FpNoEmission
-EXTRA_CFLAGS += -I$(DECTD_DIR)/dectI/inc/Phoenix/Api/GenEveNot
-EXTRA_CFLAGS += -I$(DECTD_DIR)/dectI/inc/Phoenix/Api/FpGeneral
-EXTRA_CFLAGS += -I$(DECTD_DIR)/dectI/inc/Phoenix/Api/Las
-EXTRA_CFLAGS += -I$(DECTD_DIR)/dectI/inc/Phoenix/Api/LasDb
-EXTRA_CFLAGS += -I$(DECTD_DIR)/dectI/inc/Phoenix/Api/Project
-EXTRA_CFLAGS += -I$(DECTD_DIR)/dectI/inc/Phoenix/Api/Types
-EXTRA_CFLAGS += -DBOS_OS_LINUXUSER -DBOS_CFG_TIME -DNTR_SUPPORT
-
-
-define Build/Prepare
-	$(call Build/Prepare/Default)
-ifneq ($(CONFIG_TARGET_lantiq),)
-	$(CP) ./src-lantiq/* $(PKG_BUILD_DIR)/
-endif
-endef
+EXTRA_CFLAGS += -I$(BUILD_DIR)/bcmkernel-4.12/4.12L.04/bcmdrivers/broadcom/include/bcm963xx/
+EXTRA_CFLAGS += -I$(BUILD_DIR)/bcmkernel-4.12/4.12L.04/bcmdrivers/opensource/include/bcm963xx/
+EXTRA_CFLAGS += -I$(BUILD_DIR)/bcmkernel-4.12/4.12L.04/xChange/dslx_common/voice_res_gw/endpt/inc/
+EXTRA_CFLAGS += -I$(BUILD_DIR)/bcmkernel-4.12/4.12L.04/xChange/dslx_common/voice_res_gw/inc
+EXTRA_CFLAGS += -I$(BUILD_DIR)/bcmkernel-4.12/4.12L.04/xChange/dslx_common/voice_res_gw/codec
+EXTRA_CFLAGS += -I$(BUILD_DIR)/bcmkernel-4.12/4.12L.04/xChange/dslx_common/xchg_common/bos/publicInc/
+EXTRA_CFLAGS += -I$(BUILD_DIR)/bcmkernel-4.12/4.12L.04/xChange/dslx_common/voice_res_gw/casCtl/inc/
+EXTRA_CFLAGS += -I$(BUILD_DIR)/bcmkernel-4.12/4.12L.04/xChange/dslx_common/xchg_drivers/inc
+EXTRA_CFLAGS += -DBOS_OS_LINUXUSER
 
 define Build/Configure
 	-rm $(PKG_BUILD_DIR)/menuselect.makeopts
@@ -424,7 +333,6 @@ define Build/Compile
 		ASTVARLIBDIR="/usr/lib/asterisk" \
 		ASTDATADIR="/usr/lib/asterisk" \
 		ASTKEYDIR="/usr/lib/asterisk" \
-		ASTDBDIR="/usr/lib/asterisk" \
 		NOISY_BUILD="1" \
 		DEBUG="" \
 		OPTIMIZE="" \
@@ -579,33 +487,6 @@ define Package/asterisk18-mod-chan-mobile/install
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/lib/asterisk/modules/chan_mobile.so $(1)/usr/lib/asterisk/modules/
 endef
 
-define Package/asterisk18-mod-res-timing-timerfd/install
-	$(INSTALL_DIR) $(1)/usr/lib/asterisk/modules
-	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/lib/asterisk/modules/res_timing_timerfd.so $(1)/usr/lib/asterisk/modules/
-endef
-
-define Package/asterisk18-mod-res-timing-pthread/install
-	$(INSTALL_DIR) $(1)/usr/lib/asterisk/modules
-	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/lib/asterisk/modules/res_timing_pthread.so $(1)/usr/lib/asterisk/modules/
-endef
-
-define Package/asterisk18-mod-res-fax/conffiles
-/etc/asterisk/res_fax.conf
-endef
-
-define Package/asterisk18-mod-res-fax/install
-	$(INSTALL_DIR) $(1)/etc/asterisk
-	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/etc/asterisk/res_fax.conf $(1)/etc/asterisk/
-	$(INSTALL_DIR) $(1)/usr/lib/asterisk/modules
-	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/lib/asterisk/modules/res_fax.so $(1)/usr/lib/asterisk/modules/
-endef
-
-define Package/asterisk18-mod-res-fax-spandsp/install
-	$(INSTALL_DIR) $(1)/etc/asterisk
-	$(INSTALL_DIR) $(1)/usr/lib/asterisk/modules
-	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/lib/asterisk/modules/res_fax_spandsp.so $(1)/usr/lib/asterisk/modules/
-endef
-
 define Package/asterisk18-mod-chan-mgcp/conffiles
 /etc/asterisk/mgcp.conf
 endef
@@ -672,22 +553,6 @@ define Package/asterisk18-mod-mysql/install
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/lib/asterisk/modules/res_config_mysql.so $(1)/usr/lib/asterisk/modules/
 endef
 
-define Package/asterisk18-mod-chan-lantiq/conffiles
-/etc/asterisk/lantiq.conf
-endef
-
-define Package/asterisk18-mod-chan-lantiq/install
-	$(INSTALL_DIR) $(1)/usr/lib/asterisk/modules
-	$(INSTALL_DIR) $(1)/etc/asterisk
-	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/etc/asterisk/lantiq.conf $(1)/etc/asterisk/
-	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/lib/asterisk/modules/chan_lantiq.so $(1)/usr/lib/asterisk/modules/
-endef
-
-define Package/asterisk18-mod-res-srtp/install
-	$(INSTALL_DIR) $(1)/usr/lib/asterisk/modules
-	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/lib/asterisk/modules/res_srtp.so $(1)/usr/lib/asterisk/modules/
-endef
-
 define Buildasterisk18-modModuleTemplate
 
   define Package/asterisk18-mod-$(subst _,-,$(1))
@@ -720,17 +585,11 @@ $(eval $(call BuildPackage,asterisk18-mod-cdr))
 $(eval $(call BuildPackage,asterisk18-mod-res-musiconhold))
 $(eval $(call BuildPackage,asterisk18-mod-chan-gtalk))
 $(eval $(call BuildPackage,asterisk18-mod-chan-mobile))
-$(eval $(call BuildPackage,asterisk18-mod-res-fax))
-$(eval $(call BuildPackage,asterisk18-mod-res-fax-spandsp))
-$(eval $(call BuildPackage,asterisk18-mod-res-timing-timerfd))
-$(eval $(call BuildPackage,asterisk18-mod-res-timing-pthread))
 $(eval $(call BuildPackage,asterisk18-mod-chan-mgcp))
 $(eval $(call BuildPackage,asterisk18-mod-chan-skinny))
 $(eval $(call BuildPackage,asterisk18-mod-chan-brcm))
 $(eval $(call BuildPackage,asterisk18-mod-curl))
 $(eval $(call BuildPackage,asterisk18-mod-mysql))
-$(eval $(call BuildPackage,asterisk18-mod-chan-lantiq))
-$(eval $(call BuildPackage,asterisk18-mod-res-srtp))
 $(eval $(call Buildasterisk18-modModuleTemplate,app_authenticate,Authenticate,support for executing arbitrary authenticate commands))
 $(eval $(call Buildasterisk18-modModuleTemplate,app_chanisavail,Channel availability check,support for checking if a channel is available))
 $(eval $(call Buildasterisk18-modModuleTemplate,app_chanspy,Channel listen in,support for listening in on any channel))
@@ -775,10 +634,4 @@ $(eval $(call Buildasterisk18-modModuleTemplate,func_channel,Channel info,Channe
 $(eval $(call Buildasterisk18-modModuleTemplate,func_blacklist,Blacklist on callerid,looking up the callerid number and see if it is blacklisted))
 $(eval $(call Buildasterisk18-modModuleTemplate,app_originate,Originate a call,originating an outbound call and connecting it to a specified extension or application))
 $(eval $(call Buildasterisk18-modModuleTemplate,func_uri,URI encoding and decoding,Encodes and decodes URI-safe strings))
-$(eval $(call Buildasterisk18-modModuleTemplate,app_disa,Direct Inward System Access,Direct Inward System Access))
-$(eval $(call Buildasterisk18-modModuleTemplate,app_senddtmf,Send DTMF digits,Sends arbitrary DTMF digits))
-$(eval $(call Buildasterisk18-modModuleTemplate,func_cut,CUT function,CUT function))
-$(eval $(call Buildasterisk18-modModuleTemplate,res_clioriginate,Calls via CLI,Originate calls via the CLI))
-$(eval $(call Buildasterisk18-modModuleTemplate,app_mixmonitor,Record a call and mix the audio,record a call and mix the audio during the recording))
 $(eval $(call Buildasterisk18-modModuleTemplate,app_playtones,Playtones application,play a tone list))
-$(eval $(call Buildasterisk18-modModuleTemplate,app_record,Record sound file,to record a sound file))

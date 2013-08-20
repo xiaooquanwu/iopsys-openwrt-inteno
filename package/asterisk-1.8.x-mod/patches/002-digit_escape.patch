@@ -1,6 +1,6 @@
 --- a/channels/chan_sip.c
 +++ b/channels/chan_sip.c
-@@ -701,7 +701,7 @@ static struct sip_settings sip_cfg;		/*!
+@@ -699,7 +699,7 @@ static struct sip_settings sip_cfg;		/*!
  /*!< use this macro when ast_uri_decode is dependent on pedantic checking to be on. */
  #define SIP_PEDANTIC_DECODE(str)	\
  	if (sip_cfg.pedanticsipchecking && !ast_strlen_zero(str)) {	\
@@ -9,25 +9,25 @@
  	}	\
  
  static unsigned int chan_idx;       /*!< used in naming sip channel */
-@@ -7197,7 +7197,7 @@ static struct ast_channel *sip_new(struc
- 	sip_pvt_unlock(i);
- 	ast_channel_unlock(tmp);
- 	if (!ast_exists_extension(NULL, i->context, i->exten, 1, i->cid_num)) {
--		ast_uri_decode(exten);
-+		ast_uri_decode(exten, ast_uri_sip_user);
+@@ -6847,7 +6847,7 @@ static struct ast_channel *sip_new(struc
+ 		ast_copy_string(tmp->exten, i->exten, sizeof(tmp->exten));
+ 	} else {
+ 		decoded_exten = ast_strdupa(i->exten);
+-		ast_uri_decode(decoded_exten);
++		ast_uri_decode(decoded_exten, ast_uri_sip_user);
+ 		ast_copy_string(tmp->exten, decoded_exten, sizeof(tmp->exten));
  	}
- 	ast_channel_lock(tmp);
- 	sip_pvt_lock(i);
-@@ -10953,7 +10953,7 @@ static int add_rpid(struct sip_request *
- 		lid_name = lid_num;
- 	fromdomain = S_OR(p->fromdomain, ast_sockaddr_stringify_host_remote(&p->ourip));
  
--	lid_num = ast_uri_encode(lid_num, tmp2, sizeof(tmp2), 0);
+@@ -10428,7 +10428,7 @@ static int add_rpid(struct sip_request *
+ 		lid_name = lid_num;
+ 	fromdomain = S_OR(p->fromdomain, ast_sockaddr_stringify_host(&p->ourip));
+ 
+-	lid_num = ast_uri_encode(lid_num, tmp2, sizeof(tmp2), 1);
 +	lid_num = ast_uri_encode(lid_num, tmp2, sizeof(tmp2), ast_uri_sip_user);
  
  	if (ast_test_flag(&p->flags[0], SIP_SENDRPID_PAI)) {
  		if ((lid_pres & AST_PRES_RESTRICTION) != AST_PRES_ALLOWED) {
-@@ -11943,7 +11943,7 @@ static void extract_uri(struct sip_pvt *
+@@ -11368,7 +11368,7 @@ static void extract_uri(struct sip_pvt *
  static void build_contact(struct sip_pvt *p)
  {
  	char tmp[SIPBUFSIZE];
@@ -36,16 +36,19 @@
  
  	if (p->socket.type == SIP_TRANSPORT_UDP) {
  		ast_string_field_build(p, our_contact, "<sip:%s%s%s>", user,
-@@ -12085,7 +12085,7 @@ static void initreqprep(struct sip_reque
+@@ -11507,9 +11507,9 @@ static void initreqprep(struct sip_reque
+ 		ast_string_field_set(p, fromname, n);
+ 
  	if (sip_cfg.pedanticsipchecking) {
- 		ast_escape_quoted(n, tmp_n, sizeof(tmp_n));
+-		ast_uri_encode(n, tmp_n, sizeof(tmp_n), 0);
++		ast_escape_quoted(n, tmp_n, sizeof(tmp_n));
  		n = tmp_n;
 -		ast_uri_encode(l, tmp_l, sizeof(tmp_l), 0);
 +		ast_uri_encode(l, tmp_l, sizeof(tmp_l), ast_uri_sip_user);
  		l = tmp_l;
  	}
  
-@@ -12109,7 +12109,7 @@ static void initreqprep(struct sip_reque
+@@ -11533,7 +11533,7 @@ static void initreqprep(struct sip_reque
  			if (!ast_strlen_zero(p->username)) {
  				n = p->username;
  				if (sip_cfg.pedanticsipchecking) {
@@ -54,7 +57,7 @@
  					n = tmp_n;
  				}
  				ast_str_append(&invite, 0, "%s@", n);
-@@ -15481,7 +15481,7 @@ static enum sip_get_dest_result get_dest
+@@ -14748,7 +14748,7 @@ static enum sip_get_dest_result get_dest
  	/* Since extensions.conf can have unescaped characters, try matching a
  	 * decoded uri in addition to the non-decoded uri. */
  	decoded_uri = ast_strdupa(uri);
@@ -63,7 +66,7 @@
  
  	/* If this is a subscription we actually just need to see if a hint exists for the extension */
  	if (req->method == SIP_SUBSCRIBE) {
-@@ -15715,7 +15715,7 @@ static int get_refer_info(struct sip_pvt
+@@ -14976,7 +14976,7 @@ static int get_refer_info(struct sip_pvt
  		/* This is an attended transfer */
  		referdata->attendedtransfer = 1;
  		ast_copy_string(referdata->replaces_callid, ptr+9, sizeof(referdata->replaces_callid));
@@ -72,7 +75,7 @@
  		if ((ptr = strchr(referdata->replaces_callid, ';'))) 	/* Find options */ {
  			*ptr++ = '\0';
  		}
-@@ -19799,7 +19799,7 @@ static void parse_moved_contact(struct s
+@@ -18928,7 +18928,7 @@ static void parse_moved_contact(struct s
  		separator = strchr(contact_number, ';');	/* And username ; parameters? */
  		if (separator)
  			*separator = '\0';
@@ -81,7 +84,7 @@
  		if (set_call_forward) {
  			ast_debug(2, "Received 302 Redirect to extension '%s' (domain %s)\n", contact_number, domain);
  			if (p->owner) {
-@@ -22416,7 +22416,7 @@ static int handle_request_invite(struct
+@@ -21404,7 +21404,7 @@ static int handle_request_invite(struct
  			ast_debug(3, "INVITE part of call transfer. Replaces [%s]\n", p_replaces);
  		/* Create a buffer we can manipulate */
  		replace_id = ast_strdupa(p_replaces);
@@ -90,18 +93,18 @@
  
  		if (!p->refer && !sip_refer_allocate(p)) {
  			transmit_response_reliable(p, "500 Server Internal Error", req);
-@@ -22726,7 +22726,7 @@ static int handle_request_invite(struct
+@@ -21718,7 +21718,7 @@ static int handle_request_invite(struct
  				{
  					char *decoded_exten = ast_strdupa(p->exten);
  					transmit_response_reliable(p, "404 Not Found", req);
 -					ast_uri_decode(decoded_exten);
 +					ast_uri_decode(decoded_exten, ast_uri_sip_user);
- 					ast_log(LOG_NOTICE, "Call from '%s' (%s) to extension"
+ 					ast_log(LOG_NOTICE, "Call from '%s' to extension"
  						" '%s' rejected because extension not found in context '%s'.\n",
- 						S_OR(p->username, p->peername), ast_sockaddr_stringify(&p->recv), decoded_exten, p->context);
+ 						S_OR(p->username, p->peername), decoded_exten, p->context);
 --- a/channels/sip/reqresp_parser.c
 +++ b/channels/sip/reqresp_parser.c
-@@ -895,7 +895,7 @@ int get_name_and_number(const char *hdr,
+@@ -873,7 +873,7 @@ int get_name_and_number(const char *hdr,
  
  	/* number is not option, and must be present at this point */
  	*number = ast_strdup(tmp_number);
@@ -110,7 +113,7 @@
  
  	/* name is optional and may not be present at this point */
  	if (!ast_strlen_zero(tmp_name)) {
-@@ -2111,8 +2111,8 @@ int sip_uri_cmp(const char *input1, cons
+@@ -2073,8 +2073,8 @@ int sip_uri_cmp(const char *input1, cons
  	uri1 = ast_strdupa(input1);
  	uri2 = ast_strdupa(input2);
  
@@ -123,21 +126,20 @@
  	uri_scheme2 = strsep(&uri2, ":");
 --- a/funcs/func_curl.c
 +++ b/funcs/func_curl.c
-@@ -544,9 +544,9 @@ static int acf_curl_helper(struct ast_ch
- 			while (fields && values && (piece = strsep(&remainder, "&"))) {
- 				char *name = strsep(&piece, "=");
- 				if (piece) {
--					ast_uri_decode(piece);
-+					ast_uri_decode(piece, ast_uri_http);
+@@ -534,8 +534,8 @@ static int acf_curl_helper(struct ast_ch
+ 				if (!piece) {
+ 					piece = "";
  				}
+-				ast_uri_decode(piece);
 -				ast_uri_decode(name);
++				ast_uri_decode(piece, ast_uri_http);
 +				ast_uri_decode(name, ast_uri_http);
- 				ast_str_append(&fields, 0, "%s%s", rowcount ? "," : "", ast_str_set_escapecommas(&escapebuf, 0, name, INT_MAX));
- 				ast_str_append(&values, 0, "%s%s", rowcount ? "," : "", ast_str_set_escapecommas(&escapebuf, 0, S_OR(piece, ""), INT_MAX));
+ 				ast_str_append(&fields, 0, "%s%s", rowcount ? "," : "", name);
+ 				ast_str_append(&values, 0, "%s%s", rowcount ? "," : "", piece);
  				rowcount++;
 --- a/funcs/func_uri.c
 +++ b/funcs/func_uri.c
-@@ -80,7 +80,7 @@ static int uriencode(struct ast_channel
+@@ -76,7 +76,7 @@ static int uriencode(struct ast_channel
  		return -1;
  	}
  
@@ -146,7 +148,7 @@
  
  	return 0;
  }
-@@ -95,7 +95,7 @@ static int uridecode(struct ast_channel
+@@ -91,7 +91,7 @@ static int uridecode(struct ast_channel
  	}
  
  	ast_copy_string(buf, data, len);
@@ -174,7 +176,7 @@
 +extern const struct ast_flags ast_uri_sip_user;
 +
 +/*!
-+ * \brief Turn text string to URI-encoded %XX version 
++ * \brief Turn text string to URI-encoded %XX version
   *
 - * \note 
 - *  At this point, this function is encoding agnostic; it does not
@@ -234,11 +236,11 @@
 -void ast_uri_decode(char *s);
 +char *ast_escape_quoted(const char *string, char *outbuf, int buflen);
  
- /*!
-  * \brief Escape characters found in a quoted string.
+ static force_inline void ast_slinear_saturated_add(short *input, short *value)
+ {
 --- a/main/http.c
 +++ b/main/http.c
-@@ -592,24 +592,6 @@ void ast_http_uri_unlink_all_with_key(co
+@@ -579,24 +579,6 @@ void ast_http_uri_unlink_all_with_key(co
  }
  
  /*
@@ -263,7 +265,7 @@
   * get post variables from client Request Entity-Body, if content type is
   * application/x-www-form-urlencoded
   */
-@@ -650,11 +632,11 @@ struct ast_variable *ast_http_get_post_v
+@@ -637,11 +619,11 @@ struct ast_variable *ast_http_get_post_v
  	while ((val = strsep(&buf, "&"))) {
  		var = strsep(&val, "=");
  		if (val) {
@@ -277,7 +279,7 @@
  		if ((v = ast_variable_new(var, val, ""))) {
  			if (post_vars) {
  				prev->next = v;
-@@ -688,11 +670,11 @@ static int handle_uri(struct ast_tcptls_
+@@ -675,11 +657,11 @@ static int handle_uri(struct ast_tcptls_
  		while ((val = strsep(&params, "&"))) {
  			var = strsep(&val, "=");
  			if (val) {
@@ -291,7 +293,7 @@
  			if ((v = ast_variable_new(var, val, ""))) {
  				if (get_vars) {
  					prev->next = v;
-@@ -703,7 +685,7 @@ static int handle_uri(struct ast_tcptls_
+@@ -690,7 +672,7 @@ static int handle_uri(struct ast_tcptls_
  			}
  		}
  	}
@@ -357,7 +359,7 @@
  			out += sprintf(out, "%%%02X", (unsigned char) *ptr);
  		} else {
  			*out = *ptr;	/* Continue copying the string */
-@@ -446,14 +445,16 @@ char *ast_escape_quoted(const char *stri
+@@ -415,14 +414,16 @@ char *ast_uri_encode(const char *string,
  	return outbuf;
  }
  
@@ -377,29 +379,65 @@
  			/* have '%', two chars and correct parsing */
  			*o = tmp;
  			s += 2;	/* Will be incremented once more when we break out */
+@@ -432,6 +433,35 @@ void ast_uri_decode(char *s)
+ 	*o = '\0';
+ }
+ 
++char *ast_escape_quoted(const char *string, char *outbuf, int buflen)
++{
++	const char *ptr  = string;
++	char *out = outbuf;
++	char *allow = "\t\v !"; /* allow LWS (minus \r and \n) and "!" */
++
++	while (*ptr && out - outbuf < buflen - 1) {
++		if (!(strchr(allow, *ptr))
++			&& !(*ptr >= '#' && *ptr <= '[') /* %x23 - %x5b */
++			&& !(*ptr >= ']' && *ptr <= '~') /* %x5d - %x7e */
++			&& !(*ptr > 0x7f)) {             /* UTF8-nonascii */
++
++			if (out - outbuf >= buflen - 2) {
++				break;
++			}
++			out += sprintf(out, "\\%c", (unsigned char) *ptr);
++		} else {
++			*out = *ptr;
++			out++;
++		}
++		ptr++;
++	}
++
++	if (buflen) {
++		*out = '\0';
++	}
++
++	return outbuf;
++}
+ /*! \brief  ast_inet_ntoa: Recursive thread safe replacement of inet_ntoa */
+ const char *ast_inet_ntoa(struct in_addr ia)
+ {
 --- a/res/res_agi.c
 +++ b/res/res_agi.c
-@@ -1307,7 +1307,7 @@ static enum agi_result launch_asyncagi(s
+@@ -1254,7 +1254,7 @@ static enum agi_result launch_asyncagi(s
  	/* encode it and send it thru the manager so whoever is going to take
  	   care of AGI commands on this channel can decide which AGI commands
  	   to execute based on the setup info */
 -	ast_uri_encode(agi_buffer, ami_buffer, AMI_BUF_SIZE, 1);
 +	ast_uri_encode(agi_buffer, ami_buffer, AMI_BUF_SIZE, ast_uri_http);
- 	manager_event(EVENT_FLAG_AGI, "AsyncAGI",
- 		"SubEvent: Start\r\n"
- 		"Channel: %s\r\n"
-@@ -1340,7 +1340,7 @@ static enum agi_result launch_asyncagi(s
- 			 * was added.
- 			 */
+ 	manager_event(EVENT_FLAG_AGI, "AsyncAGI", "SubEvent: Start\r\nChannel: %s\r\nEnv: %s\r\n", chan->name, ami_buffer);
+ 	while (1) {
+ 		/* bail out if we need to hangup */
+@@ -1286,7 +1286,7 @@ static enum agi_result launch_asyncagi(s
+ 			   manager. Include the CommandID if it was specified
+ 			   when the command was added */
  			agi_buffer[res] = '\0';
 -			ast_uri_encode(agi_buffer, ami_buffer, AMI_BUF_SIZE, 1);
 +			ast_uri_encode(agi_buffer, ami_buffer, AMI_BUF_SIZE, ast_uri_http);
- 			if (ast_strlen_zero(cmd->cmd_id)) {
- 				manager_event(EVENT_FLAG_AGI, "AsyncAGI",
- 					"SubEvent: Exec\r\n"
+ 			if (ast_strlen_zero(cmd->cmd_id))
+ 				manager_event(EVENT_FLAG_AGI, "AsyncAGI", "SubEvent: Exec\r\nChannel: %s\r\nResult: %s\r\n", chan->name, ami_buffer);
+ 			else
 --- a/res/res_config_curl.c
 +++ b/res/res_config_curl.c
-@@ -66,7 +66,6 @@ static struct ast_variable *realtime_cur
+@@ -65,7 +65,6 @@ static struct ast_variable *realtime_cur
  	char *stringp, *pair, *key;
  	int i;
  	struct ast_variable *var = NULL, *prev = NULL;
@@ -407,7 +445,7 @@
  
  	if (!ast_custom_function_find("CURL")) {
  		ast_log(LOG_ERROR, "func_curl.so must be loaded in order to use res_config_curl.so!!\n");
-@@ -85,8 +84,8 @@ static struct ast_variable *realtime_cur
+@@ -84,8 +83,8 @@ static struct ast_variable *realtime_cur
  
  	for (i = 0; (newparam = va_arg(ap, const char *)); i++) {
  		newval = va_arg(ap, const char *);
@@ -418,7 +456,7 @@
  		ast_str_append(&query, 0, "%s%s=%s", i > 0 ? "&" : "", buf1, buf2);
  	}
  	va_end(ap);
-@@ -102,9 +101,9 @@ static struct ast_variable *realtime_cur
+@@ -101,9 +100,9 @@ static struct ast_variable *realtime_cur
  	stringp = ast_str_buffer(buffer);
  	while ((pair = strsep(&stringp, "&"))) {
  		key = strsep(&pair, "=");
@@ -430,7 +468,7 @@
  		}
  
  		if (!ast_strlen_zero(key)) {
-@@ -138,7 +137,6 @@ static struct ast_config *realtime_multi
+@@ -137,7 +136,6 @@ static struct ast_config *realtime_multi
  	const char *newparam, *newval;
  	char *stringp, *line, *pair, *key, *initfield = NULL;
  	int i;
@@ -438,7 +476,7 @@
  	struct ast_variable *var = NULL;
  	struct ast_config *cfg = NULL;
  	struct ast_category *cat = NULL;
-@@ -166,8 +164,8 @@ static struct ast_config *realtime_multi
+@@ -165,8 +163,8 @@ static struct ast_config *realtime_multi
  			if ((op = strchr(initfield, ' ')))
  				*op = '\0';
  		}
@@ -449,7 +487,7 @@
  		ast_str_append(&query, 0, "%s%s=%s", i > 0 ? "&" : "", buf1, buf2);
  	}
  	va_end(ap);
-@@ -194,9 +192,9 @@ static struct ast_config *realtime_multi
+@@ -193,9 +191,9 @@ static struct ast_config *realtime_multi
  
  		while ((pair = strsep(&line, "&"))) {
  			key = strsep(&pair, "=");
@@ -461,7 +499,7 @@
  			}
  
  			if (!strcasecmp(key, initfield) && pair) {
-@@ -236,7 +234,6 @@ static int update_curl(const char *url,
+@@ -235,7 +233,6 @@ static int update_curl(const char *url,
  	const char *newparam, *newval;
  	char *stringp;
  	int i, rowcount = -1;
@@ -469,7 +507,7 @@
  
  	if (!ast_custom_function_find("CURL")) {
  		ast_log(LOG_ERROR, "func_curl.so must be loaded in order to use res_config_curl.so!!\n");
-@@ -251,14 +248,14 @@ static int update_curl(const char *url,
+@@ -250,14 +247,14 @@ static int update_curl(const char *url,
  		return -1;
  	}
  
@@ -488,7 +526,7 @@
  		ast_str_append(&query, 0, "%s%s=%s", i > 0 ? "&" : "", buf1, buf2);
  	}
  	va_end(ap);
-@@ -287,7 +284,6 @@ static int update2_curl(const char *url,
+@@ -286,7 +283,6 @@ static int update2_curl(const char *url,
  	const char *newparam, *newval;
  	char *stringp;
  	int rowcount = -1, lookup = 1, first = 1;
@@ -496,7 +534,7 @@
  
  	if (!ast_custom_function_find("CURL")) {
  		ast_log(LOG_ERROR, "func_curl.so must be loaded in order to use res_config_curl.so!!\n");
-@@ -316,8 +312,8 @@ static int update2_curl(const char *url,
+@@ -315,8 +311,8 @@ static int update2_curl(const char *url,
  			}
  		}
  		newval = va_arg(ap, const char *);
@@ -507,7 +545,7 @@
  		ast_str_append(&query, 0, "%s%s=%s", first ? "" : "&", buf1, buf2);
  		first = 0;
  	}
-@@ -364,7 +360,6 @@ static int store_curl(const char *url, c
+@@ -363,7 +359,6 @@ static int store_curl(const char *url, c
  	const char *newparam, *newval;
  	char *stringp;
  	int i, rowcount = -1;
@@ -515,7 +553,7 @@
  
  	if (!ast_custom_function_find("CURL")) {
  		ast_log(LOG_ERROR, "func_curl.so must be loaded in order to use res_config_curl.so!!\n");
-@@ -383,8 +378,8 @@ static int store_curl(const char *url, c
+@@ -382,8 +377,8 @@ static int store_curl(const char *url, c
  
  	for (i = 0; (newparam = va_arg(ap, const char *)); i++) {
  		newval = va_arg(ap, const char *);
@@ -526,7 +564,7 @@
  		ast_str_append(&query, 0, "%s%s=%s", i > 0 ? "&" : "", buf1, buf2);
  	}
  	va_end(ap);
-@@ -427,7 +422,6 @@ static int destroy_curl(const char *url,
+@@ -426,7 +421,6 @@ static int destroy_curl(const char *url,
  	const char *newparam, *newval;
  	char *stringp;
  	int i, rowcount = -1;
@@ -534,7 +572,7 @@
  
  	if (!ast_custom_function_find("CURL")) {
  		ast_log(LOG_ERROR, "func_curl.so must be loaded in order to use res_config_curl.so!!\n");
-@@ -442,14 +436,14 @@ static int destroy_curl(const char *url,
+@@ -441,14 +435,14 @@ static int destroy_curl(const char *url,
  		return -1;
  	}
  
@@ -553,7 +591,7 @@
  		ast_str_append(&query, 0, "%s%s=%s", i > 0 ? "&" : "", buf1, buf2);
  	}
  	va_end(ap);
-@@ -476,7 +470,6 @@ static int require_curl(const char *url,
+@@ -475,7 +469,6 @@ static int require_curl(const char *url,
  	struct ast_str *query, *buffer;
  	char *elm, field[256];
  	int type, size;
@@ -561,7 +599,7 @@
  
  	if (!ast_custom_function_find("CURL")) {
  		ast_log(LOG_ERROR, "func_curl.so must be loaded in order to use res_config_curl.so!!\n");
-@@ -496,7 +489,7 @@ static int require_curl(const char *url,
+@@ -495,7 +488,7 @@ static int require_curl(const char *url,
  	while ((elm = va_arg(ap, char *))) {
  		type = va_arg(ap, require_type);
  		size = va_arg(ap, int);
@@ -570,7 +608,7 @@
  		ast_str_append(&query, 0, "%s=%s%%3A%d", field,
  			type == RQ_CHAR ? "char" :
  			type == RQ_INTEGER1 ? "integer1" :
-@@ -526,7 +519,6 @@ static struct ast_config *config_curl(co
+@@ -525,7 +518,6 @@ static struct ast_config *config_curl(co
  	struct ast_str *query, *buffer;
  	char buf1[200];
  	char *stringp, *line, *pair, *key;
@@ -578,7 +616,7 @@
  	int last_cat_metric = -1, cat_metric = -1;
  	struct ast_category *cat = NULL;
  	char *cur_cat = "";
-@@ -546,7 +538,7 @@ static struct ast_config *config_curl(co
+@@ -545,7 +537,7 @@ static struct ast_config *config_curl(co
  		return NULL;
  	}
  
@@ -587,7 +625,7 @@
  	ast_str_set(&query, 0, "${CURL(%s/static?file=%s)}", url, buf1);
  
  	/* Do the CURL query */
-@@ -563,9 +555,9 @@ static struct ast_config *config_curl(co
+@@ -562,9 +554,9 @@ static struct ast_config *config_curl(co
  
  		while ((pair = strsep(&line, "&"))) {
  			key = strsep(&pair, "=");
@@ -601,7 +639,7 @@
  			if (!strcasecmp(key, "category")) {
 --- a/tests/test_utils.c
 +++ b/tests/test_utils.c
-@@ -46,9 +46,47 @@ AST_TEST_DEFINE(uri_encode_decode_test)
+@@ -45,9 +45,47 @@ AST_TEST_DEFINE(uri_encode_decode_test)
  {
  	int res = AST_TEST_PASS;
  	const char *in = "abcdefghijklmnopurstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 1234567890 ~`!@#$%^&*()_-+={[}]|\\:;\"'<,>.?/";
@@ -651,7 +689,7 @@
  
  	switch (cmd) {
  	case TEST_INIT:
-@@ -61,43 +99,72 @@ AST_TEST_DEFINE(uri_encode_decode_test)
+@@ -60,43 +98,73 @@ AST_TEST_DEFINE(uri_encode_decode_test)
  		break;
  	}
  
@@ -665,6 +703,7 @@
 -	if (strcmp(expected1, out)) {
 -		ast_test_status_update(test, "ENCODE DOES NOT MATCH EXPECTED, FAIL\n");
 -		res = AST_TEST_FAIL;
+-	}
 +	for (i = 0; i < ARRAY_LEN(tests); i++) {
 +		ast_uri_encode(tests[i].input, tests[i].buf, tests[i].buflen, tests[i].spec);
 +		if (strcmp(tests[i].output, tests[i].buf)) {
@@ -675,6 +714,14 @@
 +			res = AST_TEST_FAIL;
 +			continue;
 +		}
+ 
+-	/* Verify uri decode matches original */
+-	ast_uri_decode(out);
+-	if (strcmp(in, out)) {
+-		ast_test_status_update(test, "Decoded string did not match original input\n");
+-		res = AST_TEST_FAIL;
+-	} else {
+-		ast_test_status_update(test, "Decoded string matched original input\n");
 +		ast_uri_decode(tests[i].buf, tests[i].spec);
 +		if (strcmp(tests[i].decoded_output, tests[i].buf)) {
 +			ast_test_status_update(test, "decoding with %s did not match the original input (or expected decoded output)\n", tests[i].spec_str);
@@ -685,14 +732,13 @@
 +		}
  	}
  
--	/* Verify uri decode matches original */
--	ast_uri_decode(out);
--	if (strcmp(in, out)) {
--		ast_test_status_update(test, "Decoded string did not match original input\n");
+-	/* Test with do_special_char disabled */
+-	out[0] = '\0';
+-	ast_uri_encode(in, out, sizeof(out), 0);
+-	ast_test_status_update(test, "Output after disabling do_special_char: %s\n", out);
+-	if (strcmp(expected2, out)) {
+-		ast_test_status_update(test, "ENCODE DOES NOT MATCH EXPECTED, FAIL\n");
 -		res = AST_TEST_FAIL;
--	} else {
--		ast_test_status_update(test, "Decoded string matched original input\n");
--	}
 +	return res;
 +}
 +
@@ -715,14 +761,7 @@
 +		{0, sizeof(small),
 +			"a\\\""},
 +	};
- 
--	/* Test with do_special_char disabled */
--	out[0] = '\0';
--	ast_uri_encode(in, out, sizeof(out), 0);
--	ast_test_status_update(test, "Output after disabling do_special_char: %s\n", out);
--	if (strcmp(expected2, out)) {
--		ast_test_status_update(test, "ENCODE DOES NOT MATCH EXPECTED, FAIL\n");
--		res = AST_TEST_FAIL;
++
 +	tests[0].buf = out;
 +	tests[1].buf = small;
 +
@@ -756,3 +795,19 @@
  	}
  
  	return res;
+@@ -348,6 +416,7 @@ AST_TEST_DEFINE(agi_loaded_test)
+ static int unload_module(void)
+ {
+ 	AST_TEST_UNREGISTER(uri_encode_decode_test);
++	AST_TEST_UNREGISTER(quoted_escape_test);
+ 	AST_TEST_UNREGISTER(md5_test);
+ 	AST_TEST_UNREGISTER(sha1_test);
+ 	AST_TEST_UNREGISTER(base64_test);
+@@ -360,6 +429,7 @@ static int unload_module(void)
+ static int load_module(void)
+ {
+ 	AST_TEST_REGISTER(uri_encode_decode_test);
++	AST_TEST_REGISTER(quoted_escape_test);
+ 	AST_TEST_REGISTER(md5_test);
+ 	AST_TEST_REGISTER(sha1_test);
+ 	AST_TEST_REGISTER(base64_test);
