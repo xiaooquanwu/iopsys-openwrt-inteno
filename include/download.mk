@@ -106,6 +106,7 @@ define DownloadMethod/ssh
 		rm -rf $(SUBDIR) && \
 		[ \! -d $(SUBDIR) ] && \
 		git clone $(URL) $(SUBDIR) && \
+		(cd $(SUBDIR) && git checkout $(VERSION)) && \
 		echo "Packing checkout..." && \
 		$(call dl_pack,$(TMP_DIR)/dl/$(FILE),$(SUBDIR)) && \
 		mv $(TMP_DIR)/dl/$(FILE) $(DL_DIR)/ && \
