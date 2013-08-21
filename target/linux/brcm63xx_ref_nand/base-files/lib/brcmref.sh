@@ -105,7 +105,7 @@ mknod /dev/bcmaal20 c 210 0
 mknod /dev/bcmles0 c 211 0
 mknod /dev/bcm c 212 0
 mknod /dev/bounce c 213 0
-mknod /dev/pcmshim0 c 215 0
+mknod /dev/pcmshim0 c 217 0
 mknod /dev/pmon c 214 0
 mknod /dev/ac97 c 222 0
 mknod /dev/slac c 223 0
