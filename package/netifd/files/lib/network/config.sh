@@ -120,7 +120,7 @@ lanports()
 	case "$BOARDID" in
 		VG50_R )  echo "eth0 eth1 eth2 eth4" ;;
 		96368SV2 ) echo "eth0 eth1 eth2 eth3" ;;
-		963268BU) echo "eth1 eth2 eth3 eth4" ;;
+		963268BU|DG301R0) echo "eth1 eth2 eth3 eth4" ;;
 		96362ADVNgr) echo "eth0 eth1 eth2 eth3" ;;
 		*) echo "eth0 eth1 eth2 eth3" ;;
 	esac
@@ -132,7 +132,7 @@ wanport()
 	case "$BOARDID" in
 		VG50_R)  echo "eth3" ;;
 		96368SV2) echo "eth5" ;;
-		963268BU) echo "eth0" ;;
+		963268BU|DG301R0) echo "eth0" ;;
 		96362ADVNgr) echo "eth4" ;;
 		*) echo "eth4" ;;
 	esac
@@ -144,23 +144,23 @@ interfacename()
 	case "$BOARDID$1" in
 		VG50_Reth0) echo "LAN3" ;;
 		96368SV2eth0) echo "LAN1" ;;
-		963268BUeth0) echo "WAN" ;;
+		963268BUeth0|DG301R0eth0) echo "WAN" ;;
 		96362ADVNgreth0) echo "LAN4" ;;
 		VG50_Reth1) echo "LAN2";;
 		96368SV2eth1) echo "LAN2" ;;
-		963268BUeth1) echo "LAN3" ;;
+		963268BUeth1|DG301R0eth1) echo "LAN3" ;;
 		96362ADVNgreth1) echo "LAN3" ;;
 		VG50_Reth2) echo "LAN1";;
 		96368SV2eth2) echo "LAN3" ;;
-		963268BUeth2) echo "LAN4" ;;
+		963268BUeth2|DG301R0eth2) echo "LAN4" ;;
 		96362ADVNgreth2) echo "LAN2" ;;
 		VG50_Reth3) echo "WAN";;
 		96368SV2eth3) echo "LAN4" ;;
-		963268BUeth3) echo "LAN2" ;;
+		963268BUeth3|DG301R0eth3) echo "LAN2" ;;
 		96362ADVNgreth3) echo "LAN1" ;;
 		VG50_Reth4) echo "GBE";;
 		96368SV2eth4) echo "GB2" ;;
-		963268BUeth4) echo "LAN1" ;;
+		963268BUeth4|DG301R0eth4) echo "LAN1" ;;
 		96362ADVNgreth4) echo "WAN" ;;
 		96368SV2eth5) echo "WANGB1" ;;
 		*) echo "ethernet" ;;
@@ -178,8 +178,9 @@ interfaceorder()
 	case "$BOARDID" in
 		VG50_R) echo "eth2 eth1 eth0 eth4 eth3" ;;
 		96368SV2) echo "eth5 eth0 eth1 eth2 eth3 eth4" ;;
-		963268BU) echo "eth4 eth3 eth1 eth2 eth0" ;;
+		963268BU|DG301R0) echo "eth4 eth3 eth1 eth2 eth0" ;;
 		96362ADVNgr) echo "eth3 eth2 eth1 eth0 eth4" ;;
 		*) echo "eth0 eth1 eth2 eth3 eth4" ;;
 	esac
 }
+
