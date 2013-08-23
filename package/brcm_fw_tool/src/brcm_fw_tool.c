@@ -624,28 +624,33 @@ signature_check(const char *in_file, const char *mtd_device, int return_block_si
 	}
 
 	if (return_size_check) {
-		FILE *in;
-		char rootfs_size[64];
-		char image_size[64];
-		char cmnd[64];
+		struct stat st;
+		FILE *file;
+		char line[128];
+		unsigned long rootfs_size;
+		unsigned long image_size;
+		unsigned char *mtdsize;
+		unsigned char *blocksize;
+		char mtdname[8];
+		char partname[16];
 
-		sprintf(cmnd, "echo $((0x$(cat /proc/mtd | grep -w 'rootfs' | cut -d' ' -f2)))");
-		if (!(in = popen(cmnd, "r")))
-			exit(1);
+		/* Get rootfs size */
+		if (file = fopen("/proc/mtd", "r")) {
+			while(fgets(line, sizeof(line), file) != NULL)
+			{
+				if (sscanf(line, "%s %x %x %s\n", &mtdname, &mtdsize, &blocksize, &partname) && !strcmp(partname, "\"rootfs\""))
+					break;
+			}
+			fclose(file);
+		}
+		rootfs_size = (unsigned long) mtdsize;
 
-		fgets(rootfs_size, sizeof(rootfs_size), in);
+		/* Get image file size*/
+		stat(in_file, &st);
+		image_size = st.st_size;
 
-		memset(cmnd, '\0', sizeof(cmnd));
-
-		sprintf(cmnd, "ls -l %s | awk '{print$5}'", in_file);
-		if (!(in = popen(cmnd, "r")))
-			exit(1);
-
-		fgets(image_size, sizeof(image_size), in);
-
-		pclose(in);
-
-		if (atoi(rootfs_size) > atoi(image_size)) {
+		/* Compare */
+		if (rootfs_size > image_size) {
 			fprintf(stdout, "SIZE_OK\n");
 			exit(0);
 		}
