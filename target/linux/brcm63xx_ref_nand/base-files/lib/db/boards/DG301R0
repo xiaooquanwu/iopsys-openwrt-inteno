@@ -17,6 +17,7 @@ config board 'board'
         option lednames 'Ethernet Wireless Voice Broadband Status Internet DECT TV WPS'
         option buttonnames 'RESET DECT WPS INFO ECO'
         option wpsButtonGpio '22'
+        option fxsRelayGpio '8'
 
 config buttons 'buttons'
         option RESET '32 al resetbutton'
