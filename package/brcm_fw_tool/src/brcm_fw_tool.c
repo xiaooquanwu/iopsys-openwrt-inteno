@@ -191,7 +191,7 @@ static int write_flash_image(const char *in_file, int cfe, int fs) {
     return 0;
 }
 
-static int get_info(int memdump, int chip_id, int flash_size, int chip_rev, int cfe_version, int wan_interfaces, int status) {
+static int get_info(int memdump, int chip_id, int flash_size, int chip_rev, int cfe_version, int wan_interfaces, int status, int boot_mode, int boot_mode_id) {
     char ioctl_buf[64]={0};
     fd = open("/dev/brcmboard", O_RDWR);
     if ( fd == -1 ) {
@@ -203,6 +203,8 @@ static int get_info(int memdump, int chip_id, int flash_size, int chip_rev, int 
     if (flash_size)    board_ioctl(BOARD_IOCTL_FLASH_READ  , FLASH_SIZE, 0, NULL, 0, 0);
     if (chip_rev)      board_ioctl(BOARD_IOCTL_GET_CHIP_REV,          0, 1, NULL, 0, 0);
     if (status)        board_ioctl(BOARD_IOCTL_GET_STATUS,            0, 1, NULL, 0, 0);
+    if (boot_mode)     board_ioctl(BOARD_IOCTL_GET_OTP_STATUS,        SEC_BT_ENABLE, 1, NULL, 0, 0);
+    if (boot_mode_id)  board_ioctl(BOARD_IOCTL_GET_OTP_STATUS,        MRKT_ID_MASK, 1, NULL, 0, 0);
 
 //    if (set_gpio)      board_ioctl(BOARD_IOCTL_SET_GPIO,              0, 0, NULL, var1, var2);
     if (cfe_version) {
@@ -729,6 +731,8 @@ static void usage(void)
     "        -e                          get the SoC model revision from the kernel\n"
     "        -l                          get the cfe version from the kernel\n"
     "        -w                          get the configured wan interfaces\n"
+    "        -I                          get the boot mode\n"
+    "        -M                          get the boot mode id\n"
     "---- set options ----\n"
     "        -h <gpio>                   set the led gpio to affect with state -p\n"
     "        -x <gpio>                   set the gpio io to affect with state -p\n"
@@ -776,6 +780,8 @@ int main (int argc, char **argv)
     int  write_fs          = 0;
     int  wan_interfaces    = 0;
     int  status            = 0;
+    int  boot_mode         = 0;
+    int  boot_mode_id      = 0;
 	char *in_file          = NULL;
 	char *mtd_device       = NULL;
 	char *sequence_number  = NULL;
@@ -794,8 +800,14 @@ int main (int argc, char **argv)
 
 	while ((ch = getopt(argc, argv,
 
-			"g:SlefriyqjbtkvwVzmac:d:s:n:o:h:x:u:p:")) != -1)
+			"g:SIMlefriyqjbtkvwVzmac:d:s:n:o:h:x:u:p:")) != -1)
 		switch (ch) {
+            case 'I':
+                boot_mode = 1;
+                break;
+            case 'M':
+                boot_mode_id = 1;
+                break;
             case 'h':
                 led = atoi(optarg)+1;
                 break;
@@ -926,7 +938,7 @@ int main (int argc, char **argv)
             break;
         case CMD_GET_INFO:
             if (verbose) fprintf(stderr, "Getting kernel info.\n");
-            get_info(memdump_addr, kernel_chip_id, kernel_flash_size, kernel_chip_rev, kernel_cfe_ver, wan_interfaces, status);
+            get_info(memdump_addr, kernel_chip_id, kernel_flash_size, kernel_chip_rev, kernel_cfe_ver, wan_interfaces, status, boot_mode, boot_mode_id);
             break;
         case CMD_SET_INFO:
             if (verbose) fprintf(stderr, "Setting kernel info.\n");
