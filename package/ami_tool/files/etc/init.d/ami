@@ -1,0 +1,30 @@
+#!/bin/sh /etc/rc.common
+
+. /lib/functions.sh
+
+START=80
+
+
+boot() {
+	start
+}
+
+
+start() {
+	echo "Starting AMI Tool"
+	ami_tool &
+}
+
+
+stop() {
+	echo "Stopping AMI Tool"
+	killall -9 ami_tool
+}
+
+
+restart() {
+	stop
+	start
+
+}
+
