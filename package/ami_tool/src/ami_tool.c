@@ -18,7 +18,7 @@ static int rtpend_current = 0;
 static IP* ip_list_current = NULL;
 static int ip_list_length_current = 0;
 
-unsigned int portno = 5038; //AMI port number
+unsigned int portno = "5038"; //AMI port number
 char hostname[] = "127.0.0.1"; //AMI hostname
 char username[128] = "local"; //AMI username
 char password[128] = "local"; //AMI password
@@ -1411,19 +1411,19 @@ static void ami_free(ami_connection* con) {
 static void ami_connect(ami_connection* con)
 {
 	ami_disconnect(con);
-	con->sd = socket(AF_INET, SOCK_STREAM, 0);
 	con->message_frame = MESSAGE_FRAME_LOGIN;
-
 	asterisk_fully_booted = 0;
 	brcm_channel_driver_loaded = 0;
 
-	struct sockaddr_in sin;
-	struct hostent *host = gethostbyname(hostname);
-	memcpy(&sin.sin_addr.s_addr, host->h_addr, host->h_length);
-	sin.sin_family = AF_INET;
-	sin.sin_port = htons(portno);
-
-	int res = connect(con->sd, (struct sockaddr *)&sin, sizeof(sin));
+	struct addrinfo *host;
+	int err = getaddrinfo(hostname, portno, NULL, &host);
+	if (err) {
+		fprintf(stderr, "Unable to connect to AMI: %s\n", gai_strerror(err));
+		con->connected = false;
+		return;
+	}
+	con->sd = socket(AF_INET, SOCK_STREAM, 0);
+	int res = connect(con->sd, host->ai_addr, host->ai_addrlen);
 	if (res == 0) {
 		printf("Connected to AMI\n");
 		con->connected = true;
@@ -1432,7 +1432,7 @@ static void ami_connect(ami_connection* con)
 		fprintf(stderr, "Unable to connect to AMI: %s\n", strerror(errno));
 		con->connected = false;
 	}
-	free(host);
+	freeaddrinfo(host);
 }
 
 static void ami_handle_data(ami_connection* con)
@@ -1538,9 +1538,13 @@ int main(int argc, char **argv)
 		}
 
 		/* Wait for events from ubus or ami */
-		if(select(FD_SETSIZE, &fset, NULL, NULL, &timeout) < 0) {
+		int err = select(FD_SETSIZE, &fset, NULL, NULL, &timeout);
+		if(err < 0) {
 			fprintf(stderr, "Error: %s\n", strerror(errno));
-			break;
+			if (errno == EINTR) {
+				break;
+			}
+			continue;
 		}
 
 		if (ubus_connected) {
