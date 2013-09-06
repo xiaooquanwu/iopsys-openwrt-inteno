@@ -219,7 +219,25 @@ mknod /dev/sdh3 b 8 115
 mknod /dev/sdh4 b 8 116
 }
 
+id_upgrade_reconfig() {
+
+    local basemac=$(cat /proc/nvram/BaseMacAddr | tr '[a-z]' '[A-Z]')
+    local boardid=$(cat /proc/nvram/BoardId)
+    local vendorid=${basemac:0:8}
+    if [ "$boardid" == "963268BU" ]; then
+        if [ "$vendorid" == "00 22 07" ]; then
+            echo "Setting new boardid and voiceboardid"
+            echo DG301R0 > /proc/nvram/BoardId
+            echo SI32176X2 > /proc/nvram/VoiceBoardId
+            sync
+            sleep 3
+            /sbin/brcm_fw_tool set -x 17 -p 0
+        fi
+    fi
+}
+
 brcm_env
+id_upgrade_reconfig
 brcm_insmod
 #bcm_dsl_annex
 
