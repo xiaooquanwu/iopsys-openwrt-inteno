@@ -48,8 +48,8 @@ define Image/Prepare
 
 	echo -e "/cferam.000" > $(KDIR)/nocomprlist
 	echo -e "/vmlinux.lz" >> $(KDIR)/nocomprlist
-	touch $(TARGET_DIR)/cferam.000
 	cp $(KDIR)/vmlinux.lz $(TARGET_DIR)/
+	cp $(KDIR)/cferam.000 $(TARGET_DIR)/
 	touch -c $(TOPDIR)/target/linux/brcm63xx_ref_nand/base-files/etc/banner
 	cp $(TOPDIR)/target/linux/brcm63xx_ref_nand/base-files/etc/banner $(BUILD_DIR_ROOT)/etc/banner
 	sed -i '/^IOP Version:/d' $(BUILD_DIR_ROOT)/etc/banner
