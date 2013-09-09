@@ -23,7 +23,7 @@ typedef struct {
         const char *proto;
         const char *ipaddr;
         const char *netmask;
-        char ifname[32];
+        char ifname[128];
 } Network;
 
 typedef struct {
@@ -36,12 +36,12 @@ typedef struct {
 	char hostname[32];
 	char hwaddr[24];
 	char network[32];
-	char device[16];
+	char device[32];
 	bool connected;
 } Client;
 
 typedef struct {
-	char name[16];
+	char name[64];
 	const char *hardware;
 	const char *model;
 	const char *firmware;

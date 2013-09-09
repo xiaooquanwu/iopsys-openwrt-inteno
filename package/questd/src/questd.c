@@ -89,7 +89,7 @@ wdev_already_there(char *ifname, char *wdev)
 {
 	bool ret = false;
 	char *token;
-	char ifbuf[32];
+	char ifbuf[128];
 
 	strcpy(ifbuf, ifname);
 
@@ -112,7 +112,7 @@ get_wifs(char *netname, char *ifname, unsigned char **wifs)
 	struct uci_element *e;
 	const char *device = NULL;
 	const char *network = NULL;
-	char wdev[8];
+	char wdev[16];
 	char wrl[64];
 	int vif = 0;
 
@@ -203,7 +203,7 @@ match_client_to_network(Network *lan, char *hostaddr, unsigned int *local, unsig
 
 	struct in_addr ip, mask, snet, host, rslt;
 	const char *device;
-	char devbuf[8];
+	char devbuf[32];
 
 	inet_pton(AF_INET, lan->ipaddr, &(ip.s_addr));
 	inet_pton(AF_INET, lan->netmask, &(mask.s_addr));

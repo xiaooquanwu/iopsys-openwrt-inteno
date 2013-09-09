@@ -158,8 +158,8 @@ void
 dump_hostname(Router *router)
 {
 	FILE *file;
-	char line[32];
-	char name[32];
+	char line[64];
+	char name[64];
 
 	strcpy(&router->name, "");
 	if (file = fopen("/proc/sys/kernel/hostname", "r")) {
