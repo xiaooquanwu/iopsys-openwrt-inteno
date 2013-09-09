@@ -77,6 +77,7 @@ define Package/bcmkernel/install
 	rm -f $(1)/usr/lib/libcms_util.so
 	rm -f $(1)/usr/lib/libcrypto.so.0.9.7
 	rm -f $(1)/usr/lib/libssl.so.0.9.7
+	rm -f $(1)/usr/sbin/vodsl
 
 	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/public/* $(1)/usr/lib/
 
