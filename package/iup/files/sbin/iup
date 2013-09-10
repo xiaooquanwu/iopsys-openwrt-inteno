@@ -1,7 +1,11 @@
-#!/bin/sh 
+#!/bin/sh
+
 . /lib/functions.sh
+. /usr/share/libubox/jshn.sh
+
 include /lib/upgrade
 include /lib/network
+
 export IUPCONFFILES=/tmp/iup/sysupgrade.conffiles.tar.gz
 export IUPMD5=/etc/configchecksums
 export CONFILESLURP='/tmp/iup/*.conf'
@@ -9,193 +13,193 @@ export IUPTEMP="/tmp/iup"
 export INTERACTIVE=0
 export VERBOSE=0
 export CONF=1
-export KEY=$(cat /proc/nvram/DesKey |hexdump -e '16/1 "%02x"');
+export DESKEY=$(cat /proc/nvram/DesKey | hexdump -e '16/1 "%02x"')
 export MAC=$(cat /proc/nvram/BaseMacAddr)
 #remove whitespace
 MAC=${MAC// /}
-#lower to upper Conversion 
+#lower to upper Conversion
 MAC=$(echo $MAC | tr '[a-z]' '[A-Z]')
-if [ -f $IUPMD5 ];
-then
-   v "File $IUPMD5 exists"
-else
-   v  "File $IUPMD5 did not exists"
-   touch $IUPMD5
-fi
 
 v() {
-        [ "$VERBOSE" -ge 1 ] && echo "$@"
+	[ "$VERBOSE" -ge 1 ] && echo "$@"
 }
+
+if [ -f $IUPMD5 ]; then
+	v "File $IUPMD5 exists"
+else
+	v "File $IUPMD5 did not exists"
+	touch $IUPMD5
+fi
 
 handle_ucitrack()
 {
-local config="$1"
-    config_get init "$config" init
-   echo $init
-    config_get affects "$config" affects
-  
-    for aff in $affects
-     do
-    config_foreach handle_ucitrack $aff
-    done
-   }
+	local config="$1"
+	config_get init "$config" init
+	echo $init
+	config_get affects "$config" affects
+
+	for aff in $affects
+	do
+		config_foreach handle_ucitrack $aff
+	done
+}
+
 get_packages()
 {
-local pack
-pack=$(grep -w 'package' $1)
-pack=${pack//package/}
-pack=${pack//[\'|\"]/}
-echo $pack
+	local pack
+	pack=$(grep -w 'package' $1)
+	pack=${pack//package/}
+	pack=${pack//[\'|\"]/}
+	echo $pack
 }
+
 reload ()
 {
-  local reload
-  local initlist
-  local reload
-  local pack
-  pack=$(get_packages $1)
-  config_load ucitrack
-  for packname in $pack
-    do
-      initlist=$(config_foreach handle_ucitrack $packname)
-      for reltest in $initlist
+	local reload
+	local initlist
+	local reload
+	local pack
+	pack=$(get_packages $1)
+	config_load ucitrack
+	for packname in $pack
 	do
-	  case $reload in
-	      *" $reltest "*) v "already added to reload $reltest"  ;;
-	      *) reload="$reload"" ""$reltest" ;;
-	esac
-    done
-  done
-  v "Init scripts to be run $reload"
- for inittoreload in $reload
+		initlist=$(config_foreach handle_ucitrack $packname)
+		for reltest in $initlist
+		do
+			case $reload in
+				*" $reltest "*) v "already added to reload $reltest" ;;
+				*) reload="$reload"" ""$reltest" ;;
+			esac
+		done
+	done
+	v "Init scripts to be run $reload"
+	for inittoreload in $reload
 	do
-      if [ "$inittoreload" != "iup" ]; then                         
-        /etc/init.d/$inittoreload restart                             
-        fi      
-  done
-  #Ugly hack need to figure out something here
-  test_default_route
+		if [ "$inittoreload" != "iup" ]; then
+			/etc/init.d/$inittoreload restart
+		fi
+	done
+	#Ugly hack need to figure out something here
+	test_default_route
 	if [ "$?" -eq 1 ]; then
-	  sleep 5
+		sleep 5
 	fi
-  
 }
-
 
 handle_provisioning() {
-  local config="$1"
-  local enabled
-  local url
-  local tftpfile
-  local host
-  local md5
-  local defaultreset
-  local pack
-  local packname
-  if [[ ! -e $IUPTEMP ]]; then
-    mkdir $IUPTEMP
-  fi
-  touch $IUPCONFFILES
-  config_get_bool enabled "$config" enabled
-  config_get_bool defaultreset "$config" defaultreset
-    if [ "$enabled" -eq 1  ]; then
-	config_get url "$config" url
-	url=${url//\$MAC/$MAC}
-	v "Download from $url"
-	if [ ${url%%:*} == "tftp" ]; then
-	  tftpfile=${url#*\/\/}
-	  host=${tftpfile%%\/*}
-	  tftpfile=${tftpfile#*\/}
-
-	  /usr/bin/tftp -l $IUPCONFFILES -r "$tftpfile" -g "$host"
-	else
-	  ###ugly will remove sleep when backof and retry is implemented
-	  sleep 1
-	  get_image "$url" "cat" > $IUPCONFFILES
+	local config="$1"
+	local enabled
+	local url
+	local tftpfile
+	local host
+	local md5
+	local defaultreset
+	local pack
+	local packname
+	if [[ ! -e $IUPTEMP ]]; then
+		mkdir $IUPTEMP
 	fi
-    fi
-  if [ ! -s "$IUPCONFFILES" ]; then
-    echo "File not Found"
-    reboot="off"
-    CONF=0
-  else
-  handle_Downloaded_file 
-  fi
+	touch $IUPCONFFILES
+	config_get_bool enabled "$config" enabled
+	config_get_bool defaultreset "$config" defaultreset
+	config_get deckey "$config" deckey
+	if [ "$enabled" -eq 1	]; then
+		config_get url "$config" url
+		url=${url//\$MAC/$MAC}
+		v "Download from $url"
+
+		if [ ${url%%:*} == "tftp" ]; then
+			tftpfile=${url#*\/\/}
+			host=${tftpfile%%\/*}
+			tftpfile=${tftpfile#*\/}
+
+			/usr/bin/tftp -l $IUPCONFFILES -r "$tftpfile" -g "$host"
+		else
+			###ugly will remove sleep when backof and retry is implemented
+			sleep 1
+			get_image "$url" "cat" > $IUPCONFFILES
+		fi
+	fi
+	if [ ! -s "$IUPCONFFILES" ]; then
+		echo "File not Found"
+		reboot="off"
+		CONF=0
+	else
+		handle_Downloaded_file $deckey
+	fi
 }
+
 handle_Downloaded_file()
 {
-    if [ "$(brcm_fw_tool -i check "$IUPCONFFILES")" == "UNKNOWN" ] ; then
-      case "$(hexdump -v -n 2 -e '1/1 "%02x"' "$IUPCONFFILES")" in
-                1f8b)     
-			v "Found Config"
-
-			md5=$(md5sum $IUPCONFFILES)
-			md5="${md5%% *}" # remove the first space and everything after it
-			md5sum "$IUPCONFFILES" >> "$IUPMD5.temp"
-			if grep -q "$md5" "$IUPMD5"; then
-			v "Config Already Upp to date"
-			#becuse config is up to date we need to disable last step reboot if set
-			reboot="off"
-			rm -rf $IUPTEMP
-			else
-			cd /tmp/iup/
-			tar xvzf $IUPCONFFILES
-			for f in $CONFILESLURP
-			  do
-			      v "file to be applied $f and config $(cat $f)"
-			     
-			      uci import -f $f
-			done
-			pack=$(get_packages $CONFILESLURP)
-			v "$pack packages to be commited"
-			for packname in $pack
-			do
-			uci commit $packname
-			done
-			  if [ "$reboot" != "on" ]; then
-			    reload $CONFILESLURP
-			  fi
-			rm -rf $IUPTEMP
-			fi
+	local DECKEY
+	local KEY
+	[ -n "$1" ] && DECKEY=$(echo $1 | hexdump -e '16/1 "%02x"')
+	KEY=${DECKEY:-$DESKEY}
+	if [ "$(brcm_fw_tool -i check "$IUPCONFFILES")" == "UNKNOWN" ] ; then
+		case "$(hexdump -v -n 2 -e '1/1 "%02x"' $IUPCONFFILES)" in
+			1f8b)
+				v "Found Config"
+				md5=$(md5sum $IUPCONFFILES)
+				md5="${md5%% *}" # remove the first space and everything after it
+				md5sum "$IUPCONFFILES" >> "$IUPMD5.temp"
+				if grep -q "$md5" "$IUPMD5"; then
+					v "Config Already Up to Date"
+					#becuse config is up to date we need to disable last step reboot if set
+					reboot="off"
+					rm -rf $IUPTEMP
+				else
+					cd /tmp/iup/
+					tar xvzf $IUPCONFFILES
+					for f in $CONFILESLURP
+					do
+						v "file to be applied $f and config $(cat $f)"
+						uci import -f $f
+					done
+					pack=$(get_packages $CONFILESLURP)
+					v "$pack packages to be commited"
+					for packname in $pack
+					do
+						uci commit $packname
+					done
+					if [ "$reboot" != "on" ]; then
+						reload $CONFILESLURP
+					fi
+					rm -rf $IUPTEMP
+				fi
 			;;
-                     *)
-		      v "encrypted"
-		      if [ $KEY ]; then
-		      openssl enc -d -des-ede -nosalt -K $KEY -iv "0000000000000000" -in $IUPCONFFILES -out  $IUPCONFFILES.tmp
-			if [ $? -eq 0 ]; then
-			  v "Decrypted Content"
-			  mv $IUPCONFFILES.tmp $IUPCONFFILES
-			  handle_Downloaded_file
-			else 
-			  v "Decryption failed Exiting"
-			  rm -rf $IUPTEMP
-			  exit 1
-			fi
-		      else
-			v "No Key Defined"
-			rm -rf $IUPTEMP
-			exit 1
-		      fi
-		      
-		      ;;
-        esac
-    
-    else
-      v "Image found will start flashing"
-			if [ "$defaultreset" -eq 1 ]; then
+			*)
+				v "encrypted"
+				if [ $KEY ]; then
+					openssl enc -d -des-ede -nosalt -K $KEY -iv "0000000000000000" -in $IUPCONFFILES -out $IUPCONFFILES.tmp
+					if [ $? -eq 0 ]; then
+						v "Decrypted Content"
+						mv $IUPCONFFILES.tmp $IUPCONFFILES
+						handle_Downloaded_file
+					else
+						v "Decryption Failed! Exiting"
+						rm -rf $IUPTEMP
+						exit 1
+					fi
+				else
+					v "No Key Defined"
+					rm -rf $IUPTEMP
+					exit 1
+				fi
+			;;
+		esac
+	else
+		v "Image found will start flashing"
+		if [ "$defaultreset" -eq 1 ]; then
 			v "nuke config"
 			 /sbin/sysupgrade -v -n $IUPCONFFILES
-			else
-			  /sbin/sysupgrade -v $IUPCONFFILES
-			fi
-                        
-    fi
-
-   
+		else
+			/sbin/sysupgrade -v $IUPCONFFILES
+		fi
+	fi
 }
 
-###main 
-while [ -n "$1" ]; do 
+###main
+while [ -n "$1" ]; do
 	case "$1" in
 
 		-v) export VERBOSE="$(($VERBOSE + 1))";;
@@ -214,37 +218,41 @@ local configurl
 local software
 local sofwareminuspath
 config_load provisioning
-#check if iup should be used or if its ovveriden by /etc/config
-config_get configurl configserver  url
+#check if iup should be used or if its overridden by /etc/config
+config_get configurl configserver	url
 config_get reboot configserver reboot
-config_get iupurl iup  url
-if [ $configurl ]; then 
-  handle_provisioning configserver
-elif [ $iupurl ]; then 
-  handle_provisioning iup
+config_get iupurl iup	url
+if [ $configurl ]; then
+	handle_provisioning configserver
+elif [ $iupurl ]; then
+	handle_provisioning iup
 else
-  echo "No Provisioning Server Found"
-  exit
-fi 
+	echo "No Provisioning Server Found"
+	exit
+fi
 config_load provisioning
 config_foreach handle_provisioning subconfig
-config_get software uppgradeserver  url
+config_get software upgradeserver url
 sofwareminuspath=${software##*/}
 v "Software version to download $sofwareminuspath"
 
 if [ $software ]; then
-  if [ "$sofwareminuspath" == "${sofwareminuspath/$(cat /etc/ihgsp_version)/}" ] ; then
-    echo $software
-    handle_provisioning uppgradeserver
-  else 
-    v "Will Not Uppdate Software already upp to date"
-  fi
+	local sysinfo=$(ubus call router quest "{ \"info\": \"system\" }")
+	json_load "$sysinfo"
+	json_get_var firmware firmware
+	if [ "$sofwareminuspath" == "${sofwareminuspath/$firmware/}" ] ; then
+		echo $software
+		handle_provisioning upgradeserver
+	else
+		v "Will not update software, already up to date"
+	fi
 fi
+
 if [ $CONF -eq 1 ]; then
-mv "$IUPMD5.temp"  $IUPMD5
+	mv "$IUPMD5.temp" $IUPMD5
 fi
 
 if [ "$reboot" == "on" ]; then
- v "Reboot Signaled"
- /sbin/reboot
+	v "Reboot Signaled"
+	/sbin/reboot
 fi

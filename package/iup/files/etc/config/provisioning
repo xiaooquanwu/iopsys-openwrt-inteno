@@ -6,8 +6,7 @@ config 'general' 'polling'
         option 'interval' 'daily'
 
 config 'server' 'configserver'
-        option enabled          on
-        option url 'http://ihgsp.inteno.se/ihgsp/config/$MAC.tar.gz'
+        option enabled 'off'
 
 
 config 'server' 'iup'
