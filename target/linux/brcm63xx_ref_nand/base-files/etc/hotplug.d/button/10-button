@@ -7,30 +7,21 @@ case "$ACTION" in
         [ "resetbutton" == "$INTERFACE" ] && {
                 ubus call leds set '{ "state": "test"}'
                 printf "\n\n*** Restore to default settings ***\n\n" > /dev/console
-                mtd_overlay=$(grep "\"rootfs_data\"" /proc/mtd | awk -F: '{print $1}')
-                if [ "$(cat /sys/devices/virtual/mtd/$mtd_overlay/type)" == "nand" ]; then
-
-                                mtd -m -b -r erase rootfs_data 2>/dev/null
-                else
-                                mtd -r erase rootfs_data 2>/dev/null
-                fi
+		mtd -r erase rootfs_data 2>/dev/null
         }
         [ "ecobutton" == "$INTERFACE" ] && {
                 [ "$(uci get wireless.wl0.radio)" == "off" ] && {
                         uci set wireless.wl0.radio=on
                         printf "\n\nEnabling Wi-Fi\n\n" > /dev/console
-                        wlctl -i wl0 up
-                        ubus call led.wifi set '{ "state": "ok"}'
                 } || {
                         uci set wireless.wl0.radio=off
                         printf "\n\nDisabling Wi-Fi\n\n" > /dev/console
-
-                        ubus call led.wifi set '{ "state": "off"}'
                 }
                 uci commit wireless
+		/sbin/wifi
         }
         [ "wpsbutton" == "$INTERFACE" ] && {
-		        printf "\n\nWPS button pressed\n\n" > /dev/console
+		        printf "\n\nWPS button is pressed\n\n" > /dev/console
         }
         [ "dectbutton" == "$INTERFACE" ] && {
                 printf "\n\nRegistering DECT\n\n" > /dev/console
