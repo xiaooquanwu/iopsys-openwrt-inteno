@@ -5,9 +5,11 @@
 
 exec >/dev/null 2>&1
 
+local _enWifi=0
 local _enWps=0
 local _c=0
 local vifs=""
+local wlconf="new"
 
 eco_led() {
 	if [ "$1" == "on" ]; then
@@ -327,8 +329,10 @@ set_wifi_iface() {
 
 set_wifi() {
 	local device="$1"
+	local bandwidth="" # For interoperability
 	config_get band "$device" band
 	config_get channel "$device" channel
+	config_get bandwidth "$device" bandwidth # For interoperability
 	config_get scantimer "$device" scantimer
 	config_get country "$device" country
 	config_get maxassoc "$device" maxassoc
@@ -346,10 +350,7 @@ set_wifi() {
 	config_get dtim_period "$device" dtim_period
 	config_get beacon_int "$device" beacon_int
 	config_get hwmode "$device" hwmode
-	config_get bandwidth "$device" bandwidth
-	config_get sideband "$device" sideband
-	config_get n20rate "$device" n20rate
-	config_get n40rate "$device" n40rate
+	config_get nrate "$device" nrate
 	config_get grate "$device" grate
 	config_get brate "$device" brate
 	config_get rateset "$device" rateset
@@ -366,10 +367,31 @@ set_wifi() {
 	config_get radio "$device" radio
 
 	if [ "$radio" == "off" ]; then
-		eco_led "on"
-		exit
+		continue
 	else
-		eco_led "off"
+		_enWifi=$(($_enWifi + 1))
+	fi
+
+	# For interoperability
+	if [ -n "$bandwidth" ]; then
+		local bnd=2
+		local bwidth=20
+		local sband=0
+		wlconf="old"
+		[ "$band" == "a" ] && bnd=5
+		[ -n "$bandwidth" ] && bwidth="$bandwidth"
+		case "$sideband" in
+			lower)
+				sband=-1
+			;;
+			upper)
+				sband=1
+			;;
+		esac
+	else
+		wlconf="new"
+		bandwidth="$(echo $band | cut -d'-' -f2)"
+		band="$(echo $band | cut -d'-' -f1)"
 	fi
 
 	# BASE settings
@@ -381,7 +403,7 @@ set_wifi() {
 	# wlctl -i $device ap 1
 	# wlctl -i $device infra 1
 	# wlctl -i $device closed 0
-	wlctl -i $device country SE
+	wlctl -i $device country "${country:-SE}"
 	wlctl -i $device band "${band:-b}"
 	# wlctl -i $device radar 0 2>/dev/null
 
@@ -406,23 +428,6 @@ set_wifi() {
 	esac
 
 	# set HW mode and rate
-	local bnd=2
-	local bwidth=20
-	local sband=0
-
-	[ "$band" == "a" ] && bnd=5
-
-	[ -n "$bandwidth" ] && bwidth="$bandwidth"
-
-	case "$sideband" in
-		lower)
-			sband=-1
-		;;
-		upper)
-			sband=1
-		;;
-	esac
-
 	wlctl -i $device nmode -1
 #	wlctl -i $device mimo_bw_cap 1
 	wlctl -i $device gmode 1
@@ -440,34 +445,42 @@ set_wifi() {
 		*b)
 			wlctl -i $device nmode 0
 			wlctl -i $device gmode 0
-			wlctl -i $device rate $brate
+			wlctl -i $device rate "${brate:-auto}"
 		;;
 		*bg)
 			wlctl -i $device gmode 1
-			wlctl -i $device rate $grate
+			wlctl -i $device rate "${grate:-auto}"
 		;;
 		*g)
 			wlctl -i $device gmode 2
-			wlctl -i $device rate $grate
+			wlctl -i $device rate "${grate:-auto}"
 		;;
 		*gst)
 			wlctl -i $device gmode 4
-			wlctl -i $device rate $grate
+			wlctl -i $device rate "${grate:-auto}"
 		;;
 		*lrs)
 			wlctl -i $device gmode 5
-			wlctl -i $device rate $grate
+			wlctl -i $device rate "${grate:-auto}"
 		;;
 		*n)
 			wlctl -i $device nmode 1
 			wlctl -i $device nreqd 1
-			if [ "$bwidth" == "20" ]; then
-				[ "$n20rate" != "auto" ] && wlctl -i $device nrate $n20rate
-			elif [ "$bwidth" == "40" ]; then
+			if [ "$bandwidth" == "40" ]; then
 				wlctl -i $device mimo_bw_cap 1
 				wlctl -i $device obss_coex "${obss_coex:-1}"
-				[ "$n40rate" != "auto" ] && wlctl -i $device nrate $n40rate
 			fi
+			wlctl -i $device nrate "${nrate:-auto}"
+		;;
+		*ac)
+			wlctl -i $device nmode 3
+			wlctl -i $device nreqd 1
+			if [ "$bandwidth" == "40" ] || [ "$bandwidth" == "80" ]; then
+				wlctl -i $device mimo_bw_cap 1
+				wlctl -i $device obss_coex "${obss_coex:-1}"
+				wlctl -i $device bw_cap 5g 0x7
+			fi
+			wlctl -i $device nrate "${nrate:-auto}"
 		;;
 	esac
 	wlctl -i $device rateset "${rateset:-default}"
@@ -476,18 +489,20 @@ set_wifi() {
 
 	# set channel
 	case "$channel" in
-		1|2|12|13|14)
-			wlctl -i $device chanspec -b $bnd -c $channel -w 20 -s 0
-		;;
-		3|4|5|6|7|8|9|10|11)
-			wlctl -i $device chanspec -b $bnd -c $channel -w $bwidth -s $sband
-		;;
-		*)
+		auto)
 			wlctl -i $device csscantimer "${scantimer:-10}"
 			wlctl -i $device up
 			wlctl -i $device autochannel 1
 			wlctl -i $device autochannel 2
 			wlctl -i $device down
+		;;
+		*)
+			# For interoperability
+			if [ "$wlconf" == "old" ]; then
+				wlctl -i $device chanspec -b $bnd -c $channel -w $bwidth -s $sband
+			else
+				wlctl -i $device chanspec $channel
+			fi
 		;;
 	esac
 
@@ -553,6 +568,13 @@ case "$1" in
 	*)
 		config_foreach set_wifi_down wifi-device
 		config_foreach set_wifi wifi-device
+
+		if [ $_enWifi -gt 0 ]; then
+			eco_led "off"
+		else
+			eco_led "on"
+			exit
+		fi
 
 		# map all interfaces to corresponding networks by nvram parameters
 		map_networks

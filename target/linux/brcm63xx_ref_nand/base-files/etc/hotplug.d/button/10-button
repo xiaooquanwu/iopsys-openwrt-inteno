@@ -10,15 +10,12 @@ case "$ACTION" in
 		mtd -r erase rootfs_data 2>/dev/null
         }
         [ "ecobutton" == "$INTERFACE" ] && {
-                [ "$(uci get wireless.wl0.radio)" == "off" ] && {
-                        uci set wireless.wl0.radio=on
-                        printf "\n\nEnabling Wi-Fi\n\n" > /dev/console
-                } || {
-                        uci set wireless.wl0.radio=off
-                        printf "\n\nDisabling Wi-Fi\n\n" > /dev/console
-                }
-                uci commit wireless
-		/sbin/wifi
+		if ! pidof ecobutton; then
+			/sbin/ecobutton &
+		fi
+		local buttoncomb=""
+		[ -f "/var/buttoncomb" ] && buttoncomb="$(cat /var/buttoncomb)"
+		echo  $buttoncomb"eco" > /var/buttoncomb
         }
         [ "wpsbutton" == "$INTERFACE" ] && {
 		        printf "\n\nWPS button is pressed\n\n" > /dev/console
