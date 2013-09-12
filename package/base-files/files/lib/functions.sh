@@ -261,7 +261,7 @@ jffs2_mark_erase() {
 		echo Partition not found.
 		return 1
 	}
-	echo -e "\xde\xad\xc0\xde" | mtd -qq write - "$1"
+	echo -e "\xde\xad\xc0\xde" | mtd -x -qq write - "$1"
 }
 
 uci_apply_defaults() {

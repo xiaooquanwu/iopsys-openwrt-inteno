@@ -1,5 +1,6 @@
 #!/bin/sh
 
+. /lib/functions.sh
 . /usr/share/libubox/jshn.sh
 
 case "$ACTION" in
@@ -7,7 +8,9 @@ case "$ACTION" in
         [ "resetbutton" == "$INTERFACE" ] && {
                 ubus call leds set '{ "state": "test"}'
                 printf "\n\n*** Restore to default settings ***\n\n" > /dev/console
-		mtd -r erase rootfs_data 2>/dev/null
+                umount "$(find_mtd_part rootfs_data)"
+                echo -e "\xde\xad\xc0\xde" | mtd -x -qq write - rootfs_data
+		reboot
         }
         [ "ecobutton" == "$INTERFACE" ] && {
 		if ! pidof ecobutton; then
