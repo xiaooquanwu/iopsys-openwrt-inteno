@@ -9,7 +9,6 @@ local _enWifi=0
 local _enWps=0
 local _c=0
 local vifs=""
-local wlconf="new"
 
 eco_led() {
 	if [ "$1" == "on" ]; then
@@ -329,10 +328,10 @@ set_wifi_iface() {
 
 set_wifi() {
 	local device="$1"
-	local bandwidth="" # For interoperability
 	config_get band "$device" band
+	config_get bandwidth "$device" bandwidth
+	config_get sideband "$device" sideband
 	config_get channel "$device" channel
-	config_get bandwidth "$device" bandwidth # For interoperability
 	config_get scantimer "$device" scantimer
 	config_get country "$device" country
 	config_get maxassoc "$device" maxassoc
@@ -370,28 +369,6 @@ set_wifi() {
 		continue
 	else
 		_enWifi=$(($_enWifi + 1))
-	fi
-
-	# For interoperability
-	if [ -n "$bandwidth" ]; then
-		local bnd=2
-		local bwidth=20
-		local sband=0
-		wlconf="old"
-		[ "$band" == "a" ] && bnd=5
-		[ -n "$bandwidth" ] && bwidth="$bandwidth"
-		case "$sideband" in
-			lower)
-				sband=-1
-			;;
-			upper)
-				sband=1
-			;;
-		esac
-	else
-		wlconf="new"
-		bandwidth="$(echo $band | cut -d'-' -f2)"
-		band="$(echo $band | cut -d'-' -f1)"
 	fi
 
 	# BASE settings
@@ -487,7 +464,6 @@ set_wifi() {
 	wlctl -i $device rifs "${rifs:-0}"
 	wlctl -i $device rifs_advert "${rifs_advert:-0}"
 
-	# set channel
 	case "$channel" in
 		auto)
 			wlctl -i $device csscantimer "${scantimer:-10}"
@@ -497,10 +473,14 @@ set_wifi() {
 			wlctl -i $device down
 		;;
 		*)
-			# For interoperability
-			if [ "$wlconf" == "old" ]; then
-				wlctl -i $device chanspec -b $bnd -c $channel -w $bwidth -s $sband
-			else
+			local bnd=2
+			local sband=0
+			[ "$band" == "a" ] && bnd=5
+			case "$sideband" in
+				lower) sband=-1 ;;
+				upper) sband=1 ;;
+			esac
+			if ! wlctl -i $device chanspec -b $bnd -c $channel -w ${bandwidth:-20} -s $sband 2>/dev/null; then
 				wlctl -i $device chanspec $channel
 			fi
 		;;
