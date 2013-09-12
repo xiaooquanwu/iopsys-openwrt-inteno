@@ -53,7 +53,6 @@
 #define JFFS2_DEFAULT_DIR	"" /* directory name without /, empty means root dir */
 
 static char *buf = NULL;
-static char *buf2 = NULL;
 static char *imagefile = NULL;
 static char *jffs2file = NULL, *jffs2dir = JFFS2_DEFAULT_DIR;
 static int buflen = 0;
@@ -396,11 +395,11 @@ resume:
 			}
 
 			if (r == 0 && padding) {
-                memset(buf+buflen, 0xff, erasesize-buflen);
-                break;
-            }
-            else if (r == 0)
-                break;
+				memset(buf+buflen, 0xff, erasesize-buflen);
+				break;
+			}
+			else if (r == 0)
+				break;
 
 			buflen += r;
 		}
@@ -476,17 +475,16 @@ resume:
 		if (!quiet)
 			fprintf(stderr, "\b\b\b[w]");
 
-        if (padding)
-            result = write(fd, buf + offset, erasesize);
-        else {
-            result = write(fd, buf + offset, buflen);
-        }
+		if (padding)
+		    result = write(fd, buf + offset, erasesize);
+		else
+		    result = write(fd, buf + offset, buflen);
 
-        if (result < buflen) {
+		if (result < buflen) {
 			if (result < 0) {
 				fprintf(stderr, "Error writing image.\n");
-                if (!padding)
-                    fprintf(stderr, "Use padding option -x\n");
+				if (!padding)
+					fprintf(stderr, "Use padding option -x\n");
 				exit(1);
 			} else {
 				fprintf(stderr, "Insufficient space.\n");
