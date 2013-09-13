@@ -464,6 +464,7 @@ set_wifi() {
 	wlctl -i $device rifs "${rifs:-0}"
 	wlctl -i $device rifs_advert "${rifs_advert:-0}"
 
+	# set channel
 	case "$channel" in
 		auto)
 			wlctl -i $device csscantimer "${scantimer:-10}"
