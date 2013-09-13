@@ -10,7 +10,7 @@ OPTIONS=""
 
 start() {
 	# avoid fp timing problem
-	echo 1 > /proc/sys/kernel/printk_with_interrupts_enabled
+	echo 1 > /proc/sys/kernel/printk_with_interrupt_enabled
 	
 	# setup board specific dect parameters
 	cat /proc/nvram/rfpi | tr -d ' ' | atohx > /tmp/rfpi
