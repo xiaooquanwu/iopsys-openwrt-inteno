@@ -4,6 +4,8 @@
 
 START=80
 
+SERVICE_DAEMONIZE=1
+SERVICE_WRITE_PID=1
 
 boot() {
 	start
@@ -11,14 +13,12 @@ boot() {
 
 
 start() {
-	echo "Starting AMI Tool"
-	ami_tool &
+	service_start /sbin/ami_tool
 }
 
 
 stop() {
-	echo "Stopping AMI Tool"
-	killall -9 ami_tool
+	service_stop /sbin/ami_tool
 }
 
 
