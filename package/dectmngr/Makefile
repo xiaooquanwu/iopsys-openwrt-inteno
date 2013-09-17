@@ -11,7 +11,7 @@ PKG_RELEASE:=1
 PKG_VERSION:=1.0.9
 
 PKG_SOURCE_URL:=ssh://inteno@ihgsp.inteno.se/home/inteno/private/git/dectmngr.git
-PKG_SOURCE_VERSION:=4c37a88c8ca4f37c7ca4581030d1e6c06238d54b
+PKG_SOURCE_VERSION:=3bfcb937786823cba7b26787556516071682acc2
 
 
 
@@ -47,6 +47,8 @@ endef
 define Package/dectmngr/install
 	$(INSTALL_DIR) $(1)/usr/bin
 	$(INSTALL_DIR) $(1)/sbin
+	$(INSTALL_DIR) $(1)/etc/hotplug.d/
+	$(INSTALL_DIR) $(1)/etc/hotplug.d/dect
 	$(INSTALL_DIR) $(1)/etc/init.d/
 	$(INSTALL_DIR) $(1)/etc/dect/
 
@@ -55,6 +57,7 @@ define Package/dectmngr/install
 	cp $(PKG_BUILD_DIR)/dectproxy $(1)/usr/bin/
 	cp $(PKG_BUILD_DIR)/dect $(1)/usr/bin/
 	cp files/etc/init.d/* $(1)/etc/init.d/
+	cp files/etc/hotplug.d/dect/* $(1)/etc/hotplug.d/dect/
 	cp files/etc/dect/* $(1)/etc/dect/
 	cp files/sbin/dectreg $(1)/sbin/
 endef
