@@ -944,16 +944,6 @@ void manage_dialtones(ami_connection* con)
 			printf("Apply dialtone %s for port %d\n", ports->new_dialtone_state, port);
 			strcpy(ports->dialtone_state, ports->new_dialtone_state);
 			strcpy(ports->new_dialtone_state, "");
-#ifndef D301
-			//NOTE
-			//This is a workaround for the fact that ports in software on DG201 are 
-			//enumerated opposite to LED and physical ports.
-			if (ports->port == PORT_BRCM0) {
-				port = PORT_BRCM1;
-			} else {
-				port = PORT_BRCM0;
-			}
-#endif
 			send_brcm_dialtone_settings(con, port, ports->dialtone_state);
 		}
 
@@ -1054,31 +1044,12 @@ void manage_led(LED_NAME led, LED_STATE state) {
 
 /*
  * BU rewriting manage_leds to use ubus/ledmngr
+ *
  * TODO:
- * new led states
- * brcm_ports should maybe be retrieved somehow? should not use D301 define
- * new business logic
- * how do we handle dects? should not use D301 define
- *
- * LED logic:
- * - Sort out later
- * - Assume single led.voice1 at the moment (e.g. D301 behaviour)
- *
- * [led.voice1]
- *  |------ BRCM0
- *  |          |-----SIP Account
- *  |		   |-----SIP Account
- *  |
- *  |------ BRCM1
- *  |          |-----SIP Account
- *  |
- *  |------ BRCM2
- *
- * [led.voice2]
- *  |----- BRCM3
- *  |----- BRCM4
- *  |----- BRCM5
- *
+ * New led states/new business logic
+ * Retrieve brcm ports using AMI request: "Action: BRCMPortsShow"
+ * There is a problem after reload where the led will not stop blinking even though account is registered
+ * Query the /lib/db/board file for number of voice leds
  */
 void manage_leds() {
 
