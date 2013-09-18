@@ -1,0 +1,35 @@
+#reload a bridge if a wan interface gets removed from it
+include /lib/network
+
+case "$ACTION" in
+        add|register)
+                if [ "$INTERFACE" != "${INTERFACE/./}" ]; then
+                        networkname=$(get_network_of "$INTERFACE")
+                        for net in $networkname; do
+                                type=$(uci get network."$net".type)
+                                if [ "$type" == "anywan" ]; then
+                                        json_load "$(ifstatus $net)"
+                                        json_get_var device device
+                                        json_get_var up up
+                                        [[ "$INTERFACE" != "$device" && "$up" == "0" ]] && /sbin/ifup "$net"
+                                fi
+                        done
+                fi
+        ;;
+        remove|unregister)
+                if [ "$INTERFACE" != "${INTERFACE/./}" ]; then
+                        networkname=$(get_network_of "$INTERFACE")
+                        for net in $networkname; do
+                                type=$(uci get network."$net".type)
+                                if [ "$type" == "bridge" ]; then
+                                        /sbin/ifup "$net"
+                                elif [ "$type" == "anywan" ]; then
+                                        json_load "$(ifstatus $net)"
+                                        json_get_var device device
+                                        [ "$INTERFACE" == "$device" ] && /sbin/ifup "$net"
+                                fi
+                        done
+                fi
+        ;;
+esac
+

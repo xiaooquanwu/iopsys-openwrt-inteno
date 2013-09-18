@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2008-2011 OpenWrt.org
+# Copyright (C) 2008-2013 OpenWrt.org
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -7,20 +7,19 @@
 
 include $(TOPDIR)/rules.mk
 
-UCI_VERSION=2013-01-04
+UCI_VERSION=2013-06-11
 UCI_RELEASE=1
 
 PKG_NAME:=uci
 PKG_VERSION:=$(UCI_VERSION)$(if $(UCI_RELEASE),.$(UCI_RELEASE))
 PKG_RELEASE:=1
-PKG_REV:=e4516d01a7d2b0a5a8def7b5791c7d4032138287
+PKG_REV:=c9c9d5cb085acc58b6579ace83fb79c085a9db27
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=git://nbd.name/uci.git
 PKG_SOURCE_SUBDIR:=uci-$(PKG_VERSION)
 PKG_SOURCE_VERSION:=$(PKG_REV)
 PKG_SOURCE_PROTO:=git
-PKG_MIRROR_MD5SUM:=c7c4fd6723b607ae7fa039a1078fe7d5
 
 PKG_LICENSE:=LGPLv2.1 GPLv2
 PKG_LICENSE_FILES:=
@@ -39,6 +38,7 @@ define Package/libuci
   SECTION:=libs
   CATEGORY:=Libraries
   TITLE:=C library for the Unified Configuration Interface (UCI)
+  DEPENDS:=+libubox
 endef
 
 define Package/uci
@@ -81,7 +81,7 @@ endef
 
 define Build/InstallDev
 	$(INSTALL_DIR) $(1)/usr/include
-	$(CP) $(PKG_BUILD_DIR)/uci{,_config,map}.h $(1)/usr/include
+	$(CP) $(PKG_BUILD_DIR)/uci{,_config,_blob,map}.h $(1)/usr/include
 	$(INSTALL_DIR) $(1)/usr/lib
 	$(CP) $(PKG_BUILD_DIR)/libuci.so* $(1)/usr/lib
 	$(CP) $(PKG_BUILD_DIR)/libucimap.a $(1)/usr/lib

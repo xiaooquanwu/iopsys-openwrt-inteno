@@ -1,0 +1,58 @@
+#!/bin/sh
+
+iopsys_initialize_db() {
+	echo "Initializing iopsys db"
+	if [ -f "/lib/db/config/hw" ]; then
+		echo "Static db already initialized"
+	else
+		echo "Setting up static db"
+		BOARDID=`cat /proc/nvram/BoardId`
+		[ -d "/lib/db/config" ] || mkdir /lib/db/config
+		cp /lib/db/boards/$BOARDID /lib/db/config/hw
+
+		echo "Populating dynamic db parameters"
+		HARDWARE="`uci get /lib/db/config/hw.board.hardware`"
+		SERIALNR="`cat /proc/nvram/SerialNumber`"
+		AUTHKEY="`cat /proc/nvram/AuthKey`"
+		WPAKEY="`cat /proc/nvram/WpaKey`"
+		DSLANNEX="`cat /proc/nvram/dslAnnex`"
+		VBID="`cat /proc/nvram/VoiceBoardId`"
+		DESKEY="`cat /proc/nvram/DesKey`"
+		RFPI="`cat /proc/nvram/rfpi`"
+		BOARDID="`cat /proc/nvram/BoardId`"
+		BASEMAC="`cat /proc/nvram/BaseMacAddr`"
+		ROUTERMODEL="`cat /lib/db/version/iop_version | cut -d'_' -f1`"
+		BRCMVERSION="`cat /etc/banner | grep BrcmRef | awk '{print$3}'`"
+		SOCMODEL="`brcm_fw_tool info -k`"
+		SOCREVISION="`brcm_fw_tool info -e`"
+		CFEVERSION="`brcm_fw_tool info -l`"
+		KERNELVERSION="`cat /proc/sys/kernel/osrelease`"
+		IOPVERSION="`cat /lib/db/version/iop_version`"
+
+		SERIALNR=${SERIALNR// /}
+		BASEMAC=${BASEMAC// /}
+		RFPI=${RFPI// /}
+
+		uci set /lib/db/config/hw.board.hardwareVersion="$HARDWARE$DSLANNEX"
+		uci set /lib/db/config/hw.board.serialNumber="$SERIALNR"
+		uci set /lib/db/config/hw.board.authKey="$AUTHKEY"
+		uci set /lib/db/config/hw.board.wpaKey="$WPAKEY"
+		uci set /lib/db/config/hw.board.dslAnnex="$DSLANNEX"
+		uci set /lib/db/config/hw.board.VoiceBoardId="$VBID"
+		uci set /lib/db/config/hw.board.desKey="$DESKEY"
+		uci set /lib/db/config/hw.board.rfpi="$RFPI"
+		uci set /lib/db/config/hw.board.boardId="$BOARDID"
+		uci set /lib/db/config/hw.board.BaseMacAddr="$BASEMAC"
+		uci set /lib/db/config/hw.board.routerModel="$ROUTERMODEL"
+		uci set /lib/db/config/hw.board.brcmVersion="$BRCMVERSION"
+		uci set /lib/db/config/hw.board.socModel="$SOCMODEL"
+		uci set /lib/db/config/hw.board.socRevision="$SOCREVISION"
+		uci set /lib/db/config/hw.board.cfeVersion="$CFEVERSION"
+		uci set /lib/db/config/hw.board.kernelVersion="$KERNELVERSION"
+		uci set /lib/db/config/hw.board.iopVersion="$IOPVERSION"
+		uci commit
+	fi
+}
+
+boot_hook_add preinit_main iopsys_initialize_db
+

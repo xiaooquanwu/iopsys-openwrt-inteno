@@ -1,0 +1,52 @@
+#!/bin/sh
+
+local netcon=0
+local tvcon=0
+
+test_connection() {
+	local addr="$1"
+	if [ -n "$addr" ]; then
+		ping -q -w 1 -c 1 $addr > /dev/null 2>&1 && return 0 || return 1
+	else
+		ping -q -w 1 -c 1 `ip r | grep default | cut -d ' ' -f 3` > /dev/null 2>&1 && return 0 || return 1
+	fi
+}
+
+wantest() {
+	local dest="$(uci get -q system.@system[0].netping_addr)"
+
+	test_connection $dest
+
+	if [ "$?" -eq 0 ]; then
+		netcon=1
+		/sbin/wanup &
+		/usr/sbin/ledctl Internet on
+	else
+		/usr/sbin/ledctl Internet fail
+	fi
+}
+
+iptvtest() {
+	local dest="$(uci get -q system.@system[0].tvping_addr)"
+
+	test_connection $dest
+
+	if [ "$?" -eq 0 ]; then
+		tvcon=1
+		/usr/sbin/ledctl TV on
+	else
+		/usr/sbin/ledctl TV off
+	fi
+}
+
+for tm in 1 3 5
+do
+	if [[ $netcon -eq 1 && $tvcon -eq 1 ]]; then
+		break
+	else
+		[ $netcon -eq 0 ] && wantest
+		[ $tvcon -eq 0 ] && iptvtest
+		sleep $tm
+	fi
+done
+
