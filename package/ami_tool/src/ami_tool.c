@@ -46,9 +46,15 @@ void sip_peer_list_ip(SIP_PEER *peer)
 /* Add IP to list for SIP peer */
 void sip_peer_add_ip(SIP_PEER *peer, char *addr, int family) {
 	int i;
-	for (i=0; i<peer->ip_list_length; i++) {
+
+	if (peer->ip_list_length >= MAX_IP_LIST_LENGTH) {
+		fprintf(stderr, "Could not add IP %s to peer %s, ip list is full\n", addr, peer->account.name);
+		return;
+	}
+
+	for (i=0; i < peer->ip_list_length; i++) {
 		IP ip = peer->ip_list[i];
-		if (family ==  ip.family && strcmp(addr, ip.addr) == 0) {
+		if (family == ip.family && strcmp(addr, ip.addr) == 0) {
 			return;
 		}
 	}
@@ -176,7 +182,7 @@ int get_sip_proxy(char *buf, size_t buflen)
 }
 
 /* Get hostname or IP using uci */
-int get_sip_domain(SIP_PEER *peer, char *buf, size_t buflen)
+int get_sip_host(SIP_PEER *peer, char *buf, size_t buflen)
 {
 	char parameter[BUFLEN];
 	char *sipaccount;
@@ -199,10 +205,10 @@ int get_sip_domain(SIP_PEER *peer, char *buf, size_t buflen)
 		break;
 	}
 
-	/* Get sip domain */
-	snprintf(parameter, BUFLEN, "%s.%s.domain", UCI_VOICE_PACKAGE, sipaccount);
+	/* Get sip host */
+	snprintf(parameter, BUFLEN, "%s.%s.host", UCI_VOICE_PACKAGE, sipaccount);
 	if (uci_show(parameter, buf, buflen, 1)) {
-		printf("Failed to get domain\n");
+		printf("Failed to get host\n");
 		return 1;
 	}
 
@@ -433,10 +439,11 @@ void write_firewall(int family)
 	system(buf);
 }
 
-/* Resolv domains and add IPs to iptables */
+/* Resolv host and add IPs to iptables */
 int handle_iptables(SIP_PEER *peer, int doResolv)
 {
-	char domain[BUFLEN];
+	char host[BUFLEN];
+	char proxies[BUFLEN*10]; //Bigger buffer, since there can be many sip proxies
 
 	/* Clear old IP list */
 	peer->ip_list_length = 0;
@@ -444,15 +451,21 @@ int handle_iptables(SIP_PEER *peer, int doResolv)
 	if (doResolv) {
 		printf("reg ok. resolving\n");
 		/* Get domain to resolv */
-		if (get_sip_domain(peer, domain, BUFLEN)) {
-			printf("Failed to get sip domain\n");
+		if (get_sip_host(peer, host, BUFLEN)) {
+			printf("Failed to get sip host\n");
 			return 1;
 		}
-		resolv(peer, domain);
+		resolv(peer, host);
 
-		/* Get proxy and resolv if configured */
-		if (get_sip_proxy(domain, BUFLEN) == 0) {
-			resolv(peer, domain);
+		/* Get sip proxies and resolv if configured */
+		if (get_sip_proxy(proxies, BUFLEN*10) == 0) {
+			char *delimiter = " ";
+			char *value = strtok(proxies, delimiter);
+
+			while(value) {
+				resolv(peer, value);
+				value = strtok(NULL, delimiter);
+			}
 		}
 	} else {
 		printf("reg not ok\n");
