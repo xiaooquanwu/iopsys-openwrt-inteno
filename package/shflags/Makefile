@@ -8,13 +8,14 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=shflags
-PKG_VERSION:=2012-04-30
+PKG_REV:=191
+PKG_VERSION:=1.0.4
 PKG_RELEASE=$(PKG_SOURCE_VERSION)
 
-PKG_SOURCE_PROTO:=git
-PKG_SOURCE_URL:=git://git.mirror.nanl.de/freecwmp/shflags-clone.git
+PKG_SOURCE_PROTO:=svn
+PKG_SOURCE_URL:=http://shflags.googlecode.com/svn/trunk/
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
-PKG_SOURCE_VERSION:=4411ea9115802b86ffee68a2cbbbbf143dfeebbd
+PKG_SOURCE_VERSION:=$(PKG_REV)
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 
 include $(INCLUDE_DIR)/package.mk
