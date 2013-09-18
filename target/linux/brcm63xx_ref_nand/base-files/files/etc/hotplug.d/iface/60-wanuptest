@@ -1,6 +1,0 @@
-
-[ ifup = "$ACTION" -o ifdown = "$ACTION" ] && {
-	if [ "$(uci -q get network.$INTERFACE.is_lan)" != "1" ]; then
-		pidof testnet >/dev/null || pidof wanup >/dev/null || /sbin/testnet &
-	fi
-}

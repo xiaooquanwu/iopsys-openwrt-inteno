@@ -1,3 +1,0 @@
-#!/bin/sh
-ubus call led.$1 set '{"state":"'$2'"}'
-
