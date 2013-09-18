@@ -9,10 +9,15 @@ include $(TOPDIR)/rules.mk
 include $(INCLUDE_DIR)/kernel.mk
 
 PKG_NAME:=voicesec
-PKG_RELEASE:=1
+PKG_VERSION:=1.0
 
-PKG_BUILD_DIR := $(BUILD_DIR)/$(PKG_NAME)
-STAMP_PREPARED := $(STAMP_PREPARED)_$(call confvar,CONFIG_MTD_REDBOOT_PARTS)
+PKG_SOURCE_URL:=git@ihgsp.inteno.se:voicesec
+PKG_SOURCE_PROTO:=git
+PKG_SOURCE_VERSION:=9b132108aa8a901aaf8a2949e5c3a743971c7ec2
+PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
+
+PKG_BUILD_DIR := $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -27,16 +32,9 @@ define Package/voicesec/description
 	VoIP security application
 endef
 
-define Build/Prepare
-	mkdir -p $(PKG_BUILD_DIR)
-	$(CP) ./src/* $(PKG_BUILD_DIR)/
-endef
-
-target=$(firstword $(subst -, ,$(BOARD)))
-
-MAKE_FLAGS += TARGET="$(target)"
-
-TARGET_CFLAGS += -D$(CONFIG_TARGET_IBOARDID) -Dtarget_$(target)=1 -Wall
+#target=$(firstword $(subst -, ,$(BOARD)))
+#MAKE_FLAGS += TARGET="$(target)"
+#TARGET_CFLAGS += -D$(CONFIG_TARGET_IBOARDID) -Dtarget_$(target)=1 -Wall
 
 define Package/voicesec/install
 	$(INSTALL_DIR) $(1)/usr/bin
