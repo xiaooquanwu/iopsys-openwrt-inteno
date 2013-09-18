@@ -1,0 +1,7 @@
+#!/bin/sh
+
+[ -f /etc/config/provisioning ] && /etc/init.d/iup restart
+[ -f /etc/config/system ] && /etc/init.d/sysntpd restart
+[ -f /etc/config/asterisk ] && /etc/init.d/asterisk restart
+[ -f /etc/config/mcpd ] && /etc/init.d/mcpd restart
+[ -f /etc/config/cwmp ] && /etc/init.d/cwmpd restart
