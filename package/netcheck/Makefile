@@ -12,7 +12,7 @@ include $(INCLUDE_DIR)/package.mk
 
 TARGET_LDFLAGS+= \
         -Wl,-rpath-link=$(STAGING_DIR)/usr/lib \
-		-Wl,-rpath-link=$(STAGING_DIR)/lib -luci -ljson
+		-Wl,-rpath-link=$(STAGING_DIR)/lib -luci -ljson-c
 
 TARGET_CFLAGS += $(FPIC) -std=gnu99
 
