@@ -23,5 +23,6 @@
 ./scripts/feeds install liblzo
 ./scripts/feeds install miniupnpd
 ./scripts/feeds install minidlna
+./scripts/feeds install tcpdump
 
 
