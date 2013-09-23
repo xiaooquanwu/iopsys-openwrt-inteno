@@ -19,10 +19,9 @@ wantest() {
 
 	if [ "$?" -eq 0 ]; then
 		netcon=1
-		/sbin/wanup &
-		/usr/sbin/ledctl Internet on
+		ubus call led.internet set '{"state":"ok"}'
 	else
-		/usr/sbin/ledctl Internet fail
+		ubus call led.internet set '{"state":"error"}'
 	fi
 }
 
@@ -33,13 +32,13 @@ iptvtest() {
 
 	if [ "$?" -eq 0 ]; then
 		tvcon=1
-		/usr/sbin/ledctl TV on
+		ubus call led.tv set '{"state":"ok"}'
 	else
-		/usr/sbin/ledctl TV off
+		ubus call led.tv set '{"state":"off"}'
 	fi
 }
 
-for tm in 1 3 5
+for tm in 1 3 5 7
 do
 	if [[ $netcon -eq 1 && $tvcon -eq 1 ]]; then
 		break
@@ -49,4 +48,6 @@ do
 		sleep $tm
 	fi
 done
+
+[ $netcon -eq 1 ] && pidof wanup >/dev/null || /sbin/wanup &
 
