@@ -257,13 +257,14 @@ default_do_upgrade() {
 			v "Mounting Overlay ..."
 			overlay_block="$(grep "\"rootfs_update_data\"" /proc/mtd | awk -F: '{print $1}' | awk -F'mtd' '{print$2}')"
 			mount -t jffs2 /dev/mtdblock$overlay_block /mnt
+			v "Copying configuration files to overlay ..."
 			cp -r /overlay/* /mnt
 			umount /mnt
 		fi
-		update_sequence_number $from $cfe_fs
 		[ $cfe_fs -eq 1 ] && v "Writing CFE + File System ..." || v "Writing File System ..."
 		v "-> Will reboot the system after writing finishes ..."
 		brcm_fw_tool -q write $from
+		v "Upgrade syscall failed for some reason ..."
 	else
 		if [ "$SAVE_CONFIG" -eq 1 -a -z "$USE_REFRESH" ]; then
 			v "Writing File System with Saved Config ..."
