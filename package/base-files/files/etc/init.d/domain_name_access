@@ -1,0 +1,31 @@
+#!/bin/sh /etc/rc.common
+# Update hosts file to enable access through "http://login.lan/" etc from LAN
+
+START=25
+
+domains="www.routerlogin.net routerlogin.net www.routerlogin.com routerlogin.com www.login.lan login.lan login"
+HOSTS=/etc/hosts
+IP=$(uci get network.lan.ipaddr)
+
+start() {
+	ROW=0
+	while read LINE;
+	do
+		ROW=$((ROW+1))
+		case $LINE in
+			# Already up to date, exit
+			"$IP $domains") exit;;
+			# Change to current IP, reload and exit
+			*"$domains")
+				sed -i -e "$ROW s/.*/$IP\ $domains/g" $HOSTS
+				/etc/init.d/dnsmasq reload &
+				exit;;
+		esac
+	done < $HOSTS
+	# Add new entry
+	echo "$IP $domains" >> $HOSTS
+}
+
+restart() {
+	start
+}
