@@ -10,8 +10,7 @@ config 'rdate'
 	option 'interface' 'wan'
 
 config 'timeserver' 'ntp'
-	option 'ntp1' '0.pool.ntp.org'
-	option 'ntp2' '1.pool.ntp.org'
-	option 'ntp3' '2.pool.ntp.org'
-	option 'ntp4' '3.pool.ntp.org'
+	option enable_server 1
+	list server     ntp1.sth.netnod.se
+	list server     ntp1.sth.netnod.se
 
