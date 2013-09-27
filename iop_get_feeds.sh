@@ -24,5 +24,23 @@
 ./scripts/feeds install miniupnpd
 ./scripts/feeds install minidlna
 ./scripts/feeds install tcpdump
-
+./scripts/feeds install smap
+./scripts/feeds install smap-to-devinfo
+./scripts/feeds install ddns-script
+./scripts/feeds install hd-idle
+./scripts/feeds install multiwan
+./scripts/feeds install ntpclient
+./scripts/feeds install collecd-mod-olsrd
+./scripts/feeds install openvpn
+./scripts/feeds install p10nd
+./scripts/feeds install polipo
+./scripts/feeds install radvd
+./scripts/feeds install snmpd
+./scripts/feeds install tinyproxy
+./scripts/feeds install transmission
+./scripts/feeds install ushare
+./scripts/feeds install vnstat
+./scripts/feeds install watchcat
+./scripts/feeds install etherwake
+./scripts/feeds install wshaper
 
