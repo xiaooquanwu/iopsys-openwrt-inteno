@@ -249,16 +249,16 @@ default_do_upgrade() {
 	if [ $is_nand -eq 1 ]; then
 		v "Setting bootline parameter to boot from newly flashed image"
 		brcm_fw_tool set -u 0
-		v "Erasing File System ..."
-		mtd -m -b erase rootfs_update
 		v "Erasing Overlay ..."
-		mtd -m -b erase rootfs_update_data
+        echo -e "\xde\xad\xc0\xde" | mtd -x -qq write - rootfs_update_data
+#		mtd erase rootfs_update_data
 		if [ "$SAVE_CONFIG" -eq 1 -a -z "$USE_REFRESH" ]; then
 			v "Mounting Overlay ..."
 			overlay_block="$(grep "\"rootfs_update_data\"" /proc/mtd | awk -F: '{print $1}' | awk -F'mtd' '{print$2}')"
 			mount -t jffs2 /dev/mtdblock$overlay_block /mnt
 			v "Copying configuration files to overlay ..."
 			cp -r /overlay/* /mnt
+			v "Unmounting Overlay ..."
 			umount /mnt
 		fi
 		[ $cfe_fs -eq 1 ] && v "Writing CFE + File System ..." || v "Writing File System ..."
