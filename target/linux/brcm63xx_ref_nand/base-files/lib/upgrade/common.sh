@@ -262,6 +262,10 @@ default_do_upgrade() {
 			umount /mnt
 		fi
 		[ $cfe_fs -eq 1 ] && v "Writing CFE + File System ..." || v "Writing File System ..."
+        v "-> Display meminfo ..."
+        cat /proc/meminfo
+		v "-> Disable printk interrupt ..."
+        echo 0 >/proc/sys/kernel/printk_with_interrupt_enabled
 		v "-> Will reboot the system after writing finishes ..."
 		brcm_fw_tool -q write $from
 		v "Upgrade syscall failed for some reason ..."
