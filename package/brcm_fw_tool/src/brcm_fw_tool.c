@@ -151,6 +151,7 @@ static int write_flash_image(const char *in_file, int cfe, int fs) {
     char* flash_buffer;
     int infile_fd;
     struct stat file_stat;
+    int fw_size;
 
     fd = open("/dev/brcmboard", O_RDWR);
     if ( fd == -1 ) {
@@ -161,6 +162,7 @@ static int write_flash_image(const char *in_file, int cfe, int fs) {
         fprintf(stderr, "getting filesize of %s failed\n", in_file);
         exit(1);
     }
+    fw_size = file_stat.st_size -20; //20=wfi header size
 
     flash_buffer = malloc(file_stat.st_size);
     if (!flash_buffer)  {
@@ -181,8 +183,8 @@ static int write_flash_image(const char *in_file, int cfe, int fs) {
     if (verbose)
         printf("Writing %s%s with size %d\n ", cfe?"cfe":"",fs?"fs":"",(int)file_stat.st_size);
 
-    if (cfe)        board_ioctl(BOARD_IOCTL_FLASH_WRITE, BCM_IMAGE_WHOLE, 0, flash_buffer, file_stat.st_size, 0/*0xB8000000*/);
-    if (fs)         board_ioctl(BOARD_IOCTL_FLASH_WRITE, BCM_IMAGE_WHOLE, 0, flash_buffer, file_stat.st_size, 0xB8000000+128*1024);
+    if (cfe)        board_ioctl(BOARD_IOCTL_FLASH_WRITE, BCM_IMAGE_WHOLE, 0, flash_buffer, fw_size, 0/*0xB8000000*/);
+    if (fs)         board_ioctl(BOARD_IOCTL_FLASH_WRITE, BCM_IMAGE_WHOLE, 0, flash_buffer, fw_size, 0xB8000000+128*1024);
 
     printf("Flash written ok\n");
 
