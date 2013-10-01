@@ -17,7 +17,7 @@ config 'interface' 'lan'
 config 'interface' 'wan'
 	option 'type' 'anywan'
 	option 'ifname' 'atm0.1 eth4.1'
-	option 'vendorid' 'DG150B-WU7P2U-INTENO'
+	option 'vendorid' '$HARDWAREID-INTENO'
 	option 'proto' 'dhcp'
 	option 'hostname' 'Inteno_$MAC4'
 
