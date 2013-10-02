@@ -238,6 +238,6 @@ id_upgrade_reconfig() {
 
 brcm_env
 id_upgrade_reconfig
-brcm_insmod
 bcm_dsl_annex
+brcm_insmod
 
