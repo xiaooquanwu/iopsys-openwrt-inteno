@@ -29,18 +29,18 @@ endif
 ifeq ($(CONFIG_JFFS2_ZLIB),y) 
   JFFS2OPTS += -X zlib
 endif
-#ifeq ($(CONFIG_JFFS2_LZMA),y)
-#  JFFS2OPTS += -x lzma --compression-mode=size
-#endif
+ifeq ($(CONFIG_JFFS2_LZMA),y)
+  JFFS2OPTS += -X lzma --compression-mode=size
+endif
 ifneq ($(CONFIG_JFFS2_RTIME),y)
   JFFS2OPTS +=  -x rtime
 endif
 ifneq ($(CONFIG_JFFS2_ZLIB),y)
   JFFS2OPTS += -x zlib
 endif
-#ifneq ($(CONFIG_JFFS2_LZMA),y)
-#  JFFS2OPTS += -x lzma
-#endif
+ifneq ($(CONFIG_JFFS2_LZMA),y)
+  JFFS2OPTS += -x lzma
+endif
 
 SQUASHFS_BLOCKSIZE := 256k
 SQUASHFSOPT := -b $(SQUASHFS_BLOCKSIZE)
@@ -79,7 +79,7 @@ else
 		# FIXME: removing this line will cause strange behaviour in the foreach loop below
 		touch $(KDIR)/nocomprlist
 		$(STAGING_DIR_HOST)/bin/mkfs.jffs2 $(JFFS2OPTS) -e $(patsubst %k,%KiB,$(1)) -o $(KDIR)/root.jffs2-$(1) -b -p -n -N $(KDIR)/nocomprlist -d $(TARGET_DIR) -v 2>&1 1>/dev/null | awk '/^.+$$$$/'
-		$(call add_jffs2_mark,$(KDIR)/root.jffs2-$(1))
+#		$(call add_jffs2_mark,$(KDIR)/root.jffs2-$(1))
 		$(call Image/Build,jffs2-$(1))
     endef
     define Image/mkfs/jffs2
