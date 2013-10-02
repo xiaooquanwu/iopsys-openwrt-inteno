@@ -263,7 +263,7 @@ default_do_upgrade() {
 		fi
 		[ $cfe_fs -eq 1 ] && v "Writing CFE + File System ..." || v "Writing File System ..."
         v "-> Display meminfo ..."
-        cat /proc/meminfo
+        cat /proc/meminfo > /dev/console
 		v "-> Disable printk interrupt ..."
         echo 0 >/proc/sys/kernel/printk_with_interrupt_enabled
 		v "-> Will reboot the system after writing finishes ..."
