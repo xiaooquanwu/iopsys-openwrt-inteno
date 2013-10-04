@@ -4,8 +4,8 @@ PKG_BRANCH:=svn-0.11
 PKG_NAME:=luci
 PKG_RELEASE:=1.0.1
 
-PKG_VERSION:=inteno-1.0.28
-PKG_SOURCE_VERSION:=8a6cdef9eb1db7dae09aac7ac77c47c8b95e241e
+PKG_VERSION:=inteno-1.0.29
+PKG_SOURCE_VERSION:=2ea52a2ab87c89a789d4a9593b8d39459cf49c7b
 ifeq ($(CONFIG_PACKAGE_bcmkernel),y)
 PKG_SOURCE_URL:=ssh://inteno@ihgsp.inteno.se/home/inteno/public/git/luci-inteno.git
 else
@@ -312,20 +312,6 @@ define Package/luci-app-diag-devinfo/conffiles
 /etc/config/luci_devinfo
 endef
 
-$(eval $(call application,voice-client,LuCI Voice Interface (client),\
-	+luci-lib-json \
-	+asterisk18-mod \
-	+asterisk18-mod-func-channel \
-	+asterisk18-mod-func-db \
-	+asterisk18-mod-app-transfer \
-	+asterisk18-mod-app-read \
-	+asterisk18-mod-func-shell \
-	+asterisk18-mod-pbx-spool \
-	+asterisk18-mod-app-playtones \
-	+asterisk18-mod-sounds \
-	+brcminfo))
-
-$(eval $(call application,voice-pbx,LuCI Voice Interface (pbx)))
 
 $(eval $(call application,siitwizard,SIIT IPv4-over-IPv6 configuration wizard,\
 	+PACKAGE_luci-app-siitwizard:kmod-siit))
@@ -343,7 +329,7 @@ $(eval $(call application,meshwizard, Shellscript based wizard to setup mesh net
         +PACKAGE_luci-app-freifunk-meshwizard:meshwizard))
 
 $(eval $(call application,olsr,OLSR configuration and status module,\
-	+olsrd +olsrd-mod-txtinfo))
+	+olsrd-mod-txtinfo))
 
 $(eval $(call application,olsr-viz,OLSR Visualisation,\
 	luci-app-olsr +olsrd-mod-txtinfo))
@@ -492,6 +478,21 @@ $(eval $(call application,dect,LuCI Support for DECT,\
 $(eval $(call application,snmp,LuCI Support for SNMP,\
        +PACKAGE_luci-app-snmp:snmpd))
 
+$(eval $(call application,voice-client,LuCI Voice Interface (client),\
+	+luci-lib-json \
+	+asterisk18-mod \
+	+asterisk18-mod-func-channel \
+	+asterisk18-mod-func-db \
+	+asterisk18-mod-app-transfer \
+	+asterisk18-mod-app-read \
+	+asterisk18-mod-func-shell \
+	+asterisk18-mod-pbx-spool \
+	+asterisk18-mod-app-playtones \
+	+asterisk18-mod-sounds \
+	+brcminfo))
+
+$(eval $(call application,voice-pbx,LuCI Voice Interface (pbx)))
+
 ### Server Gateway Interfaces ###
 define sgi
   define Package/luci-sgi-$(1)
@@ -623,12 +624,12 @@ endef
 $(eval $(call collection,,\
 	Standard OpenWrt set including full admin with ppp support and the \
 	bootstrap theme,\
-	+uhttpd +uhttpd-mod-ubus +luci-mod-admin-full +luci-theme-bootstrap \
+	+uhttpd +luci-mod-admin-full +luci-theme-bootstrap \
 	+luci-app-firewall +luci-proto-core +luci-proto-ppp +libiwinfo-lua))
 
 $(eval $(call collection,ssl,\
 	Standard OpenWrt set with HTTPS support,\
-	+luci +libustream-cyassl +px5g))
+	+luci +uhttpd-mod-tls +px5g))
 
 $(eval $(call collection,light,\
 	Minimum package set using only admin mini and the bootstrap theme,\
