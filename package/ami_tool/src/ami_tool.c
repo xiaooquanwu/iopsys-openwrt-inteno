@@ -1487,24 +1487,21 @@ int main(int argc, char **argv)
 	/* Initialize ami connection */
 	ami_connection* con = ami_init();
 	ami_connect(con);
-	if (!con->connected) {
-		return -1;
-	}
 
 	/* Initialize ubus connection and register asterisk object */
 	ctx = ubus_connect(NULL);
-	if (!ctx) {
-		fprintf(stderr, "Failed to connect to UBUS\n");
-		return -1;
-	}
-	ubus_connected = true;
-	printf("Connected to UBUS, id: %08x\n", ctx->local_id);
-	ctx->connection_lost = ubus_connection_lost_cb;
-	system_fd_set_cloexec(ctx->sock.fd);
-	int ret = ubus_add_object(ctx, &router_object);
-	if (ret != 0) {
-		fprintf(stderr, "Failed to publish object '%s': %s\n", router_object.name, ubus_strerror(ret));
-		return -1;
+	if (ctx) {
+		ctx->connection_lost = ubus_connection_lost_cb;
+		system_fd_set_cloexec(ctx->sock.fd);
+		int ret = ubus_add_object(ctx, &router_object);
+		if (ret == 0) {
+			ubus_connected = true;
+			printf("Connected to UBUS, id: %08x\n", ctx->local_id);
+		}
+		else {
+			ubus_free(ctx);
+			ctx = NULL;
+		}
 	}
 
 	/* Main application loop */
@@ -1538,10 +1535,28 @@ int main(int argc, char **argv)
 			}
 		}
 		else {
-			if (ubus_reconnect(ctx, NULL) == 0) {
-				system_fd_set_cloexec(ctx->sock.fd);
-				ubus_connected = true;
-				printf("UBUS reconnected\n");
+			if (ctx) {
+				if (ubus_reconnect(ctx, NULL) == 0) {
+					printf("UBUS reconnected\n");
+					ubus_connected = true;
+					system_fd_set_cloexec(ctx->sock.fd);
+				}
+			}
+			else {
+				ctx = ubus_connect(NULL);
+				if (ctx) {
+					ctx->connection_lost = ubus_connection_lost_cb;
+					system_fd_set_cloexec(ctx->sock.fd);
+					int ret = ubus_add_object(ctx, &router_object);
+					if (ret == 0) {
+						ubus_connected = true;
+						printf("Connected to UBUS, id: %08x\n", ctx->local_id);
+					}
+					else {
+						ubus_free(ctx);
+						ctx = NULL;
+					}
+				}
 			}
 		}
 
@@ -1552,7 +1567,6 @@ int main(int argc, char **argv)
 			}
 		}
 		else {
-			printf("Reconnecting to AMI\n");
 			ami_connect(con);
 		}
 	}
