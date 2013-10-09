@@ -229,6 +229,7 @@ id_upgrade_reconfig() {
             echo "Setting new boardid and voiceboardid"
             echo DG301R0 > /proc/nvram/BoardId
             echo SI32176X2 > /proc/nvram/VoiceBoardId
+            echo "00 00 00 01" >/proc/nvram/ulBoardStuffOption
             sync
             sleep 3
             /sbin/brcm_fw_tool set -x 17 -p 0
