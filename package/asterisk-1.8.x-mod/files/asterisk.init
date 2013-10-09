@@ -1,53 +1,62 @@
 #!/bin/sh /etc/rc.common
 # Copyright (C) 2008 OpenWrt.org
-START=98
+START=99
 STOP=10
 
 DEST=
 DEFAULT=$DEST/etc/default/asterisk
 OPTIONS=""
 
-boot(){
+
+cwmp_voicecache() {
+ local max_line=""
+ 
+  while [ "$max_line" = "" -o "$max_line" = "0" ]; do
+    max_line=`/usr/sbin/asterisk -rx "brcm show status"|grep -c "Line id"`
+    if [ "$max_line" = "" -o "$max_line" = "0" ]; then sleep 1; fi
+      done
+       [ -f /usr/sbin/freecwmp ] && freecwmp get cache InternetGatewayDevice.Services.
+        
+}
+
+
+asterisk_boot(){
 [ -f $DEFAULT ] && . $DEFAULT
 	[ -d $DEST/var/run/asterisk ] || mkdir -p $DEST/var/run/asterisk
 	[ -d $DEST/var/log/asterisk ] || mkdir -p $DEST/var/log/asterisk
 	[ -d $DEST/var/spool/asterisk ] || mkdir -p $DEST/var/spool/asterisk
         [ -d /var/spool/asterisk ] || mkdir -p /var/spool/asterisk
-        [ -h $DEST/usr/lib/asterisk/astdb ] || ln -sf /var/spool/asterisk/astdb $DEST/usr/lib/asterisk/astdb
-
-
-        # does the board have a fxs relay?
-        local fxsRelayGpio=$(uci get -q /lib/db/config/hw.board.fxsRelayGpio)
-        if [ "$fxsRelayGpio" != "" ]; then
-                /sbin/brcm_fw_tool set -x $fxsRelayGpio -p 1
-        fi
-
+	
+	# start asterisk
+	/usr/sbin/ledctl FxsRelay On
 	echo 'starting asterisk'
 	$DEST/usr/sbin/asterisk $OPTIONS
-}
 
-start() {
-	boot
-	restart
-  
-}
-
-
-
-stop() {
-	[ -f $DEST/var/run/asterisk/asterisk.pid ]
-        echo 'stopping asterisk'
-	#/usr/sbin/ledctl FxsRelay Off
-        #asterisk -rx 'core stop gracefully' &
-        #sleep 10
-        #killall -9 asterisk
 	
-        
 }
-
-restart() {
+asterisk_restart() {
         asterisk -rx "core reload"
 	asterisk -rx "dialplan reload"
         asterisk -rx "brcm reload"
 	echo  "asterisk reloaded"
+}
+boot ()
+{
+asterisk_boot
+cwmp_voicecache
+}
+start() {
+	asterisk_boot
+	restart
+}
+
+stop() {
+	[ -f $DEST/var/run/asterisk/asterisk.pid ]
+        echo 'stopping asterisk'
+	
+}
+
+restart() {
+      asterisk_restart
+  cwmp_voicecache
 }
