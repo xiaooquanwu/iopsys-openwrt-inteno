@@ -27,7 +27,7 @@ start()
 	local hardwareid=$HWVER-$(echo $RMODEL | sed -r 's;.+-(.+);\1;')
 
 
-	local configs="passwords network wireless system"
+	local configs="passwords network wireless system cwmp provisioning"
 
 	for config in $configs; do
 		if [ -f /etc/config/$config ]; then
