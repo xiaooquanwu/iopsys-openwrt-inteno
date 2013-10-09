@@ -17,7 +17,7 @@ define Package/iup
   SECTION:=net
   CATEGORY:=Network
   TITLE:=iup client
-  DEPENDS:=@LINUX_2_6  +libuci  +uci +busybox
+  DEPENDS:=+libuci  +uci +busybox
 endef
 
 define Package/iup/description
