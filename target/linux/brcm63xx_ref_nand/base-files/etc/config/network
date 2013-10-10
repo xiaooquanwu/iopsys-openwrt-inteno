@@ -16,4 +16,5 @@ config 'interface' 'wan'
 	option 'type' 'anywan'
 	option 'proto' 'dhcp'
 	option 'hostname' 'Inteno_$MAC4'
+	option 'vendorid' '$HARDWAREID-INTENO'
 
