@@ -1,0 +1,20 @@
+ if [ "$INTERFACE" == "led" ]; then
+    if [ "$ACTION" == "link_up" ]; then	
+          ubus call led.dsl set '{"state":"ok"}' &
+    fi
+
+    if [ "$ACTION" == "link_down" ]; then	
+          ubus call led.dsl set '{"state":"off"}' &
+    fi
+
+    if [ "$ACTION" == "started_training" ]; then	
+          ubus call led.dsl set '{"state":"notice"}' &
+    fi
+
+    if [ "$ACTION" == "looking_for_carrier" ]; then	
+          ubus call led.dsl set '{"state":"alert"}' &
+    fi
+
+fi
+
+

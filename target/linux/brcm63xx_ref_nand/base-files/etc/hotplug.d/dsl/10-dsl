@@ -22,7 +22,6 @@ esac
  if [ "ADSL" == "$INTERFACE" -o "VDSL2" == "$INTERFACE" ]; then
     if [ "ADSL" == "$INTERFACE" ];then 
       if [ "$ACTION" == "remove" ]; then
-	  /usr/sbin/ledctl DSL off
 	  uci_toggle_state layer2_interface adsl device down
 	  /etc/init.d/layer2_interface_adsl stop
       else
@@ -32,7 +31,6 @@ esac
   fi
     if [ "VDSL2" == "$INTERFACE" ];then
       if [ "$ACTION" == "remove" ]; then
-	  /usr/sbin/ledctl DSL off
 	  uci_toggle_state layer2_interface vdsl device down
 	  /etc/init.d/layer2_interface_vdsl  stop
       else
