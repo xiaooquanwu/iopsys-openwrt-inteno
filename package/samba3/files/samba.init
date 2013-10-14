@@ -3,16 +3,45 @@
 
 START=60
 
+. /lib/functions/network.sh
+
+useradd()
+{
+	local user
+	local password
+	config_get user $1 user
+	config_get password $1 password
+	adduser $user -s /bin/false -D -H -h  /mnt/$user
+	/bin/smbpasswd $user $password
+}
+
+
+purgepasswd()
+{
+	for us in `grep mnt /etc/passwd | cut -d":" -f1`; do
+		deluser $us
+	done
+}
+purgesmbpasswd()
+{
+	rm -rf /etc/samba/smbpasswd
+	touch /etc/samba/smbpasswd
+}
+
 smb_header() {
 	local name
 	local workgroup
 	local description
 	local homes
+	local interfaces
+	local ifaces=""
+	local dev
 
 	config_get name $1 name
 	config_get workgroup $1 workgroup
 	config_get description $1 description
 	config_get homes $1 homes
+	config_get interfaces $1 interfaces
 
 	[ -z "$name" ] && name=openwrt
 	[ -z "$workgroup" ] && workgroup=openwrt
@@ -26,11 +55,24 @@ smb_header() {
 	[ "$homes" == "1" ] && {
 		echo -e "\n[homes]\n\tcomment = Home Directories\n\tbrowseable = no\n\tread only = no\n\tcreate mode = 0750" >> /tmp/smb.conf
 	}
+
+	if [ -n "$interfaces" ]; then
+		for ifc in $interfaces; do
+			network_get_device dev $ifc
+			ifaces="$ifaces $dev"
+		done
+		sed -i "s/interfaces = .*/interfaces = $ifaces/g" /tmp/smb.conf
+		sed -i "s/bind interfaces only = .*/bind interfaces only = yes/g" /tmp/smb.conf
+	else
+		sed -i "s/interfaces = .*/interfaces = /g" /tmp/smb.conf
+		sed -i "s/bind interfaces only = .*/bind interfaces only = no/g" /tmp/smb.conf
+	fi
 }
 
 smb_add_share() {
 	local name
 	local path
+	local dirpath
 	local users
 	local read_only
 	local guest_ok
@@ -39,6 +81,7 @@ smb_add_share() {
 
 	config_get name $1 name
 	config_get path $1 path
+	config_get dirpath $1 dirpath
 	config_get users $1 users
 	config_get read_only $1 read_only
 	config_get guest_ok $1 guest_ok
@@ -47,7 +90,7 @@ smb_add_share() {
 
 	[ -z "$name" -o -z "$path" ] && return
 
-	echo -e "\n[$name]\n\tpath = $path" >> /tmp/smb.conf
+	echo -e "\n[$name]\n\tpath = $path$dirpath" >> /tmp/smb.conf
 	[ -n "$users" ] && echo -e "\tvalid users = $users" >> /tmp/smb.conf
 	[ -n "$read_only" ] && echo -e "\tread only = $read_only" >> /tmp/smb.conf
 	[ -n "$guest_ok" ] && echo -e "\tguest ok = $guest_ok" >> /tmp/smb.conf
@@ -57,13 +100,16 @@ smb_add_share() {
 
 start() {
 	config_load samba
+	config_foreach useradd sambausers
 	config_foreach smb_header samba
 	config_foreach smb_add_share sambashare
-	smbd -D
-	nmbd -D
+	service_start /bin/smbd -D
+	service_start /bin/nmbd -D
 }
 
 stop() {
-	killall smbd
-	killall nmbd
+	service_stop /bin/smbd
+	service_stop /bin/nmbd
+	purgepasswd
+	purgesmbpasswd
 }
