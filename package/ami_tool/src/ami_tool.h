@@ -51,6 +51,7 @@ enum event_type {
 	BRCM,
 	CHANNELRELOAD,
 	FULLYBOOTED,
+	VARSET,
 	UNKNOWN_EVENT,
 };
 

@@ -25,6 +25,9 @@ char password[128] = "local"; //AMI password
 
 char *buf[10*BUFLEN];     /* declare global to avoid stack * 10 to avoid overrunning it just in case */
 
+static int ubus_send_brcm_event(const PORT_MAP *port, const char *key, const char *value);
+static int ubus_send_sip_event(const SIP_PEER *peer, const char *key, const int value);
+
 /* Asterisk states */
 int sip_registry_request_sent = 0;
 int sip_registry_registered   = 0;
@@ -643,6 +646,14 @@ int get_event_type(char* buf, int* idx) {
 
 		*idx = i;
 		return FULLYBOOTED;
+	} else if (!memcmp(buf, "VarSet", 6)) {
+		i +=6;
+		while((buf[i] == '\n') || (buf[i] == '\r'))
+			i++;
+
+		*idx = i;
+		return VARSET;
+
 	} // else if() handle other events
 
 	while(buf[i] || i>BUFLEN) {
@@ -686,6 +697,73 @@ SIP_ACCOUNT_ID get_sip_account_id(char* buf) {
 	return SIP_ACCOUNT_UNKNOWN;
 }
 
+int handle_varset(char* buf, int* idx) 
+{
+	int i = 0;
+	char *channel = NULL;
+	char *variable = NULL;
+	char *value = NULL;
+
+	while (i<BUFLEN) {
+		if (!memcmp(&buf[i], "Channel: ", 9)) {
+			i+=9;
+			int j = i;
+			while(memcmp(&buf[i], "\r\n",2) && i<BUFLEN)
+				i++;
+			channel = malloc(i-j);
+			strncpy(channel, buf + j, i-j);
+			channel[i-j] = '\0';
+			printf("Found channel: '%s'\n", channel);
+
+		} else if (!memcmp(&buf[i], "Variable: ", 10)) {
+			i+=10;
+			int j = i;
+			while(memcmp(&buf[i], "\r\n",2) && i<BUFLEN)
+				i++;
+			variable = malloc(i-j);
+			strncpy(variable, buf + j, i-j);
+			variable[i-j] = '\0';
+			printf("Found variable: '%s'\n", variable);
+
+		} else if (!memcmp(&buf[i], "Value: ", 7)) {
+			i+=7;
+			int j = i;
+			while(memcmp(&buf[i], "\r\n",2) && i<BUFLEN)
+				i++;
+			value = malloc(i-j);
+			strncpy(value, buf + j, i-j);
+			value[i-j] = '\0';
+			printf("Found value: '%s'\n", value);
+
+		} else {
+			//find end of line \r\n
+			while(memcmp(&buf[i], "\r\n",2) && i<BUFLEN)
+				i++;
+			i+=2;
+		}
+	}
+
+	if (channel && variable && value) {
+		/* Message contained all vital parts, send ubus event */
+		blob_buf_init(&bb, 0);
+		blobmsg_add_string(&bb, variable, value);
+		ubus_send_event(ctx, channel, bb.head);
+	}
+
+	if (channel) {
+		free(channel);
+	}
+
+	if (variable) {
+		free(variable);
+	}
+
+	if (value) {
+		free(value);
+	}
+	return 0;
+}
+
 int handle_registry_event_type(char* buf, int* idx) {
 	int i = 0;
 	SIP_ACCOUNT_ID sip_account_id;
@@ -714,10 +792,14 @@ int handle_registry_event_type(char* buf, int* idx) {
 					handle_iptables(peer, 0);
 				}
 				peer->sip_registry_request_sent = 1;
+				ubus_send_sip_event(peer, "registered", peer->sip_registry_registered);
+				ubus_send_sip_event(peer, "registry_request_sent", peer->sip_registry_request_sent);
 				printf("sip registry request sent\n");
 			} else if (!memcmp(&buf[i], "Unregistered", 12)) {
 				peer->sip_registry_registered = 0;
 				peer->sip_registry_request_sent = 0;
+				ubus_send_sip_event(peer, "registered", peer->sip_registry_registered);
+				ubus_send_sip_event(peer, "registry_request_sent", peer->sip_registry_request_sent);
 				printf("sip registry unregistered\n");
 				handle_iptables(peer, 0);
 			} else if (!memcmp(&buf[i], "Registered", 10)) {
@@ -725,6 +807,8 @@ int handle_registry_event_type(char* buf, int* idx) {
 				peer->sip_registry_request_sent = 0;
 				time(&(peer->sip_registry_time)); //Last registration time
 				printf("sip registry registered\n");
+				ubus_send_sip_event(peer, "registered", peer->sip_registry_registered);
+				ubus_send_sip_event(peer, "registry_request_sent", peer->sip_registry_request_sent);
 				handle_iptables(peer, 1);
 			}
 			return 0;
@@ -803,6 +887,9 @@ int handle_brcm_event_type(char* buf, int* idx) {
 			printf("Updated channel state\n");
 			//Try to set state on port/subchannel
 			strcpy(brcm_ports[atoi(line_id)].sub[atoi(subchannel_id)].state, trim_whitespace(state));
+
+			int port_id = atoi(line_id);
+			ubus_send_brcm_event(&brcm_ports[port_id], subchannel, brcm_ports[port_id].sub[atoi(subchannel_id)].state);
 
 			return 0;
 		} else if (!memcmp(&buf[i], "Module unload", 13)) {
@@ -886,6 +973,9 @@ int handle_event(ami_connection* con, char* buf) {
 		case FULLYBOOTED:
 			printf("FULLYBOOTED\n");
 			asterisk_fully_booted = 1;
+			break;
+		case VARSET:
+			handle_varset(&buf[idx], &idx);
 			break;
 		case UNKNOWN_EVENT:
 		default:
@@ -1203,6 +1293,37 @@ static const struct blobmsg_policy ubus_string_argument[__UBUS_ARGMAX] = {
 static const struct blobmsg_policy ubus_int_argument[__UBUS_ARGMAX] = {
 	[UBUS_ARG0] = { .name = "id", .type = BLOBMSG_TYPE_INT32 },
 };
+
+/*
+ * Sends asterisk.sip events
+ */
+static int ubus_send_sip_event(const SIP_PEER *peer, const char *key, const int value)
+{
+	char id[BUFLEN];
+	char sValue[BUFLEN];
+
+	snprintf(id, BUFLEN, "asterisk.sip.%d", peer->account.id);
+	snprintf(sValue, BUFLEN, "%d", value);
+
+	blob_buf_init(&bb, 0);
+	blobmsg_add_string(&bb, key, sValue);
+
+	return ubus_send_event(ctx, id, bb.head);
+}
+
+/*
+ * Sends asterisk.brcm events
+ */
+static int ubus_send_brcm_event(const PORT_MAP *port, const char *key, const char *value)
+{
+	char id[BUFLEN];
+	snprintf(id, BUFLEN, "asterisk.brcm.%d", port->port);
+
+	blob_buf_init(&bb, 0);
+	blobmsg_add_string(&bb, key, value);
+
+	return ubus_send_event(ctx, id, bb.head);
+}
 
 /*
  * Collects and returns information on a single brcm line to a ubus message buffer
