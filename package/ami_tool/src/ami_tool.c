@@ -18,7 +18,7 @@ static int rtpend_current = 0;
 static IP* ip_list_current = NULL;
 static int ip_list_length_current = 0;
 
-unsigned int portno = "5038"; //AMI port number
+const char *portno = "5038"; //AMI port number
 char hostname[] = "127.0.0.1"; //AMI hostname
 char username[128] = "local"; //AMI username
 char password[128] = "local"; //AMI password
@@ -313,14 +313,12 @@ int ip_cmp(const void *a, const void *b)
 
 /* Create a set of all resolved IPs for all peers */
 IP* create_ip_set(int family, int *ip_list_length) {
-	const PORT_MAP *ports;
 	SIP_PEER *peer;
 	IP *ip_list;
 
 	*ip_list_length = 0;
 	ip_list = (IP *) malloc(MAX_IP_LIST_LENGTH * sizeof(struct IP));
 
-	ports = brcm_ports;
 	/* This is O(n^3) but the lists are small... */
 	peer = sip_peers;
 	while (peer->account.id != SIP_ACCOUNT_UNKNOWN) {
@@ -805,6 +803,7 @@ int handle_brcm_event_type(char* buf, int* idx) {
 			printf("Updated channel state\n");
 			//Try to set state on port/subchannel
 			strcpy(brcm_ports[atoi(line_id)].sub[atoi(subchannel_id)].state, trim_whitespace(state));
+
 			return 0;
 		} else if (!memcmp(&buf[i], "Module unload", 13)) {
 			i+=13;
@@ -1167,6 +1166,7 @@ void init_sip_peers() {
 		sip_peers[accounts->id].sip_registry_request_sent = 0;
 		sip_peers[accounts->id].sip_registry_time = 0;
 		sip_peers[accounts->id].ip_list_length = 0;
+		/* No need to (re)initialize ubus_object (created once at startup) */
 		if (accounts->id == SIP_ACCOUNT_UNKNOWN) {
 			break;
 		}
@@ -1222,25 +1222,6 @@ static int ubus_get_brcm_line(struct blob_buf *b, int line)
 }
 
 /*
- * Collects and returns information on all brcm lines to a ubus message buffer
- */
-static void ubus_get_brcm_lines(struct blob_buf *b, bool table)
-{
-	void *brcm_table = NULL;
-	void *brcm_line_table = NULL;
-	if (table) brcm_table = blobmsg_open_table(b, "brcm");
-
-	int i;
-	for (i=0; i<PORT_ALL; i++) {
-		brcm_line_table = blobmsg_open_table(b, (brcm_ports[i]).name);
-		ubus_get_brcm_line(b, i);
-		blobmsg_close_table(b, brcm_line_table);
-	}
-
-	if (table) blobmsg_close_table(b, brcm_table);
-}
-
-/*
  * Collects and returns information on a single sip account to a ubus message buffer
  */
 static int ubus_get_sip_account(struct blob_buf *b, int account_id)
@@ -1274,97 +1255,9 @@ static int ubus_get_sip_account(struct blob_buf *b, int account_id)
 }
 
 /*
- * Collects and adds info on all sip accounts to a ubus message buffer
+ * ubus callback that replies to "asterisk.brcm.X status"
  */
-static void ubus_get_sip_accounts(struct blob_buf *b, bool table)
-{
-	void *sip_table = NULL;
-	void *sip_account_table = NULL;
-	if (table) sip_table = blobmsg_open_table(b, "sip");
-
-	const SIP_ACCOUNT *accounts;
-	accounts = sip_accounts;
-	for (;;) {
-		if (accounts->id == SIP_ACCOUNT_UNKNOWN) {
-			break;
-		}
-
-		sip_account_table = blobmsg_open_table(b, accounts->name);
-		ubus_get_sip_account(b, accounts->id);
-		blobmsg_close_table(b, sip_account_table);
-
-		accounts++;
-	}
-	if (table) blobmsg_close_table(b, sip_table);
-}
-
-
-/*
- * ubus callback that sends sip account information.
- * Optional id - integer argument - to specify which account should be returned.
- * Returns all accounts if no arg is given
- */
-static int ubus_sip_cb (
-	struct ubus_context *ctx, struct ubus_object *obj,
-	struct ubus_request_data *req, const char *method,
-	struct blob_attr *msg)
-{
-	struct blob_attr *tb[__UBUS_ARGMAX];
-	blobmsg_parse(ubus_int_argument, __UBUS_ARGMAX, tb, blob_data(msg), blob_len(msg));
-
-
-	blob_buf_init(&bb, 0);
-
-	if (!tb[UBUS_ARG0]) {
-		ubus_get_sip_accounts(&bb, 0); //No account specified, print all sip accounts
-	}
-	else {
-		int sip_account = blobmsg_get_u32(tb[UBUS_ARG0]);
-		int result = ubus_get_sip_account(&bb, sip_account);
-		if (result > 0) {
-			return UBUS_STATUS_INVALID_ARGUMENT;
-		}
-	}
-
-	ubus_send_reply(ctx, req, bb.head);
-	return 0;
-}
-
-/*
- * ubus callback that sends brcm line information.
- * Optional id - integer argument - to specify which line should be returned.
- * Returns all lines if no arg is given
- */
-static int ubus_brcm_cb (
-	struct ubus_context *ctx, struct ubus_object *obj,
-	struct ubus_request_data *req, const char *method,
-	struct blob_attr *msg)
-{
-	struct blob_attr *tb[__UBUS_ARGMAX];
-	blobmsg_parse(ubus_int_argument, __UBUS_ARGMAX, tb, blob_data(msg), blob_len(msg));
-
-	blob_buf_init(&bb, 0);
-
-	if (!tb[UBUS_ARG0]) {
-		ubus_get_brcm_lines(&bb, 0); //No argument, print all brcm lines
-	}
-	else {
-		int brcm_line = blobmsg_get_u32(tb[UBUS_ARG0]);
-		int result = ubus_get_brcm_line(&bb, brcm_line);
-
-		if (result > 0) {
-			return UBUS_STATUS_INVALID_ARGUMENT;
-		}
-	}
-
-	ubus_send_reply(ctx, req, bb.head);
-	return 0;
-}
-
-/*
- * ubus callback that sends all sip and brcm information to ubus.
- */
-static int ubus_asterisk_cb (
+static int ubus_asterisk_brcm_cb (
 	struct ubus_context *ctx, struct ubus_object *obj,
 	struct ubus_request_data *req, const char *method,
 	struct blob_attr *msg)
@@ -1374,28 +1267,102 @@ static int ubus_asterisk_cb (
 	blobmsg_parse(ubus_string_argument, __UBUS_ARGMAX, tb, blob_data(msg), blob_len(msg));
 	blob_buf_init(&bb, 0);
 
-	ubus_get_sip_accounts(&bb, 1); //Add SIP info to message
-	ubus_get_brcm_lines(&bb, 1); //Add brcm info to message
+	PORT_MAP *port;
+	port = brcm_ports;
+	while (port->port != PORT_UNKNOWN) {
+		if (port->ubus_object == obj) {
+			ubus_get_brcm_line(&bb, port->port); //Add port status to message
+			break;
+		}
+		port++;
+	}
 
 	ubus_send_reply(ctx, req, bb.head);
 	return 0;
 }
 
-static struct ubus_method asterisk_object_methods[] = {
-	{ .name = "info", .handler = ubus_asterisk_cb },
-	UBUS_METHOD("sip", ubus_sip_cb, ubus_int_argument),
-	UBUS_METHOD("brcm", ubus_brcm_cb, ubus_int_argument),
+/*
+ * ubus callback that replies to "asterisk.sip.X status"
+ */
+static int ubus_asterisk_sip_cb (
+	struct ubus_context *ctx, struct ubus_object *obj,
+	struct ubus_request_data *req, const char *method,
+	struct blob_attr *msg)
+{
+	struct blob_attr *tb[__UBUS_ARGMAX];
+
+	blobmsg_parse(ubus_string_argument, __UBUS_ARGMAX, tb, blob_data(msg), blob_len(msg));
+	blob_buf_init(&bb, 0);
+
+	SIP_PEER *peer = sip_peers;
+	while (peer->account.id != SIP_ACCOUNT_UNKNOWN) {
+		if (peer->ubus_object == obj) {
+			ubus_get_sip_account(&bb, peer->account.id); //Add SIP account status to message
+			break;
+		}
+		peer++;
+	}
+
+	ubus_send_reply(ctx, req, bb.head);
+	return 0;
+}
+
+static struct ubus_method sip_object_methods[] = {
+	{ .name = "status", .handler = ubus_asterisk_sip_cb },
 };
 
-static struct ubus_object_type asterisk_object_type =
-	UBUS_OBJECT_TYPE("system", asterisk_object_methods);
+static struct ubus_object_type sip_object_type =
+	UBUS_OBJECT_TYPE("sip_object", sip_object_methods);
 
-static struct ubus_object router_object = {
-	.name = "asterisk",
-	.type = &asterisk_object_type,
-	.methods = asterisk_object_methods,
-	.n_methods = ARRAY_SIZE(asterisk_object_methods),
+static struct ubus_object ubus_sip_objects[] = {
+	{ .name = "asterisk.sip.0", .type = &sip_object_type, .methods = sip_object_methods, .n_methods = ARRAY_SIZE(sip_object_methods) },
+	{ .name = "asterisk.sip.1", .type = &sip_object_type, .methods = sip_object_methods, .n_methods = ARRAY_SIZE(sip_object_methods) },
+	{ .name = "asterisk.sip.2", .type = &sip_object_type, .methods = sip_object_methods, .n_methods = ARRAY_SIZE(sip_object_methods) },
+	{ .name = "asterisk.sip.3", .type = &sip_object_type, .methods = sip_object_methods, .n_methods = ARRAY_SIZE(sip_object_methods) },
+	{ .name = "asterisk.sip.4", .type = &sip_object_type, .methods = sip_object_methods, .n_methods = ARRAY_SIZE(sip_object_methods) },
+	{ .name = "asterisk.sip.5", .type = &sip_object_type, .methods = sip_object_methods, .n_methods = ARRAY_SIZE(sip_object_methods) },
+	{ .name = "asterisk.sip.6", .type = &sip_object_type, .methods = sip_object_methods, .n_methods = ARRAY_SIZE(sip_object_methods) },
+	{ .name = "asterisk.sip.7", .type = &sip_object_type, .methods = sip_object_methods, .n_methods = ARRAY_SIZE(sip_object_methods) },
 };
+
+static struct ubus_method brcm_object_methods[] = {
+	{ .name = "status", .handler = ubus_asterisk_brcm_cb },
+};
+
+static struct ubus_object_type brcm_object_type =
+	UBUS_OBJECT_TYPE("brcm_object", brcm_object_methods);
+
+static struct ubus_object ubus_brcm_objects[] = {
+	{ .name = "asterisk.brcm.0", .type = &brcm_object_type, .methods = brcm_object_methods, .n_methods = ARRAY_SIZE(brcm_object_methods) },
+	{ .name = "asterisk.brcm.1", .type = &brcm_object_type, .methods = brcm_object_methods, .n_methods = ARRAY_SIZE(brcm_object_methods) },
+	{ .name = "asterisk.brcm.2", .type = &brcm_object_type, .methods = brcm_object_methods, .n_methods = ARRAY_SIZE(brcm_object_methods) },
+	{ .name = "asterisk.brcm.3", .type = &brcm_object_type, .methods = brcm_object_methods, .n_methods = ARRAY_SIZE(brcm_object_methods) },
+	{ .name = "asterisk.brcm.4", .type = &brcm_object_type, .methods = brcm_object_methods, .n_methods = ARRAY_SIZE(brcm_object_methods) },
+	{ .name = "asterisk.brcm.5", .type = &brcm_object_type, .methods = brcm_object_methods, .n_methods = ARRAY_SIZE(brcm_object_methods) },
+};
+
+static int ubus_add_objects(struct ubus_context *ctx)
+{
+	int ret = 0;
+
+	SIP_PEER *peer;
+	peer = sip_peers;
+	while (peer->account.id != SIP_ACCOUNT_UNKNOWN) {
+		peer->ubus_object = &ubus_sip_objects[peer->account.id];
+		ret &= ubus_add_object(ctx, peer->ubus_object);
+		peer++;
+	}
+
+	PORT_MAP *port;
+	port = brcm_ports;
+	while (port->port != PORT_ALL) {
+		port->ubus_object = &ubus_brcm_objects[port->port];
+		ret &= ubus_add_object(ctx, port->ubus_object);
+		port++;
+	}
+
+	return ret;
+}
 
 static void ubus_connection_lost_cb(struct ubus_context *ctx)
 {
@@ -1534,7 +1501,7 @@ int main(int argc, char **argv)
 	if (ctx) {
 		ctx->connection_lost = ubus_connection_lost_cb;
 		system_fd_set_cloexec(ctx->sock.fd);
-		int ret = ubus_add_object(ctx, &router_object);
+		int ret = ubus_add_objects(ctx);
 		if (ret == 0) {
 			ubus_connected = true;
 			printf("Connected to UBUS, id: %08x\n", ctx->local_id);
@@ -1588,7 +1555,7 @@ int main(int argc, char **argv)
 				if (ctx) {
 					ctx->connection_lost = ubus_connection_lost_cb;
 					system_fd_set_cloexec(ctx->sock.fd);
-					int ret = ubus_add_object(ctx, &router_object);
+					int ret = ubus_add_objects(ctx);
 					if (ret == 0) {
 						ubus_connected = true;
 						printf("Connected to UBUS, id: %08x\n", ctx->local_id);
