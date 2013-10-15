@@ -6,6 +6,13 @@ STOP=90
 SERVICE_DAEMONIZE=1
 SERVICE_WRITE_PID=1
 
+cwmp_netcache() {
+	[ -f /usr/sbin/freecwmp ] && {
+		freecwmp get cache InternetGatewayDevice.LANDevice.
+		freecwmp get cache InternetGatewayDevice.WANDevice.
+	}
+}
+
 start() {
 	stop
 	[ -e /proc/sys/kernel/core_pattern ] && {
@@ -19,10 +26,11 @@ start() {
 	include /lib/network
 	setup_switch
 
-	sleep 5
+	sleep 2
 
-	/sbin/wifi down
-	/sbin/wifi up
+	/sbin/wifi
+
+	cwmp_netcache
 }
 
 restart() {
@@ -42,6 +50,7 @@ stop() {
 
 reload() {
 	ubus call network reload
-	/sbin/wifi down
-	/sbin/wifi up
+	ubus call router reload
+	/sbin/wifi &
+	cwmp_netcache
 }
