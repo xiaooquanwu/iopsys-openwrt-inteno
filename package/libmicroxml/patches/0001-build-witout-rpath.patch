@@ -1,0 +1,25 @@
+From f7f79d9447d4ee00feb4954aa3bd6dd01a498c92 Mon Sep 17 00:00:00 2001
+From: Mohamed Kallel <mohamed.kallel@pivasoftware.com>
+Date: Fri, 11 Oct 2013 16:35:48 +0100
+Subject: [PATCH] build witout rpath
+
+---
+ configure.in |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/configure.in b/configure.in
+index 18b9d96..4063afb 100644
+--- a/configure.in
++++ b/configure.in
+@@ -199,7 +199,7 @@ if test x$enable_shared != xno; then
+ 			AC_MSG_RESULT(yes)
+ 			LIBMICROXML_SHARED="libmicroxml.so.1.0"
+ 			DSO="\$(CC)"
+-			DSOFLAGS="$DSOFLAGS -Wl,-soname,libmicroxml.so.1,-rpath,\$(libdir) -shared \$(OPTIM)"
++			DSOFLAGS="$DSOFLAGS -Wl,-soname,libmicroxml.so.1 -shared \$(OPTIM)"
+ 			LDFLAGS="$LDFLAGS -Wl,-rpath,\$(libdir)"
+ 			;;
+ 
+-- 
+1.7.4.1
+

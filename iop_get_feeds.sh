@@ -19,7 +19,6 @@
 ./scripts/feeds install iperf
 ./scripts/feeds install curl
 ./scripts/feeds install libcurl
-./scripts/feeds install libmicroxml
 ./scripts/feeds install liblzo
 ./scripts/feeds install miniupnpd
 ./scripts/feeds install minidlna
