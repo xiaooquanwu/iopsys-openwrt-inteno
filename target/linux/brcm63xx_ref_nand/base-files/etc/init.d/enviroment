@@ -10,7 +10,9 @@ start()
 	local MAC=$(printf "%X\n" $((0x$BMAC)))
 	local BSSID=$(printf "%X\n" $((0x$BMAC + 2)))
 	local WPAKEY=$(cat /proc/nvram/WpaKey)
-        local SERIALNR=$(cat /proc/nvram/SerialNumber)
+	local SERIALNR=$(cat /proc/nvram/SerialNumber)
+	local HWVER=$(db get hw.board.hardwareVersion)
+	local RMODEL=$(db get hw.board.routerModel)
 
 	local oid=${BMAC:0:6}
 	local mac=$BMAC
@@ -22,6 +24,7 @@ start()
 	local bssid4=${BSSID:6:4}
 	local bssid6=${BSSID:4:6}
 	local wpakey=$WPAKEY
+	local hardwareid=$HWVER-$(echo $RMODEL | sed -r 's;.+-(.+);\1;')
 
 	local configs="passwords network wireless system cwmp provisioning"
 
@@ -38,6 +41,7 @@ start()
 			sed -i "s/\$WPAKEY/$wpakey/g" /etc/config/$config
 			sed -i "s/\$SER/$SERIALNR/g" /etc/config/$config
 			sed -i "s/\$OUI/$oid/g" /etc/config/$config
+			sed -i "s/\$HARDWAREID/$hardwareid/g" /etc/config/$config
 			[ "$config" == "network" ] && sed -i "s/multiwan/anywan/g" /etc/config/$config
 		fi
 	done
