@@ -4,6 +4,9 @@ iopsys_initialize_db() {
 	echo "Initializing iopsys db"
 	if [ -f "/lib/db/config/hw" ]; then
 		echo "Static db already initialized"
+		IOPVERSION="`cat /lib/db/version/iop_version`"
+                uci set /lib/db/config/hw.board.iopVersion="$IOPVERSION"                
+                uci commit    
 	else
 		echo "Setting up static db"
 		BOARDID=`cat /proc/nvram/BoardId`
