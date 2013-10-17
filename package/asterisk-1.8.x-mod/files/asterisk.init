@@ -15,7 +15,7 @@ cwmp_voicecache() {
     max_line=`/usr/sbin/asterisk -rx "brcm show status"|grep -c "Line id"`
     if [ "$max_line" = "" -o "$max_line" = "0" ]; then sleep 1; fi
       done
-       [ -f /usr/sbin/freecwmp ] && freecwmp get cache InternetGatewayDevice.Services.
+       [ -f /usr/sbin/freecwmp ] && freecwmp get cache InternetGatewayDevice.Services. &
         
 }
 

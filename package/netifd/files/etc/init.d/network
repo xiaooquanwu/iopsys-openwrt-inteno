@@ -52,5 +52,5 @@ reload() {
 	ubus call network reload
 	ubus call router reload
 	/sbin/wifi &
-	cwmp_netcache
+	cwmp_netcache &
 }
