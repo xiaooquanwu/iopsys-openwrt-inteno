@@ -29,6 +29,10 @@ config BCM_ENDPOINT_MODULE
        help
 		Set this to include the endpoint module in image
 
+config SECURE_BOOT_CFE
+       prompt "Secure boot CFE"
+       bool
+	
 
 endmenu
 
