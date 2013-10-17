@@ -232,7 +232,7 @@ else
 fi
 config_load provisioning
 config_foreach handle_provisioning subconfig
-config_get software upgradeserver url
+config_get software uppgradeserver url
 sofwareminuspath=${software##*/}
 v "Software version to download $sofwareminuspath"
 
@@ -242,7 +242,7 @@ if [ $software ]; then
 	json_get_var firmware firmware
 	if [ "$sofwareminuspath" == "${sofwareminuspath/$firmware/}" ] ; then
 		echo $software
-		handle_provisioning upgradeserver
+		handle_provisioning uppgradeserver
 	else
 		v "Will not update software, already up to date"
 	fi
