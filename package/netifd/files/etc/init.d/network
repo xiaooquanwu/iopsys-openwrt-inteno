@@ -8,8 +8,8 @@ SERVICE_WRITE_PID=1
 
 cwmp_netcache() {
 	[ -f /usr/sbin/freecwmp ] && {
-		freecwmp get cache InternetGatewayDevice.LANDevice.
-		freecwmp get cache InternetGatewayDevice.WANDevice.
+		ps -w | grep freecwmp | grep LANDevice >/dev/null || freecwmp get cache InternetGatewayDevice.LANDevice. &
+		ps -w | grep freecwmp | grep WANDevice >/dev/null || freecwmp get cache InternetGatewayDevice.WANDevice. &
 	}
 }
 
@@ -52,5 +52,5 @@ reload() {
 	ubus call network reload
 	ubus call router reload
 	/sbin/wifi &
-	cwmp_netcache &
+	cwmp_netcache
 }

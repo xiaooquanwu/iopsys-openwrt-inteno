@@ -9,19 +9,19 @@ OPTIONS=""
 
 
 cwmp_voicecache() {
- local max_line=""
+	local max_line=""
  
-  while [ "$max_line" = "" -o "$max_line" = "0" ]; do
-    max_line=`/usr/sbin/asterisk -rx "brcm show status"|grep -c "Line id"`
-    if [ "$max_line" = "" -o "$max_line" = "0" ]; then sleep 1; fi
-      done
-       [ -f /usr/sbin/freecwmp ] && freecwmp get cache InternetGatewayDevice.Services. &
-        
+	while [ "$max_line" = "" -o "$max_line" = "0" ]; do
+		max_line=`/usr/sbin/asterisk -rx "brcm show status"|grep -c "Line id"`
+		if [ "$max_line" = "" -o "$max_line" = "0" ]; then sleep 1; fi
+	done
+	[ -f /usr/sbin/freecwmp ] && {
+		ps -w | grep freecwmp | grep Services >/dev/null || freecwmp get cache InternetGatewayDevice.Services. &
+	}
 }
 
-
-asterisk_boot(){
-[ -f $DEFAULT ] && . $DEFAULT
+asterisk_boot() {
+	[ -f $DEFAULT ] && . $DEFAULT
 	[ -d $DEST/var/run/asterisk ] || mkdir -p $DEST/var/run/asterisk
 	[ -d $DEST/var/log/asterisk ] || mkdir -p $DEST/var/log/asterisk
 	[ -d $DEST/var/spool/asterisk ] || mkdir -p $DEST/var/spool/asterisk
@@ -31,20 +31,21 @@ asterisk_boot(){
 	/usr/sbin/ledctl FxsRelay On
 	echo 'starting asterisk'
 	$DEST/usr/sbin/asterisk $OPTIONS
-
-	
 }
+
 asterisk_restart() {
-        asterisk -rx "core reload"
+	asterisk -rx "core reload"
 	asterisk -rx "dialplan reload"
-        asterisk -rx "brcm reload"
+	asterisk -rx "brcm reload"
 	echo  "asterisk reloaded"
 }
-boot ()
+
+boot()
 {
-asterisk_boot
-cwmp_voicecache
+	asterisk_boot
+	cwmp_voicecache
 }
+
 start() {
 	asterisk_boot
 	restart
@@ -57,6 +58,6 @@ stop() {
 }
 
 restart() {
-      asterisk_restart
-  cwmp_voicecache
+	asterisk_restart
+	cwmp_voicecache
 }
