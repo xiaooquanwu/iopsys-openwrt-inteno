@@ -2,11 +2,10 @@
 
 iopsys_initialize_db() {
 	echo "Initializing iopsys db"
-	if [ -f "/lib/db/config/hw" ]; then
+	OLDCFERAM="`uci -q get /lib/db/config/hw.board.cferam`"
+	NEWCFERAM="`ls /cferam* | awk -F'.' '{print$NF}'`"
+	if [ -f "/lib/db/config/hw" ] && [ "$NEWCFERAM" == "$OLDCFERAM" ]; then
 		echo "Static db already initialized"
-		IOPVERSION="`cat /lib/db/version/iop_version`"
-                uci set /lib/db/config/hw.board.iopVersion="$IOPVERSION"                
-                uci commit    
 	else
 		echo "Setting up static db"
 		BOARDID=`cat /proc/nvram/BoardId`
@@ -14,6 +13,7 @@ iopsys_initialize_db() {
 		cp /lib/db/boards/$BOARDID /lib/db/config/hw
 
 		echo "Populating dynamic db parameters"
+		CFERAM="`ls /cferam* | awk -F'.' '{print$NF}'`"
 		HARDWARE="`uci get /lib/db/config/hw.board.hardware`"
 		SERIALNR="`cat /proc/nvram/SerialNumber`"
 		AUTHKEY="`cat /proc/nvram/AuthKey`"
@@ -38,6 +38,7 @@ iopsys_initialize_db() {
 		BASEMAC=${BASEMAC// /}
 		RFPI=${RFPI// /}
 
+		uci set /lib/db/config/hw.board.cferam="$CFERAM"
 		uci set /lib/db/config/hw.board.hardwareVersion="$HARDWARE$DSLANNEX"
 		uci set /lib/db/config/hw.board.serialNumber="$SERIALNR"
 		uci set /lib/db/config/hw.board.authKey="$AUTHKEY"
