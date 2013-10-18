@@ -68,6 +68,8 @@ define Image/Prepare
 	echo $(IHGSP_BUILD_VERSION)  > $(BUILD_DIR_ROOT)/lib/db/version/iop_version
 	echo $(CONFIG_TARGET_IBOARDID)> $(BUILD_DIR_ROOT)/lib/db/version/iop_iboardid
 
+	#strip out unneeded files
+	rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.3.8
 endef
 
 define Image/Build
