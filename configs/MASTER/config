@@ -2330,8 +2330,8 @@ CONFIG_PACKAGE_dectmngr=y
 # CONFIG_PACKAGE_endptctl is not set
 # CONFIG_PACKAGE_fconfig is not set
 # CONFIG_PACKAGE_flock is not set
-CONFIG_PACKAGE_gdb=y
-CONFIG_PACKAGE_gdbserver=y
+# CONFIG_PACKAGE_gdb is not set
+# CONFIG_PACKAGE_gdbserver is not set
 CONFIG_PACKAGE_getopt=y
 # CONFIG_PACKAGE_gpioctl is not set
 # CONFIG_PACKAGE_hwclock is not set
