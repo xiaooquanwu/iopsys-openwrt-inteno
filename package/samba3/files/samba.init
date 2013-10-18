@@ -64,8 +64,8 @@ smb_header() {
 		sed -i "s/interfaces = .*/interfaces = $ifaces/g" /tmp/smb.conf
 		sed -i "s/bind interfaces only = .*/bind interfaces only = yes/g" /tmp/smb.conf
 	else
-		sed -i "s/interfaces = .*/interfaces = /g" /tmp/smb.conf
-		sed -i "s/bind interfaces only = .*/bind interfaces only = no/g" /tmp/smb.conf
+		# exit if no interface is selected; samba will not start
+		exit
 	fi
 }
 
