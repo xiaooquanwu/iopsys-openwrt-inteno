@@ -5,4 +5,5 @@
 [ -f /etc/config/dropbear ] && /etc/init.d/dropbear restart
 [ -f /var/run/asterisk/asterisk.ctl ]  && /etc/init.d/asterisk restart
 [ -f /etc/config/mcpd ] && /etc/init.d/mcpd restart
+[ -f /etc/config/cwmp ] && /usr/sbin/freecwmp get cache InternetGatewayDevice.WANDevice. &
 [ -f /etc/config/cwmp ] && /etc/init.d/cwmpd restart &

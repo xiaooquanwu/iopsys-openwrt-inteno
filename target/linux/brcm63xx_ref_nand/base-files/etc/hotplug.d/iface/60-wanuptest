@@ -1,9 +1,6 @@
 
 [ ifup = "$ACTION" -o ifdown = "$ACTION" ] && {
 	if [ "$(uci -q get network.$INTERFACE.is_lan)" != "1" ]; then
-		[ -f /usr/sbin/freecwmp ] && {
-			ps -w | grep freecwmp | grep WANDevice >/dev/null || /usr/sbin/freecwmp get cache InternetGatewayDevice.WANDevice. &
-		}
 		pidof testnet >/dev/null || /sbin/testnet &
 	fi
 }
