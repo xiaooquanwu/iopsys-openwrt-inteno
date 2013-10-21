@@ -2,6 +2,7 @@
 
 . /lib/functions.sh
 . /usr/share/libubox/jshn.sh
+[ -f /lib/network/anyfi.sh ] && . /lib/network/anyfi.sh
 
 exec >/dev/null 2>&1
 
@@ -90,6 +91,8 @@ create_qr_code() {
 set_wifi_down() {
 	local device="$1"
 	local network
+
+	[ -f /sbin/myfid ] && anyfi_disable $device
 
 	uci_revert_state wireless "$device"
 	wlctl -i $device down
@@ -373,8 +376,8 @@ set_wifi() {
 
 	# BASE settings
 	# wlctl -i $device cap > /var/cap_$device
-	# wlctl -i $device phy_watchdog 0
-	# wlctl -i $device wds none
+	wlctl -i $device phy_watchdog 0
+	wlctl -i $device wds none
 	wlctl -i $device up
 	wlctl -i $device down
 	# wlctl -i $device ap 1
@@ -406,17 +409,20 @@ set_wifi() {
 
 	# set HW mode and rate
 	wlctl -i $device nmode -1
-#	wlctl -i $device mimo_bw_cap 1
+	wlctl -i $device mimo_bw_cap 2
+	wlctl -i $device bw_cap 2g 0xff 2>/dev/null
+	wlctl -i $device bw_cap 5g 0xff 2>/dev/null
+	wlctl -i $device obss_coex 1
 	wlctl -i $device gmode 1
-#	wlctl -i $device gmode_protection_override -1
-#	wlctl -i $device gmode_protection_control 2
-#	wlctl -i $device nmode_protection_override -1
-#	wlctl -i $device protection_control 2
+	wlctl -i $device gmode_protection_override -1
+	wlctl -i $device gmode_protection_control 2
+	wlctl -i $device nmode_protection_override -1
+	wlctl -i $device protection_control 2
 	wlctl -i $device nreqd 0
 	wlctl -i $device rate 0
-#	wlctl -i $device bg_rate 0
-#	wlctl -i $device mrate -1
-#	wlctl -i $device bg_mrate -1
+	wlctl -i $device bg_rate 0
+	wlctl -i $device mrate -1
+	wlctl -i $device bg_mrate -1
 
 	case "$hwmode" in
 		*b)
@@ -443,20 +449,11 @@ set_wifi() {
 		*n)
 			wlctl -i $device nmode 1
 			wlctl -i $device nreqd 1
-			if [ "$bandwidth" == "40" ]; then
-				wlctl -i $device mimo_bw_cap 1
-				wlctl -i $device obss_coex "${obss_coex:-1}"
-			fi
 			wlctl -i $device nrate "${nrate:-auto}"
 		;;
 		*ac)
 			wlctl -i $device nmode 3
 			wlctl -i $device nreqd 1
-			if [ "$bandwidth" == "40" ] || [ "$bandwidth" == "80" ]; then
-				wlctl -i $device mimo_bw_cap 1
-				wlctl -i $device obss_coex "${obss_coex:-1}"
-				wlctl -i $device bw_cap 5g 0x7
-			fi
 			wlctl -i $device nrate "${nrate:-auto}"
 		;;
 	esac
@@ -525,6 +522,8 @@ set_wifi() {
 	wlctl -i $device leddc 0 2>/dev/null
 	ubus call led.wifi set '{"state":"ok"}' &
 	wlctl -i $device up
+
+	[ -f /sbin/myfid ] && anyfi_enable $device
 }
 
 # kill related daemons
