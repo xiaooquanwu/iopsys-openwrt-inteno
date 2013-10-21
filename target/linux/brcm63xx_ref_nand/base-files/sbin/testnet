@@ -19,9 +19,9 @@ wantest() {
 
 	if [ "$?" -eq 0 ]; then
 		netcon=1
-		ubus call led.internet set '{"state":"ok"}'
+		ledctl internet on
 	else
-		ubus call led.internet set '{"state":"error"}'
+		ledctl internet fail
 	fi
 }
 
@@ -32,9 +32,9 @@ iptvtest() {
 
 	if [ "$?" -eq 0 ]; then
 		tvcon=1
-		ubus call led.tv set '{"state":"ok"}'
+		ledctl tv on
 	else
-		ubus call led.tv set '{"state":"off"}'
+		ledctl tv off
 	fi
 }
 

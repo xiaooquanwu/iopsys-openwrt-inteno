@@ -1,3 +1,25 @@
 #!/bin/sh
-ubus call led.$1 set '{"state":"'$2'"}'
+
+local name=$1
+local status=$2
+
+name=$(echo $name | tr '[A-Z]' '[a-z]')
+status=$(echo $status | tr '[A-Z]' '[a-z]')
+
+case $name in
+	broadband) db get hw.board.lednames | grep -iq broadband && name="dsl" || exit ;;
+	ethernet) name="lan" ;;
+	wireless) name="wifi" ;;
+	tel*) name="voice" ;;
+	video) name="tv" ;;
+	power) name="status" ;;
+esac
+
+case $status in
+	on) status="ok" ;;
+	fail) status="error" ;;
+	blink) status="notice" ;;
+esac
+
+ubus call led.$name set '{"state":"'$status'"}' &
 

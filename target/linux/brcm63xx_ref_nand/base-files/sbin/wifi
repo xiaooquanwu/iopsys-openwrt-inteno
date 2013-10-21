@@ -11,14 +11,6 @@ local _enWps=0
 local _c=0
 local vifs=""
 
-eco_led() {
-	if [ "$1" == "on" ]; then
-		ubus call led.eco set '{"state":"ok"}' &
-	elif [ "$1" == "off" ]; then
-		ubus call led.eco set '{"state":"off"}' &
-	fi
-}
-
 map_networks() {
 	local ifdev ifobj devtype
 	local devs=""
@@ -105,7 +97,7 @@ set_wifi_down() {
 			[ -n "$network" ] && ubus call network.interface."$network" remove_device "{ \"name\": \"$iface\" }" 2>/dev/null && uci_revert_state wireless "$iface"
 		}
 	done
-	ubus call led.wifi set '{"state":"off"}' &
+	ledctl wireless off
 }
 
 set_wifi_up() {
@@ -312,7 +304,7 @@ set_wifi_iface() {
 			nvram set lan_wps_reg="enabled"
 			nvram set lan_wps_oob="disabled"
 			nvram set wps_proc_status="0"
-			nvram set wps_button_gpio=`db get hw.board.wpsButtonGpio`
+			nvram set wps_button_gpio=`db get -q hw.board.wpsButtonGpio`
 			_enWps=$(($_enWps + 1))
 		fi
 
@@ -520,7 +512,7 @@ set_wifi() {
 
 	# bring up the wireless device
 	wlctl -i $device leddc 0 2>/dev/null
-	ubus call led.wifi set '{"state":"ok"}' &
+	ledctl wireless on
 	wlctl -i $device up
 
 	[ -f /sbin/myfid ] && anyfi_enable $device
@@ -550,9 +542,9 @@ case "$1" in
 		config_foreach set_wifi wifi-device
 
 		if [ $_enWifi -gt 0 ]; then
-			eco_led "off"
+			ledctl eco off
 		else
-			eco_led "on"
+			ledctl eco on
 			exit
 		fi
 

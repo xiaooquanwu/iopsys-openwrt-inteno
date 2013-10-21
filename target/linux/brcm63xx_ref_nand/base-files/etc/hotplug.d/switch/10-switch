@@ -1,5 +1,5 @@
 
-include /lib/network
+. /lib/network/config.sh
 
 addif() {
 	# check if wan had a event and start all related services
@@ -22,7 +22,7 @@ ethtest () {
 	local landev=$(db get hw.board.ethernetLanPorts)
 	local ledontest
 	for dev in $landev; do
-		ledontest=$(cat /sys/class/net/"$dev"/operstate)
+		ledontest=$(cat /sys/class/net/$dev/operstate)
 		if [ "$ledontest" == "up" ]; then
 			return 1
 		fi
@@ -38,40 +38,31 @@ dsltest() {
 	fi
 }
 
-broadbandled() {
-	local boardid="$(cat /etc/iop_iboardid)"
-	if [ "$boardid" == "D301" ]; then
-		if [ "$1" == "on" ]; then
-			ubus call led.dsl set '{"state":"ok"}' &
-		elif $(dsltest); then
-			ubus call led.dsl set '{"state":"off"}' &
-		fi
-	fi
-}
-
 case "$ACTION" in
 	add|register)
 		case "$PHYSDEVDRIVER" in
 			natsemi) sleep 1 ;;
 		esac
-		local interfname=$(interfacename $INTERFACE)
-		local speed=$(interfacespeed $INTERFACE)
-		ledon=$(cat /sys/class/net/"$INTERFACE"/carrier)$interfname$speed
-		operstate=$(cat /sys/class/net/"$INTERFACE"/operstate)
-		if [ "$operstate" == "up" ]; then
-			ubus call led.lan set '{"state":"ok"}' &
-		fi
 		addif
+		local interfname=$(interfacename $INTERFACE)
+		local operstate=$(cat /sys/class/net/$INTERFACE/operstate)
+		if [ "$operstate" == "up" ]; then
+			case "$interfname" in
+				LAN*) ledctl lan on ;;
+				WAN*) ledctl broadband on ;;
+			esac
+		fi		
 	;;
 	remove|unregister)
 		local interfname=$(interfacename $INTERFACE)
-		ledon=$(cat /sys/class/net/"$INTERFACE"/carrier)$interfname
-		operstate=$(cat /sys/class/net/"$INTERFACE"/operstate)
+		local operstate=$(cat /sys/class/net/$INTERFACE/operstate)
 		if [ "$operstate" == "down" ]; then
-			if $(ethtest); then
-				ubus call led.lan set '{"state":"off"}' &
-			fi
+			case "$interfname" in
+				LAN*) $(ethtest) && ledctl lan off ;;
+				WAN*) $(dsltest) && ledctl broadband off ;;
+			esac
 		fi
 		delif
 	;;
 esac
+
