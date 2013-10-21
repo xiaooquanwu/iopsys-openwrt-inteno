@@ -5,6 +5,8 @@
 #include <libubox/utils.h>
 
 #include <libubus.h>
+#include "ami_connection.h"
+#include "ucix.h"
 
 static bool ubus_connected = false;
 static struct ubus_context *ctx = NULL;
@@ -24,6 +26,10 @@ char username[128] = "local"; //AMI username
 char password[128] = "local"; //AMI password
 
 char *buf[10*BUFLEN];     /* declare global to avoid stack * 10 to avoid overrunning it just in case */
+
+static int voice_led_count = 1;
+static int fxs_line_count = 0;
+static int dect_line_count = 0;
 
 static int ubus_send_brcm_event(const PORT_MAP *port, const char *key, const char *value);
 static int ubus_send_sip_event(const SIP_PEER *peer, const char *key, const int value);
@@ -94,6 +100,28 @@ char *trim_whitespace(char *str)
 	}
 	*(end+1) = 0;
 	return str;
+}
+
+int uci_query_voice_led_count()
+{
+	/* Initialize */
+	struct uci_context *uci_ctx = ucix_init_path("/lib/db/config/", "hw");
+	if(!uci_ctx) {
+		printf("Failed to get uci context for path /lib/db/config\n");
+		return 1; //Assume a single voice led
+	}
+
+	const char* led_count = ucix_get_option(uci_ctx, "hw", "board", "VoiceLeds");
+	ucix_cleanup(uci_ctx);
+
+	if (led_count == NULL) {
+		printf("Failed to get VoiceLeds count\n");
+		return 1; //Assume a single voice led
+	}
+
+	int rv = strtol(led_count, NULL, 10);
+	printf("Found %i voice leds\n", rv);
+	return rv;
 }
 
 int uci_show(char *parameter, char *buf, size_t buflen, int mandatory)
@@ -525,147 +553,6 @@ int handle_iptables(SIP_PEER *peer, int doResolv)
 	return 0;
 }
 
-/*
- * message_frame:  String defining message border
- * buffer:	   Buffer to parse
- * framed_message: Pointer to framed message (mallocd)
- * buffer_read:    Bytes read from buffer in previous run
- */
-int parse_buffer(char *message_frame, char *buffer, char **framed_message, int *buffer_read)
-{
-	//Skip bytes already read
-	buffer = &buffer[*buffer_read];
-
-	if (strlen(buffer) == 0) {
-		return -1;
-	}
-
-	//Locate message frame
-	char *message_end = strstr(buffer, message_frame);
-	if (!message_end) {
-		//Could not find message frame, use left over
-		//data in next call to parse_buffer
-		return -1;
-	}
-
-	//Found a message boundry
-	int message_length = message_end - buffer;
-	*framed_message = calloc(message_length +1, sizeof(char));
-	//*framed_message = (char *) malloc(message_length + 1);
-	strncpy(*framed_message, buffer, message_length);
-	(*framed_message)[message_length] = '\0';
-	printf("Framed message:\n[%s]\n\n", *framed_message);
-
-	//Update byte counter
-	*buffer_read += message_length + strlen(message_frame);
-
-	//Find out what type of message this is
-	int message_type;
-	if (!memcmp(*framed_message, "Asterisk Call Manager", 21)) {
-		//printf("Login prompt detected\n");
-		message_type = LOGIN;
-	} else if(!memcmp(*framed_message, "Event", 5)) {
-		//printf("Event detected: ");
-		message_type = EVENT;
-	} else if(!memcmp(*framed_message, "Response", 8)) {
-		//printf("Response detected: ");
-		message_type = RESPONSE; 
-	} else {
-		//printf("Unknown event: ");
-		message_type = UNKNOWN_STATE;
-	}
-
-	return message_type;
-}
-
-int send_login(ami_connection* con) {
-	char loginstring[256];
-	printf("Sending login\n");
-	sprintf(loginstring,"Action: Login\r\nUsername: %s\r\nSecret: %s\r\n\r\n", username, password);
-	write(con->sd, loginstring, strlen(loginstring));
-	con->message_frame = MESSAGE_FRAME; //Login sent, now there's always <CR><LF><CR><LR> after a message
-	con->logged_in = true;
-	return 0;
-}
-
-int send_sip_reload(ami_connection* con) {
-	char reloadstring[256];
-	printf("Sending sip reload\n");
-	sprintf(reloadstring,"Action: Command\r\nCommand: sip reload\r\n\r\n");
-	write(con->sd, reloadstring, strlen(reloadstring));
-	con->pending_command = SIPRELOAD;
-	return 0;
-}
-
-int send_module_show(ami_connection* con) {
-	char moduleshowstring[256];
-	printf("Sending module show\n");
-	sprintf(moduleshowstring, "Action: Command\r\nCommand: module show like chan_brcm\r\n\r\n");
-	write(con->sd, moduleshowstring, strlen(moduleshowstring));
-	con->pending_command = MODULESHOW;
-	return 0;
-}
-
-int send_brcm_dialtone_settings(ami_connection* con, const BRCM_PORT port, const char *dialtone_state) {
-	char dialtonestring[256];
-	printf("Sending brcm dialtone settings for port %d\n", port);
-	sprintf(dialtonestring, "Action: BRCMDialtoneSet\r\nLineId: %d\r\nDialtone: %s\r\n\r\n", port, dialtone_state);
-	write(con->sd, dialtonestring, strlen(dialtonestring));
-	con->pending_command = BRCMDIALTONESET;
-	return 0;
-}
-
-int get_event_type(char* buf, int* idx) {
-	int i = 0;
-
-	if (!memcmp(buf, "Registry", 8)) {
-		i +=8;
-		while((buf[i] == '\n') || (buf[i] == '\r'))
-			i++;
-
-		*idx = i;
-		return REGISTRY;
-	} else if (!memcmp(buf, "BRCM", 4)) {
-		i +=8;
-		while((buf[i] == '\n') || (buf[i] == '\r'))
-			i++;
-
-		*idx = i;
-		return BRCM;
-	} else if (!memcmp(buf, "ChannelReload", 13)) {
-		i +=8;
-		while((buf[i] == '\n') || (buf[i] == '\r'))
-			i++;
-
-		*idx = i;
-		return CHANNELRELOAD;
-	} else if (!memcmp(buf, "FullyBooted", 11)) {
-		i +=11;
-		while((buf[i] == '\n') || (buf[i] == '\r'))
-			i++;
-
-		*idx = i;
-		return FULLYBOOTED;
-	} else if (!memcmp(buf, "VarSet", 6)) {
-		i +=6;
-		while((buf[i] == '\n') || (buf[i] == '\r'))
-			i++;
-
-		*idx = i;
-		return VARSET;
-
-	} // else if() handle other events
-
-	while(buf[i] || i>BUFLEN) {
-		if (buf[i] == '\n') {
-			break;
-		}
-		i++;
-	}
-	*idx = i;
-	return UNKNOWN_EVENT;
-}
-
 //peer name is expected to be on format:
 //peer-<port>-<other parts of name>
 SIP_ACCOUNT_ID get_sip_account_id(char* buf) {
@@ -923,79 +810,128 @@ int handle_brcm_event_type(char* buf, int* idx) {
 	return 0;
 }
 
-int handle_channel_reload_sip()
+/*
+ * Callback to handle response to brcm ports show
+ */
+void on_brcm_ports_show_response(ami_connection* con, char* buf)
 {
-	init_sip_peers();
-	return 0;
-}
-
-int handle_channel_reload(char* buf, int* idx) {
-	int i = 0;
-
-	while (i<BUFLEN) {
-		if (!memcmp(&buf[i], "ChannelType: ", 13)) {
-			i+=13;
-			if (!memcmp(&buf[i], "SIP", 3)) {
-				handle_channel_reload_sip();
-			}
-			return 0;
-		} else {
-			//find end of line \r\n
-			while(memcmp(&buf[i], "\r\n",2) && i<BUFLEN)
-				i++;
-			i+=2;
-		}
+	char* fxs_needle = strstr(buf, "FXS");
+	if (fxs_needle == NULL) {
+		printf("Could not find number of FXS ports\n");
+		fxs_line_count = 2;
 	}
-	return 0;
+	else {
+		fxs_line_count = strtol(fxs_needle + 4, NULL, 10);
+		printf("Found %d FXS ports\n", fxs_line_count);
+	}
+
+	char* dect_needle = strstr(buf, "DECT");
+	if (dect_needle == NULL) {
+		printf("Could not find number of DECT ports\n");
+		dect_line_count = 0;
+	}
+	else {
+		dect_line_count = strtol(dect_needle + 5, NULL, 10);
+		printf("Found %d DECT ports\n", dect_line_count);
+	}
 }
 
+/*
+ * Callback to handle response to brcm module show action
+ */
+void on_brcm_module_show_response(ami_connection* con, char* buf)
+{
+	if (strstr(buf, "1 modules loaded")) {
+		brcm_channel_driver_loaded = 1;
+		ami_send_brcm_ports_show(con, on_brcm_ports_show_response);
+	}
+	printf("BRCM channel driver %sloaded\n", brcm_channel_driver_loaded ? "" : "not ");
+	//TODO: what do we do now? load it? disconnect?
+}
 
-int handle_event(ami_connection* con, char* buf) {
-	int type;
-	int idx = 0;
+/*
+ * Callback to handle SIP reload response
+ */
+void on_sip_reload(ami_connection* con, char* buf)
+{
+	ami_send_brcm_module_show(con, on_brcm_module_show_response);
+}
 
-	type = get_event_type(buf, &idx);
+/*
+ * Callback to handle login result
+ */
+void on_login_response(ami_connection* con, char* buf)
+{
+	if (strstr(buf, "Success")) {
+		printf("We are logged in\n");
+	}
+	else {
+		//TODO: we failed to login...what do we do?
+		printf("We failed to log in\n");
+	}
+	ami_send_sip_reload(con, on_sip_reload);
+}
 
-	switch(type) {
+/*
+ * Callback for ami events
+ */
+void ami_handle_event(ami_connection* con, ami_event event)
+{
+	switch (event.type) {
+		case LOGIN:
+			printf("AMI Connection: Login\n");
+			ami_send_login(con, username, password, on_login_response);
+			break;
 		case REGISTRY:
-			printf("REGISTRY\n");
-			handle_registry_event_type(&buf[idx], &idx);
+			switch (event.registry_event->status) {
+				case REGISTRY_REGISTERED_EVENT:
+					printf("Got REGISTRY_REGISTERED_EVENT for %s\n", event.registry_event->account_name);
+					break;
+				case REGISTRY_UNREGISTERED_EVENT:
+					printf("Got REGISTRY_UNREGISTERED_EVENT for %s\n", event.registry_event->account_name);
+					break;
+				case REGISTRY_REQUEST_SENT_EVENT:
+					printf("Got REGISTRY_REQUEST_SENT_EVENT for %s\n", event.registry_event->account_name);
+					break;
+				default:
+					break;
+			}
 			break;
 		case BRCM:
-			printf("BRCM\n");
-			handle_brcm_event_type(&buf[idx], &idx);
+			switch (event.brcm_event->type) {
+				case BRCM_STATUS_EVENT:
+					printf("Got BRCM_STATUS_EVENT for %d, offhook = %d\n", event.brcm_event->status.line_id, event.brcm_event->status.off_hook);
+					break;
+				case BRCM_STATE_EVENT:
+					printf("Got BRCM_STATE_EVENT for %d.%d: %s\n", event.brcm_event->status.line_id, event.brcm_event->state.subchannel_id, event.brcm_event->state.state);
+					break;
+				case BRCM_MODULE_EVENT:
+					printf("Got BRCM_MODULE_EVENT, loaded = %d\n", event.brcm_event->module_loaded);
+					brcm_channel_driver_loaded = event.brcm_event->module_loaded;
+					break;
+				default:
+					break;
+			}
 			break;
 		case CHANNELRELOAD:
-			printf("CHANNELRELOAD\n");
-			handle_channel_reload(&buf[idx], &idx);
-			send_module_show(con);
+			printf("Got CHANNELRELOAD event\n");
+			if (event.channel_reload_event->channel_type == CHANNELRELOAD_SIP_EVENT) {
+				init_sip_peers(); //SIP has reloaded, initialize sip peer structs
+			}
 			break;
 		case FULLYBOOTED:
-			printf("FULLYBOOTED\n");
+			printf("Got FULLYBOOTED event\n");
 			asterisk_fully_booted = 1;
 			break;
 		case VARSET:
-			handle_varset(&buf[idx], &idx);
+			printf("Got VARSET event\n");
 			break;
 		case UNKNOWN_EVENT:
+			printf("Got UNKNOWN_EVENT event\n");
+			break;
 		default:
-			return 1;
+			break;
 	}
-	
-	return 0;
-}
-
-int handle_response(ami_connection* con, char* buf) {
-	if (con->pending_command == MODULESHOW) {
-		if (strstr(buf, "1 modules loaded")) {
-			brcm_channel_driver_loaded = 1;
-		}
-		printf("BRCM channel driver %sloaded\n", brcm_channel_driver_loaded ? "" : "not ");
-	}
-	else {
-		con->pending_command = COMMAND_NONE;
-	}
-	return 0;
 }
 
 void log_sip_peers()
@@ -1087,7 +1023,7 @@ void manage_dialtones(ami_connection* con)
 			printf("Apply dialtone %s for port %d\n", ports->new_dialtone_state, port);
 			strcpy(ports->dialtone_state, ports->new_dialtone_state);
 			strcpy(ports->new_dialtone_state, "");
-			send_brcm_dialtone_settings(con, port, ports->dialtone_state);
+			//send_brcm_dialtone_settings(con, port, ports->dialtone_state); //TDOO
 		}
 
 		/* Reset states */	
@@ -1192,7 +1128,32 @@ void manage_led(LED_NAME led, LED_STATE state) {
  * New led states/new business logic
  * Retrieve brcm ports using AMI request: "Action: BRCMPortsShow"
  * There is a problem after reload where the led will not stop blinking even though account is registered
- * Query the /lib/db/board file for number of voice leds
+ * Query the /lib/db/board file for number of voice leds%d\r\nDECT %d
+ *
+ * TODO: con->pending_command, we need to check that we dont send multiple commands without waiting for answer
+ * We should have a better way of sending messages at startup of ami, eg:
+ * 1. Receive LOGIN event
+ * 2. Send LOGIN details
+ * 3. Chill, we won't get a reply from LOGIN but must wait for processing
+ * 4. Send SIP reload
+ * 5. Get SIP reload response
+ * 6. Send brcm ports show
+ * 7. Get reply, parse number of ports
+ * 8. Get to work!
+ *
+ * If there is 1 LED:
+ * 		Use existing logic - display collected status of all ports
+ * If there are 2 LEDS:
+ * 		If there are DECTS: Display FXS on LED1, DECT on LED2
+ * 		No DECTS: Display FXS1 on LED1, FXS2 on LED2
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
  */
 void manage_leds() {
 
@@ -1264,9 +1225,9 @@ void init_sip_peers() {
 	}
 }
 
-/*
+/******************************
  * UBUS functions and structs
- */
+ ******************************/
 
 static void system_fd_set_cloexec(int fd)
 {
@@ -1491,120 +1452,6 @@ static void ubus_connection_lost_cb(struct ubus_context *ctx)
 	ubus_connected = false;
 }
 
-/* AMI Connection management */
-
-static ami_connection* ami_init()
-{
-	ami_connection* con;
-	con = calloc(1, sizeof(*con));
-
-	con->connected = false;
-	con->logged_in = false;
-	con->sd = -1;
-	con->message_frame = NULL;
-	con->state = 0;
-	con->pending_command = COMMAND_NONE;
-	memset(con->left_over, 0, BUFLEN * 2 + 1);
-	return con;
-}
-
-static void ami_disconnect(ami_connection* con)
-{
-	close(con->sd);
-	con->sd = -1;
-	con->connected = false;
-	con->logged_in = false;
-}
-
-static void ami_free(ami_connection* con) {
-	ami_disconnect(con);
-	free(con);
-}
-
-static void ami_connect(ami_connection* con)
-{
-	ami_disconnect(con);
-	con->message_frame = MESSAGE_FRAME_LOGIN;
-	asterisk_fully_booted = 0;
-	brcm_channel_driver_loaded = 0;
-
-	struct addrinfo *host;
-	int err = getaddrinfo(hostname, portno, NULL, &host);
-	if (err) {
-		fprintf(stderr, "Unable to connect to AMI: %s\n", gai_strerror(err));
-		con->connected = false;
-		return;
-	}
-	con->sd = socket(AF_INET, SOCK_STREAM, 0);
-	int res = connect(con->sd, host->ai_addr, host->ai_addrlen);
-	if (res == 0) {
-		printf("Connected to AMI\n");
-		con->connected = true;
-	}
-	else {
-		fprintf(stderr, "Unable to connect to AMI: %s\n", strerror(errno));
-		con->connected = false;
-	}
-	freeaddrinfo(host);
-}
-
-static void ami_handle_data(ami_connection* con)
-{
-	int idx = 0; //buffer position
-	char* message = NULL;
-	char buf[BUFLEN * 2 + 1];
-	int handled = 0;
-
-	//Read data from ami
-	memset(buf, 0, BUFLEN * 2 + 1);
-	if (read(con->sd, buf, BUFLEN-1) <= 0) {
-		con->connected = false;
-		return; //we have been disconnected
-	}
-
-	//Concatenate left over data with newly read
-	if (strlen(con->left_over)) {
-		char tmp[BUFLEN * 2 + 1];
-		strcpy(tmp, con->left_over);
-		strcat(tmp, buf);
-		strcpy(buf, tmp);
-		con->left_over[0] = '\0';
-	}
-
-	while ((con->state = parse_buffer(con->message_frame, buf, &message, &idx)) != -1) {
-		switch (con->state) {
-			case LOGIN:
-				send_login(con);
-				sleep(0.1); //give server time to reply
-				send_sip_reload(con);
-				handled = 1;
-				break;
-			case EVENT:
-				if (!handle_event(con, message+7)) { //string is "Event: ...."
-					handled = 1;
-				}
-				break;
-			case RESPONSE:
-				handle_response(con, message);
-				handled = 1;
-				break;
-			default:
-				break;
-		}
-		free(message);
-	}
-
-	//Unable to frame data in buffer, store remaining buffer until next packet is read
-	if (con->state == -1 && idx < strlen(buf)) {
-		strcpy(con->left_over, &buf[idx]);
-	}
-
-	if (handled) {
-		manage_dialtones(con);
-		manage_leds();
-	}
-}
-
 int main(int argc, char **argv)
 {
 	fd_set fset;				/* FD set */
@@ -1613,9 +1460,12 @@ int main(int argc, char **argv)
 	init_sip_peers();
 	log_sip_peers();
 
+	/* Count voice leds */
+	voice_led_count = uci_query_voice_led_count();
+
 	/* Initialize ami connection */
-	ami_connection* con = ami_init();
-	ami_connect(con);
+	ami_connection* con = ami_init(ami_handle_event);
+	ami_connect(con, hostname, portno);
 
 	/* Initialize ubus connection and register asterisk object */
 	ctx = ubus_connect(NULL);
@@ -1696,7 +1546,7 @@ int main(int argc, char **argv)
 			}
 		}
 		else {
-			ami_connect(con);
+			ami_connect(con, hostname, portno);
 		}
 	}
 

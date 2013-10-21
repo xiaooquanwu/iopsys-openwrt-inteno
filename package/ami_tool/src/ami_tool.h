@@ -8,7 +8,6 @@
 #include <time.h>
 #include <arpa/inet.h>
 
-
 //For dynamic firewall support
 #define IPTABLES_CHAIN "zone_wan"
 #define IPTABLES_BIN "iptables"
@@ -35,32 +34,6 @@ typedef struct IP
 	int	family;
 	char	addr[NI_MAXHOST];
 } IP;
-
-#define MESSAGE_FRAME "\r\n\r\n"
-#define MESSAGE_FRAME_LOGIN "\r\n"
-
-enum states {
-	LOGIN,
-	EVENT,
-	RESPONSE,
-	UNKNOWN_STATE,
-};
-
-enum event_type {
-	REGISTRY,
-	BRCM,
-	CHANNELRELOAD,
-	FULLYBOOTED,
-	VARSET,
-	UNKNOWN_EVENT,
-};
-
-typedef enum COMMAND {
-	SIPRELOAD,
-	BRCMDIALTONESET,
-	MODULESHOW,
-	COMMAND_NONE,
-} COMMAND;
 
 typedef enum LED_STATE
 {
@@ -239,20 +212,6 @@ typedef struct SIP_PEER
 	int		ip_list_length;
 	struct ubus_object *ubus_object;
 } SIP_PEER;
-
-/*
- * Holds data related to an AMI connection
- */
-typedef struct ami_connection {
-	int connected;
-	int logged_in;
-	int sd;
-	char* message_frame;
-	int state;
-	char left_over[BUFLEN * 2 + 1];
-	COMMAND pending_command;
-
-} ami_connection;
 
 static int uci_show(char *parameter, char *buf, size_t buflen, int mandatory);
 static SIP_ACCOUNT_ID get_sip_account_id(char* buf);

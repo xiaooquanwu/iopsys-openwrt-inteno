@@ -8,10 +8,10 @@ LDFLAGS		= ${CDEBUG}
 LIBDIR		= 
 LOCLIBS		= 
 LIBS		= ${LOCLIBS} ${SYSLIBS}
-OBJS		= ami_tool.o
-SRCS		= ami_tool.c
+OBJS		= ami_tool.o ami_connection.o ucix.o
+SRCS		= ami_tool.c ami_connection.c ucix.c
 LIBSRCS		= 
-ISRCS		= ami_tool.h
+ISRCS		= ami_tool.h ami_connection.h ucix.h
 ALLSRCS		= ${SRCS} ${ISRCS} ${LIBSRCS}
 
 all: ami_tool
