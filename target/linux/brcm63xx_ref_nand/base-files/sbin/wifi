@@ -43,6 +43,24 @@ map_networks() {
 	done
 }
 
+netno() {
+	local network="$1"
+	local ifobj
+	local _acnt=0
+	for ifobj in `ubus list network.interface.\*`; do
+		interface="${ifobj##network.interface.}"
+		(
+			[ "$_acnt" == "0" ] && _acnt=""
+			[ "$interface" == "loopback" ] && continue
+			if [ "$interface" == "$network" ]; then
+				echo "$_acnt"
+				break
+			fi
+		)
+		_acnt=$((_acnt+1))
+	done
+}
+
 find_network() {
 	local device="$1"
 	local ifdev ifl3dev ifobj devtype
@@ -301,8 +319,9 @@ set_wifi_iface() {
 			nvram set wps_mfstring="Broadcom"
 			nvram set wps_device_name="$(uci -q get wireless.@wifi-iface[0].ssid)"
 			nvram set wps_version2="enabled"
-			nvram set lan_wps_reg="enabled"
-			nvram set lan_wps_oob="disabled"
+			lno=$(netno $network)
+			nvram set lan"$lno"_wps_reg="enabled"
+			nvram set lan"$lno"_wps_oob="disabled"
 			nvram set wps_proc_status="0"
 			nvram set wps_button_gpio=`db get -q hw.board.wpsButtonGpio`
 			_enWps=$(($_enWps + 1))
