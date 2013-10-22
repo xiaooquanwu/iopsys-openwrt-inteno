@@ -49,5 +49,7 @@ do
 	fi
 done
 
-[ $netcon -eq 1 ] && pidof wanup >/dev/null || /sbin/wanup &
+if [ $netcon -eq 1 ] && ! pidof wanup >/dev/null; then
+	/sbin/wanup &
+fi
 
