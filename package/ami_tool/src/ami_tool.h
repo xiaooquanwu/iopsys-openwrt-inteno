@@ -213,6 +213,25 @@ typedef struct SIP_PEER
 	struct ubus_object *ubus_object;
 } SIP_PEER;
 
-static int uci_show(char *parameter, char *buf, size_t buflen, int mandatory);
-static SIP_ACCOUNT_ID get_sip_account_id(char* buf);
+
+
+/*
+ * Struct that stores configuration for a LED
+ */
+typedef struct {
+	LED_STATE state;
+	LED_NAME name;
+	int num_ports;
+	PORT_MAP** ports; //Array of pointers to brcm ports that govern this leds state
+	int num_peers;
+	SIP_PEER** peers;//Array of pointers to sip peers that govern this leds state
+} Led;
+
+
 void init_sip_peers();
+void manage_leds();
+void manage_led(LED_NAME led, LED_STATE state);
+LED_STATE get_led_state(Led* led);
+void configure_leds();
+void free_led_config();
+

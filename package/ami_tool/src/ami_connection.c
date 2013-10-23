@@ -8,6 +8,13 @@
 #include <unistd.h>
 #include "ami_connection.h"
 
+typedef enum ami_message {
+	UNKNOWN_MESSAGE,
+	LOGIN_MESSAGE,
+	EVENT_MESSAGE,
+	RESPONSE_MESSAGE
+} ami_message;
+
 /*
  * message_frame:  String defining message border
  * buffer:	   Buffer to parse
@@ -37,7 +44,7 @@ static ami_message parse_buffer(char *message_frame, char *buffer, char **framed
 	//*framed_message = (char *) malloc(message_length + 1);
 	strncpy(*framed_message, buffer, message_length);
 	(*framed_message)[message_length] = '\0';
-	printf("Framed message:\n[%s]\n\n", *framed_message);
+	//printf("Framed message:\n[%s]\n\n", *framed_message);
 
 	//Update byte counter
 	*buffer_read += message_length + strlen(message_frame);
@@ -150,9 +157,10 @@ ami_event parse_registry_event(char* buf)
 			while (!isspace(buf[i]) && i < AMI_BUFLEN) { //Find first space, thats the end of name
 				i++;
 			}
-			event.registry_event->account_name = malloc(sizeof(char) * (1+i-j));
-			strncpy(event.registry_event->account_name, buf + j, i-j);
-			event.registry_event->account_name[i-j] = '\0';
+
+			char* account_name = calloc(1+i-j, sizeof(char));
+			strncpy(account_name, &buf[j], i-j);
+			event.registry_event->account_name = account_name;
 		}
 		else if (!memcmp(&buf[i], "Status: ", 8)) {
 			i+=8;
@@ -214,7 +222,7 @@ ami_event parse_brcm_event(char* buf)
 			value = strtok(parse_buffer, delimiter);
 			if (value) {
 				value = trim_whitespace(value);
-				event.brcm_event->state.state = malloc(sizeof(char) * strlen(value));
+				event.brcm_event->state.state = calloc(strlen(value) + 1, sizeof(char));
 				strcpy(event.brcm_event->state.state, value);
 			}
 			else {
@@ -275,27 +283,24 @@ ami_event parse_varset_event(char* buf)
 			int j = i;
 			while(memcmp(&buf[i], "\r\n",2) && i < AMI_BUFLEN)
 				i++;
-			event.varset_event->channel = malloc(1+i-j);
+			event.varset_event->channel = calloc(1+i-j, sizeof(char));
 			strncpy(event.varset_event->channel, buf + j, i-j);
-			event.varset_event->channel[i-j] = '\0';
 		}
 		else if (!memcmp(&buf[i], "Variable: ", 10)) {
 			i+=10;
 			int j = i;
 			while(memcmp(&buf[i], "\r\n",2) && i < AMI_BUFLEN)
 				i++;
-			event.varset_event->variable = malloc(1+i-j);
+			event.varset_event->variable = calloc(1+i-j, sizeof(char));
 			strncpy(event.varset_event->variable, buf + j, i-j);
-			event.varset_event->variable[i-j] = '\0';
 		}
 		else if (!memcmp(&buf[i], "Value: ", 7)) {
 			i+=7;
 			int j = i;
 			while(memcmp(&buf[i], "\r\n",2) && i < AMI_BUFLEN)
 				i++;
-			event.varset_event->value = malloc(1+i-j);
+			event.varset_event->value = calloc(1+i-j, sizeof(char));
 			strncpy(event.varset_event->value, buf + j, i-j);
-			event.varset_event->value[i-j] = '\0';
 		} else {
 			//find end of line \r\n
 			while(memcmp(&buf[i], "\r\n",2) && i < AMI_BUFLEN)
@@ -343,7 +348,9 @@ void ami_free_event(ami_event event) {
 			free(event.registry_event);
 			break;
 		case BRCM:
-			free(event.brcm_event->state.state);
+			if (event.brcm_event->type == BRCM_STATE_EVENT) {
+				free(event.brcm_event->state.state);
+			}
 			free(event.brcm_event);
 			break;
 		case CHANNELRELOAD:
@@ -357,6 +364,7 @@ void ami_free_event(ami_event event) {
 			break;
 		case FULLYBOOTED:
 		case LOGIN:
+		case DISCONNECT:
 		case UNKNOWN_EVENT:
 		default:
 			/* no event data to free */
@@ -472,6 +480,11 @@ void ami_disconnect(ami_connection* con)
 	close(con->sd);
 	con->sd = -1;
 	con->connected = 0;
+
+	//Let client know about disconnect
+	ami_event event;
+	event.type = DISCONNECT;
+	con->event_callback(con, event);
 }
 
 void ami_free(ami_connection* con) {
@@ -484,7 +497,7 @@ void ami_free(ami_connection* con) {
  */
 void ami_handle_data(ami_connection* con)
 {
-	printf("Handling data on AMI connection\n");
+	//printf("Handling data on AMI connection\n");
 	int idx = 0; //buffer position
 	char* message = NULL;
 	char buf[AMI_BUFLEN * 2 + 1];
@@ -492,8 +505,8 @@ void ami_handle_data(ami_connection* con)
 	//Read data from ami
 	memset(buf, 0, AMI_BUFLEN * 2 + 1);
 	if (read(con->sd, buf, AMI_BUFLEN-1) <= 0) {
-		con->connected = 0;
-		return; //we have been disconnected
+		ami_disconnect(con); //we have been disconnected
+		return;
 	}
 
 	//Concatenate left over data with newly read
@@ -535,13 +548,6 @@ void ami_handle_data(ami_connection* con)
 	if (idx < strlen(buf)) {
 		strcpy(con->left_over, &buf[idx]);
 	}
-
-	/* TODO handle in client code
-	if (handled) {
-		manage_dialtones(con);
-		manage_leds();
-	}
-	*/
 }
 
 /*

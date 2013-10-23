@@ -3,24 +3,15 @@
  *
  * Manage connections to AMI.
  *
- * In order to become "ready" we must:
- * - send login, get login successful response
- * - send sip reload and receive CHANNELRELOAD event for SIP (event)
- * - send show brcm module command and receive MODULESHOW (response)
- * - send show brcm ports command and receive BRCMPORTSHOW (response)
+ * Callbacks in client code will be called when events or responses have been received
+ * from AMI. There is no event loop built in, client should call ami_handle_data whenever
+ * new data is available on the connections filedescriptor.
  */
 
 #define MESSAGE_FRAME "\r\n\r\n"
 #define MESSAGE_FRAME_LOGIN "\r\n"
 
 #define AMI_BUFLEN 512
-
-typedef enum ami_message {
-	UNKNOWN_MESSAGE,
-	LOGIN_MESSAGE,
-	EVENT_MESSAGE,
-	RESPONSE_MESSAGE
-} ami_message;
 
 typedef struct {
 	enum {
@@ -71,6 +62,7 @@ typedef enum ami_event_type {
 	CHANNELRELOAD,
 	FULLYBOOTED,
 	VARSET,
+	DISCONNECT,
 	UNKNOWN_EVENT,
 } ami_event_type;
 
