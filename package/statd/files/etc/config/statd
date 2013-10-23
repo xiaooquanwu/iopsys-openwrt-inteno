@@ -1,0 +1,7 @@
+config rule
+	option filter		'asterisk.sip.*'
+	option destination	'syslog'
+
+config rule
+	option filter		'asterisk.brcm.*'
+	option destination	'syslog'
