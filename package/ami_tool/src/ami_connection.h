@@ -90,7 +90,7 @@ struct ami_connection {
 };
 
 ami_connection* ami_init(ami_event_cb on_event);
-void ami_connect(ami_connection* con, const char* hostname, const char* portno);
+int ami_connect(ami_connection* con, const char* hostname, const char* portno);
 void ami_disconnect(ami_connection* con);
 void ami_free(ami_connection* con);
 

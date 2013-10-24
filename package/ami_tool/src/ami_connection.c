@@ -449,10 +449,10 @@ ami_connection* ami_init(ami_event_cb on_event) {
 	return con;
 }
 
-void ami_connect(ami_connection* con, const char* hostname, const char* portno)
+int ami_connect(ami_connection* con, const char* hostname, const char* portno)
 {
 	ami_disconnect(con);
-
+	int result = 0;
 	con->message_frame = MESSAGE_FRAME_LOGIN;
 
 	struct addrinfo *host;
@@ -460,31 +460,36 @@ void ami_connect(ami_connection* con, const char* hostname, const char* portno)
 	if (err) {
 		fprintf(stderr, "Unable to connect to AMI: %s\n", gai_strerror(err));
 		con->connected = 0;
-		return;
+		return result;
 	}
 	con->sd = socket(AF_INET, SOCK_STREAM, 0);
 	int res = connect(con->sd, host->ai_addr, host->ai_addrlen);
 	if (res == 0) {
 		printf("Connected to AMI\n");
 		con->connected = 1;
+		result = 1;
 	}
 	else {
 		fprintf(stderr, "Unable to connect to AMI: %s\n", strerror(errno));
 		con->connected = 0;
+		result = 0;
 	}
 	freeaddrinfo(host);
+	return result;
 }
 
 void ami_disconnect(ami_connection* con)
 {
-	close(con->sd);
-	con->sd = -1;
-	con->connected = 0;
+	if (con->connected) {
+		close(con->sd);
+		con->sd = -1;
+		con->connected = 0;
 
-	//Let client know about disconnect
-	ami_event event;
-	event.type = DISCONNECT;
-	con->event_callback(con, event);
+		//Let client know about disconnect
+		ami_event event;
+		event.type = DISCONNECT;
+		con->event_callback(con, event);
+	}
 }
 
 void ami_free(ami_connection* con) {

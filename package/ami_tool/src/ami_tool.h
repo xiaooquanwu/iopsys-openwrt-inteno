@@ -35,6 +35,14 @@ typedef struct IP
 	char	addr[NI_MAXHOST];
 } IP;
 
+typedef enum AMI_STATE {
+	DISCONNECTED,	//Not connected to AMI
+	CONNECTED,		//Connected to AMI
+	LOGGED_IN,		//Logged in to AMI
+	READY			//Ready to handle all events
+} AMI_STATE;
+AMI_STATE state;
+
 typedef enum LED_STATE
 {
 	LS_OK,

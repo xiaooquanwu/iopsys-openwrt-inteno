@@ -1,6 +1,19 @@
 /*
  * ami_tool.c
  *
+ * ** ami connection states **
+ * DISCONNECTED		--[connect]-->				CONNECTED
+ *
+ * CONNECTED		--[login failed]-->			DISCONNECTED
+ * CONNECTED		--[event DISCONNECTED]-->	DISCONNECTED
+ * CONNECTED		--[event FULLYBOOTED]-->	LOGGED_IN
+ *
+ * LOGGED_IN		--[BRCMPortsShow resp]-->	READY
+ * LOGGED_IN		--[event DISCONNECTED]-->	DISCONNECTED
+ *
+ * READY			--[event DISCONNECTED]-->	DISCONNECTED
+ * READY			--[event BRCM MODULE UL]-->	LOGGED_IN
+ *
  * - Workaround for the fact that ports in software on DG201 are enumerated opposite to LED and physical ports has been removed,
  *   since we don't know what hardware we are running on.
  */
@@ -16,6 +29,7 @@
 #include "ucix.h"
 
 //TODO: all uci things here
+void ucix_reload();
 static struct uci_context *uci_ctx = NULL;
 
 //TODO: all ubus things here
@@ -40,14 +54,11 @@ static int ubus_send_brcm_event(const PORT_MAP *port, const char *key, const cha
 static int ubus_send_sip_event(const SIP_PEER *peer, const char *key, const int value);
 
 /* Asterisk states */
-int brcm_channel_driver_loaded	= 0; //Set to 1 when we know that the brcm driver is loaded
-int asterisk_fully_booted     = 0; //Set to 1 on receiving the FULLYBOOTED event
-int brcm_ports_known = 0; //Set to 1 when we have checked the port configuration
+void set_state(AMI_STATE state, ami_connection* con);
 static int voice_led_count = 1; //Number of voice leds on board
 static int fxs_line_count = 0; //Number of FXS ports on board
 static int dect_line_count = 0; //Number of DECT ports on board
 static Led* led_config = NULL; //Array of led configs (one for each led)
-
 
 /* Forward declaration of AMI functions and callbacks */
 void ami_handle_event(ami_connection* con, ami_event event);
@@ -113,26 +124,31 @@ int uci_get_voice_led_count()
  */
 const char* uci_get_called_lines(const SIP_PEER* peer)
 {
+	ucix_reload();
 	return ucix_get_option(uci_ctx, UCI_VOICE_PACKAGE, peer->account.name, "call_lines");
 }
 
 int uci_get_rtp_port_start()
 {
+	ucix_reload();
 	return ucix_get_option_int(uci_ctx, UCI_VOICE_PACKAGE, "SIP", "rtpstart", RTP_RANGE_START_DEFAULT);
 }
 
 int uci_get_rtp_port_end()
 {
+	ucix_reload();
 	return ucix_get_option_int(uci_ctx, UCI_VOICE_PACKAGE, "SIP", "rtpend", RTP_RANGE_END_DEFAULT);
 }
 
 const char* uci_get_sip_proxy()
 {
+	ucix_reload();
 	return ucix_get_option(uci_ctx, UCI_VOICE_PACKAGE, "SIP", "sip_proxy");
 }
 
 const char* uci_get_peer_host(SIP_PEER *peer)
 {
+	ucix_reload();
 	int enabled = ucix_get_option_int(uci_ctx, UCI_VOICE_PACKAGE, peer->account.name, "enabled", 0);
 	if (enabled == 0) {
 		return NULL;
@@ -142,6 +158,7 @@ const char* uci_get_peer_host(SIP_PEER *peer)
 
 int uci_get_peer_enabled(SIP_PEER* peer)
 {
+	ucix_reload();
 	return ucix_get_option_int(uci_ctx, UCI_VOICE_PACKAGE, peer->account.name, "enabled", 0);
 }
 
@@ -470,8 +487,8 @@ static int brcm_subchannel_active(const PORT_MAP *port) {
  ***********************************/
 void manage_dialtones(ami_connection* con)
 {
-	if (brcm_channel_driver_loaded == 0 || asterisk_fully_booted == 0 || brcm_ports_known == 0) {
-		//Skip until asterisk has been started, channel driver has been loaded, and we know which ports exist
+	if (state != READY) {
+		//TODO: turn of dialtone
 		return;
 	}
 
@@ -558,8 +575,8 @@ void manage_dialtones(ami_connection* con)
 
 void manage_leds() {
 
-	if (brcm_channel_driver_loaded == 0 || asterisk_fully_booted == 0 || brcm_ports_known == 0) {
-		//Skip until asterisk has been started and channel driver has been loaded and port info has been checked
+	if (state != READY) {
+		//TODO: turn off leds
 		return;
 	}
 
@@ -678,6 +695,10 @@ void free_led_config()
  */
 void configure_leds()
 {
+	if (state != READY) {
+		return; //No need to configure leds yet
+	}
+
 	if (led_config) {
 		free_led_config();
 	}
@@ -743,8 +764,8 @@ void configure_leds()
 
 			PORT_MAP** fxs2 = calloc(1, sizeof(PORT_MAP*));
 			fxs2[0] = &brcm_ports[1];
-			led_config[0].state = LS_OFF;
-			led_config[0].name = LN_VOICE2;
+			led_config[1].state = LS_OFF;
+			led_config[1].name = LN_VOICE2;
 			led_config[1].ports = fxs2;
 			led_config[1].num_ports = 1;
 		}
@@ -781,6 +802,7 @@ void configure_leds()
 					int j;
 					for (j = 0; j < led->num_ports; j++) {
 						if (led->ports[j]->port == line_id) {
+
 							printf("LED %d governed by PEER %s\n", led->name, peers->account.name);
 							//This is a matching peer
 							led->peers[led->num_peers] = peers;
@@ -802,7 +824,21 @@ void configure_leds()
 	}
 }
 
+void init_brcm_ports() {
+	PORT_MAP *ports;
 
+	ports = brcm_ports;
+	while (ports->port != PORT_UNKNOWN) {
+		ports->off_hook = 0;
+		strcpy(ports->dialtone_state, DEFAULT_DIALTONE_STATE);
+		strcpy(ports->new_dialtone_state, "");
+		ports->dialtone_dirty = 0;
+		ports->dialtone_configured = 0;
+		strcpy(ports->sub[0].state, "ONHOOK");
+		strcpy(ports->sub[1].state, "ONHOOK");
+		ports++;
+	}
+}
 
 void init_sip_peers() {
 	const SIP_ACCOUNT *accounts;
@@ -830,8 +866,14 @@ void ami_handle_event(ami_connection* con, ami_event event)
 {
 	switch (event.type) {
 		case LOGIN:
-			printf("Sending login to AMI, username %s\n", username);
-			ami_send_login(con, username, password, on_login_response);
+			if (state == CONNECTED) {
+				printf("Sending login to AMI, username %s\n", username);
+				ami_send_login(con, username, password, on_login_response);
+			}
+			else {
+				printf("Got unexpected LOGIN event\n");
+				ami_disconnect(con);
+			}
 			break;
 		case REGISTRY:
 			handle_registry_event(event);
@@ -843,6 +885,7 @@ void ami_handle_event(ami_connection* con, ami_event event)
 			if (event.channel_reload_event->channel_type == CHANNELRELOAD_SIP_EVENT) {
 				printf("SIP channel was reloaded\n");
 				init_sip_peers(); //SIP has reloaded, initialize sip peer structs
+				configure_leds(); //Reconfigure leds, as SIP channel reload may indicate a change to config
 			}
 			else {
 				printf("Unknown channel was reloaded\n");
@@ -850,24 +893,21 @@ void ami_handle_event(ami_connection* con, ami_event event)
 			break;
 		case FULLYBOOTED:
 			printf("Asterisk is fully booted\n");
-			asterisk_fully_booted = 1;
+			set_state(LOGGED_IN, con);
 			break;
 		case VARSET:
 			handle_varset_event(event);
 			break;
 		case DISCONNECT:
 			printf("AMI disconnected\n");
-			asterisk_fully_booted = 0;
-			brcm_channel_driver_loaded = 0;
-			brcm_ports_known = 0;
-			fxs_line_count = 0;
-			dect_line_count = 0;
+			set_state(DISCONNECTED, con);
 			break;
 		case UNKNOWN_EVENT:
 		default:
 			printf("Got unknown AMI event\n");
 			break;
 	}
+
 	manage_leds();
 	manage_dialtones(con);
 }
@@ -956,24 +996,13 @@ void handle_brcm_event(ami_connection* con, ami_event event)
 			}
 			break;
 		case BRCM_MODULE_EVENT:
-			printf("Got BRCM_MODULE_EVENT, loaded = %d\n", event.brcm_event->module_loaded);
-			brcm_channel_driver_loaded = event.brcm_event->module_loaded;
-			if (brcm_channel_driver_loaded) {
+			if (event.brcm_event->module_loaded) {
+				printf("BRCM module loaded\n");
 				ami_send_brcm_ports_show(con, on_brcm_ports_show_response);
 			}
 			else {
-				/* Reset dialtone state to ensure that new dialtone setting will
-				 * be applied when channel driver is loaded */
-				PORT_MAP *ports;
-				ports = brcm_ports;
-				while (ports->port != PORT_UNKNOWN) {
-					strcpy(ports->dialtone_state, DEFAULT_DIALTONE_STATE);
-					strcpy(ports->new_dialtone_state, "");
-					strcpy(ports->sub[0].state, "");
-					strcpy(ports->sub[1].state, "");
-					ports++;
-				}
-				brcm_ports_known = 0;
+				printf("BRCM module unloaded\n");
+				set_state(LOGGED_IN, con);
 			}
 			break;
 		default:
@@ -999,7 +1028,6 @@ void on_login_response(ami_connection* con, char* buf)
 {
 	if (strstr(buf, "Success")) {
 		printf("We are logged in\n");
-		ami_send_sip_reload(con, on_sip_reload_response);
 	}
 	else {
 		printf("We failed to log in\n");
@@ -1021,10 +1049,13 @@ void on_sip_reload_response(ami_connection* con, char* buf)
 void on_brcm_module_show_response(ami_connection* con, char* buf)
 {
 	if (strstr(buf, "1 modules loaded")) {
-		brcm_channel_driver_loaded = 1;
+		printf("BRCM channel driver is loaded\n");
 		ami_send_brcm_ports_show(con, on_brcm_ports_show_response);
 	}
-	printf("BRCM channel driver %sloaded\n", brcm_channel_driver_loaded ? "" : "not ");
+	else {
+		printf("BRCM channel driver is not loaded\n");
+		printf("%s\n", buf);
+	}
 }
 
 /*
@@ -1032,11 +1063,12 @@ void on_brcm_module_show_response(ami_connection* con, char* buf)
  */
 void on_brcm_ports_show_response(ami_connection* con, char* buf)
 {
-	brcm_ports_known = 1;
+	int result = 1;
+
 	char* fxs_needle = strstr(buf, "FXS");
 	if (fxs_needle == NULL) {
 		printf("Could not find number of FXS ports\n");
-		brcm_ports_known = 0;
+		result = 0;
 	}
 	else {
 		fxs_line_count = strtol(fxs_needle + 4, NULL, 10);
@@ -1046,17 +1078,15 @@ void on_brcm_ports_show_response(ami_connection* con, char* buf)
 	char* dect_needle = strstr(buf, "DECT");
 	if (dect_needle == NULL) {
 		printf("Could not find number of DECT ports\n");
-		brcm_ports_known = 0;
+		result = 0;
 	}
 	else {
 		dect_line_count = strtol(dect_needle + 5, NULL, 10);
 		printf("Found %d DECT ports\n", dect_line_count);
 	}
 
-	if (brcm_ports_known) {
-		configure_leds(); //We can now configure mapping between leds and ports
-		manage_leds();
-		manage_dialtones(con);
+	if (result) {
+		set_state(READY, con);
 	}
 }
 
@@ -1282,18 +1312,13 @@ static void ubus_connection_lost_cb(struct ubus_context *ctx)
 
 int main(int argc, char **argv)
 {
+	state = DISCONNECTED;
+
 	fd_set fset;				/* FD set */
 	struct timeval timeout;  /* Timeout for select */
 
-	/* Count voice leds from separate uci context */
+	/* Count voice leds from uci HW context */
 	voice_led_count = uci_get_voice_led_count();
-
-	/* Initialize uci */
-	uci_ctx = ucix_init(UCI_VOICE_PACKAGE);
-	if(!uci_ctx) {
-		printf("Failed to get uci context for %s\n", UCI_VOICE_PACKAGE);
-		return 1; //TODO: should we try something clever here?
-	}
 
 	init_sip_peers();
 	log_sip_peers();
@@ -1301,7 +1326,9 @@ int main(int argc, char **argv)
 
 	/* Initialize ami connection */
 	ami_connection* con = ami_init(ami_handle_event);
-	ami_connect(con, hostname, portno);
+	if (ami_connect(con, hostname, portno)) {
+		set_state(CONNECTED, con);
+	}
 
 	/* Initialize ubus connection and register asterisk object */
 	ctx = ubus_connect(NULL);
@@ -1329,7 +1356,7 @@ int main(int argc, char **argv)
 			FD_SET(ctx->sock.fd, &fset);
 		}
 
-		if (con->connected) {
+		if (state != DISCONNECTED) {
 			FD_SET(con->sd, &fset);
 		}
 
@@ -1375,14 +1402,15 @@ int main(int argc, char **argv)
 			}
 		}
 
-		if (con->connected) {
-			if (FD_ISSET(con->sd, &fset)) {
-				//printf("Handling AMI events\n");
-				ami_handle_data(con);
+		if (state == DISCONNECTED) {
+			if (ami_connect(con, hostname, portno)) {
+				set_state(CONNECTED, con);
 			}
 		}
 		else {
-			ami_connect(con, hostname, portno);
+			if (FD_ISSET(con->sd, &fset)) {
+				ami_handle_data(con);
+			}
 		}
 	}
 
@@ -1391,4 +1419,49 @@ int main(int argc, char **argv)
 	ami_free(con); //Shut down AMI connection
 	printf("AMI connection closed\n");
 	return 0;
+}
+
+
+void set_state(AMI_STATE new_state, ami_connection* con)
+{
+	if (state != new_state) {
+		state = new_state;
+		switch(new_state) {
+			case DISCONNECTED:
+				printf("In state DISCONNECTED\n");
+				fxs_line_count = 0;
+				dect_line_count = 0;
+				break;
+			case CONNECTED:
+				printf("In state CONNECTED\n");
+				/* We wait for LOGIN event here, then attempt to log in */
+				break;
+			case LOGGED_IN:
+				printf("In state LOGGED_IN\n");
+				init_brcm_ports();
+				fxs_line_count = 0;
+				dect_line_count = 0;
+				ami_send_sip_reload(con, on_sip_reload_response);
+				break;
+			case READY:
+				printf("In state READY\n");
+				configure_leds();
+				manage_leds();
+				manage_dialtones(con);
+				break;
+			default:
+				break;
+		}
+	}
+}
+
+/*
+ * Reload uci context, as any changes to config will not be read otherwise
+ */
+void ucix_reload()
+{
+	if (uci_ctx) {
+		ucix_cleanup(uci_ctx);
+	}
+	uci_ctx = ucix_init(UCI_VOICE_PACKAGE);
 }
