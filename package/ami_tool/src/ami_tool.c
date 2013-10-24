@@ -66,7 +66,6 @@ void handle_registry_event(ami_event event);
 void handle_brcm_event(ami_connection* con, ami_event event);
 void handle_varset_event(ami_event event);
 void on_login_response(ami_connection* con, char* buf);
-void on_sip_reload_response(ami_connection* con, char* buf);
 void on_brcm_module_show_response(ami_connection* con, char* buf);
 void on_brcm_ports_show_response(ami_connection* con, char* buf);
 
@@ -487,9 +486,8 @@ static int brcm_subchannel_active(const PORT_MAP *port) {
  ***********************************/
 void manage_dialtones(ami_connection* con)
 {
-	if (state != READY) {
-		//TODO: turn of dialtone
-		return;
+	if (state == DISCONNECTED || state == CONNECTED) {
+		return; //We cant set dialtones until we are properly logged in
 	}
 
 	SIP_PEER *peer;
@@ -558,7 +556,7 @@ void manage_dialtones(ami_connection* con)
 			printf("Apply dialtone %s for port %d\n", ports->new_dialtone_state, port);
 			strcpy(ports->dialtone_state, ports->new_dialtone_state);
 			strcpy(ports->new_dialtone_state, "");
-			ami_send_brcm_dialtone_settings(con, port, ports->dialtone_state, NULL); //Don't wait for response
+			ami_send_brcm_dialtone_settings(con, port, ports->dialtone_state, NULL);
 		}
 
 		/* Reset states */
@@ -576,7 +574,8 @@ void manage_dialtones(ami_connection* con)
 void manage_leds() {
 
 	if (state != READY) {
-		//TODO: turn off leds
+		manage_led(LN_VOICE1, LS_ERROR);
+		manage_led(LN_VOICE2, LS_ERROR);
 		return;
 	}
 
@@ -652,7 +651,7 @@ LED_STATE get_led_state(Led* led)
 	int i;
 	for(i = 0; i < led->num_ports; i++) {
 		if (brcm_subchannel_active(led->ports[i])) {
-			printf("LED %d, PORT %s is active => LS_NOTICE\n", led->name, led->ports[i]->name);
+			//printf("LED %d, PORT %s is active => LS_NOTICE\n", led->name, led->ports[i]->name);
 			return LS_NOTICE;
 		}
 	}
@@ -662,11 +661,11 @@ LED_STATE get_led_state(Led* led)
 	for(i = 0; i < led->num_peers; i++) {
 		SIP_PEER* peer = led->peers[i];
 		if (!peer->sip_registry_registered) {
-			printf("LED %d: PEER is not registered => LS_ERROR\n", led->name);
+			//printf("LED %d: PEER is not registered => LS_ERROR\n", led->name);
 			return LS_ERROR;
 		}
 		else {
-			printf("LED %d: PEER is registered => LS_OK\n", led->name);
+			//printf("LED %d: PEER is registered => LS_OK\n", led->name);
 			tmp = LS_OK;
 		}
 	}
@@ -803,7 +802,7 @@ void configure_leds()
 					for (j = 0; j < led->num_ports; j++) {
 						if (led->ports[j]->port == line_id) {
 
-							printf("LED %d governed by PEER %s\n", led->name, peers->account.name);
+							//printf("LED %d governed by PEER %s\n", led->name, peers->account.name);
 							//This is a matching peer
 							led->peers[led->num_peers] = peers;
 							led->num_peers++;
@@ -1027,20 +1026,12 @@ void handle_varset_event(ami_event event)
 void on_login_response(ami_connection* con, char* buf)
 {
 	if (strstr(buf, "Success")) {
-		printf("We are logged in\n");
+		printf("Log in successful\n");
 	}
 	else {
-		printf("We failed to log in\n");
+		printf("Log in failed\n");
 		ami_disconnect(con);
 	}
-}
-
-/*
- * Callback to handle SIP reload response
- */
-void on_sip_reload_response(ami_connection* con, char* buf)
-{
-	ami_send_brcm_module_show(con, on_brcm_module_show_response);
 }
 
 /*
@@ -1054,7 +1045,6 @@ void on_brcm_module_show_response(ami_connection* con, char* buf)
 	}
 	else {
 		printf("BRCM channel driver is not loaded\n");
-		printf("%s\n", buf);
 	}
 }
 
@@ -1441,7 +1431,8 @@ void set_state(AMI_STATE new_state, ami_connection* con)
 				init_brcm_ports();
 				fxs_line_count = 0;
 				dect_line_count = 0;
-				ami_send_sip_reload(con, on_sip_reload_response);
+				ami_send_brcm_module_show(con, on_brcm_module_show_response);
+				ami_send_sip_reload(con, NULL);
 				break;
 			case READY:
 				printf("In state READY\n");

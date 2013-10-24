@@ -408,26 +408,45 @@ static void ami_handle_event(ami_connection* con, char* message)
 	ami_free_event(event);
 }
 
-static void ami_handle_response(ami_connection* con, char* message)
-{
-	 if (con->response_callback) {
-		 ami_response_cb cb = con->response_callback;
-		 con->response_callback = NULL;
-		 cb(con, message);
+static void ami_send_action(ami_connection* con, ami_action* action) {
+	if (con->current_action) {
+		printf("ERROR: Attempt to send AMI action, but there is already an action pending\n");
+		return;
 	}
+	con->current_action = action;
+	write(con->sd, action->message, strlen(action->message));
 }
 
-/*
- * Action handling
- */
-static int ami_send_action(ami_connection* con, char* data, ami_response_cb on_response) {
-	if (con->response_callback) {
-		printf("Can not send Action! There is already an Action pending\n");
-		return 1; //Cant have two actions waiting for response at the same time
+static void ami_handle_response(ami_connection* con, char* message)
+{
+	ami_action* current = con->current_action;
+	ami_action* next = current->next_action;
+	con->current_action = NULL;
+
+	if (next) {
+		ami_send_action(con, next);
 	}
-	write(con->sd, data, strlen(data));
-	con->response_callback = on_response;
-	return 0;
+
+	if (current->callback) {
+		current->callback(con, message);
+	}
+
+	free(current);
+}
+
+static void queue_action(ami_connection* con, ami_action* action)
+{
+	action->next_action = NULL;
+	if (con->current_action) {
+		ami_action* a = con->current_action;
+		while(a->next_action) {
+			a = a->next_action;
+		}
+		a->next_action = action;
+	}
+	else {
+		ami_send_action(con, action);
+	}
 }
 
 /*
@@ -442,8 +461,7 @@ ami_connection* ami_init(ami_event_cb on_event) {
 	con->sd = -1;
 	con->message_frame = NULL;
 	memset(con->left_over, 0, AMI_BUFLEN * 2 + 1);
-
-	con->response_callback = NULL;
+	con->current_action = NULL;
 	con->event_callback = on_event;
 
 	return con;
@@ -465,7 +483,7 @@ int ami_connect(ami_connection* con, const char* hostname, const char* portno)
 	con->sd = socket(AF_INET, SOCK_STREAM, 0);
 	int res = connect(con->sd, host->ai_addr, host->ai_addrlen);
 	if (res == 0) {
-		printf("Connected to AMI\n");
+		//printf("Connected to AMI\n");
 		con->connected = 1;
 		result = 1;
 	}
@@ -544,6 +562,7 @@ void ami_handle_data(ami_connection* con)
 				ami_handle_response(con, message);
 				break;
 			default:
+				printf("Unknown data from AMI: %s\n", message);
 				break;
 		}
 		free(message);
@@ -572,10 +591,12 @@ void ami_handle_data(ami_connection* con)
  * Privilege: Command
  * --END COMMAND--"
  */
-int ami_send_sip_reload(ami_connection* con, ami_response_cb on_response) {
-	char reloadstring[256];
-	sprintf(reloadstring,"Action: Command\r\nCommand: sip reload\r\n\r\n");
-	return ami_send_action(con, reloadstring, on_response);
+void ami_send_sip_reload(ami_connection* con, ami_response_cb on_response) {
+	//printf("Queueing Action: ami_send_sip_reload\n");
+	ami_action* action = malloc(sizeof(ami_action));
+	action->callback = on_response;
+	sprintf(action->message,"Action: Command\r\nCommand: sip reload\r\n\r\n");
+	queue_action(con, action);
 }
 
 /*
@@ -585,12 +606,14 @@ int ami_send_sip_reload(ami_connection* con, ami_response_cb on_response) {
  * "Response: Success
  * Message: Authentication accepted"
  */
-int ami_send_login(ami_connection* con, char* username, char* password, ami_response_cb on_response)
+void ami_send_login(ami_connection* con, char* username, char* password, ami_response_cb on_response)
 {
-	char loginstring[256];
-	sprintf(loginstring,"Action: Login\r\nUsername: %s\r\nSecret: %s\r\n\r\n", username, password);
+	//printf("Queueing Action: ami_send_login\n");
 	con->message_frame = MESSAGE_FRAME; //Login sent, now there's always <CR><LF><CR><LR> after a message
-	return ami_send_action(con, loginstring, on_response);
+	ami_action* action = malloc(sizeof(ami_action));
+	action->callback = on_response;
+	sprintf(action->message,"Action: Login\r\nUsername: %s\r\nSecret: %s\r\n\r\n", username, password);
+	queue_action(con, action);
 }
 
 /*
@@ -601,19 +624,23 @@ int ami_send_login(ami_connection* con, char* username, char* password, ami_resp
  * Privilege: Command
  * --END COMMAND--"
  */
-int ami_send_brcm_module_show(ami_connection* con, ami_response_cb on_response) {
-	char moduleshowstring[256];
-	sprintf(moduleshowstring, "Action: Command\r\nCommand: module show like chan_brcm\r\n\r\n");
-	return ami_send_action(con, moduleshowstring, on_response);
+void ami_send_brcm_module_show(ami_connection* con, ami_response_cb on_response) {
+	//printf("Queueing Action: ami_send_brcm_module_show\n");
+	ami_action* action = malloc(sizeof(ami_action));
+	action->callback = on_response;
+	sprintf(action->message, "Action: Command\r\nCommand: module show like chan_brcm\r\n\r\n");
+	queue_action(con, action);
 }
 
 /*
  * Set dialtone for a specific line
  */
-int ami_send_brcm_dialtone_settings(ami_connection* con, const int line_id, const char *dialtone_state, ami_response_cb on_response) {
-	char dialtonestring[256];
-	sprintf(dialtonestring, "Action: BRCMDialtoneSet\r\nLineId: %d\r\nDialtone: %s\r\n\r\n", line_id, dialtone_state);
-	return ami_send_action(con, dialtonestring, on_response);
+void ami_send_brcm_dialtone_settings(ami_connection* con, const int line_id, const char *dialtone_state, ami_response_cb on_response) {
+	//printf("Queueing Action: ami_send_brcm_dialtone_settings\n");
+	ami_action* action = malloc(sizeof(ami_action));
+	action->callback = on_response;
+	sprintf(action->message, "Action: BRCMDialtoneSet\r\nLineId: %d\r\nDialtone: %s\r\n\r\n", line_id, dialtone_state);
+	queue_action(con, action);
 }
 
 /*
@@ -625,8 +652,10 @@ int ami_send_brcm_dialtone_settings(ami_connection* con, const int line_id, cons
  * FXS 2
  * DECT 4"
  */
-int ami_send_brcm_ports_show(ami_connection* con, ami_response_cb on_response) {
-	char portshowstring[256];
-	sprintf(portshowstring, "Action: BRCMPortsShow\r\n\r\n");
-	return ami_send_action(con, portshowstring, on_response);
+void ami_send_brcm_ports_show(ami_connection* con, ami_response_cb on_response) {
+	//printf("Queueing Action: ami_send_brcm_ports_show\n");
+	ami_action* action = malloc(sizeof(ami_action));
+	action->callback = on_response;
+	sprintf(action->message, "Action: BRCMPortsShow\r\n\r\n");
+	queue_action(con, action);
 }

@@ -75,6 +75,7 @@ typedef struct ami_event {
 } ami_event;
 
 typedef struct ami_connection ami_connection;
+typedef struct ami_action ami_action;
 typedef void (*ami_event_cb) (ami_connection* con, ami_event event);
 typedef void (*ami_response_cb) (ami_connection* con, char* buf);
 /*
@@ -86,7 +87,7 @@ struct ami_connection {
 	char* message_frame;
 	char left_over[AMI_BUFLEN * 2 + 1];
 	ami_event_cb event_callback;
-	ami_response_cb response_callback;
+	ami_action* current_action;
 };
 
 ami_connection* ami_init(ami_event_cb on_event);
@@ -102,8 +103,14 @@ void ami_handle_data(ami_connection* con);
 /*
  * Actions
  */
-int ami_send_sip_reload(ami_connection* con, ami_response_cb on_response);
-int ami_send_login(ami_connection* con, char*username, char* password, ami_response_cb on_response);
-int ami_send_brcm_module_show(ami_connection* con, ami_response_cb on_response);
-int ami_send_brcm_dialtone_settings(ami_connection* con, const int line_id, const char *dialtone_state, ami_response_cb on_response);
-int ami_send_brcm_ports_show(ami_connection* con, ami_response_cb on_response);
+struct ami_action {
+	char message[AMI_BUFLEN];
+	ami_response_cb callback;
+	ami_action* next_action;
+};
+
+void ami_send_sip_reload(ami_connection* con, ami_response_cb on_response);
+void ami_send_login(ami_connection* con, char*username, char* password, ami_response_cb on_response);
+void ami_send_brcm_module_show(ami_connection* con, ami_response_cb on_response);
+void ami_send_brcm_dialtone_settings(ami_connection* con, const int line_id, const char *dialtone_state, ami_response_cb on_response);
+void ami_send_brcm_ports_show(ami_connection* con, ami_response_cb on_response);
