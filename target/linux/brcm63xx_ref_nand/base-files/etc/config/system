@@ -12,5 +12,5 @@ config 'rdate'
 config 'timeserver' 'ntp'
 	option enable_server 1
 	list server     ntp1.sth.netnod.se
-	list server     ntp1.sth.netnod.se
+	list server     ntp1.gbg.netnod.se
 
