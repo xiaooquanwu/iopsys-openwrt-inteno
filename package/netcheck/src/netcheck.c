@@ -263,6 +263,8 @@ find_clients(char *ipaddr, char *netmask, bool checkcon)
 		    cno++;
 		}
 	}
+	fclose(leases);
+
 	if(!checkcon)
 		exit(0);
 }
@@ -278,8 +280,8 @@ find_ports(char *interface, char *ifname, char *ipaddr, char *netmask, bool brid
 	char ageing[24];
 	char cmnd[256];
 
-	char *spl, ports[5][10];
-	int i = 0;
+	char *spl, ports[6][10];
+	int i = 1;
 
 	spl = strtok (ifname, " ");
 	while (spl != NULL)
@@ -292,7 +294,7 @@ find_ports(char *interface, char *ifname, char *ipaddr, char *netmask, bool brid
 	fprintf(stdout, "\nETHERNET PORTS of '%s' interface\n", interface);
 	fprintf(stdout, "___________________________________________\n");
 
-	for(i=0; i<5; i++)
+	for(i=1; i<=5; i++)
 	{
 
 		char ethno[10];
@@ -322,7 +324,7 @@ find_ports(char *interface, char *ifname, char *ipaddr, char *netmask, bool brid
 			if (sscanf(line, "%d %s %s %s", &portno, macaddr, islocal, ageing) != 4)
 				exit(1);
 
-			if (atoi(ethno) == portno) {
+			if (i == portno) {
 				fprintf(stdout, "\t------\n");
 				fprintf(stdout, "\tClient\n");
 				fprintf(stdout, "\t------\n");
