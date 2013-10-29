@@ -1575,8 +1575,8 @@ CONFIG_PACKAGE_asterisk18-mod-sounds=y
 #
 # VPN
 #
-# CONFIG_PACKAGE_openvpn is not set
-# CONFIG_PACKAGE_openvpn-easy-rsa is not set
+CONFIG_PACKAGE_openvpn=y
+CONFIG_PACKAGE_openvpn-easy-rsa=y
 
 #
 # Web Servers/Proxies
