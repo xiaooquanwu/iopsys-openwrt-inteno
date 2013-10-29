@@ -14,6 +14,7 @@
 
 #define MAX_NETWORK	32
 #define MAX_CLIENT	128
+#define MAX_PORT	8
 
 typedef struct {
 	bool exists;
@@ -39,6 +40,22 @@ typedef struct {
 	char device[32];
 	bool connected;
 } Client;
+
+typedef struct {
+        unsigned long rx_bytes;
+        unsigned long rx_packets;
+        unsigned long rx_errors;
+        unsigned long tx_bytes;
+        unsigned long tx_packets;
+        unsigned long tx_errors;
+} Statistic;
+
+typedef struct {
+	char name[16];
+	char device[32];
+	Statistic stat;
+	Client client[MAX_CLIENT];
+} Port;
 
 typedef struct {
 	char name[64];
@@ -99,3 +116,4 @@ void dump_static_router_info(Router *router);
 void dump_hostname(Router *router);
 void dump_sysinfo(Router *router, Memory *memory);
 void dump_cpuinfo(Router *router, jiffy_counts_t *prev_jif, jiffy_counts_t *cur_jif);
+void get_port_info(Port *port);

@@ -39,6 +39,7 @@ static const char *ubus_path;
 
 static Network network[MAX_NETWORK];
 static Client clients[MAX_CLIENT];
+static Port port[MAX_PORT];
 static Router router;
 static Memory memory;
 static Key keys;
@@ -114,32 +115,41 @@ get_wifs(char *netname, char *ifname, unsigned char **wifs)
 	const char *network = NULL;
 	char wdev[16];
 	char wrl[64];
-	int vif = 0;
+	const char *wdevs[2];		
+	int vif, wno;
+
+	wdevs[0] = "wl0";
+	wdevs[1] = "wl1";
 
 	*wifs = NULL;
 
 	memset(wrl, '\0', sizeof(wrl));
 	if(uci_wireless = init_package("wireless")) {
-		uci_foreach_element(&uci_wireless->sections, e) {
-			struct uci_section *s = uci_to_section(e);
-
-			if (!strcmp(s->type, "wifi-iface")) {
-				device = uci_lookup_option_string(uci_ctx, s, "device");
-				network = uci_lookup_option_string(uci_ctx, s, "network");
-				if (network && device && !strcmp(network, netname)) {
-					if (vif > 0)
-						sprintf(wdev, "%s.%d", device, vif);
-					else
-						strcpy(wdev, device);
-
-					if(wdev_already_there(ifname, wdev))
+		for(wno = 0; wno <= 1; wno++) {
+			vif = 0;
+			uci_foreach_element(&uci_wireless->sections, e) {
+				struct uci_section *s = uci_to_section(e);
+	
+				if (!strcmp(s->type, "wifi-iface")) {
+					device = uci_lookup_option_string(uci_ctx, s, "device");
+					if(!device || strcmp(device, wdevs[wno]))
 						continue;
+					network = uci_lookup_option_string(uci_ctx, s, "network");
+					if (network && device && !strcmp(network, netname)) {
+						if (vif > 0)
+							sprintf(wdev, "%s.%d", device, vif);
+						else
+							strcpy(wdev, device);
 
-					strcat(wrl, " ");
-					strcat(wrl, wdev);
-					*wifs = strdup(wrl);
+						if(wdev_already_there(ifname, wdev))
+							continue;
+
+						strcat(wrl, " ");
+						strcat(wrl, wdev);
+						*wifs = strdup(wrl);
+					}
+					vif++;
 				}
-				vif++;
 			}
 		}
 	}
@@ -312,6 +322,74 @@ populate_clients()
 }
 
 static void
+populate_ports(char *interface)
+{
+	FILE *in;
+	char line[256];
+	char theports[128];
+	char cmnd[256];		
+	int portno;
+	char macaddr[24];
+	char islocal[24];
+	char ageing[24];
+
+	char *spl;
+	int i = 1;
+	int j, k, l;
+	
+	for (j=0; network[j].exists; j++) {
+		if (!strcmp(network[j].name, interface)) {
+			strcpy(theports, network[j].ifname);
+			break;
+		}
+	}
+
+	memset(port, '\0', sizeof(port));
+
+	spl = strtok (theports, " ");
+	while (spl != NULL)
+	{
+	    strcpy(port[i].device, spl);
+	    spl = strtok (NULL, " ");
+	    i++;
+	}
+
+	for(i=1; strlen(port[i].device)>2; i++)
+	{		
+		if(
+		//(
+		!strstr(port[i].device, "eth")
+		//&& !strstr(port[i].device, "wl"))
+		|| strchr(port[i].device, '.'))
+			continue;
+
+		get_port_info(&port[i]);
+
+		sprintf(cmnd, "brctl showmacs br-%s | grep -v ageing | grep -v yes", interface);
+		if (!(in = popen(cmnd, "r")))
+			exit(1);
+
+		l = 0;
+		while(fgets(line, sizeof(line), in) != NULL)
+		{
+			remove_newline(&line);
+			if (sscanf(line, "%d %s %s %s", &portno, macaddr, islocal, ageing) != 4)
+				exit(1);
+
+			if (i == portno) {
+				for (k=0; clients[k].exists; k++) {
+					if (!strcmp(clients[k].macaddr, macaddr) && clients[k].connected) {
+						port[i].client[l] = clients[k];
+						l++;
+					}
+				}
+			}
+		}
+		pclose(in);
+	}
+}
+
+static void
 router_dump_specs(struct blob_buf *b, bool table)
 {
 	void *t;
@@ -378,15 +456,15 @@ router_dump_memory_info(struct blob_buf *b, bool table)
 static void
 router_dump_networks(struct blob_buf *b)
 {
-    void *a, *t;
-    int i;
+	void *a, *t;
+	int i;
 
-	a = blobmsg_open_array(b, "networks");
+	//a = blobmsg_open_array(b, "networks");
 	for (i = 0; i < MAX_NETWORK; i++) {
 		if (!network[i].exists)
 			break;
-		t = blobmsg_open_table(b, NULL);
-		blobmsg_add_string(b, "name", network[i].name);
+		t = blobmsg_open_table(b, network[i].name);
+		//blobmsg_add_string(b, "name", network[i].name);
 		blobmsg_add_u8(b, "is_lan", network[i].is_lan);
 		blobmsg_add_string(b, "type", network[i].type);
 		blobmsg_add_string(b, "proto", network[i].proto);
@@ -397,22 +475,22 @@ router_dump_networks(struct blob_buf *b)
 		blobmsg_add_string(b, "ifname", network[i].ifname);
 		blobmsg_close_table(b, t);
 	}
-	blobmsg_close_array(b, a);
+	//blobmsg_close_array(b, a);
 }
 
 static void
 router_dump_clients(struct blob_buf *b)
 {
-    void *a, *t;
-    int i;
+	void *a, *t;
+	int i;
 
-	a = blobmsg_open_array(b, "clients");
+	//a = blobmsg_open_array(b, "clients");
 	for (i = 0; i < MAX_CLIENT; i++) {
 		if (!clients[i].exists)
 			break;
-		t = blobmsg_open_table(b, NULL);
+		t = blobmsg_open_table(b, clients[i].hostname);
 		blobmsg_add_u8(b, "dhcp", clients[i].dhcp);
-		blobmsg_add_string(b, "hostname", clients[i].hostname);
+		//blobmsg_add_string(b, "hostname", clients[i].hostname);
 		blobmsg_add_string(b, "ipaddr", clients[i].hostaddr);
 		blobmsg_add_string(b, "macaddr", clients[i].macaddr);
 		blobmsg_add_string(b, "network", clients[i].network);
@@ -420,22 +498,65 @@ router_dump_clients(struct blob_buf *b)
 		blobmsg_add_u8(b, "connected", clients[i].connected);
 		blobmsg_close_table(b, t);
 	}
-	blobmsg_close_array(b, a);
+	//blobmsg_close_array(b, a);
+}
+
+static void
+router_dump_ports(struct blob_buf *b, char *interface)
+{
+	void *a, *t, *c, *h, *s;
+	int pno, i, j;
+	const char *ports[5];
+	
+	ports[0] = "LAN1";
+	ports[1] = "LAN2";
+	ports[2] = "LAN3";
+	ports[3] = "LAN4";
+	//ports[4] = "WLAN";
+
+	populate_ports(interface);
+	//a = blobmsg_open_array(b, "ports");
+	for (pno=0; pno<=3; pno++) {
+		for (i = 1; strlen(port[i].name) > 2; i++) {
+			if(strcmp(port[i].name, ports[pno]))
+				continue;
+			t = blobmsg_open_table(b, port[i].name);
+			c = blobmsg_open_array(b, "hosts");
+			for(j=0; port[i].client[j].exists; j++) {
+				h = blobmsg_open_table(b, "NULL");
+				blobmsg_add_string(b, "hostname", port[i].client[j].hostname);
+				blobmsg_add_string(b, "ipaddr", port[i].client[j].hostaddr);
+				blobmsg_add_string(b, "macaddr", port[i].client[j].macaddr);
+				blobmsg_close_table(b, h);
+			}
+			blobmsg_close_array(b, c);
+			s = blobmsg_open_table(b, "statistics");		
+			blobmsg_add_u64(b, "rx_packets", port[i].stat.rx_packets);
+			blobmsg_add_u64(b, "rx_bytes", port[i].stat.rx_bytes);
+			blobmsg_add_u64(b, "rx_errors", port[i].stat.rx_errors);				
+			blobmsg_add_u64(b, "tx_packets", port[i].stat.tx_packets);
+			blobmsg_add_u64(b, "tx_bytes", port[i].stat.tx_bytes);
+			blobmsg_add_u64(b, "tx_errors", port[i].stat.tx_errors);
+			blobmsg_close_table(b, s);
+			blobmsg_close_table(b, t);
+		}
+	}
+	//blobmsg_close_array(b, a);
 }
 
 static void
 network_dump_leases(struct blob_buf *b, char *leasenet)
 {
-    void *a, *t;
-    int i;
+	void *a, *t;
+	int i;
 
-	a = blobmsg_open_array(b, "leases");
+	//a = blobmsg_open_array(b, "leases");
 	for (i = 0; i < MAX_CLIENT; i++) {
 		if (!clients[i].exists)
 			break;
 		if (clients[i].dhcp && !strcmp(clients[i].network, leasenet)) {
-			t = blobmsg_open_table(b, NULL);
-			blobmsg_add_string(b, "leaseno", clients[i].leaseno);
+			t = blobmsg_open_table(b, clients[i].leaseno);
+			//blobmsg_add_string(b, "leaseno", clients[i].leaseno);
 			blobmsg_add_string(b, "hostname", clients[i].hostname);
 			blobmsg_add_string(b, "ipaddr", clients[i].hostaddr);
 			blobmsg_add_string(b, "macaddr", clients[i].macaddr);
@@ -444,13 +565,13 @@ network_dump_leases(struct blob_buf *b, char *leasenet)
 			blobmsg_close_table(b, t);
 		}
 	}
-	blobmsg_close_array(b, a);
+	//blobmsg_close_array(b, a);
 }
 
 static void
 host_dump_status(struct blob_buf *b, char *addr, bool byIP)
 {
-    int i;
+	int i;
 
 	if(byIP) {
 		for (i=0; clients[i].exists; i++)
@@ -566,12 +687,12 @@ quest_router_clients(struct ubus_context *ctx, struct ubus_object *obj,
 }
 
 enum {
-	LEASE_NAME,
-	__LEASE_MAX,
+	NETWORK_NAME,
+	__NETWORK_MAX,
 };
 
-static const struct blobmsg_policy lease_policy[__LEASE_MAX] = {
-	[LEASE_NAME] = { .name = "network", .type = BLOBMSG_TYPE_STRING },
+static const struct blobmsg_policy network_policy[__NETWORK_MAX] = {
+	[NETWORK_NAME] = { .name = "network", .type = BLOBMSG_TYPE_STRING },
 };
 
 static int
@@ -579,24 +700,52 @@ quest_network_leases(struct ubus_context *ctx, struct ubus_object *obj,
 		  struct ubus_request_data *req, const char *method,
 		  struct blob_attr *msg)
 {
-	struct blob_attr *tb[__LEASE_MAX];
+	struct blob_attr *tb[__NETWORK_MAX];
 	bool nthere = false;
 	int i;
 
-	blobmsg_parse(lease_policy, __LEASE_MAX, tb, blob_data(msg), blob_len(msg));
+	blobmsg_parse(network_policy, __NETWORK_MAX, tb, blob_data(msg), blob_len(msg));
 
-	if (!(tb[LEASE_NAME]))
+	if (!(tb[NETWORK_NAME]))
 		return UBUS_STATUS_INVALID_ARGUMENT;
 
 	for (i=0; network[i].is_lan; i++)
-		if(!strcmp(network[i].name, blobmsg_data(tb[LEASE_NAME])))
+		if(!strcmp(network[i].name, blobmsg_data(tb[NETWORK_NAME])))
 			nthere = true;
 
 	if (!(nthere))
 		return UBUS_STATUS_INVALID_ARGUMENT;
 
 	blob_buf_init(&bb, 0);
-	network_dump_leases(&bb, blobmsg_data(tb[LEASE_NAME]));
+	network_dump_leases(&bb, blobmsg_data(tb[NETWORK_NAME]));
+	ubus_send_reply(ctx, req, bb.head);
+
+	return 0;
+}
+
+static int
+quest_router_ports(struct ubus_context *ctx, struct ubus_object *obj,
+		  struct ubus_request_data *req, const char *method,
+		  struct blob_attr *msg)
+{
+	struct blob_attr *tb[__NETWORK_MAX];
+	bool nthere = false;
+	int i;
+
+	blobmsg_parse(network_policy, __NETWORK_MAX, tb, blob_data(msg), blob_len(msg));
+	
+	if (!(tb[NETWORK_NAME]))
+		return UBUS_STATUS_INVALID_ARGUMENT;
+		
+	for (i=0; network[i].is_lan; i++)
+		if(!strcmp(network[i].name, blobmsg_data(tb[NETWORK_NAME])))
+			nthere = true;
+
+	if (!(nthere))
+		return UBUS_STATUS_INVALID_ARGUMENT;
+	
+	blob_buf_init(&bb, 0);
+	router_dump_ports(&bb, blobmsg_data(tb[NETWORK_NAME]));
 	ubus_send_reply(ctx, req, bb.head);
 
 	return 0;
@@ -650,7 +799,8 @@ static struct ubus_method router_object_methods[] = {
 	UBUS_METHOD("quest", quest_router_specific, quest_policy),
 	{ .name = "networks", .handler = quest_router_networks },
 	{ .name = "clients", .handler = quest_router_clients },
-	UBUS_METHOD("lease", quest_network_leases, lease_policy),
+	UBUS_METHOD("ports", quest_router_ports, network_policy),
+	UBUS_METHOD("lease", quest_network_leases, network_policy),
 	UBUS_METHOD("host", quest_host_status, host_policy),
 	{ .name = "reload", .handler = quest_reload },
 };

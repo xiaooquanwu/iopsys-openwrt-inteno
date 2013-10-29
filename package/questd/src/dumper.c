@@ -215,3 +215,43 @@ dump_cpuinfo(Router *router, jiffy_counts_t *prev_jif, jiffy_counts_t *cur_jif)
 	router->cpu = cpu;
 }
 
+static long
+get_port_stat(char *dev, char *stat)
+{
+	FILE *in;
+	char cmnd[64];
+	char result[32];
+
+	sprintf(cmnd, "/sys/class/net/%s/statistics/%s", dev, stat);
+	if ((in = fopen(cmnd, "r"))) {
+		fgets(result, sizeof(result), in);
+		fclose(in);
+	}
+
+	return atoi(result);
+}
+
+void
+get_port_info(Port *port)
+{
+	FILE *in;
+	char buf[8];
+	char cmnd[64];
+
+	sprintf(cmnd, ". /lib/network/config.sh && interfacename %s 2>/dev/null", port->device);
+	if (!(in = popen(cmnd, "r")))
+		exit(1);
+
+	fgets(buf, sizeof(buf), in);
+
+	remove_newline(&buf);
+
+	strcpy(&port->name, buf);
+	port->stat.rx_bytes = get_port_stat(port->device, "rx_bytes");
+	port->stat.rx_packets = get_port_stat(port->device, "rx_packets");
+	port->stat.rx_errors = get_port_stat(port->device, "rx_errors");
+	port->stat.tx_bytes = get_port_stat(port->device, "tx_bytes");
+	port->stat.tx_packets =get_port_stat(port->device, "tx_packets");
+	port->stat.tx_errors = get_port_stat(port->device, "tx_errors");
+}
+
