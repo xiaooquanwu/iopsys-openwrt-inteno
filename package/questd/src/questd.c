@@ -506,17 +506,18 @@ router_dump_ports(struct blob_buf *b, char *interface)
 {
 	void *a, *t, *c, *h, *s;
 	int pno, i, j;
-	const char *ports[5];
-	
+	const char *ports[6];
+
 	ports[0] = "LAN1";
 	ports[1] = "LAN2";
 	ports[2] = "LAN3";
 	ports[3] = "LAN4";
-	//ports[4] = "WLAN";
+	ports[4] = "GbE";	
+	//ports[5] = "WLAN";
 
 	populate_ports(interface);
 	//a = blobmsg_open_array(b, "ports");
-	for (pno=0; pno<=3; pno++) {
+	for (pno=0; pno<=4; pno++) {
 		for (i = 1; strlen(port[i].name) > 2; i++) {
 			if(strcmp(port[i].name, ports[pno]))
 				continue;

@@ -158,11 +158,12 @@ interfacename()
 		96368SV2eth3) echo "LAN4" ;;
 		963268BUeth3|DG301R0eth3) echo "LAN2" ;;
 		96362ADVNgreth3) echo "LAN1" ;;
-		VG50_Reth4) echo "GBE";;
-		96368SV2eth4) echo "GB2" ;;
+		VG50_Reth4) echo "GbE";;
+		96368SV2eth4) echo "GbE" ;;
 		963268BUeth4|DG301R0eth4) echo "LAN1" ;;
 		96362ADVNgreth4) echo "WAN" ;;
-		96368SV2eth5) echo "WANGB1" ;;
+		96368SV2eth5) echo "WAN" ;;
+		*wl*) echo "WLAN" ;;
 		*) echo "ethernet" ;;
 	esac
 }
