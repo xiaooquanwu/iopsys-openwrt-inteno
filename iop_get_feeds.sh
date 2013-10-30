@@ -46,3 +46,4 @@
 ./scripts/feeds install bind
 ./scripts/feeds install bind-tools
 ./scripts/feeds install logrotate
+./scripts/feeds install luci-app-openvpn

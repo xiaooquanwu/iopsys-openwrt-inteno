@@ -404,7 +404,7 @@ $(eval $(call application,polipo,LuCI Support for the Polipo Proxy,\
 	+PACKAGE_luci-app-polipo:polipo))
 
 $(eval $(call application,openvpn,LuCI Support for OpenVPN,\
-	+PACKAGE_luci-app-openvpn:openvpn @BROKEN))
+	+PACKAGE_luci-app-openvpn:openvpn))
 
 $(eval $(call application,p2pblock,LuCI Support for the Freifunk P2P-Block addon,\
 	luci-app-firewall +PACKAGE_luci-app-p2pblock:freifunk-p2pblock))
