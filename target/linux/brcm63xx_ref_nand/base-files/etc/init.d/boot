@@ -56,6 +56,7 @@ start() {
 	[ -f /proc/jffs2_bbc ] && echo "S" > /proc/jffs2_bbc
 	[ -f /proc/net/vlan/config ] && vconfig set_name_type DEV_PLUS_VID_NO_PAD
 
+	echo "Y" > /sys/module/printk/parameters/time
 	echo "" > /dev/kmsg
 	echo "Software Upgrade Count: $(ls /cferam* | awk -F'.' '{print$NF}')" > /dev/kmsg
 	echo "Software version: $(db get hw.board.iopVersion)" > /dev/kmsg
