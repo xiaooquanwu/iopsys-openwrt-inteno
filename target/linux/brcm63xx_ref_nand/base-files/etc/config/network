@@ -11,10 +11,11 @@ config 'interface' 'lan'
 	option 'proto' 'static'
 	option 'ipaddr' '192.168.1.1'
 	option 'netmask' '255.255.255.0'
+	option 'mtu' '1500'
 
 config 'interface' 'wan'
 	option 'type' 'anywan'
 	option 'proto' 'dhcp'
 	option 'hostname' 'Inteno_$MAC4'
 	option 'vendorid' '$HARDWAREID-INTENO'
-
+	option 'mtu' '1500'
