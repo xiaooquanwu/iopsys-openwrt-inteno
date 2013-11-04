@@ -142,43 +142,40 @@ static char *trim_whitespace(char *str)
 
 ami_event parse_registry_event(char* buf)
 {
-	int i = 0;
 	ami_event event;
 	event.type = REGISTRY;
 	event.registry_event = malloc(sizeof(registry_event));
 	event.registry_event->status = REGISTRY_UNKNOWN_EVENT;
 	event.registry_event->account_name = NULL;
 
-	while (i < AMI_BUFLEN) {
-		if (!memcmp(&buf[i], "Domain: ", 8)) {
-			i+=8;
-
-			int j = i;
-			while (!isspace(buf[i]) && i < AMI_BUFLEN) { //Find first space, thats the end of name
-				i++;
-			}
-
-			char* account_name = calloc(1+i-j, sizeof(char));
-			strncpy(account_name, &buf[j], i-j);
-			event.registry_event->account_name = account_name;
+	char* domain = strstr(buf, "Domain: ");
+	if (domain) {
+		domain += 8; //Increment pointer to start of domain name
+		int len = 0;
+		while (domain[len] && !isspace(domain[len])) {
+			len++;
 		}
-		else if (!memcmp(&buf[i], "Status: ", 8)) {
-			i+=8;
+		char* account_name = calloc(len + 1, sizeof(char));
+		strncpy(account_name, domain, len);
+		event.registry_event->account_name = account_name;
+		printf("Found domain: %s of length %d\n", account_name, len);
+	}
+	else {
+		printf("Warning: No domain found in Registry event\n");
+	}
 
-			if (!memcmp(&buf[i], "Request Sent", 12)) {
-				event.registry_event->status = REGISTRY_REQUEST_SENT_EVENT;
-			} else if (!memcmp(&buf[i], "Unregistered", 12)) {
-				event.registry_event->status = REGISTRY_UNREGISTERED_EVENT;
-			} else if (!memcmp(&buf[i], "Registered", 10)) {
-				event.registry_event->status = REGISTRY_REGISTERED_EVENT;
-			}
-		}
-		else {
-			//find end of line \r\n
-			while(memcmp(&buf[i], "\r\n",2) && i < AMI_BUFLEN)
-				i++;
-			i+=2;
-		}
+	char* status = NULL;
+	if ((status = strstr(buf, "Status: Request Sent"))) {
+		event.registry_event->status = REGISTRY_REQUEST_SENT_EVENT;
+	}
+	else if ((status = strstr(buf, "Status: Unregistered"))) {
+		event.registry_event->status = REGISTRY_UNREGISTERED_EVENT;
+	}
+	else if ((status = strstr(buf, "Status: Registered"))) {
+		event.registry_event->status = REGISTRY_REGISTERED_EVENT;
+	}
+	else {
+		printf("Warning: No status found in Registry event\n");
 	}
 
 	return event;
@@ -191,146 +188,147 @@ ami_event parse_brcm_event(char* buf)
 	event.brcm_event = malloc(sizeof(brcm_event));
 	event.brcm_event->type = BRCM_UNKNOWN_EVENT;
 
-	int i = 0;
 
-	while (i < AMI_BUFLEN) {
-		if (!memcmp(&buf[i], "Status: ", 8)) {
-			i+=8;
-			event.brcm_event->type = BRCM_STATUS_EVENT;
+	char* event_type = NULL;
+	char parse_buffer[AMI_BUFLEN];
+	char *delimiter = " ";
+	char *value;
 
-			if (!memcmp(&buf[i], "OFF", 3)) {
-				event.brcm_event->status.off_hook = 1;
-				i += 4;
-			}
-			else if (!memcmp(&buf[i], "ON", 2)) {
-				event.brcm_event->status.off_hook = 0;
-				i += 3;
-			}
-			int line_id = strtol(buf + i, NULL, 10);
-			event.brcm_event->status.line_id = line_id;
-			return event;
+	if ((event_type = strstr(buf, "Status: "))) {
+		event.brcm_event->type = BRCM_STATUS_EVENT;
+		strcpy(parse_buffer, event_type + 8);
+
+		value = strtok(parse_buffer, delimiter);
+		if (value && !strcmp(value, "OFF")) {
+			event.brcm_event->status.off_hook = 1;
 		}
-		else if (!memcmp(&buf[i], "State: ", 7)) {
-			i+=7;
-			event.brcm_event->type = BRCM_STATE_EVENT;
-
-			char parse_buffer[AMI_BUFLEN];
-			char *delimiter = " ";
-			char *value;
-			strcpy(parse_buffer, buf + i);
-
-			value = strtok(parse_buffer, delimiter);
-			if (value) {
-				value = trim_whitespace(value);
-				event.brcm_event->state.state = calloc(strlen(value) + 1, sizeof(char));
-				strcpy(event.brcm_event->state.state, value);
-			}
-			else {
-				event.brcm_event->state.state = NULL;
-			}
-
-			value = strtok(NULL, delimiter);
-			if (value) {
-				event.brcm_event->state.line_id = strtol(value, NULL, 10);
-			}
-			else {
-				event.brcm_event->state.line_id = -1;
-			}
-
-			value = strtok(NULL, delimiter);
-			if (value) {
-				event.brcm_event->state.subchannel_id = strtol(value, NULL, 10);
-			}
-			else {
-				event.brcm_event->state.subchannel_id = -1;
-			}
-
-			return event;
-		}
-		else if (!memcmp(&buf[i], "Module unload", 13)) {
-			event.brcm_event->type = BRCM_MODULE_EVENT;
-			event.brcm_event->module_loaded = 0;
-			return event;
-		}
-		else if (!memcmp(&buf[i], "Module load", 11)) {
-			event.brcm_event->type = BRCM_MODULE_EVENT;
-			event.brcm_event->module_loaded = 1;
-			return event;
+		else if (value && !strcmp(value, "ON")) {
+			event.brcm_event->status.off_hook = 0;
 		}
 		else {
-			//find end of line \r\n
-			while(memcmp(&buf[i], "\r\n",2) && i < AMI_BUFLEN)
-				i++;
-			i+=2;
+			printf("Warning: No/Unknown status in brcm status event\n");
+		}
+
+		value = strtok(NULL, delimiter);
+		if (value) {
+			event.brcm_event->status.line_id = strtol(value, NULL, 10);
+		}
+		else {
+			printf("Warning: No/Unknown line id in brcm status event\n");
+			event.brcm_event->status.line_id = 0;
 		}
 	}
+	else if ((event_type = strstr(buf, "State: "))) {
+		event.brcm_event->type = BRCM_STATE_EVENT;
+		strcpy(parse_buffer, event_type + 7);
+
+		value = strtok(parse_buffer, delimiter);
+		if (value) {
+			value = trim_whitespace(value);
+			event.brcm_event->state.state = calloc(strlen(value) + 1, sizeof(char));
+			strcpy(event.brcm_event->state.state, value);
+		}
+		else {
+			printf("Warning: No state in brcm state event\n");
+			event.brcm_event->state.state = NULL;
+		}
+
+		value = strtok(NULL, delimiter);
+		if (value) {
+			event.brcm_event->state.line_id = strtol(value, NULL, 10);
+		}
+		else {
+			printf("Warning: No line_id in brcm state event\n");
+			event.brcm_event->state.line_id = -1;
+		}
+
+		value = strtok(NULL, delimiter);
+		if (value) {
+			event.brcm_event->state.subchannel_id = strtol(value, NULL, 10);
+		}
+		else {
+			printf("Warning: No subchannel_id in brcm state event\n");
+			event.brcm_event->state.subchannel_id = -1;
+		}
+	}
+	else if ((event_type = strstr(buf, "Module unload"))) {
+		event.brcm_event->type = BRCM_MODULE_EVENT;
+		event.brcm_event->module_loaded = 0;
+	}
+	else if ((event_type = strstr(buf, "Module load"))) {
+		event.brcm_event->type = BRCM_MODULE_EVENT;
+		event.brcm_event->module_loaded = 1;
+	}
+
 	return event;
 }
 
 ami_event parse_varset_event(char* buf)
 {
-	int i = 0;
+	int len;
 	ami_event event;
 	event.type = VARSET;
 	event.varset_event = malloc(sizeof(varset_event));
-	event.varset_event->channel = NULL;
-	event.varset_event->value = NULL;
-	event.varset_event->variable = NULL;
 
-	while (i < AMI_BUFLEN) {
-		if (!memcmp(&buf[i], "Channel: ", 9)) {
-			i+=9;
-			int j = i;
-			while(memcmp(&buf[i], "\r\n",2) && i < AMI_BUFLEN)
-				i++;
-			event.varset_event->channel = calloc(1+i-j, sizeof(char));
-			strncpy(event.varset_event->channel, buf + j, i-j);
+	char* channel = strstr(buf, "Channel: ");
+	if (channel) {
+		channel += 9; //Increment pointer to start of channel
+		len = 0;
+		while (channel[len] && !isspace(channel[len])) {
+			len++;
 		}
-		else if (!memcmp(&buf[i], "Variable: ", 10)) {
-			i+=10;
-			int j = i;
-			while(memcmp(&buf[i], "\r\n",2) && i < AMI_BUFLEN)
-				i++;
-			event.varset_event->variable = calloc(1+i-j, sizeof(char));
-			strncpy(event.varset_event->variable, buf + j, i-j);
+		event.varset_event->channel = calloc(len + 1, sizeof(char));
+		strncpy(event.varset_event->channel, channel, len);
+	}
+	else {
+		printf("Warning: No Channel in varset event\n");
+		event.varset_event->channel = NULL;
+	}
+
+	char* variable = strstr(buf, "Variable: ");
+	if (variable) {
+		variable += 10; //Increment pointer to start of variable
+		len = 0;
+		while (variable[len] && !isspace(variable[len])) {
+			len++;
 		}
-		else if (!memcmp(&buf[i], "Value: ", 7)) {
-			i+=7;
-			int j = i;
-			while(memcmp(&buf[i], "\r\n",2) && i < AMI_BUFLEN)
-				i++;
-			event.varset_event->value = calloc(1+i-j, sizeof(char));
-			strncpy(event.varset_event->value, buf + j, i-j);
-		} else {
-			//find end of line \r\n
-			while(memcmp(&buf[i], "\r\n",2) && i < AMI_BUFLEN)
-				i++;
-			i+=2;
+		event.varset_event->variable = calloc(len + 1, sizeof(char));
+		strncpy(event.varset_event->variable, variable, len);
+	}
+	else {
+		printf("Warning: No Variable in varset event\n");
+		event.varset_event->variable = NULL;
+	}
+
+	char* value = strstr(buf, "Value: ");
+	if (value) {
+		value += 7; //Increment pointer to start of value
+		len = 0;
+		while (value[len] && !isspace(value[len])) {
+			len++;
 		}
+		event.varset_event->value = calloc(len + 1, sizeof(char));
+		strncpy(event.varset_event->value, value, len);
+	}
+	else {
+		printf("Warning: No Value in varset event\n");
+		event.varset_event->value = NULL;
 	}
 	return event;
 }
 
 ami_event parse_channel_reload_event(char* buf) {
-	int i = 0;
 	ami_event event;
 	event.type = CHANNELRELOAD;
 	event.channel_reload_event = malloc(sizeof(channel_reload_event));
-	event.channel_reload_event->channel_type = CHANNELRELOAD_UNKNOWN_EVENT;
 
-	while (i < AMI_BUFLEN) {
-		if (!memcmp(&buf[i], "ChannelType: ", 13)) {
-			i+=13;
-			if (!memcmp(&buf[i], "SIP", 3)) {
-				event.channel_reload_event->channel_type = CHANNELRELOAD_SIP_EVENT;
-			}
-			break;
-		} else {
-			//find end of line \r\n
-			while(memcmp(&buf[i], "\r\n",2) && i < AMI_BUFLEN)
-				i++;
-			i+=2;
-		}
+	char* result;
+	if ((result = strstr(buf, "ChannelType: SIP"))) {
+		event.channel_reload_event->channel_type = CHANNELRELOAD_SIP_EVENT;
+	}
+	else {
+		printf("Warning: unknown channel in ChannelReload event\n");
+		event.channel_reload_event->channel_type = CHANNELRELOAD_UNKNOWN_EVENT;
 	}
 	return event;
 }
