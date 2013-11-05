@@ -1,10 +1,10 @@
 --- a/interface.h
 +++ b/interface.h
-@@ -93,6 +93,7 @@ struct interface {
- 	bool autostart;
+@@ -96,6 +96,7 @@ struct interface {
  	bool config_autostart;
  	bool device_config;
-+	bool anywan;
+ 	bool dynamic;
++	bool anywan;	
  
  	time_t start_time;
  	enum interface_state state;

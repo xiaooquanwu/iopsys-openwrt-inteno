@@ -1,13 +1,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=ubus
-PKG_VERSION:=2013-08-08
+PKG_VERSION:=2013-09-29
 PKG_RELEASE=$(PKG_SOURCE_VERSION)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=git://nbd.name/luci2/ubus.git
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
-PKG_SOURCE_VERSION:=b20a8a01c7faea5bcc9d34d10dcf7736589021b8
+PKG_SOURCE_VERSION:=6ae17d0298a8f1c24f16a68c8d1884091fb5c39f
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
 PKG_MIRROR_MD5SUM:=
 CMAKE_INSTALL:=1
@@ -59,14 +59,13 @@ define Package/ubus/install
 endef
 
 define Package/ubusd/install
-	$(INSTALL_DIR) $(1)/sbin $(1)/etc/init.d
-	$(INSTALL_BIN) ./files/ubus.init $(1)/etc/init.d/ubus
+	$(INSTALL_DIR) $(1)/sbin
 	$(CP) $(PKG_INSTALL_DIR)/usr/sbin/ubusd $(1)/sbin/
 endef
 
 define Package/libubus/install
 	$(INSTALL_DIR) $(1)/lib
-	$(CP) $(PKG_INSTALL_DIR)/usr/lib/* $(1)/lib/
+	$(CP) $(PKG_INSTALL_DIR)/usr/lib/*.so $(1)/lib/
 endef
 
 define Package/libubus-lua/install

@@ -387,7 +387,7 @@ set_wifi() {
 
 	# BASE settings
 	# wlctl -i $device cap > /var/cap_$device
-	wlctl -i $device phy_watchdog 0
+	# wlctl -i $device phy_watchdog 0
 	wlctl -i $device wds none
 	wlctl -i $device up
 	wlctl -i $device down
