@@ -4,8 +4,8 @@ PKG_BRANCH:=svn-0.11
 PKG_NAME:=luci
 PKG_RELEASE:=1.0.1
 
-PKG_VERSION:=inteno-1.0.35
-PKG_SOURCE_VERSION:=2d00d37f86af99607342d2c9df75f08d2467dbe7
+PKG_VERSION:=inteno-1.0.36
+PKG_SOURCE_VERSION:=fc4a6832c63f4f26a41a940e147210f25b7f73f4
 ifeq ($(CONFIG_PACKAGE_bcmkernel),y)
 PKG_SOURCE_URL:=ssh://inteno@ihgsp.inteno.se/home/inteno/public/git/luci-inteno.git
 else

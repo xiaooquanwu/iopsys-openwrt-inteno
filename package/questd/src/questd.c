@@ -488,13 +488,13 @@ router_dump_clients(struct blob_buf *b)
 	for (i = 0; i < MAX_CLIENT; i++) {
 		if (!clients[i].exists)
 			break;
-		t = blobmsg_open_table(b, clients[i].hostname);
-		blobmsg_add_u8(b, "dhcp", clients[i].dhcp);
-		//blobmsg_add_string(b, "hostname", clients[i].hostname);
+		t = blobmsg_open_table(b, NULL);
+		blobmsg_add_string(b, "hostname", clients[i].hostname);
 		blobmsg_add_string(b, "ipaddr", clients[i].hostaddr);
 		blobmsg_add_string(b, "macaddr", clients[i].macaddr);
 		blobmsg_add_string(b, "network", clients[i].network);
 		blobmsg_add_string(b, "device", clients[i].device);
+		blobmsg_add_u8(b, "dhcp", clients[i].dhcp);		
 		blobmsg_add_u8(b, "connected", clients[i].connected);
 		blobmsg_close_table(b, t);
 	}
