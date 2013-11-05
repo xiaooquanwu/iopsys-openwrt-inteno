@@ -86,7 +86,6 @@ do_sysctl() {
 		sysctl -n -e "$1"
 }
 
-
 find_network() {
         local config="$1"
         local iface="$2"
@@ -101,17 +100,17 @@ get_network_of() {
 	config_foreach find_network interface $1
 }
 
-get_bridge_of() {
-	for _br in $(brctl show | grep 'br-' | awk '{print$1}')
-	do
-		if devstatus $_br | grep -w $1 >/dev/null; then
-			echo $_br
-		fi
-	done
-}
-
 test_default_route() {
-	ping -q -w 1 -c 1 `ip r | grep default | cut -d ' ' -f 3` > /dev/null 2>&1 && return 0 || return 1
+	local defroute="$(ip r | grep default | awk '{print$3}')"
+	local def6route="$(ip -f inet6 r | grep default | awk '{print$3}')"
+	local ping6dev="$(ip -f inet6 r | grep default | awk '{print$5}')"
+
+	if [ -n "$defroute" ]; then
+		ping -q -w 1 -c 1 $defroute >/dev/null 2>&1 && return 0
+	elif [ -n "$def6route" ] && [ -n "$ping6dev" ]; then
+		ndisc6 -1 $def6route $ping6dev >/dev/null 2>&1 && return 0
+	fi
+	return 1
 }
 
 lanports()
@@ -126,8 +125,7 @@ lanports()
 	esac
 }
 
-wanport()
-{
+wanport() {
 	local BOARDID=$(cat /proc/nvram/BoardId)
 	case "$BOARDID" in
 		VG50_R)  echo "eth3" ;;
@@ -138,8 +136,7 @@ wanport()
 	esac
 }
 
-interfacename()
-{
+interfacename() {
 	local BOARDID=$(cat /proc/nvram/BoardId)
 	case "$BOARDID$1" in
 		VG50_Reth0) echo "LAN3" ;;
@@ -168,13 +165,11 @@ interfacename()
 	esac
 }
 
-interfacespeed ()
-{
+interfacespeed() {
 	echo $(/usr/sbin/ethctl $1 media-type 2>&1 | awk '{if (NR == 2) print $6}')
 }
 
-interfaceorder()
-{
+interfaceorder() {
 	local BOARDID=$(cat /proc/nvram/BoardId)
 	case "$BOARDID" in
 		VG50_R) echo "eth2 eth1 eth0 eth4 eth3" ;;
