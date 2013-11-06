@@ -155,6 +155,16 @@ const char* uci_get_peer_host(SIP_PEER *peer)
 	return ucix_get_option(uci_ctx, UCI_VOICE_PACKAGE, peer->account.name, "host");
 }
 
+const char* uci_get_peer_domain(SIP_PEER *peer)
+{
+	ucix_reload();
+	int enabled = ucix_get_option_int(uci_ctx, UCI_VOICE_PACKAGE, peer->account.name, "enabled", 0);
+	if (enabled == 0) {
+		return NULL;
+	}
+	return ucix_get_option(uci_ctx, UCI_VOICE_PACKAGE, peer->account.name, "domain");
+}
+
 int uci_get_peer_enabled(SIP_PEER* peer)
 {
 	ucix_reload();
@@ -422,12 +432,18 @@ int handle_iptables(SIP_PEER *peer, int doResolv)
 
 	if (doResolv) {
 		/* Get domain to resolv */
+		const char* domain = uci_get_peer_domain(peer);
+		if (domain) {
+			resolv(peer, domain);
+		}
+		else {
+			printf("Failed to get sip domain\n");
+			return 1;
+		}
+
 		const char* host = uci_get_peer_host(peer);
 		if (host) {
 			resolv(peer, host);
-		}
-		else {
-			printf("Failed to get sip host\n");
 		}
 
 		/* Get sip proxies and resolv if configured */
