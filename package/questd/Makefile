@@ -3,18 +3,25 @@
 #
 
 include $(TOPDIR)/rules.mk
+include $(INCLUDE_DIR)/kernel.mk
 
 PKG_NAME:=questd
 PKG_VERSION:=1.0.0
 PKG_RELEASE:=1
+PKG_BUILD_DIR := $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
 
 include $(INCLUDE_DIR)/package.mk
 
-TARGET_LDFLAGS+= \
+LDFLAGS+= \
         -Wl,-rpath-link=$(STAGING_DIR)/usr/lib \
-		-Wl,-rpath-link=$(STAGING_DIR)/lib -luci -lubus -lubox -lpthread
+		-Wl,-rpath-link=$(STAGING_DIR)/lib
 
-TARGET_CFLAGS += $(FPIC)
+ifeq ($(CONFIG_PACKAGE_bcmkernel),y)
+BCMKERNEL_DIR:=$(BUILD_DIR)/bcmkernel-3.4-4.14/bcm963xx
+else
+BCMKERNEL_DIR:=$(BUILD_DIR)/bcmopen-consumer/bcm963xx
+endif
+export BCMKERNEL_DIR
 
 define Package/questd
   CATEGORY:=Utilities
@@ -23,18 +30,13 @@ define Package/questd
 endef
 
 define Package/questd/description
-	questd keeps the router's system and network information and presents
+	questd collects system and network information and presents
 	this information via ubus
 endef
 
 define Build/Prepare
 	mkdir -p $(PKG_BUILD_DIR)
 	$(CP) ./src/* $(PKG_BUILD_DIR)/
-endef
-
-define Build/Compile
-	$(MAKE) -C $(PKG_BUILD_DIR) \
-		$(TARGET_CONFIGURE_OPTS) LINUX_DIR=$(LINUX_DIR) LDFLAGS="$(TARGET_LDFLAGS)" CFLAGS="$(TARGET_CFLAGS) -I$(LINUX_DIR)/include -I$(STAGING_DIR)/usr/include"
 endef
 
 define Package/questd/install

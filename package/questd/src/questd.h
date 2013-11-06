@@ -9,12 +9,15 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <fcntl.h>
+#include <errno.h>
 
 #include <uci.h>
+#include <libbridge/libbridge.h>
 
 #define MAX_NETWORK	32
 #define MAX_CLIENT	128
 #define MAX_PORT	8
+#define CHUNK		128
 
 typedef struct {
 	bool exists;

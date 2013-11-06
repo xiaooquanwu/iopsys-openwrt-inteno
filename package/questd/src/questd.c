@@ -45,6 +45,8 @@ static Memory memory;
 static Key keys;
 static Spec spec;
 
+bool ports_populated = false;
+
 pthread_t tid[1];
 static long sleep_time = DEFAULT_SLEEP;
 
@@ -324,18 +326,15 @@ populate_clients()
 static void
 populate_ports(char *interface)
 {
-	FILE *in;
-	char line[256];
+	char bridge[32];
+	unsigned char *macaddr;
 	char theports[128];
-	char cmnd[256];		
-	int portno;
-	char macaddr[24];
-	char islocal[24];
-	char ageing[24];
-
 	char *spl;
 	int i = 1;
 	int j, k, l;
+	
+	if (ports_populated)
+		goto get_clients;
 	
 	for (j=0; network[j].exists; j++) {
 		if (!strcmp(network[j].name, interface)) {
@@ -349,11 +348,15 @@ populate_ports(char *interface)
 	spl = strtok (theports, " ");
 	while (spl != NULL)
 	{
-	    strcpy(port[i].device, spl);
-	    spl = strtok (NULL, " ");
-	    i++;
+		strcpy(port[i].device, spl);
+		get_port_name(&port[i]);
+		spl = strtok (NULL, " ");
+		i++;
 	}
-
+	
+	ports_populated = true;
+		
+get_clients:	
 	for(i=1; strlen(port[i].device)>2; i++)
 	{		
 		if(
@@ -362,30 +365,25 @@ populate_ports(char *interface)
 		//&& !strstr(port[i].device, "wl"))
 		|| strchr(port[i].device, '.'))
 			continue;
+			
+		memset(&port[i].stat, '\0', sizeof(Statistic));
+		for (j=0; port[i].client[j].exists; j++) {
+			memset(&port[i].client[j], '\0', sizeof(Client));
+		}
+		
+		get_port_stats(&port[i]);
 
-		get_port_info(&port[i]);
+		sprintf(bridge, "br-%s", interface);
 
-		sprintf(cmnd, "brctl showmacs br-%s | grep -v ageing | grep -v yes", interface);
-		if (!(in = popen(cmnd, "r")))
-			exit(1);
+		get_client_onport(bridge, i, &macaddr);
 
 		l = 0;
-		while(fgets(line, sizeof(line), in) != NULL)
-		{
-			remove_newline(&line);
-			if (sscanf(line, "%d %s %s %s", &portno, macaddr, islocal, ageing) != 4)
-				exit(1);
-
-			if (i == portno) {
-				for (k=0; clients[k].exists; k++) {
-					if (!strcmp(clients[k].macaddr, macaddr) && clients[k].connected) {
-						port[i].client[l] = clients[k];
-						l++;
-					}
-				}
+		for (k=0; clients[k].exists; k++) {
+			if (strstr(macaddr, clients[k].macaddr) && clients[k].connected) {
+				port[i].client[l] = clients[k];
+				l++;
 			}
 		}
-		pclose(in);
 	}
 }
 
@@ -494,7 +492,7 @@ router_dump_clients(struct blob_buf *b)
 		blobmsg_add_string(b, "macaddr", clients[i].macaddr);
 		blobmsg_add_string(b, "network", clients[i].network);
 		blobmsg_add_string(b, "device", clients[i].device);
-		blobmsg_add_u8(b, "dhcp", clients[i].dhcp);		
+		blobmsg_add_u8(b, "dhcp", clients[i].dhcp);
 		blobmsg_add_u8(b, "connected", clients[i].connected);
 		blobmsg_close_table(b, t);
 	}
@@ -531,7 +529,7 @@ router_dump_ports(struct blob_buf *b, char *interface)
 				blobmsg_close_table(b, h);
 			}
 			blobmsg_close_array(b, c);
-			s = blobmsg_open_table(b, "statistics");		
+			s = blobmsg_open_table(b, "statistics");
 			blobmsg_add_u64(b, "rx_packets", port[i].stat.rx_packets);
 			blobmsg_add_u64(b, "rx_bytes", port[i].stat.rx_bytes);
 			blobmsg_add_u64(b, "rx_errors", port[i].stat.rx_errors);				
@@ -890,6 +888,7 @@ void* dump_router_info(void *arg)
 		dump_sysinfo(&router, &memory);
 		dump_cpuinfo(&router, &prev_jif, &cur_jif);
 		populate_clients(&clients);
+		//populate_ports("lan");
 		get_jif_val(&prev_jif);
 		usleep(sleep_time);
 		recalc_sleep_time(false, 0);

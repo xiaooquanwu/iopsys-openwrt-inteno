@@ -232,7 +232,18 @@ get_port_stat(char *dev, char *stat)
 }
 
 void
-get_port_info(Port *port)
+get_port_stats(Port *port)
+{
+	port->stat.rx_bytes = get_port_stat(port->device, "rx_bytes");
+	port->stat.rx_packets = get_port_stat(port->device, "rx_packets");
+	port->stat.rx_errors = get_port_stat(port->device, "rx_errors");
+	port->stat.tx_bytes = get_port_stat(port->device, "tx_bytes");
+	port->stat.tx_packets =get_port_stat(port->device, "tx_packets");
+	port->stat.tx_errors = get_port_stat(port->device, "tx_errors");
+}
+
+void
+get_port_name(Port *port)
 {
 	FILE *in;
 	char buf[8];
@@ -243,15 +254,61 @@ get_port_info(Port *port)
 		exit(1);
 
 	fgets(buf, sizeof(buf), in);
-
 	remove_newline(&buf);
-
 	strcpy(&port->name, buf);
-	port->stat.rx_bytes = get_port_stat(port->device, "rx_bytes");
-	port->stat.rx_packets = get_port_stat(port->device, "rx_packets");
-	port->stat.rx_errors = get_port_stat(port->device, "rx_errors");
-	port->stat.tx_bytes = get_port_stat(port->device, "tx_bytes");
-	port->stat.tx_packets =get_port_stat(port->device, "tx_packets");
-	port->stat.tx_errors = get_port_stat(port->device, "tx_errors");
+}
+
+static int
+compare_fdbs(const void *_f0, const void *_f1)
+{
+	const struct fdb_entry *f0 = _f0;
+	const struct fdb_entry *f1 = _f1;
+
+	return memcmp(f0->mac_addr, f1->mac_addr, 6);
+}
+
+void
+get_client_onport(char *brname, int pno, unsigned char **macaddr)
+{
+	int i, n;
+	struct fdb_entry *fdb = NULL;
+	int offset = 0;
+	char tmpmac[2400];
+	char mac[24];
+	
+	*macaddr = "";
+
+	for(;;) {
+		fdb = realloc(fdb, (offset + CHUNK) * sizeof(struct fdb_entry));
+		if (!fdb) {
+			fprintf(stderr, "Out of memory\n");
+			return 1;
+		}
+			
+		n = br_read_fdb(brname, fdb+offset, offset, CHUNK);
+		if (n == 0)
+			break;
+
+		if (n < 0) {
+			fprintf(stderr, "read of forward table failed: %s\n",
+				strerror(errno));
+			return 1;
+		}
+
+		offset += n;
+	}
+
+	qsort(fdb, offset, sizeof(struct fdb_entry), compare_fdbs);
+
+	for (i = 0; i < offset; i++) {
+		const struct fdb_entry *f = fdb + i;
+		if (f->port_no == pno && !f->is_local) {
+			sprintf(mac, "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x", f->mac_addr[0], f->mac_addr[1], f->mac_addr[2], f->mac_addr[3], f->mac_addr[4], f->mac_addr[5]);
+			strcat(tmpmac, " ");
+			strcat(tmpmac, mac);
+		}
+	}
+	*macaddr = strdup(tmpmac);
+	memset(tmpmac, '\0', sizeof(tmpmac));
 }
 

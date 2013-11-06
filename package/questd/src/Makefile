@@ -1,25 +1,21 @@
 CC		= gcc
-MAKEDEPEND	= makedepend
-CDEBUG		= -g
-CFLAGS		= ${CDEBUG} ${INCL} -Wall
-LDFLAGS		= ${CDEBUG}
-LIBDIR		= 
+CFLAGS		= -g -Wall
+CFLAGS 		+= -I$(BCMKERNEL_DIR)/kernel
+CFLAGS 		+= -I$(BCMKERNEL_DIR)/userspace/gpl/apps/bridge-utils
 LOCLIBS		= 
-LIBS		= ${LOCLIBS} ${SYSLIBS}
+LIBS		= -luci -lubus -lubox -lpthread
 OBJS		= questd.o dumper.o arp.o
+OBJS		+= $(BCMKERNEL_DIR)/userspace/gpl/apps/bridge-utils/libbridge/*.o
 SRCS		= questd.c dumper.c arp.c
 LIBSRCS		= 
 ISRCS		= questd.h
-ALLSRCS		= ${SRCS} ${ISRCS} ${LIBSRCS}
 
 all: questd
 
 questd: ${OBJS}
-	${CC} ${LDFLAGS} -o questd ${OBJS} ${LIBDIR} ${LIBS}
+	${CC} ${LDFLAGS} ${LIBSRCS} -o questd ${OBJS} ${LIBS}
 
 clean:
-	rm -f questd core *.o *.BAK *.bak *.CKP a.out
+	rm -f questd *.o
 
-depend: 
-	${MAKEDEPEND} ${INCL} ${SRCS} ${LIBSRCS}
 
