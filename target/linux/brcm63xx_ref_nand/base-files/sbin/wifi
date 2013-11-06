@@ -101,6 +101,10 @@ create_qr_code() {
 set_wifi_down() {
 	local device="$1"
 	local network
+	
+	if [ -n "$2" ] && [ "$device" != "$2" ]; then
+		continue
+	fi
 
 	[ -f /sbin/myfid ] && anyfi_disable $device
 
@@ -384,6 +388,10 @@ set_wifi() {
 	else
 		_enWifi=$(($_enWifi + 1))
 	fi
+	
+	if [ -n "$2" ] && [ "$device" != "$2" ]; then
+		continue
+	fi
 
 	# BASE settings
 	# wlctl -i $device cap > /var/cap_$device
@@ -537,6 +545,68 @@ set_wifi() {
 	[ -f /sbin/myfid ] && anyfi_enable $device
 }
 
+generate_wireless_config() {
+	local wls="wl0 wl1 wl2 wl3"
+	local bands band freq
+	local BMAC=$(cat /proc/nvram/BaseMacAddr | tr '[a-z]' '[A-Z]')
+	BMAC=${BMAC// /}
+	local BSSID=$(printf "%X\n" $((0x$BMAC + 2)))
+	local BSSID4=${BSSID:6:4}
+	local WPAKEY=$(cat /proc/nvram/WpaKey)
+	WPAKEY="${WPAKEY:-1234567890}"
+
+	for wl in $wls; do
+		if wlctl -i $wl ap >/dev/null 2>&1; then
+			if ! uci get wireless.$wl >/dev/null 2>&1; then
+				bands=$(wlctl -i $wl bands)
+				case "$bands" in
+					*b*) band="b"; freq="" ;;
+					*a*) band="a"; freq="-5G" ;;
+					*) band="auto"; freq="" ;;
+				esac
+				cat >> /etc/config/wireless <<EOF
+config 'wifi-device' '$wl'
+        option 'type' 'broadcom'
+        option 'channel' 'auto'
+        option 'scantimer' '10'
+        option 'hwmode' 'auto'
+        option 'country' 'SE'
+        option 'wmm' '1'
+        option 'wmm_noack' '0'
+        option 'wmm_apsd' '1'
+        option 'txpower' '100'
+        option 'rateset' 'default'
+        option 'frag' '2346'
+        option 'rts' '2347'
+        option 'dtim_period' '1'
+        option 'beacon_int' '100'
+        option 'rxchainps' '0'
+        option 'rxchainps_qt' '10'
+        option 'rxchainps_pps' '10'
+        option 'band' '$band'
+        option 'rifs' '0'
+        option 'rifs_advert' '0'
+        option 'doth' '0'
+
+config 'wifi-iface'
+        option 'device' '$wl'
+        option 'network' 'lan'
+        option 'mode' 'ap'
+        option 'ssid' 'Inteno-$BSSID4$freq'
+        option 'encryption' 'psk2'
+        option 'key' '$WPAKEY'
+        option 'gtk_rekey' '3600'
+        option 'macfilter' '0'
+        option 'wps_pbc' '1'
+        option 'wmf_bss_enable' '1'
+
+EOF
+			fi
+		fi
+	done
+
+}
+
 # kill related daemons
 killall -9 eapd 2>/dev/null
 killall -9 nas 2>/dev/null
@@ -553,12 +623,15 @@ nvram set debug=0
 config_load wireless
 
 case "$1" in
+	detect)
+		generate_wireless_config
+	;;
 	down)
-		config_foreach set_wifi_down wifi-device
+		config_foreach set_wifi_down wifi-device $2
 	;;
 	*)
-		config_foreach set_wifi_down wifi-device
-		config_foreach set_wifi wifi-device
+		config_foreach set_wifi_down wifi-device $2
+		config_foreach set_wifi wifi-device $2
 
 		if [ $_enWifi -gt 0 ]; then
 			ledctl eco off
