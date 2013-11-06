@@ -215,6 +215,40 @@ int get_sip_host(SIP_PEER *peer, char *buf, size_t buflen)
 	return 0;
 }
 
+/* Get domain or IP using uci */
+int get_sip_domain(SIP_PEER *peer, char *buf, size_t buflen)
+{
+	char parameter[BUFLEN];
+	char *sipaccount;
+	int enabled;
+
+	sipaccount = peer->account.name;
+
+	for (;;) {
+		/* Get enabled sip account */
+		snprintf(parameter, BUFLEN, "%s.%s.enabled", UCI_VOICE_PACKAGE, sipaccount);
+		if (uci_show(parameter, buf, buflen, 1)) {
+			printf("Failed to check enabled\n");
+			return 1;
+		}
+		enabled = atoi(buf);
+		if (!enabled) {
+			printf("%s not enabled\n", sipaccount);
+			return 1;
+		}
+		break;
+	}
+
+	/* Get sip domain */
+	snprintf(parameter, BUFLEN, "%s.%s.domain", UCI_VOICE_PACKAGE, sipaccount);
+	if (uci_show(parameter, buf, buflen, 1)) {
+		printf("Failed to get domain\n");
+		return 1;
+	}
+
+	return 0;
+}
+
 /* Resolv name into ip (A or AAA record), update IP list for peer */
 static int resolv(SIP_PEER *peer, char *domain)
 {
@@ -442,6 +476,7 @@ void write_firewall(int family)
 /* Resolv host and add IPs to iptables */
 int handle_iptables(SIP_PEER *peer, int doResolv)
 {
+	char domain[BUFLEN];
 	char host[BUFLEN];
 	char proxies[BUFLEN*10]; //Bigger buffer, since there can be many sip proxies
 
@@ -451,9 +486,15 @@ int handle_iptables(SIP_PEER *peer, int doResolv)
 	if (doResolv) {
 		printf("reg ok. resolving\n");
 		/* Get domain to resolv */
+		if (get_sip_domain(peer, domain, BUFLEN)) {
+			printf("Failed to get sip domain\n");
+			return 1;
+		}
+		resolv(peer, domain);
+
+		/* Get host to resolv */
 		if (get_sip_host(peer, host, BUFLEN)) {
 			printf("Failed to get sip host\n");
-			return 1;
 		}
 		resolv(peer, host);
 
