@@ -19,6 +19,7 @@ iopsys_initialize_db() {
 		AUTHKEY="`cat /proc/nvram/AuthKey`"
 		WPAKEY="`cat /proc/nvram/WpaKey`"
 		DSLANNEX="`cat /proc/nvram/dslAnnex`"
+		[ "$DSLANNEX" == "B" ] || DSLANNEX="A"
 		VBID="`cat /proc/nvram/VoiceBoardId`"
 		DESKEY="`cat /proc/nvram/DesKey`"
 		RFPI="`cat /proc/nvram/rfpi`"
