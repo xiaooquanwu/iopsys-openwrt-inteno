@@ -39,13 +39,10 @@ static const char *ubus_path;
 
 static Network network[MAX_NETWORK];
 static Client clients[MAX_CLIENT];
-static Port port[MAX_PORT];
 static Router router;
 static Memory memory;
 static Key keys;
 static Spec spec;
-
-bool ports_populated = false;
 
 pthread_t tid[1];
 static long sleep_time = DEFAULT_SLEEP;
@@ -177,6 +174,7 @@ load_networks()
 			struct uci_section *s = uci_to_section(e);
 
 			network[nno].exists = false;
+			network[nno].ports_populated = false;
 			if (!strcmp(s->type, "interface")) {
 				is_lan = uci_lookup_option_string(uci_ctx, s, "is_lan");
 				type = uci_lookup_option_string(uci_ctx, s, "type");
@@ -324,7 +322,7 @@ populate_clients()
 }
 
 static void
-populate_ports(char *interface)
+populate_ports(Network *network)
 {
 	char bridge[32];
 	unsigned char *macaddr;
@@ -332,18 +330,14 @@ populate_ports(char *interface)
 	char *spl;
 	int i = 1;
 	int j, k, l;
+	Port *port = &network->port;
 	
-	if (ports_populated)
+	if (network->ports_populated)
 		goto get_clients;
 	
-	for (j=0; network[j].exists; j++) {
-		if (!strcmp(network[j].name, interface)) {
-			strcpy(theports, network[j].ifname);
-			break;
-		}
-	}
 
-	memset(port, '\0', sizeof(port));
+	strcpy(theports, network->ifname);
+	memset(port, '\0', sizeof(Port));
 
 	spl = strtok (theports, " ");
 	while (spl != NULL)
@@ -354,7 +348,7 @@ populate_ports(char *interface)
 		i++;
 	}
 	
-	ports_populated = true;
+	network->ports_populated = true;
 		
 get_clients:	
 	for(i=1; strlen(port[i].device)>2; i++)
@@ -373,9 +367,9 @@ get_clients:
 		
 		get_port_stats(&port[i]);
 
-		sprintf(bridge, "br-%s", interface);
+		sprintf(bridge, "br-%s", network->name);
 
-		get_client_onport(bridge, i, &macaddr);
+		get_clients_onport(bridge, i, &macaddr);
 
 		l = 0;
 		for (k=0; clients[k].exists; k++) {
@@ -505,6 +499,7 @@ router_dump_ports(struct blob_buf *b, char *interface)
 	void *a, *t, *c, *h, *s;
 	int pno, i, j;
 	const char *ports[6];
+	bool found = false;
 
 	ports[0] = "LAN1";
 	ports[1] = "LAN2";
@@ -512,8 +507,20 @@ router_dump_ports(struct blob_buf *b, char *interface)
 	ports[3] = "LAN4";
 	ports[4] = "GbE";	
 	//ports[5] = "WLAN";
+	Port *port;
+	
+	for (i = 0; i < MAX_NETWORK; i++) {
+		if (network[i].exists && !strcmp(network[i].name, interface)) {
+			populate_ports(&network[i]);
+			port = &network[i].port;
+			found = true;
+			break;
+		}
+	}
+	
+	if (!found)
+		return;
 
-	populate_ports(interface);
 	//a = blobmsg_open_array(b, "ports");
 	for (pno=0; pno<=4; pno++) {
 		for (i = 1; strlen(port[i].name) > 2; i++) {
@@ -854,7 +861,6 @@ quest_add_object(struct ubus_object *obj)
 		fprintf(stderr, "Failed to publish object '%s': %s\n", obj->name, ubus_strerror(ret));
 }
 
-
 static int
 quest_ubus_init(const char *path)
 {
@@ -874,7 +880,7 @@ quest_ubus_init(const char *path)
 	return 0;
 }
 
-void* dump_router_info(void *arg)
+void *dump_router_info(void *arg)
 {
 	jiffy_counts_t cur_jif, prev_jif;
 
@@ -888,7 +894,6 @@ void* dump_router_info(void *arg)
 		dump_sysinfo(&router, &memory);
 		dump_cpuinfo(&router, &prev_jif, &cur_jif);
 		populate_clients(&clients);
-		//populate_ports("lan");
 		get_jif_val(&prev_jif);
 		usleep(sleep_time);
 		recalc_sleep_time(false, 0);

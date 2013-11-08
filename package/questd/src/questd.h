@@ -9,26 +9,12 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <fcntl.h>
-#include <errno.h>
 
 #include <uci.h>
-#include <libbridge/libbridge.h>
 
 #define MAX_NETWORK	32
 #define MAX_CLIENT	128
 #define MAX_PORT	8
-#define CHUNK		128
-
-typedef struct {
-	bool exists;
-	bool is_lan;
-        const char *name;
-        const char *type;
-        const char *proto;
-        const char *ipaddr;
-        const char *netmask;
-        char ifname[128];
-} Network;
 
 typedef struct {
 	bool exists;
@@ -59,6 +45,19 @@ typedef struct {
 	Statistic stat;
 	Client client[MAX_CLIENT];
 } Port;
+
+typedef struct {
+	bool exists;
+	bool is_lan;
+	const char *name;
+	const char *type;
+	const char *proto;
+	const char *ipaddr;
+	const char *netmask;
+	char ifname[128];
+	Port port[MAX_PORT];
+	bool ports_populated;
+} Network;
 
 typedef struct {
 	char name[64];
@@ -119,4 +118,6 @@ void dump_static_router_info(Router *router);
 void dump_hostname(Router *router);
 void dump_sysinfo(Router *router, Memory *memory);
 void dump_cpuinfo(Router *router, jiffy_counts_t *prev_jif, jiffy_counts_t *cur_jif);
-void get_port_info(Port *port);
+void get_port_name(Port *port);
+void get_port_stats(Port *port);
+void get_clients_onport(char *bridge, int portno, unsigned char **macaddr);
