@@ -334,11 +334,13 @@ set_wifi_iface() {
 		# bring up the VIF and add to network
 		set_wifi_up "$vif" "$iface"
 		wlctl -i $device bss -C $_c up
-		ifconfig "$iface" hw ether $(wlctl -i $iface cur_etheraddr | awk '{print$2}') 2>/dev/null
+		ifconfig $iface hw ether $(wlctl -i $iface cur_etheraddr | awk '{print$2}') 2>/dev/null
 		nvram set "$nif"_hwaddr="$(wlctl -i $iface cur_etheraddr | awk '{print$2}')"
 		ifconfig "$iface" up >/dev/null 2>&1 && {
 			[ -n "$network" ] && ubus call network.interface."$network" add_device "{ \"name\": \"$iface\" }" 2>/dev/null
-		}		
+		}
+		wlctl -i $iface bss down
+		wlctl -i $iface bss up
 
 		_c=$(($_c + 1))
 	fi
