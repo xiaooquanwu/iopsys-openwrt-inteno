@@ -171,40 +171,6 @@ int uci_get_peer_enabled(SIP_PEER* peer)
 	return ucix_get_option_int(uci_ctx, UCI_VOICE_PACKAGE, peer->account.name, "enabled", 0);
 }
 
-/* Get domain or IP using uci */
-int get_sip_domain(SIP_PEER *peer, char *buf, size_t buflen)
-{
-	char parameter[BUFLEN];
-	char *sipaccount;
-	int enabled;
-
-	sipaccount = peer->account.name;
-
-	for (;;) {
-		/* Get enabled sip account */
-		snprintf(parameter, BUFLEN, "%s.%s.enabled", UCI_VOICE_PACKAGE, sipaccount);
-		if (uci_show(parameter, buf, buflen, 1)) {
-			printf("Failed to check enabled\n");
-			return 1;
-		}
-		enabled = atoi(buf);
-		if (!enabled) {
-			printf("%s not enabled\n", sipaccount);
-			return 1;
-		}
-		break;
-	}
-
-	/* Get sip domain */
-	snprintf(parameter, BUFLEN, "%s.%s.domain", UCI_VOICE_PACKAGE, sipaccount);
-	if (uci_show(parameter, buf, buflen, 1)) {
-		printf("Failed to get domain\n");
-		return 1;
-	}
-
-	return 0;
-}
-
 /* Resolv name into ip (A or AAA record), update IP list for peer */
 static int resolv(SIP_PEER *peer, const char *domain)
 {
