@@ -8,7 +8,6 @@ local cmd = {
     'date',
     'cat /proc/cpuinfo',
     "ubus call router quest '{ \"info\": \"system\" }'", "ubus call router quest '{ \"info\": \"memory\" }'",
-    "ubus call router quest '{ \"info\": \"keys\" }'",
     "ubus call router quest '{ \"info\": \"specs\" }'",
     "ubus call router networks",
     "ubus call router clients",
@@ -25,7 +24,7 @@ local cmd = {
     'ifconfig',
     'iptables-save',
     'uci show',
-    'db show',
+    'db show | grep has[A-Z]',
     'freecwmp --json get InternetGatewayDevice.',
 }
 
