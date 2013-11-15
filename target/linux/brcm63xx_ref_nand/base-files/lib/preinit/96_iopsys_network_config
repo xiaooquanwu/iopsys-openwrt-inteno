@@ -41,7 +41,7 @@ iopsys_generate_default_config() {
 
         uci set layer2_interface_ethernet.Wan.baseifname="$wanEthernetPort"
         uci set layer2_interface_ethernet.Wan.ifname="$wanEthernetPort_dot"
-        uci set layer2_interface_ethernet.Wan.name="WANGB1"
+        uci set layer2_interface_ethernet.Wan.name="WAN"
         uci set layer2_interface_ethernet.Wan.mtu="1500"
         uci commit
     fi
