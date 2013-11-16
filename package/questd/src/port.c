@@ -69,6 +69,23 @@ get_port_name(Port *port)
 	strcpy(&port->name, buf);
 }
 
+void
+get_bridge_ports(char *bridge, unsigned char **ports)
+{
+	FILE *in;
+	char buf[64];
+	char cmnd[128];
+	
+	*ports = "";
+
+	sprintf(cmnd, "brctl showbr br-%s | awk '{print$NF}' | grep -v interfaces | tr '\n' ' '", bridge);
+	if (!(in = popen(cmnd, "r")))
+		exit(1);
+
+	fgets(buf, sizeof(buf), in);
+	*ports = strdup(buf);
+}
+
 static int
 compare_fdbs(const void *_f0, const void *_f1)
 {
@@ -122,4 +139,3 @@ get_clients_onport(char *bridge, int portno, unsigned char **macaddr)
 	*macaddr = strdup(tmpmac);
 	memset(tmpmac, '\0', sizeof(tmpmac));
 }
-

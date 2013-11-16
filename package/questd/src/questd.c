@@ -326,25 +326,26 @@ populate_ports(Network *network)
 {
 	char bridge[32];
 	unsigned char *macaddr;
-	char theports[128];
-	char *spl;
+	unsigned char *theports;
+	char *prt, *mac;
 	int i = 1;
 	int j, k, l;
 	Port *port = &network->port;
 	
+	sprintf(bridge, "br-%s", network->name);
+
 	if (network->ports_populated)
 		goto get_clients;
-	
 
-	strcpy(theports, network->ifname);
+	get_bridge_ports(bridge, &theports);
 	memset(port, '\0', sizeof(Port));
 
-	spl = strtok (theports, " ");
-	while (spl != NULL)
+	prt = strtok(theports, " ");
+	while (prt != NULL)
 	{
-		strcpy(port[i].device, spl);
+		strcpy(port[i].device, prt);
 		get_port_name(&port[i]);
-		spl = strtok (NULL, " ");
+		prt = strtok (NULL, " ");
 		i++;
 	}
 	
@@ -353,12 +354,13 @@ populate_ports(Network *network)
 get_clients:	
 	for(i=1; strlen(port[i].device)>2; i++)
 	{		
-		if(
+		/*if(
 		//(
 		!strstr(port[i].device, "eth")
 		//&& !strstr(port[i].device, "wl"))
-		|| strchr(port[i].device, '.'))
-			continue;
+		|| strchr(port[i].device, '.')
+		)
+			continue;*/
 			
 		memset(&port[i].stat, '\0', sizeof(Statistic));
 		for (j=0; port[i].client[j].exists; j++) {
@@ -366,17 +368,25 @@ get_clients:
 		}
 		
 		get_port_stats(&port[i]);
-
-		sprintf(bridge, "br-%s", network->name);
-
 		get_clients_onport(bridge, i, &macaddr);
 
 		l = 0;
-		for (k=0; clients[k].exists; k++) {
-			if (strstr(macaddr, clients[k].macaddr) && clients[k].connected) {
-				port[i].client[l] = clients[k];
-				l++;
+		if(network->is_lan) {
+			for (k=0; clients[k].exists; k++) {
+				if (strstr(macaddr, clients[k].macaddr) && clients[k].connected) {
+					port[i].client[l] = clients[k];
+					l++;
+				}
 			}
+		} else {
+			mac = strtok(macaddr, " ");
+			while (mac != NULL)
+			{
+				port[i].client[l].exists = true;
+				strcpy(port[i].client[l].macaddr, mac);
+				mac = strtok (NULL, " ");
+				l++;
+			}	
 		}
 	}
 }
@@ -506,7 +516,8 @@ router_dump_ports(struct blob_buf *b, char *interface)
 	ports[2] = "LAN3";
 	ports[3] = "LAN4";
 	ports[4] = "GbE";	
-	//ports[5] = "WLAN";
+	//ports[5] = "WAN";
+	//ports[6] = "WLAN";		
 	Port *port;
 	
 	for (i = 0; i < MAX_NETWORK; i++) {
@@ -743,7 +754,7 @@ quest_router_ports(struct ubus_context *ctx, struct ubus_object *obj,
 	if (!(tb[NETWORK_NAME]))
 		return UBUS_STATUS_INVALID_ARGUMENT;
 		
-	for (i=0; network[i].is_lan; i++)
+	for (i=0; network[i].exists; i++)
 		if(!strcmp(network[i].name, blobmsg_data(tb[NETWORK_NAME])))
 			nthere = true;
 
@@ -916,7 +927,7 @@ int main(int argc, char **argv)
 		return 1;
 	}
 	uloop_run();
-	ubus_free(ctx);
+	ubus_free(ctx);	
 
 	return 0;
 }

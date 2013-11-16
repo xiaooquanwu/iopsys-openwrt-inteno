@@ -120,4 +120,5 @@ void dump_sysinfo(Router *router, Memory *memory);
 void dump_cpuinfo(Router *router, jiffy_counts_t *prev_jif, jiffy_counts_t *cur_jif);
 void get_port_name(Port *port);
 void get_port_stats(Port *port);
+void get_bridge_ports(char *network, unsigned char **ifname);
 void get_clients_onport(char *bridge, int portno, unsigned char **macaddr);
