@@ -78,7 +78,7 @@ get_bridge_ports(char *bridge, unsigned char **ports)
 	
 	*ports = "";
 
-	sprintf(cmnd, "brctl showbr br-%s | awk '{print$NF}' | grep -v interfaces | tr '\n' ' '", bridge);
+	sprintf(cmnd, "brctl showbr %s | awk '{print$NF}' | grep -v interfaces | tr '\n' ' '", bridge);
 	if (!(in = popen(cmnd, "r")))
 		exit(1);
 

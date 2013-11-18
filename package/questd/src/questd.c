@@ -516,8 +516,8 @@ router_dump_ports(struct blob_buf *b, char *interface)
 	ports[2] = "LAN3";
 	ports[3] = "LAN4";
 	ports[4] = "GbE";	
-	//ports[5] = "WAN";
-	//ports[6] = "WLAN";		
+	ports[5] = "WAN";
+	//ports[6] = "WLAN";
 	Port *port;
 	
 	for (i = 0; i < MAX_NETWORK; i++) {
@@ -533,7 +533,7 @@ router_dump_ports(struct blob_buf *b, char *interface)
 		return;
 
 	//a = blobmsg_open_array(b, "ports");
-	for (pno=0; pno<=4; pno++) {
+	for (pno=0; pno<=5; pno++) {
 		for (i = 1; strlen(port[i].name) > 2; i++) {
 			if(strcmp(port[i].name, ports[pno]))
 				continue;
