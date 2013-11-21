@@ -107,6 +107,13 @@ typedef struct jiffy_counts_t {
 	unsigned long long busy;
 } jiffy_counts_t;
 
+struct fdb_entry
+{
+	u_int8_t mac_addr[6];
+	u_int16_t port_no;
+	unsigned char is_local;
+};
+
 void recalc_sleep_time(bool calc, long dec);
 void init_db_hw_config(void);
 bool arping(char *target, char *device);

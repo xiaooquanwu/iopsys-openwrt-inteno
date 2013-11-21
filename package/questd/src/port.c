@@ -1,5 +1,5 @@
 /*
- * dumper -- collects port info for questd
+ * port -- collects port info for questd
  *
  * Copyright (C) 2012-2013 Inteno Broadband Technology AB. All rights reserved.
  *
@@ -21,7 +21,7 @@
  */
 
 #include "questd.h"
-#include <libbridge/libbridge.h>
+#include <linux/if_bridge.h>
 #include <errno.h>
 
 #define CHUNK		128
@@ -95,6 +95,36 @@ compare_fdbs(const void *_f0, const void *_f1)
 	return memcmp(f0->mac_addr, f1->mac_addr, 6);
 }
 
+static void
+copy_fdb(struct fdb_entry *ent, const struct __fdb_entry *f)
+{
+	memcpy(ent->mac_addr, f->mac_addr, 6);
+	ent->port_no = f->port_no;
+	ent->is_local = f->is_local;
+}
+
+static int
+bridge_read_fdb(const char *bridge, struct fdb_entry *fdbs, unsigned long offset, int num)
+{
+	FILE *f;
+	int i, n;
+	struct __fdb_entry fe[num];
+	char path[256];
+	
+	snprintf(path, 256, "/sys/class/net/%s/brforward", bridge);
+	f = fopen(path, "r");
+	if (f) {
+		fseek(f, offset*sizeof(struct __fdb_entry), SEEK_SET);
+		n = fread(fe, sizeof(struct __fdb_entry), num, f);
+		fclose(f);
+	}
+
+	for (i = 0; i < n; i++) 
+		copy_fdb(fdbs+i, fe+i);
+
+	return n;
+}
+
 void
 get_clients_onport(char *bridge, int portno, unsigned char **macaddr)
 {
@@ -113,7 +143,7 @@ get_clients_onport(char *bridge, int portno, unsigned char **macaddr)
 			return 1;
 		}
 			
-		n = br_read_fdb(bridge, fdb+offset, offset, CHUNK);
+		n = bridge_read_fdb(bridge, fdb+offset, offset, CHUNK);
 		if (n == 0)
 			break;
 
