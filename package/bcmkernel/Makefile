@@ -9,12 +9,12 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=bcmkernel-3.4
 PKG_VERSION:=4.14
-PKG_RELEASE:=2
+PKG_RELEASE:=4
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=git@iopsys.inteno.se:bcmkernel-4.14L.03
+PKG_SOURCE_URL:=git@iopsys.inteno.se:bcmkernel-4.14L.04rc1
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=3e66860051278bda96add93c2e1eda3c0163f636
+PKG_SOURCE_VERSION:=b79e39ebcd8d0a99cabcd15f36a8e8a76a121eae
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
 
 include $(INCLUDE_DIR)/package.mk
