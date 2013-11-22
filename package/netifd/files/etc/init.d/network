@@ -49,7 +49,8 @@ stop() {
 
 reload() {
 	ubus call network reload
+	/sbin/wifi
+
 	ubus call router reload
-	/sbin/wifi &
 	cwmp_netcache
 }

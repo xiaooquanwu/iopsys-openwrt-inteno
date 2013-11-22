@@ -95,7 +95,7 @@ compare_fdbs(const void *_f0, const void *_f1)
 	return memcmp(f0->mac_addr, f1->mac_addr, 6);
 }
 
-static void
+static inline void
 copy_fdb(struct fdb_entry *ent, const struct __fdb_entry *f)
 {
 	memcpy(ent->mac_addr, f->mac_addr, 6);
