@@ -161,6 +161,7 @@ handle_Downloaded_file()
 					do
 						uci commit $packname
 					done
+					reboot=`uci -q  get provisioning.configserver.reboot`
 					if [ "$reboot" != "on" ]; then
 						reload $CONFILESLURP
 					fi

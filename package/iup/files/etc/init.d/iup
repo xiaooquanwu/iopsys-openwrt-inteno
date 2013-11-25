@@ -29,6 +29,9 @@ boot() {
 	config_get starttime  polling  starttime
 	if [ $interval == "weekly" ]; then
 		interval="0"
+	elif [ $interval == "hourly" ]; then
+	  interval='*'
+	  starttime='*'
 	else
 		interval='*'
 	fi
@@ -39,7 +42,7 @@ boot() {
 		if grep -q "iup" "$CRONPATH" ; then
 			sed -i "/iup/d" $CRONPATH
 		fi
-		echo "$number $starttime  * * $interval     /sbin/iup > /dev/null 2>&1" >> $CRONPATH
+		echo "$number $starttime * * $interval     /sbin/iup > /dev/null 2>&1" >> $CRONPATH
 		/etc/init.d/cron restart
 	fi
 }                 
@@ -52,5 +55,6 @@ start() {
 }
 
 restart() {
+	boot
 	/sbin/iup &
 }
