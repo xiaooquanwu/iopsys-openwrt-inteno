@@ -428,6 +428,8 @@ static int led_set(struct leds_configuration* led_cfg, int led_idx, int state) {
         board_ioctl(fd, BOARD_IOCTL_SET_GPIO, 0, 0, NULL, lc->address, state^lc->active);
     } else if (lc->type == SHIFTREG3) {
         shift_register3_set(led_cfg, lc->address, state, lc->active);
+    } else if (lc->type == SHIFTREG2) {
+        board_ioctl(fd, BOARD_IOCTL_LED_CTRL, 0, 0, NULL, lc->address, state^lc->active);
     }
     lc->blink_state = state;
 
