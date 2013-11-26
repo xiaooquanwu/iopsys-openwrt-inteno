@@ -50,6 +50,7 @@ endef
 
 
 define Package/bcmkernel/removevoice
+	touch $(1)/lib/modules/$(BCM_KERNEL_VERSION)/endpointdd.ko
 	rm $(1)/lib/modules/$(BCM_KERNEL_VERSION)/endpointdd.ko
 endef
 
