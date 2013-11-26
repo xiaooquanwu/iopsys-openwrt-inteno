@@ -204,9 +204,9 @@ static int get_info(int memdump, int chip_id, int flash_size, int chip_rev, int 
     if (chip_id)       board_ioctl(BOARD_IOCTL_GET_CHIP_ID ,          0, 1, NULL, 0, 0);
     if (flash_size)    board_ioctl(BOARD_IOCTL_FLASH_READ  , FLASH_SIZE, 0, NULL, 0, 0);
     if (chip_rev)      board_ioctl(BOARD_IOCTL_GET_CHIP_REV,          0, 1, NULL, 0, 0);
-    if (status)        board_ioctl(BOARD_IOCTL_GET_STATUS,            0, 1, NULL, 0, 0);
-    if (boot_mode)     board_ioctl(BOARD_IOCTL_GET_OTP_STATUS,        SEC_BT_ENABLE, 1, NULL, 0, 0);
-    if (boot_mode_id)  board_ioctl(BOARD_IOCTL_GET_OTP_STATUS,        MRKT_ID_MASK, 1, NULL, 0, 0);
+    //if (status)        board_ioctl(BOARD_IOCTL_GET_STATUS,            0, 1, NULL, 0, 0);
+    //if (boot_mode)     board_ioctl(BOARD_IOCTL_GET_OTP_STATUS,        SEC_BT_ENABLE, 1, NULL, 0, 0);
+    //if (boot_mode_id)  board_ioctl(BOARD_IOCTL_GET_OTP_STATUS,        MRKT_ID_MASK, 1, NULL, 0, 0);
 
 //    if (set_gpio)      board_ioctl(BOARD_IOCTL_SET_GPIO,              0, 0, NULL, var1, var2);
     if (cfe_version) {
