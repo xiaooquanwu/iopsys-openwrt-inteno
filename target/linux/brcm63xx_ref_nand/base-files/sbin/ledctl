@@ -10,7 +10,7 @@ case $name in
 	broadband) db get hw.board.lednames | grep -iq broadband && name="dsl" || exit ;;
 	ethernet) name="lan" ;;
 	wireless) name="wifi" ;;
-	tel*) name="voice" ;;
+	tel*|voice) name="voice1" ;;
 	video) name="tv" ;;
 	power) name="status" ;;
 esac
