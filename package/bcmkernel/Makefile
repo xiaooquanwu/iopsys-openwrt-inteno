@@ -50,13 +50,13 @@ endef
 
 
 define Package/bcmkernel/removevoice
-	touch $(1)/lib/modules/$(BCM_KERNEL_VERSION)/endpointdd.ko
-	rm $(1)/lib/modules/$(BCM_KERNEL_VERSION)/endpointdd.ko
+	touch $(1)/lib/modules/$(BCM_KERNEL_VERSION)/extra/endpointdd.ko
+	rm $(1)/lib/modules/$(BCM_KERNEL_VERSION)/extra/endpointdd.ko
 endef
 
 ifeq ($(CONFIG_BCM_ENDPOINT_MODULE),y)
 define Package/bcmkernel/removevoice
-	echo not removing $(1)/lib/modules/$(BCM_KERNEL_VERSION)/endpointdd.ko
+	echo not removing $(1)/lib/modules/$(BCM_KERNEL_VERSION)/extra/endpointdd.ko
 endef
 endif
 
