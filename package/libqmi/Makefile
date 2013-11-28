@@ -17,7 +17,7 @@ include $(INCLUDE_DIR)/nls.mk
 define Package/libqmi
   SECTION:=libs
   CATEGORY:=Libraries
-  DEPENDS:=+glib2 +zlib +kmod-usb-net-qmi-wwan
+  DEPENDS:=+glib2 +zlib
   TITLE:=Helper library and utils to talk to QMI enabled modems
 endef
 
