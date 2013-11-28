@@ -1,15 +1,11 @@
-#
-# Copyright (C) 2011 Inteno
-#
-
-
 include $(TOPDIR)/rules.mk
-include $(INCLUDE_DIR)/kernel.mk
+
 PKG_NAME:=tptest
 PKG_RELEASE:=0
 PKG_VERSION:=1.3
-OTHER_MENU:=Other modules
+
 include $(INCLUDE_DIR)/package.mk
+
 TARGET_LDFLAGS+= \
         -Wl,-rpath-link=$(STAGING_DIR)/usr/lib \
 		-Wl,-rpath-link=$(STAGING_DIR)/lib
@@ -44,11 +40,6 @@ endef
 define Package/tptest/install
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/tptest $(1)/usr/sbin/
-endef
-
-define Build/InstallDev
-	$(INSTALL_DIR) $(1)/usr/include
-	$(INSTALL_DIR) $(1)/usr/lib
 endef
 
 $(eval $(call BuildPackage,tptest))
