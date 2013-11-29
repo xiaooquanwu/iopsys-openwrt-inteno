@@ -455,19 +455,19 @@ $(eval $(call application,watchcat,LuCI Support for Watchcat,\
 	+PACKAGE_luci-app-watchcat:watchcat))
 
 $(eval $(call application,dslstats,LuCI Support for DSL Statistics,\
-	+PACKAGE_luci-app-dslstats:dslstats))
+	+PACKAGE_luci-app-dslstats))
 
 $(eval $(call application,mcpd,LuCI Support for IGMP Proxy,\
 	+PACKAGE_luci-app-mcpd:mcpd))
 
 $(eval $(call application,mount,LuCI Support for Mount Management,\
-	+PACKAGE_luci-app-mount:mount))
+	+PACKAGE_luci-app-mount))
 
 $(eval $(call application,software,LuCI Support for Package Management,\
-	+PACKAGE_luci-app-software:software))
+	+PACKAGE_luci-app-software))
 
 $(eval $(call application,speedtest,LuCI Speed Test application,\
-	+PACKAGE_luci-app-speedtest:speedtest))
+	+PACKAGE_luci-app-speedtest:tptest))
 
 $(eval $(call application,iup,LuCI Support for Provisioning,\
 	+PACKAGE_luci-app-iup:iup))
@@ -479,7 +479,7 @@ $(eval $(call application,snmp,LuCI Support for SNMP,\
        +PACKAGE_luci-app-snmp:snmpd))
        
 $(eval $(call application,port-management,LuCI Support for Port Management,\
-	+PACKAGE_luci-app-port-management:port-management))
+	+PACKAGE_luci-app-port-management))
 
 $(eval $(call application,voice-client,LuCI Voice Interface (client),\
 	+luci-lib-json \
