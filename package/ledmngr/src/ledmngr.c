@@ -326,9 +326,11 @@ static struct leds_configuration* get_led_config(void) {
     led_cfg->test_state = 0;
 
     /* Turn off all leds */
+    DEBUG_PRINT("Turn off all leds\n");
     all_leds_off(led_cfg);
 
     /* Set all function states to off */
+    DEBUG_PRINT("Set all function states to off\n");
     for (i=0 ; i<LED_FUNCTIONS ; i++) {
         led_cfg->led_fn_action[i] = LED_OFF;
     }
@@ -417,12 +419,15 @@ static void shift_register3_set(struct leds_configuration* led_cfg, int address,
 static int led_set(struct leds_configuration* led_cfg, int led_idx, int state) {
     struct led_config* lc;
 
-    if (led_idx > led_cfg->leds_nr-1)
+    if ((led_idx == -1) || (led_idx > led_cfg->leds_nr-1)) {
         DEBUG_PRINT("Led index: %d out of bounds, nr_leds = %d\n", led_idx, led_cfg->leds_nr);
+        return 0;
+    }
 
     lc = led_cfg->leds[led_idx];
 
     //printf("Led index: %d\n", led_idx);
+    // DEBUG_PRINT("Led index: %d\n", led_idx);
 
     if (lc->type == GPIO) {
         board_ioctl(fd, BOARD_IOCTL_SET_GPIO, 0, 0, NULL, lc->address, state^lc->active);
@@ -588,15 +593,18 @@ static void set_function_led(struct leds_configuration* led_cfg, char* fn_name, 
     int action_idx;
     struct led_map *map;
 
+    DEBUG_PRINT("set_function_led\n");
     for (i=0 ; i<LED_FUNCTIONS ; i++) {
         if (!strcmp(fn_name, led_functions[i])) {
             led_name = led_functions[i];
             led_fn_idx = i;
         }
     }
+    DEBUG_PRINT("set_function_led_mid\n");
     if (!(led_name)) return;
 
-//printf("Action\n");
+// printf("Action\n");
+    DEBUG_PRINT("set_function_led_mid2\n");
 
 
 //    snprintf(led_name_color, 256, "%s_%s", led_name, color);  
@@ -607,12 +615,14 @@ static void set_function_led(struct leds_configuration* led_cfg, char* fn_name, 
 
     map = &led_cfg->led_map_config[led_fn_idx][action_idx];
     for (i=0 ; i<map->led_actions_nr ; i++) {
+            DEBUG_PRINT("[%d] %d %d\n", map->led_actions_nr,  map->led_actions[i].led_index, map->led_actions[i].led_state);
         if (led_cfg->leds_state != LEDS_INFO) {
             led_set(led_cfg, map->led_actions[i].led_index, map->led_actions[i].led_state);
         }
             led_set_state(led_cfg, map->led_actions[i].led_index, map->led_actions[i].led_state);
-            DEBUG_PRINT("[%d] %d %d\n", map->led_actions_nr,  map->led_actions[i].led_index, map->led_actions[i].led_state);
     }
+    DEBUG_PRINT("set_function_led_end\n");
+
 }
 
 
@@ -639,6 +649,7 @@ static int led_set_method(struct ubus_context *ubus_ctx, struct ubus_object *obj
 {
 	struct blob_attr *tb[__LED_MAX];
     char* state;
+	DEBUG_PRINT("led_set_method\n");
 
 	blobmsg_parse(led_policy, ARRAY_SIZE(led_policy), tb, blob_data(msg), blob_len(msg));
 
@@ -658,6 +669,7 @@ static int led_set_method(struct ubus_context *ubus_ctx, struct ubus_object *obj
 static void led_status_reply(struct uloop_timeout *t)
 {
 	struct hello_request *req = container_of(t, struct hello_request, timeout);
+	DEBUG_PRINT("led_status_reply\n");
 
 	blob_buf_init(&b, 0);
 	blobmsg_add_string(&b, "state", req->data);
@@ -701,6 +713,7 @@ static int leds_set_method(struct ubus_context *ubus_ctx, struct ubus_object *ob
 	struct blob_attr *tb[__LED_MAX];
     char* state;
     int i,j;
+	DEBUG_PRINT("leds_set_method\n");
 
 	blobmsg_parse(led_policy, ARRAY_SIZE(led_policy), tb, blob_data(msg), blob_len(msg));
 
@@ -745,7 +758,7 @@ static int leds_status_method(struct ubus_context *ubus_ctx, struct ubus_object 
 		      struct blob_attr *msg)
 {
 	struct hello_request *hreq;
-
+	DEBUG_PRINT("leds_status_method\n");
 	hreq = calloc(1, sizeof(*hreq) +  100);
 	sprintf(hreq->data, "%s", leds_states[led_cfg->leds_state]);
 	ubus_defer_request(ubus_ctx, req, &hreq->req);
@@ -834,7 +847,8 @@ static struct button_configuration* get_button_config(void) {
         return NULL;
     }
 
-    /* Populate led configuration structure */
+    /* Populate button configuration structure */
+    DEBUG_PRINT("Populate button configuration structure\n");
     ptr = (char *)butt_names;
     p = strtok_r(ptr, " ", &rest);
     while(p != NULL) {
@@ -843,13 +857,12 @@ static struct button_configuration* get_button_config(void) {
         char command[256];
         int  address;
 
-//        printf("%s\n", p);
-
         butt_config = ucix_get_option(uci_ctx, "hw", "buttons", p);
 
         bc = malloc(sizeof(struct button_config));
         bc->name = strdup(p);
         sscanf(butt_config, "%d %s %s", &address, active, command);
+        DEBUG_PRINT("butt_config %d %s %s\n",address, active, command);
 
         if (!strcmp(active, "al"))   bc->active = ACTIVE_LOW;
         if (!strcmp(active, "ah"))   bc->active = ACTIVE_HIGH;
@@ -869,6 +882,7 @@ static struct button_configuration* get_button_config(void) {
         butt_cfg->buttons[butt_cfg->button_nr] = bc;
         butt_cfg->button_nr++;
     }
+
     for (i=0 ; i<butt_cfg->button_nr ; i++) {
         DEBUG_PRINT("%s button adr: %d active:%d command: %s\n",butt_cfg->buttons[i]->name, butt_cfg->buttons[i]->address, butt_cfg->buttons[i]->active, butt_cfg->buttons[i]->command);
     }
@@ -886,10 +900,14 @@ int ledmngr(void) {
 
     open_ioctl();
 
+    DEBUG_PRINT("get_led_config\n");
     led_cfg  = get_led_config();
+    DEBUG_PRINT("get_button_config\n");
     butt_cfg = get_button_config();
 
+
     /* initialize ubus */
+	DEBUG_PRINT("initialize ubus\n");
 
 	uloop_init();
 
