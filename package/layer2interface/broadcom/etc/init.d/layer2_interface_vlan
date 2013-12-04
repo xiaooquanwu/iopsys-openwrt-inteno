@@ -13,8 +13,8 @@ vlan_inf_conf() {
 	config_get baseifname $1 baseifname
 	config_get ifname $1 ifname
 	config_get vlan8021p $1 vlan8021p
-	config_get  vlan8021q $1 vlan8021q
-	config_get  bridge $1 bridge
+	config_get vlan8021q $1 vlan8021q
+	config_get bridge $1 bridge
 	addbrcmvlan "$baseifname" "$vlan8021p" "$vlan8021q" "$bridge" "$ifname"
 }
 
