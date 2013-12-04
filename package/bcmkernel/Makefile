@@ -12,9 +12,9 @@ PKG_VERSION:=4.14
 PKG_RELEASE:=4
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=git@iopsys.inteno.se:bcmkernel-4.14L.04rc1
+PKG_SOURCE_URL:=git@iopsys.inteno.se:bcmkernel-4.14L.04
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=0796b4e748c8af8fdb23dd0e2aa6e73ba0e746d6
+PKG_SOURCE_VERSION:=69dd0a1db0a0feaade66e40b6a0a758955e1c3f2
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
 
 include $(INCLUDE_DIR)/package.mk
