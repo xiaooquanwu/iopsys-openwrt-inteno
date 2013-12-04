@@ -80,7 +80,7 @@ boot() {
 
 start() {
 	local baseifname
-	echo "Setting Up Ethernet WAN"
+	echo "Setting up Ethernet WAN"
 	config_load layer2_interface_ethernet
 	config_foreach addethernet ethernet_interface
 }

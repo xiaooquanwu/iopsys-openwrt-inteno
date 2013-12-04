@@ -19,12 +19,12 @@ vlan_inf_conf() {
 }
 
 boot() {
-	echo "vlan dont run at boot"
+	echo "VLAN does not run at boot"
 }
 
 start() {
 	local vdslstatus
-	echo "Starting Vlan"
+	echo "Starting VLAN"
 
 	config_load layer2_interface_vlan
 	config_foreach vlan_inf_conf vlan_interface
