@@ -1,0 +1,2 @@
+config ethernet_interface 'Wan'
+
