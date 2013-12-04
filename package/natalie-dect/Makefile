@@ -21,6 +21,10 @@ include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/image.mk
 include $(INCLUDE_DIR)/kernel.mk
 
+
+
+BCM_KERNEL_VERSION=`cat $(TOPDIR)/package/bcmkernel/Makefile | grep BCM_KERNEL_VERSION:= | awk -F":=" '{print $$$$2}'`
+
 export BUILD_DIR
 export BCM_KERNEL_VERSION
 
@@ -31,7 +35,7 @@ define Package/natalie-dect
   TITLE:=Dect stack
   URL:=
   MENU:=1
-  DEPENDS:= +bcmkernel
+#  DEPENDS:= +bcmkernel
 endef
 
 define Package/natalie-dect/description
@@ -41,7 +45,7 @@ endef
 
 define Package/natalie-dect/install
 
-	rm $(1)/lib/modules/$(BCM_KERNEL_VERSION)/extra/dect.ko
+	mkdir -p $(1)/lib/modules/$(BCM_KERNEL_VERSION)/extra/
 	$(CP) $(PKG_BUILD_DIR)/NatalieFpCvm6362_v1108/Src/Projects/NatalieV3/FpCvm/Linux6362/dects.ko $(1)/lib/modules/$(BCM_KERNEL_VERSION)/extra/dect.ko
 
 endef
