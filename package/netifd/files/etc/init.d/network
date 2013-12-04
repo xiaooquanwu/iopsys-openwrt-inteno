@@ -1,6 +1,6 @@
 #!/bin/sh /etc/rc.common
 
-START=20
+START=25
 STOP=90
 
 SERVICE_DAEMONIZE=1

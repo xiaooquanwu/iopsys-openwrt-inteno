@@ -1,7 +1,7 @@
 #!/bin/sh /etc/rc.common
 # Update hosts file to enable access through "http://login.lan/" etc from LAN
 
-START=25
+START=26
 
 domains="www.routerlogin.net routerlogin.net www.routerlogin.com routerlogin.com www.login.lan login.lan login"
 HOSTS=/etc/hosts
