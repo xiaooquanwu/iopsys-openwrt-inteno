@@ -2,6 +2,8 @@ scsi_wait_scan
 ecb
 pcbc
 ipt_REDIRECT
+gre
+ip_gre
 nfnetlink_queue
 nf_conntrack_ftp
 nf_conntrack_h323
