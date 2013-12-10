@@ -34,10 +34,10 @@ brcm_insmod() {
 	test -e /lib/modules/3.4.11-rt19/extra/i2c_bcm6xxx.ko  && insmod /lib/modules/3.4.11-rt19/extra/i2c_bcm6xxx.ko
 	test -e /lib/modules/3.4.11-rt19/extra/bcm_enet.ko     && insmod /lib/modules/3.4.11-rt19/extra/bcm_enet.ko
 	test -e /lib/modules/3.4.11-rt19/extra/nciTMSkmod.ko   && insmod /lib/modules/3.4.11-rt19/extra/nciTMSkmod.ko
-	test -e /lib/modules/3.4.11-rt19/extra/bcmsw.ko        && insmod /lib/modules/3.4.11-rt19/extra/bcmsw.ko
-#        test -e /lib/modules/3.4.11-rt19/extra/bcm_usb.ko      && insmod /lib/modules/3.4.11-rt19/extra/bcm_usb.ko
+	test -e /lib/modules/3.4.11-rt19/extra/bcmsw.ko        && insmod /lib/modules/3.4.11-rt19/extra/bcmsw.ko && ifconfig bcmsw up
+#	test -e /lib/modules/3.4.11-rt19/extra/bcm_usb.ko      && insmod /lib/modules/3.4.11-rt19/extra/bcm_usb.ko
 	test -e /lib/modules/3.4.11-rt19/extra/bcmarl.ko       && insmod /lib/modules/3.4.11-rt19/extra/bcmarl.ko
-	/usr/bin/taskset 2>/dev/null
+#	/usr/bin/taskset 2>/dev/null
 	test -e /lib/modules/3.4.11-rt19/extra/wl.ko           && insmod /lib/modules/3.4.11-rt19/extra/wl.ko
 	test -e /lib/modules/3.4.11-rt19/extra/dect.ko         && insmod /lib/modules/3.4.11-rt19/extra/dect.ko
 	test -e /lib/modules/3.4.11-rt19/extra/dectshim.ko     && insmod /lib/modules/3.4.11-rt19/extra/dectshim.ko
