@@ -9,6 +9,7 @@ exec >/dev/null 2>&1
 local _enWifi=0
 local _enWps=0
 local _c=0
+local acsifs=""
 local vifs=""
 
 map_networks() {
@@ -491,7 +492,13 @@ set_wifi() {
 	# set channel
 	case "$channel" in
 		auto)
-			wlctl -i $device csscantimer "${scantimer:-10}"
+			if [ -n "$acsifs" ]; then
+				nvram set acs_ifnames="$acsifs $device"
+			else
+				nvram set acs_ifnames="$device"
+			fi
+			acsifs="$(nvram get acs_ifnames)"
+			#wlctl -i $device csscantimer "${scantimer:-10}"
 			wlctl -i $device up
 			wlctl -i $device autochannel 1
 			wlctl -i $device autochannel 2
@@ -620,6 +627,7 @@ EOF
 # kill related daemons
 killall -9 eapd 2>/dev/null
 killall -9 nas 2>/dev/null
+killall -9 acsd 2>/dev/null
 killall -15 wps_monitor 2>/dev/null
 
 # remove all QR code images
@@ -656,6 +664,7 @@ case "$1" in
 		# start related daemons
 		eapd
 		nas
+		[ -n "$acsifs" ] && acsd &
 		[ $_enWps -gt 0 ] && wps_monitor &
 	;;
 esac
