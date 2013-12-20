@@ -13,6 +13,14 @@ if [ `basename $blkdev` != "block" ]; then
     device=`basename $DEVPATH`
     mountpoint=`sed -ne "s|^[^ ]*/$device ||; T; s/ .*//p" /proc/self/mounts`
 
+    # Determine mount path
+    usbno=$(echo $DEVPATH | awk -F'/' '{print$7}')
+    case "$usbno" in
+	*:*) usbno=$(echo $DEVPATH | awk -F'/' '{print$6}') ;;
+    esac
+    mnfct=$(cat /sys/bus/usb/devices/$usbno/manufacturer)
+    serial=$(cat /sys/bus/usb/devices/$usbno/serial)
+
     case "$ACTION" in
 	add)
 
@@ -74,7 +82,8 @@ if [ `basename $blkdev` != "block" ]; then
 				case "$device" in
 					mtdblock*) ;;
 					*)
-						( mkdir -p /mnt/$device && mount /dev/$device /mnt/$device || ntfs-3g /dev/$device /mnt/$device ) 2>&1 | tee /proc/self/fd/2 | logger -t 'fstab'
+						mntdir=$mnfct$serial
+						( mkdir -p /mnt/$mntdir && mount /dev/$device /mnt/$mntdir || ntfs-3g /dev/$device /mnt/$mntdir ) 2>&1 | tee /proc/self/fd/2 | logger -t 'fstab'
 					;;
 				esac
 			}
@@ -84,7 +93,7 @@ if [ `basename $blkdev` != "block" ]; then
 	remove)
 		umount /dev/$device
 		umount $mountpoint
-		rm -rf /mnt/$device
+		rm -rf $mountpoint
 		;;
     esac	
 
