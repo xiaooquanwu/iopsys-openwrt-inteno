@@ -11,7 +11,7 @@ PKG_RELEASE:=1
 PKG_VERSION:=1.0.9
 
 PKG_SOURCE_URL:=ssh://inteno@ihgsp.inteno.se/home/inteno/private/git/dectmngr.git
-PKG_SOURCE_VERSION:=2c9e97156a76011f9b1c2333e989eb1732a49ee4
+PKG_SOURCE_VERSION:=fe50b223d9ac9ca99937e1950da836aef978c286
 
 
 
