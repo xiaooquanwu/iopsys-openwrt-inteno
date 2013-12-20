@@ -70,6 +70,7 @@ define Package/bcmkernel/install
 	$(INSTALL_DIR) $(1)/etc/wlan
 
 
+
 # Install header files
 	$(INSTALL_DIR) $(STAGING_DIR)/usr/include/bcm963xx
 	$(INSTALL_DIR) $(STAGING_DIR)/usr/include/bcm963xx/bcmdrivers/broadcom/include/bcm963xx
