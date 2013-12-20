@@ -11,7 +11,7 @@ PKG_RELEASE:=1
 PKG_VERSION:=1.0.9
 
 PKG_SOURCE_URL:=ssh://inteno@ihgsp.inteno.se/home/inteno/private/git/dectmngr.git
-PKG_SOURCE_VERSION:=fe50b223d9ac9ca99937e1950da836aef978c286
+PKG_SOURCE_VERSION:=036912f93f6669b2eb6236989a5469ad2288c784
 
 
 
@@ -36,7 +36,7 @@ define Package/dectmngr
   CATEGORY:=Utilities
   TITLE:=Broadcom endpoint test application
   URL:=
-  DEPENDS:= +libevent2 +libjson
+  DEPENDS:= +libevent2 +libjson +natalie-dect-h
 endef
 
 define Package/dectmngr/description
