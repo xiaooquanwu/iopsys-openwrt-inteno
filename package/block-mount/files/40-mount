@@ -84,6 +84,7 @@ if [ `basename $blkdev` != "block" ]; then
 					*)
 						mntdir=$mnfct$serial
 						( mkdir -p /mnt/$mntdir && mount /dev/$device /mnt/$mntdir || ntfs-3g /dev/$device /mnt/$mntdir ) 2>&1 | tee /proc/self/fd/2 | logger -t 'fstab'
+						echo "/dev/$device /mnt/$mntdir" >> /var/usbmounts
 					;;
 				esac
 			}
@@ -94,6 +95,7 @@ if [ `basename $blkdev` != "block" ]; then
 		umount /dev/$device
 		umount $mountpoint
 		rm -rf $mountpoint
+		sed -i "/$device/ d" /var/usbmounts
 		;;
     esac	
 
