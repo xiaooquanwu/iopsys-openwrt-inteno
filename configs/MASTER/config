@@ -1681,10 +1681,10 @@ CONFIG_WPA_MSG_MIN_PRIORITY=3
 #
 # IPv6 discovery tools
 #
-# CONFIG_PACKAGE_ndisc6 is not set
-# CONFIG_PACKAGE_rdisc6 is not set
-# CONFIG_PACKAGE_rdnssd is not set
-# CONFIG_PACKAGE_traceroute6 is not set
+CONFIG_PACKAGE_ndisc6=y
+CONFIG_PACKAGE_rdisc6=y
+CONFIG_PACKAGE_rdnssd=y
+CONFIG_PACKAGE_traceroute6=y
 CONFIG_PACKAGE_6in4=y
 CONFIG_PACKAGE_6rd=y
 CONFIG_PACKAGE_6relayd=y
