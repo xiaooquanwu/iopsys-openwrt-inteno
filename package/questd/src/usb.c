@@ -87,23 +87,21 @@ dump_usb_info(USB *usb, char *usbno)
 	char cmnd[64];
 	char result[32];
 
-	usb->plugged = true;
-
 	sprintf(cmnd, "/sys/bus/usb/devices/%s/product", usbno);
 	if ((in = fopen(cmnd, "r"))) {
-		usb->plugged = true;
 		fgets(result, sizeof(result), in);
 		remove_newline(result);
 		fclose(in);
 
 		strcpy(&usb->product, result);
 		sprintf(&usb->no, "%s", usbno);
-		sprintf(&usb->name, "USB%s", usbno);
+		sprintf(&usb->name, "USB%s", strndup(usbno+2, strlen(usbno)));
 		get_usb_infos(&usb->vendor, usb->no, "manufacturer");
 		get_usb_infos(&usb->serial, usb->no, "serial");
 		get_usb_infos(&usb->speed, usb->no, "speed");
 		get_usb_infos(&usb->maxchild, usb->no, "maxchild");
 		sprintf(&usb->mount, "%s%s", usb->vendor, usb->serial);
 		get_usb_device(&usb->device, usb->mount);
+		//get_usb_size(&usb->size, usb->device);
 	}
 }

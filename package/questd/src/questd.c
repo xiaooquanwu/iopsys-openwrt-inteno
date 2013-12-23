@@ -506,8 +506,6 @@ router_dump_usbs(struct blob_buf *b)
 		{
 			remove_newline(line);
 			dump_usb_info(&usb[uno], line);
-			if (!usb[uno].plugged)
-				continue;
 			t = blobmsg_open_table(b, usb[uno].name);
 			blobmsg_add_string(b, "product", usb[uno].product);
 			blobmsg_add_string(b, "speed", usb[uno].speed);
@@ -519,6 +517,7 @@ router_dump_usbs(struct blob_buf *b)
 				blobmsg_add_string(b, "serial", usb[uno].serial);
 				if(usb[uno].device) {
 					blobmsg_add_string(b, "device", usb[uno].device);
+					//blobmsg_add_u64(b, "size", usb[uno].size);
 					blobmsg_add_string(b, "mountpoint", usb[uno].mount);
 				}
 			}

@@ -102,7 +102,6 @@ typedef struct {
 } Spec;
 
 typedef struct {
-	bool plugged;
 	char mount[64];
 	char product[64];
 	char no[8];
