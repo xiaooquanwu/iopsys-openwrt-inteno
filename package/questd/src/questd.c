@@ -45,9 +45,6 @@ static Key keys;
 static Spec spec;
 static USB usb[MAX_USB];
 
-static char USBNO[18][6] = { "1", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6", "1.7", "1.8",
-				"2", "2.1", "2.2", "2.3", "2.4", "2.5", "2.6", "2.7", "2.8" };
-
 pthread_t tid[1];
 static long sleep_time = DEFAULT_SLEEP;
 
@@ -498,27 +495,37 @@ static void
 router_dump_usbs(struct blob_buf *b)
 {
 	void *t;
-	int i;
+	int uno = 0;
+	FILE *usbdevs;
+	char cmnd[64];
+	char line[16];
 
-	for (i = 0; i < 18; i++) {
-		dump_usb_info(&usb[i], USBNO[i]);
-		if (!usb[i].plugged)
-			continue;
-		t = blobmsg_open_table(b, usb[i].name);
-		blobmsg_add_string(b, "product", usb[i].product);
-		blobmsg_add_string(b, "speed", usb[i].speed);
-		if (usb[i].maxchild && strcmp(usb[i].maxchild, "0")) {
-			blobmsg_add_u32(b, "maxchild", atoi(usb[i].maxchild));
-		}
-		else {
-			blobmsg_add_string(b, "vendor", usb[i].vendor);
-			blobmsg_add_string(b, "serial", usb[i].serial);
-			if(usb[i].device) {
-				blobmsg_add_string(b, "device", usb[i].device);
-				blobmsg_add_string(b, "mountpoint", usb[i].mount);
+	sprintf(cmnd, "ls /sys/bus/usb/devices/ | grep -v ':' | grep -v 'usb'");
+	if (usbdevs = popen(cmnd, "r")) {
+		while(fgets(line, sizeof(line), usbdevs) != NULL)
+		{
+			remove_newline(line);
+			dump_usb_info(&usb[uno], line);
+			if (!usb[uno].plugged)
+				continue;
+			t = blobmsg_open_table(b, usb[uno].name);
+			blobmsg_add_string(b, "product", usb[uno].product);
+			blobmsg_add_string(b, "speed", usb[uno].speed);
+			if (usb[uno].maxchild && strcmp(usb[uno].maxchild, "0")) {
+				blobmsg_add_u32(b, "maxchild", atoi(usb[uno].maxchild));
 			}
+			else {
+				blobmsg_add_string(b, "vendor", usb[uno].vendor);
+				blobmsg_add_string(b, "serial", usb[uno].serial);
+				if(usb[uno].device) {
+					blobmsg_add_string(b, "device", usb[uno].device);
+					blobmsg_add_string(b, "mountpoint", usb[uno].mount);
+				}
+			}
+			blobmsg_close_table(b, t);
+			uno++;
 		}
-		blobmsg_close_table(b, t);
+		fclose(usbdevs);
 	}
 }
 
