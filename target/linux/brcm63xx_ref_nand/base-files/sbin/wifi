@@ -521,12 +521,6 @@ set_wifi() {
 	# set MAX assoc
 	wlctl -i $device maxassoc "${maxassoc:-128}"
 
-	# create and configure wireless VIFs
-	wlctl -i $device down
-	wlctl -i $device mbss 1
-	config_foreach set_wifi_iface wifi-iface "$device"
-	_c=0
-
 	# WME settings
 	wlctl -i $device wme 0 2>/dev/null
 	wlctl -i $device afterburner_override 0 2>/dev/null
@@ -553,6 +547,14 @@ set_wifi() {
 	wlctl -i $device rxchain_pwrsave_enable "${rxchainps:-0}"
 	wlctl -i $device rxchain_pwrsave_quiet_time "${rxchainps_qt:-10}"
 	wlctl -i $device rxchain_pwrsave_pps "${rxchainps_pps:-10}"
+
+	# create and configure wireless VIFs
+	wlctl -i $device down
+	wlctl -i $device mbss 1
+	curdev=$device
+	config_foreach set_wifi_iface wifi-iface "$device"
+	device=$curdev
+	_c=0
 
 	# bring up the wireless device
 	wlctl -i $device leddc 0 2>/dev/null
