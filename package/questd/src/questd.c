@@ -43,6 +43,10 @@ static Router router;
 static Memory memory;
 static Key keys;
 static Spec spec;
+static USB usb[MAX_USB];
+
+static char USBNO[18][6] = { "1", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6", "1.7", "1.8",
+				"2", "2.1", "2.2", "2.3", "2.4", "2.5", "2.6", "2.7", "2.8" };
 
 pthread_t tid[1];
 static long sleep_time = DEFAULT_SLEEP;
@@ -353,15 +357,7 @@ populate_ports(Network *network)
 		
 get_clients:	
 	for(i=1; strlen(port[i].device)>2; i++)
-	{		
-		/*if(
-		//(
-		!strstr(port[i].device, "eth")
-		//&& !strstr(port[i].device, "wl"))
-		|| strchr(port[i].device, '.')
-		)
-			continue;*/
-			
+	{				
 		memset(&port[i].stat, '\0', sizeof(Statistic));
 		for (j=0; port[i].client[j].exists; j++) {
 			memset(&port[i].client[j], '\0', sizeof(Client));
@@ -458,15 +454,13 @@ router_dump_memory_info(struct blob_buf *b, bool table)
 static void
 router_dump_networks(struct blob_buf *b)
 {
-	void *a, *t;
+	void *t;
 	int i;
 
-	//a = blobmsg_open_array(b, "networks");
 	for (i = 0; i < MAX_NETWORK; i++) {
 		if (!network[i].exists)
 			break;
 		t = blobmsg_open_table(b, network[i].name);
-		//blobmsg_add_string(b, "name", network[i].name);
 		blobmsg_add_u8(b, "is_lan", network[i].is_lan);
 		blobmsg_add_string(b, "type", network[i].type);
 		blobmsg_add_string(b, "proto", network[i].proto);
@@ -477,16 +471,14 @@ router_dump_networks(struct blob_buf *b)
 		blobmsg_add_string(b, "ifname", network[i].ifname);
 		blobmsg_close_table(b, t);
 	}
-	//blobmsg_close_array(b, a);
 }
 
 static void
 router_dump_clients(struct blob_buf *b)
 {
-	void *a, *t;
+	void *t;
 	int i;
 
-	//a = blobmsg_open_array(b, "clients");
 	for (i = 0; i < MAX_CLIENT; i++) {
 		if (!clients[i].exists)
 			break;
@@ -500,13 +492,40 @@ router_dump_clients(struct blob_buf *b)
 		blobmsg_add_u8(b, "connected", clients[i].connected);
 		blobmsg_close_table(b, t);
 	}
-	//blobmsg_close_array(b, a);
+}
+
+static void
+router_dump_usbs(struct blob_buf *b)
+{
+	void *t;
+	int i;
+
+	for (i = 0; i < 18; i++) {
+		dump_usb_info(&usb[i], USBNO[i]);
+		if (!usb[i].plugged)
+			continue;
+		t = blobmsg_open_table(b, usb[i].name);
+		blobmsg_add_string(b, "product", usb[i].product);
+		blobmsg_add_string(b, "speed", usb[i].speed);
+		if (usb[i].maxchild && strcmp(usb[i].maxchild, "0")) {
+			blobmsg_add_u32(b, "maxchild", atoi(usb[i].maxchild));
+		}
+		else {
+			blobmsg_add_string(b, "vendor", usb[i].vendor);
+			blobmsg_add_string(b, "serial", usb[i].serial);
+			if(usb[i].device) {
+				blobmsg_add_string(b, "device", usb[i].device);
+				blobmsg_add_string(b, "mountpoint", usb[i].mount);
+			}
+		}
+		blobmsg_close_table(b, t);
+	}
 }
 
 static void
 router_dump_ports(struct blob_buf *b, char *interface)
 {
-	void *a, *t, *c, *h, *s;
+	void *t, *c, *h, *s;
 	int pno, i, j;
 	const char *ports[6];
 	bool found = false;
@@ -532,7 +551,6 @@ router_dump_ports(struct blob_buf *b, char *interface)
 	if (!found)
 		return;
 
-	//a = blobmsg_open_array(b, "ports");
 	for (pno=0; pno<=5; pno++) {
 		for (i = 1; strlen(port[i].name) > 2; i++) {
 			if(strcmp(port[i].name, ports[pno]))
@@ -558,22 +576,19 @@ router_dump_ports(struct blob_buf *b, char *interface)
 			blobmsg_close_table(b, t);
 		}
 	}
-	//blobmsg_close_array(b, a);
 }
 
 static void
 network_dump_leases(struct blob_buf *b, char *leasenet)
 {
-	void *a, *t;
+	void *t;
 	int i;
 
-	//a = blobmsg_open_array(b, "leases");
 	for (i = 0; i < MAX_CLIENT; i++) {
 		if (!clients[i].exists)
 			break;
 		if (clients[i].dhcp && !strcmp(clients[i].network, leasenet)) {
 			t = blobmsg_open_table(b, clients[i].leaseno);
-			//blobmsg_add_string(b, "leaseno", clients[i].leaseno);
 			blobmsg_add_string(b, "hostname", clients[i].hostname);
 			blobmsg_add_string(b, "ipaddr", clients[i].hostaddr);
 			blobmsg_add_string(b, "macaddr", clients[i].macaddr);
@@ -582,7 +597,6 @@ network_dump_leases(struct blob_buf *b, char *leasenet)
 			blobmsg_close_table(b, t);
 		}
 	}
-	//blobmsg_close_array(b, a);
 }
 
 static void
@@ -703,6 +717,23 @@ quest_router_clients(struct ubus_context *ctx, struct ubus_object *obj,
 	return 0;
 }
 
+static int
+quest_router_usbs(struct ubus_context *ctx, struct ubus_object *obj,
+		  struct ubus_request_data *req, const char *method,
+		  struct blob_attr *msg)
+{
+	struct blob_attr *tb[__QUEST_MAX];
+
+	blobmsg_parse(quest_policy, __QUEST_MAX, tb, blob_data(msg), blob_len(msg));
+
+	blob_buf_init(&bb, 0);
+	router_dump_usbs(&bb);
+	ubus_send_reply(ctx, req, bb.head);
+
+	return 0;
+}
+
+
 enum {
 	NETWORK_NAME,
 	__NETWORK_MAX,
@@ -819,6 +850,7 @@ static struct ubus_method router_object_methods[] = {
 	UBUS_METHOD("ports", quest_router_ports, network_policy),
 	UBUS_METHOD("lease", quest_network_leases, network_policy),
 	UBUS_METHOD("host", quest_host_status, host_policy),
+	{ .name = "usb", .handler = quest_router_usbs },
 	{ .name = "reload", .handler = quest_reload },
 };
 

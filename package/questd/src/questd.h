@@ -15,6 +15,7 @@
 #define MAX_NETWORK	32
 #define MAX_CLIENT	128
 #define MAX_PORT	8
+#define MAX_USB		18
 
 typedef struct {
 	bool exists;
@@ -100,6 +101,20 @@ typedef struct {
 	int eports;
 } Spec;
 
+typedef struct {
+	bool plugged;
+	char mount[64];
+	char product[64];
+	char no[8];
+	char name[8];
+	unsigned long size;
+	unsigned char *device;
+	unsigned char *vendor;
+	unsigned char *serial;
+	unsigned char *speed;
+	unsigned char *maxchild;
+} USB;
+
 typedef struct jiffy_counts_t {
 	unsigned long long usr, nic, sys, idle;
 	unsigned long long iowait, irq, softirq, steal;
@@ -129,3 +144,4 @@ void get_port_name(Port *port);
 void get_port_stats(Port *port);
 void get_bridge_ports(char *network, unsigned char **ifname);
 void get_clients_onport(char *bridge, int portno, unsigned char **macaddr);
+void dump_usb_info(USB *usb, char *usbno);
