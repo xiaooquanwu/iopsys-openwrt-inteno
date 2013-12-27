@@ -98,7 +98,7 @@ dump_usb_info(USB *usb, char *usbno)
 		sprintf(&usb->name, "USB%s", strndup(usbno+2, strlen(usbno)));
 		get_usb_infos(&usb->vendor, usb->no, "manufacturer");
 		get_usb_infos(&usb->serial, usb->no, "serial");
-		get_usb_infos(&usb->speed, usb->no, "speed");
+		//get_usb_infos(&usb->speed, usb->no, "speed");
 		get_usb_infos(&usb->maxchild, usb->no, "maxchild");
 		sprintf(&usb->mount, "%s%s", usb->vendor, usb->serial);
 		get_usb_device(&usb->device, usb->mount);

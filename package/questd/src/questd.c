@@ -508,7 +508,7 @@ router_dump_usbs(struct blob_buf *b)
 			dump_usb_info(&usb[uno], line);
 			t = blobmsg_open_table(b, usb[uno].name);
 			blobmsg_add_string(b, "product", usb[uno].product);
-			blobmsg_add_string(b, "speed", usb[uno].speed);
+			//blobmsg_add_string(b, "speed", usb[uno].speed);
 			if (usb[uno].maxchild && strcmp(usb[uno].maxchild, "0")) {
 				blobmsg_add_u32(b, "maxchild", atoi(usb[uno].maxchild));
 			}
@@ -518,7 +518,7 @@ router_dump_usbs(struct blob_buf *b)
 				if(usb[uno].device) {
 					blobmsg_add_string(b, "device", usb[uno].device);
 					//blobmsg_add_u64(b, "size", usb[uno].size);
-					blobmsg_add_string(b, "mountpoint", usb[uno].mount);
+					blobmsg_add_string(b, "mntdir", usb[uno].mount);
 				}
 			}
 			blobmsg_close_table(b, t);
