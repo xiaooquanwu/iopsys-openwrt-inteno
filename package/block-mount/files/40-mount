@@ -82,7 +82,7 @@ if [ `basename $blkdev` != "block" ]; then
 				case "$device" in
 					mtdblock*) ;;
 					*)
-						mntdir=$mnfct$serial
+						mntdir=$(echo $mnfct$serial | tr ' ' '_')
 						( mkdir -p /mnt/$mntdir && mount /dev/$device /mnt/$mntdir || ntfs-3g /dev/$device /mnt/$mntdir ) 2>&1 | tee /proc/self/fd/2 | logger -t 'fstab'
 						echo "/dev/$device /mnt/$mntdir" >> /var/usbmounts
 					;;
