@@ -33,3 +33,4 @@ xt_mark
 usb-storage
 qcaux
 qcserial
+cifs

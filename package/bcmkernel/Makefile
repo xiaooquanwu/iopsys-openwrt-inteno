@@ -14,7 +14,7 @@ PKG_RELEASE:=4
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=git@iopsys.inteno.se:bcmkernel-4.14L.04
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=d5e7b80296875ae5907dff87b054e793197a7b63
+PKG_SOURCE_VERSION:=a103c21d2ca5cace9073e591b6443bc915958089
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
 
 include $(INCLUDE_DIR)/package.mk
@@ -128,6 +128,7 @@ define Package/bcmkernel/install
 	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/net/ipv4/netfilter/*      $(1)/lib/modules/$(BCM_KERNEL_VERSION)/
 	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/net/ipv6/netfilter/*      $(1)/lib/modules/$(BCM_KERNEL_VERSION)/
 	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/net/netfilter/*           $(1)/lib/modules/$(BCM_KERNEL_VERSION)/
+	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/fs/cifs/*		  $(1)/lib/modules/$(BCM_KERNEL_VERSION)/
 #	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/drivers/char/hw_random/*  $(1)/lib/modules/$(BCM_KERNEL_VERSION)/
 
 
