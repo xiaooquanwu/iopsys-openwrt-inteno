@@ -8,9 +8,8 @@ exec >/dev/null 2>&1
 
 local _enWifi=0
 local _enWps=0
-local _c=0
+local _vno=0
 local acsifs=""
-local vifs=""
 
 map_networks() {
 	local ifdev ifobj devtype
@@ -132,15 +131,17 @@ set_wifi_up() {
 
 set_wifi_iface() {
 	local vif="$1"
-	config_get device "$vif" device
+	local device
+	local vifs
 
+	config_get device "$vif" device
 
 	if [ "$2" == "$device" ]; then
 		config_get network "$vif" network
 		config_get mode "$vif" mode
 		config_get ssid "$vif" ssid
 		config_get macfilter "$vif" macfilter
-		local maclist="$(uci -q get wireless.@wifi-iface[$_c].maclist)" #config_get maclist "$vif" maclist
+		local maclist="$(uci -q get wireless.@wifi-iface[$_vno].maclist)" #config_get maclist "$vif" maclist
 		config_get_bool wmf_bss_enable "$vif" wmf_bss_enable
 		config_get_bool wmm_bss_disable "$vif" wmm_bss_disable
 		config_get bss_max "$vif" bss_max
@@ -152,31 +153,32 @@ set_wifi_iface() {
 		local qr_hidden=false
 		local qr_key="no"
 
-		if [ $_c -eq 0 ]; then
+		if [ $_vno -eq 0 ]; then
 			iface="$device"
 			nif="$device"
 		else
-			iface="$device"."$_c"
-			nif="$device"_"$_c"
+			iface="$device"."$_vno"
+			nif="$device"_"$_vno"
 
 			# set NAS alternate if multi SSIDs are used
 			nvram set nas_alternate=1
 		fi
 
 		# set wireless VIFs in broadcom nvram
+		vifs=$(nvram get "$device"_vifs)
 		[ -z "$vifs" ] && vifs="$iface" || vifs="$vifs $iface"
 		nvram set "$device"_vifs="$vifs"
 
 		# create wireless VIFs
-		wlctl -i $device bss -C $_c down
-		wlctl -i $device ssid -C $_c $ssid
+		wlctl -i $device bss -C $_vno down
+		wlctl -i $device ssid -C $_vno $ssid
 		nvram set "$nif"_ifname=$iface
 		nvram set "$nif"_ssid=$ssid
 
 		# check if VIF is disabled in config
 		if [ "$disabled" == "1" ]; then
 			nvram set "$nif"_bss_enabled=0
-			_c=$(($_c + 1))
+			_vno=$(($_vno + 1))
 			continue
 		else
 			nvram set "$nif"_bss_enabled=1
@@ -334,7 +336,7 @@ set_wifi_iface() {
 
 		# bring up the VIF and add to network
 		set_wifi_up "$vif" "$iface"
-		wlctl -i $device bss -C $_c up
+		wlctl -i $device bss -C $_vno up
 		ifconfig $iface hw ether $(wlctl -i $iface cur_etheraddr | awk '{print$2}') 2>/dev/null
 		nvram set "$nif"_hwaddr="$(wlctl -i $iface cur_etheraddr | awk '{print$2}')"
 		ifconfig "$iface" up >/dev/null 2>&1 && {
@@ -343,11 +345,11 @@ set_wifi_iface() {
 		wlctl -i $iface bss down
 		wlctl -i $iface bss up
 
-		_c=$(($_c + 1))
+		_vno=$(($_vno + 1))
 	fi
 }
 
-set_wifi() {
+set_wifi_device() {
 	local device="$1"
 	config_get band "$device" band
 	config_get bandwidth "$device" bandwidth
@@ -403,14 +405,20 @@ set_wifi() {
 	wlctl -i $device stbc_rx 0
 	# wlctl -i $device stbc_tx -1
 	wlctl -i $device fcache 1
+
+	# WDS Settings
 	wlctl -i $device wds none
 	# wlctl -i $device wdswsec 0
 	# wlctl -i $device wdswsec_enable 0
+
+	# mode settings
 	wlctl -i $device up
 	wlctl -i $device down
 	# wlctl -i $device ap 1
+	wlctl -i $device mpc 0
 	# wlctl -i $device infra 1
 	# wlctl -i $device closed 0
+
 	wlctl -i $device country "${country:-SE}"
 	wlctl -i $device band "${band:-b}"
 	# wlctl -i $device radar 0 2>/dev/null
@@ -438,6 +446,7 @@ set_wifi() {
 	# set HW mode and rate
 	wlctl -i $device nmode -1
 	wlctl -i $device mimo_bw_cap 2
+	wlctl -i $device mimo_preamble 2
 	wlctl -i $device bw_cap 2g 0xff 2>/dev/null
 	wlctl -i $device bw_cap 5g 0xff 2>/dev/null
 	wlctl -i $device obss_coex 1
@@ -498,6 +507,20 @@ set_wifi() {
 				nvram set acs_ifnames="$device"
 			fi
 			acsifs="$(nvram get acs_ifnames)"
+			nvram set "$device"_acs_chan_dwell_time="70"
+			nvram set "$device"_acs_chan_flop_period="70"
+			nvram set "$device"_acs_ci_scan_timeout="0"
+			nvram set "$device"_acs_ci_scan_timer="4"
+			nvram set "$device"_acs_cs_scan_timer="900"
+			nvram set "$device"_acs_dfs="0"
+			nvram set "$device"_acs_dfsr_activity="30 10240"
+			nvram set "$device"_acs_dfsr_deferred="604800 5"
+			nvram set "$device"_acs_dfsr_immediate="300 3"
+			nvram set "$device"_acs_excl_chans=""
+			nvram set "$device"_acs_fcs_mode="0"
+			nvram set "$device"_acs_scan_entry_expire="3600"
+			nvram set "$device"_acs_tx_idle_cnt="5"
+			wlctl -i $device chanim_mode 2
 			#wlctl -i $device csscantimer "${scantimer:-10}"
 			wlctl -i $device up
 			wlctl -i $device autochannel 1
@@ -551,10 +574,8 @@ set_wifi() {
 	# create and configure wireless VIFs
 	wlctl -i $device down
 	wlctl -i $device mbss 1
-	curdev=$device
 	config_foreach set_wifi_iface wifi-iface "$device"
-	device=$curdev
-	_c=0
+	_vno=0
 
 	# bring up the wireless device
 	wlctl -i $device leddc 0 2>/dev/null
@@ -651,7 +672,7 @@ case "$1" in
 	;;
 	*)
 		config_foreach set_wifi_down wifi-device $2
-		config_foreach set_wifi wifi-device $2
+		config_foreach set_wifi_device wifi-device $2
 
 		if [ $_enWifi -gt 0 ]; then
 			ledctl eco off
