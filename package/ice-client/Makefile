@@ -309,6 +309,8 @@ define Package/ice-client-fileme/install
 	$(CP) $(PKG_BUILD_DIR)/scripts/fileme/conf.d/10-webdav.conf $(1)/etc/cloudfriends/fileme/lighttpd/conf.d
 	$(INSTALL_DIR) $(1)/etc/cloudfriends/fileme/docroot/dav
 	$(INSTALL_DIR) $(1)/etc/cloudfriends/fileme/docroot/shares
+	$(INSTALL_DIR) $(1)/tmp/log/lighttpd
+	$(INSTALL_DIR) $(1)/tmp/run
 endef
 
 define Package/ice-client-fileme/postinst
