@@ -92,23 +92,36 @@ define Package/bcmkernel/install
 	$(CP) -r $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/xChange/dslx_common/xchg_drivers/inc/* $(STAGING_DIR)/usr/include/bcm963xx/xChange/dslx_common/xchg_drivers/inc
 
 
-	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/bin/* $(1)/usr/sbin/
-	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/* $(1)/usr/lib/
-	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/gpl/* $(1)/usr/lib/
-	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/private/* $(1)/usr/lib/
+	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/bin/*		$(1)/usr/sbin/
+
+	rm -f $(1)/usr/sbin/httpd
+	rm -f $(1)/usr/sbin/openssl
+	rm -f $(1)/usr/sbin/telnetd
+	rm -f $(1)/usr/sbin/vodsl
+
+
+	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/*		$(1)/usr/lib/
+	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/gpl/*	$(1)/usr/lib/
+	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/private/*	$(1)/usr/lib/
+
+	rm -f $(1)/usr/lib/ld-uClibc.so.0
+	rm -f $(1)/usr/lib/libc.so.0
+	rm -f $(1)/usr/lib/libcrypt.so.0
+	rm -f $(1)/usr/lib/libdl.so.0
+	rm -f $(1)/usr/lib/libgcc_s.so.1
+	rm -f $(1)/usr/lib/libm.so.0
+	rm -f $(1)/usr/lib/libpthread.so.0
+	rm -f $(1)/usr/lib/libutil.so.0
 
 	rm -f $(1)/usr/lib/libcms_boardctl.so
 	rm -f $(1)/usr/lib/libcms_msg.so
 	rm -f $(1)/usr/lib/libcms_util.so
 	rm -f $(1)/usr/lib/libcrypto.so.0.9.7
 	rm -f $(1)/usr/lib/libssl.so.0.9.7
-	rm -f $(1)/usr/sbin/vodsl
+	rm -f $(1)/usr/lib/libnvram.so
 
-	rm -f $(1)/usr/sbin/httpd
-	rm -f $(1)/usr/sbin/openssl
-	rm -f $(1)/usr/sbin/telnetd
 
-	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/public/* $(1)/usr/lib/
+	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/public/*	$(1)/usr/lib/
 
 	rm -rf $(1)/usr/lib/modules
 	rm -rf $(1)/usr/lib/private
@@ -117,10 +130,10 @@ define Package/bcmkernel/install
 
 
 	rm -rf $(1)/lib/modules/$(BCM_KERNEL_VERSION)/*
-	mkdir $(1)/lib/
-	mkdir $(1)/lib/modules/
-	mkdir $(1)/lib/modules/$(BCM_KERNEL_VERSION)/
-	mkdir $(1)/lib/modules/$(BCM_KERNEL_VERSION)/extra
+	mkdir -p $(1)/lib/
+	mkdir -p $(1)/lib/modules/
+	mkdir -p $(1)/lib/modules/$(BCM_KERNEL_VERSION)/
+	mkdir -p $(1)/lib/modules/$(BCM_KERNEL_VERSION)/extra
 
 
 	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/extra/*                          $(1)/lib/modules/$(BCM_KERNEL_VERSION)/extra/
@@ -140,10 +153,9 @@ define Package/bcmkernel/install
 #	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/bcmdrivers/broadcom/char/adsl/impl1/adsl_phy.bin                                      $(1)/etc/adsl/adsl_phy.bin
 
 	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/etc/wlan/*_map.bin	$(1)/etc/wlan
-	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/etc/telephonyProfiles.d $(1)/etc/
+	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/etc/telephonyProfiles.d	$(1)/etc/
 
 #	rm -rf $(1)/lib/modules/$(BCM_KERNEL_VERSION)/bcm_usb.ko
-	rm -rf $(1)/usr/lib/libnvram.so
 
 	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/kernel/linux-3.4rt/vmlinux $(KDIR)/vmlinux.bcm.elf
 	$(KERNEL_CROSS)strip --remove-section=.note --remove-section=.comment $(KDIR)/vmlinux.bcm.elf
