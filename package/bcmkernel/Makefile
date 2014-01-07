@@ -14,7 +14,7 @@ PKG_RELEASE:=4
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=git@iopsys.inteno.se:bcmkernel-4.14L.04
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=66f04cbb2dd733fe8d46b27ef078a189ce17a427
+PKG_SOURCE_VERSION:=29bee8fda5de318c75f9be8712de1793754502e6
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
 
 include $(INCLUDE_DIR)/package.mk
@@ -103,6 +103,10 @@ define Package/bcmkernel/install
 	rm -f $(1)/usr/lib/libcrypto.so.0.9.7
 	rm -f $(1)/usr/lib/libssl.so.0.9.7
 	rm -f $(1)/usr/sbin/vodsl
+
+	rm -f $(1)/usr/sbin/httpd
+	rm -f $(1)/usr/sbin/openssl
+	rm -f $(1)/usr/sbin/telnetd
 
 	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/public/* $(1)/usr/lib/
 
