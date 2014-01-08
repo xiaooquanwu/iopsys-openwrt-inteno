@@ -1,5 +1,6 @@
 scsi_wait_scan
 ecb
+md4
 pcbc
 ipt_REDIRECT
 gre
@@ -33,4 +34,5 @@ xt_mark
 usb-storage
 qcaux
 qcserial
+dns_resolver
 cifs
