@@ -14,7 +14,7 @@ PKG_RELEASE:=4
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=git@iopsys.inteno.se:bcmkernel-4.14L.04
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=29bee8fda5de318c75f9be8712de1793754502e6
+PKG_SOURCE_VERSION:=1a4c961624d705c0fe90dcceda6a071dff3cb4f6
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
 
 include $(INCLUDE_DIR)/package.mk
@@ -141,11 +141,12 @@ define Package/bcmkernel/install
 	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/drivers/scsi/*            $(1)/lib/modules/$(BCM_KERNEL_VERSION)/
 	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/drivers/usb/serial/*	  $(1)/lib/modules/$(BCM_KERNEL_VERSION)/
 	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/drivers/usb/storage/*	  $(1)/lib/modules/$(BCM_KERNEL_VERSION)/
-	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/net/ipv4/*.ko		  $(1)/lib/modules/$(BCM_KERNEL_VERSION)/	
+	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/fs/cifs/*		  $(1)/lib/modules/$(BCM_KERNEL_VERSION)/
+	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/net/ipv4/*.ko		  $(1)/lib/modules/$(BCM_KERNEL_VERSION)/
+	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/net/dns_resolver/*	  $(1)/lib/modules/$(BCM_KERNEL_VERSION)/
 	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/net/ipv4/netfilter/*      $(1)/lib/modules/$(BCM_KERNEL_VERSION)/
 	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/net/ipv6/netfilter/*      $(1)/lib/modules/$(BCM_KERNEL_VERSION)/
 	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/net/netfilter/*           $(1)/lib/modules/$(BCM_KERNEL_VERSION)/
-	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/fs/cifs/*		  $(1)/lib/modules/$(BCM_KERNEL_VERSION)/
 #	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/drivers/char/hw_random/*  $(1)/lib/modules/$(BCM_KERNEL_VERSION)/
 
 
