@@ -123,6 +123,13 @@ addbrcmvlan ()
 		fi
 	fi
 }
+create_ebtables_rules ()
+{
+	/bin/ebtables -D FORWARD -p ip --ip-protocol 17 --ip-destination-port 68 -j SKIPLOG 2>/dev/null
+	/bin/ebtables -D FORWARD -p ip --ip-destination 255.255.255.255 -j SKIPLOG 2>/dev/null
+	/bin/ebtables -A FORWARD -p ip --ip-protocol 17 --ip-destination-port 68 -j SKIPLOG
+	/bin/ebtables -A FORWARD -p ip --ip-destination 255.255.255.255 -j SKIPLOG
+}
 
 brcm_virtual_interface_rules ()
 {
@@ -132,6 +139,7 @@ brcm_virtual_interface_rules ()
 
 	if [ "$bridge" -eq 1 ]; then
 	  vlanctl --if-create-name $baseifname $ifname
+	  create_ebtables_rules  
 	else
 	  vlanctl --routed --if-create-name  $baseifname $ifname
 	fi
