@@ -47,3 +47,6 @@
 ./scripts/feeds install bind-tools
 ./scripts/feeds install logrotate
 ./scripts/feeds install ndisc6
+./scripts/feeds install libpcre
+./scripts/feeds install libxml2
+./scripts/feeds install lighttpd
