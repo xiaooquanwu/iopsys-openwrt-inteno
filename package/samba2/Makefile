@@ -42,11 +42,11 @@ define Package/samba2-common
   TITLE:=NetBIOS/SMB server and client shared files
 endef
 
-define Package/samba2-server
-  $(call Package/samba2/Default)
-  TITLE:=NetBIOS/SMB file and print server
-  DEPENDS:=samba2-common
-endef
+#define Package/samba2-server
+#  $(call Package/samba2/Default)
+#  TITLE:=NetBIOS/SMB file and print server
+#  DEPENDS:=samba2-common
+#endef
 
 define Package/samba2-client
   $(call Package/samba2/Default)
