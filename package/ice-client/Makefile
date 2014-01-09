@@ -13,18 +13,15 @@ export HOME_DIR:=$(TOPDIR)
 
 export PLATFORM_INCLUDE:=platforms/iopsys/build.mk
 
-DATE:=$(shell date +%Y-%m-%d-%H-%M-%S)
-TMP=$(shell echo $(DATE) > core/date.txt)
-LOGIN:=$(shell whoami)
-TMP=$(shell echo $(LOGIN) > core/login.txt)
-#BASE_PKG_VERSION:=$(shell cat core/version.txt)
-BASE_PKG_VERSION:=2.8.1
-PKG_VERSION:=$(BASE_PKG_VERSION)_$(LOGIN)_$(DATE)
-PKG_RELEASE:=RC1
+export DATE:=$(shell date +%Y-%m-%d-%H-%M-%S)
+export LOGIN:=$(shell whoami)
+BASE_PKG_VERSION:=2.8.2
+PKG_RELEASE:=RC12
+PKG_VERSION:=$(BASE_PKG_VERSION)-$(PKG_RELEASE)_$(DATE)_$(LOGIN)
 PKG_SOURCE_URL:=ssh://git@iopsys.inteno.se/ice-client.git
-PKG_SOURCE_VERSION:=02990460d3032aff5ced7a0ed64abd3c171e900a
+PKG_SOURCE_VERSION:=95c27b082db26227c308c86685329326dc862430
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(BASE_PKG_VERSION)
-PKG_SOURCE:=$(PKG_NAME)-$(BASE_PKG_VERSION).tar.gz
+PKG_SOURCE:=$(PKG_NAME)-$(BASE_PKG_VERSION)-$(PKG_RELEASE).tar.gz
 
 PKG_BUILD_DIR := $(BUILD_DIR)/$(PKG_NAME)-$(BASE_PKG_VERSION)
 
@@ -34,9 +31,8 @@ include $(INCLUDE_DIR)/package.mk
 
 define Package/ice-client/Default
 	CATEGORY:=Utilities
-	URL:=http://www.cloudfriends.eu/
+	URL:=http://inteno.se/
 	DEPENDS:= ice-client
-	DEFAULT:=y
 endef
 
 define Package/ice-client
@@ -44,7 +40,7 @@ $(call Package/ice-client/Default)
 	TITLE:=ice-client
 	MENU:=1
 	DEPENDS:=+libopenssl +libstdcpp
-	DEFAULT:=n
+	DEFAULT:=y
 endef
 
 # Specify where and how to install the program. Since we only have one file,
@@ -57,7 +53,13 @@ endef
 
 define Build/Configure
 	$(MAKE) -C $(PKG_BUILD_DIR) config
-	echo $(BASE_PKG_VERSION) > $(PKG_BUILD_DIR)/core/version.txt
+	echo $(BASE_PKG_VERSION)-$(PKG_RELEASE) > $(PKG_BUILD_DIR)/core/version.txt
+	echo $(DATE) > $(PKG_BUILD_DIR)/core/date.txt
+	echo $(LOGIN) > $(PKG_BUILD_DIR)/core/login.txt
+endef
+
+define Build/Compile	
+	$(MAKE) -C $(PKG_BUILD_DIR) 
 endef
 
 define Package/ice-client/preinst
@@ -75,17 +77,17 @@ define Package/ice-client/install
 	$(INSTALL_DIR) $(1)/usr/lib
 	$(CP) $(PKG_BUILD_DIR)/core/lib/{libcli.so.1.0.1,systemService.so.1.0.1,libconfStore.so.1,libjsoncpp.so.1,networkService.so.1.0.1,packageService.so.1.0.1} $(1)/usr/lib
 	$(INSTALL_DIR) $(1)/etc/config
-	$(CP) $(PKG_BUILD_DIR)/scripts/etc/config/cloudfriends $(1)/etc/config
+	$(CP) $(PKG_BUILD_DIR)/scripts/etc/config/ice $(1)/etc/config
 	$(INSTALL_DIR) $(1)/etc/cloudfriends
 	$(CP) $(PKG_BUILD_DIR)/scripts/server.ini $(1)/etc/cloudfriends	
 	$(CP) $(PKG_BUILD_DIR)/scripts/modify.ini $(1)/etc/cloudfriends
 	$(CP) $(PKG_BUILD_DIR)/scripts/*.crt $(1)/etc/cloudfriends
 	$(INSTALL_DIR) $(1)/etc/init.d
-	$(CP) $(PKG_BUILD_DIR)/scripts/cloudfriends $(1)/etc/init.d/cloudfriends
+	$(CP) $(PKG_BUILD_DIR)/scripts/ice-client $(1)/etc/init.d/ice-client
 	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/controller/admin
 	$(CP) $(PKG_BUILD_DIR)/scripts/luci/controller/admin/*.lua $(1)/usr/lib/lua/luci/controller/admin
-	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/model/cbi/cloudfriends
-	$(CP) $(PKG_BUILD_DIR)/scripts/luci/model/cbi/cloudfriends/*.lua $(1)/usr/lib/lua/luci/model/cbi/cloudfriends
+	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/model/cbi/ice
+	$(CP) $(PKG_BUILD_DIR)/scripts/luci/model/cbi/ice/*.lua $(1)/usr/lib/lua/luci/model/cbi/ice
 endef
 
 define Package/ice-client/postinst
@@ -93,12 +95,12 @@ define Package/ice-client/postinst
 if [ -z "$${IPKG_INSTROOT}" ]; then
     echo "Enabling rc.d symlink for cloudfriends"
     #/etc/init.d/cloudfriends enable
-    /etc/init.d/cloudfriends stop
+    /etc/init.d/ice-client stop
     cp /tmp/cloudfriendsserver.ini /etc/cloudfriends/server.ini 
     rm -f /tmp/cloudfriendsserver.ini 
     ice -a /etc/cloudfriends/modify.ini -c /etc/cloudfriends/server.ini
-    if [ -f "/etc/rc.d/S99cloudfriends" ]; then
-        /etc/init.d/cloudfriends start
+    if [ -f "/etc/rc.d/S99ice-client" ]; then
+        /etc/init.d/ice-client start
     fi
 fi
 exit 0
@@ -109,19 +111,19 @@ endef
 # Camerawatch
 define Package/ice-client-camerawatch
 $(call Package/ice-client/Default)
-	TITLE:=Camerawatch
-	DEPENDS:=+libstdcpp +ice-client
+TITLE:=Camerawatch
+DEPENDS+= +libjpeg +libcurl
 endef
 
 define Package/ice-client-camerawatch/description
-	Camerawatch module for ice-client
+Camerawatch module for ice-client
 endef
 
 define Package/ice-client-camerawatch/preinst
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
-	head -n 1 /tmp/cfout &
-	echo "system moduleRemove topic=cameramanager" > /tmp/cfin
+    head -n 1 /tmp/cfout &
+    echo "system moduleRemove topic=cameramanager" > /tmp/cfin
 fi
 exit 0
 endef
@@ -136,30 +138,31 @@ endef
 define Package/ice-client-camerawatch/postinst
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
-	grep "dhcp-script=" /etc/dnsmasq.conf || echo dhcp-script=/etc/cloudfriends/reg_camera >> /etc/dnsmasq.conf
-	head -n 1 /tmp/cfout &
-	echo "system moduleAdd file=camerawatch.so.1.0.1" > /tmp/cfin
+    grep "dhcp-script=" /etc/dnsmasq.conf || echo dhcp-script=/etc/cloudfriends/reg_camera >> /etc/dnsmasq.conf
+    head -n 1 /tmp/cfout &
+    echo "system moduleAdd file=camerawatch.so.1.0.1" > /tmp/cfin
 fi
 exit 0
 endef
 
 # Guest
 define Package/ice-client-guest
-$(call Package/ice-client/Default)
-	TITLE:=Guest
-	DEPENDS:=+libstdcpp +ice-client
+  $(call Package/ice-client/Default)
+  TITLE:=Guest
+  DEPENDS+= 
+  DEFAULT:=y
 endef
 
 define Package/ice-client-guest/description
-	Guest module for ice-client
+Guest module for ice-client
 endef
 
 define Package/ice-client-guest/preinst
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
-	head -n 1 /tmp/cfout &
-	echo "system moduleRemove topic=guestMgr" > /tmp/cfin
-	sleep 5
+    head -n 1 /tmp/cfout &
+    echo "system moduleRemove topic=guestMgr" > /tmp/cfin
+    sleep 5
 fi
 exit 0
 endef
@@ -172,28 +175,28 @@ endef
 define Package/ice-client-guest/postinst
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
-	head -n 1 /tmp/cfout &
-	echo "system moduleAdd file=guestService.so.1.0.1" > /tmp/cfin
+    head -n 1 /tmp/cfout &
+    echo "system moduleAdd file=guestService.so.1.0.1" > /tmp/cfin
 fi
 exit 0
 endef
 
 # OpenVPN
 define Package/ice-client-openvpn
-$(call Package/ice-client/Default)
-	TITLE:=OpenVPN
-	DEPENDS:=+libstdcpp +ice-client
+  $(call Package/ice-client/Default)
+  TITLE:=OpenVPN
+  DEPENDS+= +openvpn
 endef
 
 define Package/ice-client-openvpn/description
-	OpenVPN module for ice-client
+OpenVPN module for ice-client
 endef
 
 define Package/ice-client-openvpn/preinst
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
-	head -n 1 /tmp/cfout &
-	echo "system moduleRemove topic=ovpnMgr" > /tmp/cfin
+    head -n 1 /tmp/cfout &
+    echo "system moduleRemove topic=ovpnMgr" > /tmp/cfin
 fi
 exit 0
 endef
@@ -206,28 +209,28 @@ endef
 define Package/ice-client-openvpn/postinst
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
-	head -n 1 /tmp/cfout &
-	echo "system moduleAdd file=ovpnService.so.1.0.1" > /tmp/cfin
+    head -n 1 /tmp/cfout &
+    echo "system moduleAdd file=ovpnService.so.1.0.1" > /tmp/cfin
 fi
 exit 0
 endef
 
 # Anyfi
 define Package/ice-client-anyfi
-$(call Package/ice-client/Default)
-	TITLE:=AnyFi
-	DEPENDS:=+libstdcpp +ice-client
+  $(call Package/ice-client/Default)
+  TITLE:=AnyFi
+  DEPENDS+= 
 endef
 
 define Package/ice-client-anyfi/description
-	AnyFi module for ice-client
+AnyFi module for ice-client
 endef
 
 define Package/ice-client-anyfi/preinst
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
-	head -n 1 /tmp/cfout &
-	echo "system moduleRemove topic=anyfiMgr" > /tmp/cfin
+    head -n 1 /tmp/cfout &
+    echo "system moduleRemove topic=anyfiMgr" > /tmp/cfin
 fi
 exit 0
 endef
@@ -240,28 +243,28 @@ endef
 define Package/ice-client-anyfi/postinst
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
-	head -n 1 /tmp/cfout &
-	echo "system moduleAdd file=anyfiService.so.1.0.1" > /tmp/cfin
+    head -n 1 /tmp/cfout &
+    echo "system moduleAdd file=anyfiService.so.1.0.1" > /tmp/cfin
 fi
 exit 0
 endef
 
 # Logreader
 define Package/ice-client-logreader
-$(call Package/ice-client/Default)
-	TITLE:=LogReader
-	DEPENDS:=+libstdcpp +ice-client
+  $(call Package/ice-client/Default)
+  TITLE:=LogReader
+  DEPENDS+=
 endef
 
 define Package/ice-client-logreader/description
-	Logread module for ice-client
+Logread module for ice-client
 endef
 
 define Package/ice-client-logreader/preinst
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
-	head -n 1 /tmp/cfout &
-	echo "system moduleRemove topic=log" > /tmp/cfin
+    head -n 1 /tmp/cfout &
+    echo "system moduleRemove topic=log" > /tmp/cfin
 fi
 exit 0
 endef
@@ -274,28 +277,28 @@ endef
 define Package/ice-client-logreader/postinst
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
-	head -n 1 /tmp/cfout &
-	echo "system moduleAdd file=logService.so.1.0.1" > /tmp/cfin
+    head -n 1 /tmp/cfout &
+    echo "system moduleAdd file=logService.so.1.0.1" > /tmp/cfin
 fi
 exit 0
 endef
 
-# FileMe
+# fileme
 define Package/ice-client-fileme
-$(call Package/ice-client/Default)
-	TITLE:=FileMe
-	DEPENDS:=+libstdcpp +lighttpd +samba2-client +ice-client
+  $(call Package/ice-client/Default)
+  TITLE:=FileMe
+  DEPENDS+= +lighttpd +samba2-client
 endef
 
 define Package/ice-client-fileme/description
-	FileMe module for ice-client
+FileMe module for ice-client
 endef
 
 define Package/ice-client-fileme/preinst
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
-	head -n 1 /tmp/cfout &
-	echo "system moduleRemove topic=fileMeMgr" > /tmp/cfin
+  head -n 1 /tmp/cfout &
+  echo "system moduleRemove topic=fileMeMgr" > /tmp/cfin
 fi
 exit 0
 endef
@@ -316,12 +319,11 @@ endef
 define Package/ice-client-fileme/postinst
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
-	head -n 1 /tmp/cfout &
-	echo "system moduleAdd file=filemeService.so.1.0.1" > /tmp/cfin
+  head -n 1 /tmp/cfout &
+  echo "system moduleAdd file=filemeService.so.1.0.1" > /tmp/cfin
 fi
 exit 0
 endef
-
 
 
 # This line executes the necessary commands to compile our program.
@@ -329,8 +331,8 @@ endef
 # line calls BuildPackage which in turn actually uses this information to
 # build a package.
 $(eval $(call BuildPackage,ice-client))
-$(eval $(call BuildPackage,ice-client-camerawatch))
 $(eval $(call BuildPackage,ice-client-guest))
+$(eval $(call BuildPackage,ice-client-camerawatch))
 $(eval $(call BuildPackage,ice-client-openvpn))
 $(eval $(call BuildPackage,ice-client-anyfi))
 $(eval $(call BuildPackage,ice-client-logreader))
