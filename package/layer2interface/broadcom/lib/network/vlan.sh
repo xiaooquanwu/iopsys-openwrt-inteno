@@ -1,7 +1,7 @@
 #!/bin/sh
 
 . /usr/share/libubox/jshn.sh
-
+. /lib/network/ebtables.sh
 removeall_vlandevices()
 {
 	local vif
@@ -123,23 +123,20 @@ addbrcmvlan ()
 		fi
 	fi
 }
-create_ebtables_rules ()
-{
-	/bin/ebtables -D FORWARD -p ip --ip-protocol 17 --ip-destination-port 68 -j SKIPLOG 2>/dev/null
-	/bin/ebtables -D FORWARD -p ip --ip-destination 255.255.255.255 -j SKIPLOG 2>/dev/null
-	/bin/ebtables -A FORWARD -p ip --ip-protocol 17 --ip-destination-port 68 -j SKIPLOG
-	/bin/ebtables -A FORWARD -p ip --ip-destination 255.255.255.255 -j SKIPLOG
-}
+
 
 brcm_virtual_interface_rules ()
 {
 	local baseifname=$1
 	local ifname=$2
 	local bridge=$3
-
+	if [ "x$bridge" = "x" ]; then                                                                                                                         
+	  bridge=0                                                                                                                                              
+        fi
+      
 	if [ "$bridge" -eq 1 ]; then
 	  vlanctl --if-create-name $baseifname $ifname
-	  create_ebtables_rules  
+	  create_ebtables_bridge_rules  
 	else
 	  vlanctl --routed --if-create-name  $baseifname $ifname
 	fi
@@ -153,7 +150,6 @@ brcm_virtual_interface_rules ()
 	
 	if [ "$bridge" -eq 1 ]; then
 		
-		
 		# tags 1 tx
 		vlanctl --if $baseifname --tx --tags 1 --filter-txif $ifname --rule-insert-before -1
 		# tags 2 tx
@@ -165,9 +161,7 @@ brcm_virtual_interface_rules ()
 		# tags 2 rx
 		vlanctl --if $baseifname --rx --tags 2 --set-rxif $ifname --rule-insert-last 
 	else
-		
-		
-		
+				
 		# tags 1 rx
 		vlanctl --if $baseifname --rx --tags 1 --set-rxif $ifname --filter-vlan-dev-mac-addr 0 --drop-frame --rule-insert-before -1
 		# tags 2 rx
