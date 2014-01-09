@@ -123,3 +123,53 @@ addbrcmvlan ()
 		fi
 	fi
 }
+
+brcm_virtual_interface_rules ()
+{
+	local baseifname=$1
+	local ifname=$2
+	local bridge=$3
+
+	if [ "$bridge" -eq 1 ]; then
+	  vlanctl --if-create-name $baseifname $ifname
+	else
+	  vlanctl --routed --if-create-name  $baseifname $ifname
+	fi
+	#set default RG mode
+	vlanctl --if $baseifname --set-if-mode-rg
+	#Set Default Droprules
+	vlanctl --if $baseifname --tx --tags 0 --default-miss-drop
+	vlanctl --if $baseifname --tx --tags 1 --default-miss-drop
+	vlanctl --if $baseifname --tx --tags 2 --default-miss-drop
+	vlanctl --if $baseifname --tx --tags 0 --filter-txif $ifname --rule-insert-before -1
+	
+	if [ "$bridge" -eq 1 ]; then
+		
+		
+		# tags 1 tx
+		vlanctl --if $baseifname --tx --tags 1 --filter-txif $ifname --rule-insert-before -1
+		# tags 2 tx
+		vlanctl --if $baseifname --tx --tags 2 --filter-txif $ifname --rule-insert-before -1
+		# tags 0 rx
+		vlanctl --if $baseifname --rx --tags 0 --set-rxif $ifname --rule-insert-last 
+		# tags 1 rx
+		vlanctl --if $baseifname --rx --tags 1 --set-rxif $ifname --rule-insert-last 
+		# tags 2 rx
+		vlanctl --if $baseifname --rx --tags 2 --set-rxif $ifname --rule-insert-last 
+	else
+		
+		
+		
+		# tags 1 rx
+		vlanctl --if $baseifname --rx --tags 1 --set-rxif $ifname --filter-vlan-dev-mac-addr 0 --drop-frame --rule-insert-before -1
+		# tags 2 rx
+		vlanctl --if $baseifname --rx --tags 2 --set-rxif $ifname --filter-vlan-dev-mac-addr 0 --drop-frame --rule-insert-before -1
+		# tags 0 rx 
+		vlanctl --if $baseifname --rx --tags 0 --set-rxif $ifname --filter-vlan-dev-mac-addr 1 --rule-insert-before -1
+	fi
+	
+	ifconfig $ifname up
+	ifconfig $ifname multicast	 
+}
+
+

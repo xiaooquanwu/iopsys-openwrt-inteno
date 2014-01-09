@@ -1,7 +1,7 @@
 #!/bin/sh /etc/rc.common
 
 . /lib/functions.sh
-
+include /lib/network
 START=21
 
 checkpvc() {
@@ -102,43 +102,8 @@ atm_inf_conf() {
 		xtmctl operate conn --createnetdev 1.$vpi.$vci ${ifname%%.*}
 		xtmctl operate intf --state 1 enable
 		ifconfig $baseifname up
-
-		if [ "$bridge" -eq 1 ]; then
-			vlanctl --if-create $baseifname 1
-			vlanctl --if $baseifname --set-if-mode-rg
-			vlanctl --if $baseifname --tx --tags 0 --default-miss-drop
-			vlanctl --if $baseifname --tx --tags 1 --default-miss-drop
-			vlanctl --if $baseifname --tx --tags 2 --default-miss-drop
-			# tags 0 tx
-			vlanctl --if $baseifname --tx --tags 0 --filter-txif $ifname --rule-insert-before -1
-			# tags 1 tx
-			vlanctl --if $baseifname --tx --tags 1 --filter-txif $ifname --rule-insert-before -1
-			 # tags 2 tx
-			vlanctl --if $baseifname --tx --tags 2 --filter-txif $ifname --rule-insert-before -1
-			# tags 0 rx
-			vlanctl --if $baseifname --rx --tags 0 --set-rxif $ifname --rule-insert-last 
-			# tags 1 rx
-			vlanctl --if $baseifname --rx --tags 1 --set-rxif $ifname --rule-insert-last 
-			# tags 2 rx
-			vlanctl --if $baseifname --rx --tags 2 --set-rxif $ifname --rule-insert-last 
-		else
-			vlanctl --routed --if-create $baseifname 1
-			vlanctl --if $baseifname --set-if-mode-rg
-			vlanctl --if $baseifname --tx --tags 0 --default-miss-drop
-			vlanctl --if $baseifname --tx --tags 1 --default-miss-drop
-			vlanctl --if $baseifname --tx --tags 2 --default-miss-drop
-			 # tags 0 tx
-			vlanctl --if $baseifname --tx --tags 0 --filter-txif $ifname --rule-insert-before -1
-			# tags 0 rx 
-			vlanctl --if $baseifname --rx --tags 0 --set-rxif $ifname --filter-vlan-dev-mac-addr 1 --rule-insert-before -1
-			# tags 1 rx
-			vlanctl --if $baseifname --rx --tags 1 --set-rxif $ifname --filter-vlan-dev-mac-addr 0 --drop-frame --rule-insert-before -1
-			# tags 2 rx
-			vlanctl --if $baseifname --rx --tags 2 --set-rxif $ifname --filter-vlan-dev-mac-addr 0 --drop-frame --rule-insert-before -1
-		fi
-		echo "ifconfig $ifname up"
-		ifconfig $ifname up
-		ifconfig $ifname multicast
+		
+		brcm_virtual_interface_rules "$baseifname" "$ifname" "$bridge"
 	fi
 }
 
