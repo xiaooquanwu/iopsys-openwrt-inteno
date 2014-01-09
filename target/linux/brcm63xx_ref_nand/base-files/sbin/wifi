@@ -501,7 +501,7 @@ set_wifi_device() {
 	# set channel
 	case "$channel" in
 		auto)
-			if [ -n "$ifs" ]; then
+			if [ -n "$acsifs" ]; then
 				nvram set acs_ifnames="$acsifs $device"
 			else
 				nvram set acs_ifnames="$device"
