@@ -196,15 +196,15 @@ define Package/samba2-common/conffiles
 /etc/samba2/smb.conf
 endef
 
-define Package/samba2-server/install
-	$(INSTALL_DIR) $(1)/etc/init.d
-	$(INSTALL_BIN) ./files/samba2.init $(1)/etc/init.d/samba2
-	$(INSTALL_DIR) $(1)/usr/lib
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/source/bin/libsmb.so $(1)/usr/lib/
-	$(INSTALL_DIR) $(1)/usr/sbin
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/source/bin/nmbd.shared $(1)/usr/sbin/nmbd
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/source/bin/smbd.shared $(1)/usr/sbin/smbd
-endef
+#define Package/samba2-server/install
+#	$(INSTALL_DIR) $(1)/etc/init.d
+#	$(INSTALL_BIN) ./files/samba2.init $(1)/etc/init.d/samba2
+#	$(INSTALL_DIR) $(1)/usr/lib
+#	$(INSTALL_BIN) $(PKG_BUILD_DIR)/source/bin/libsmb.so $(1)/usr/lib/
+#	$(INSTALL_DIR) $(1)/usr/sbin
+#	$(INSTALL_BIN) $(PKG_BUILD_DIR)/source/bin/nmbd.shared $(1)/usr/sbin/nmbd
+#	$(INSTALL_BIN) $(PKG_BUILD_DIR)/source/bin/smbd.shared $(1)/usr/sbin/smbd
+#endef
 
 define Package/samba2-client/install
 	$(INSTALL_DIR) $(1)/usr/bin
@@ -212,5 +212,5 @@ define Package/samba2-client/install
 endef
 
 $(eval $(call BuildPackage,samba2-common))
-$(eval $(call BuildPackage,samba2-server))
+#$(eval $(call BuildPackage,samba2-server))
 $(eval $(call BuildPackage,samba2-client))
