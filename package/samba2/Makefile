@@ -208,7 +208,6 @@ endef
 
 define Package/samba2-client/install
 	$(INSTALL_DIR) $(1)/usr/bin
-	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/smbclient $(1)/usr/bin/
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/rpcclient $(1)/usr/bin/
 endef
 
