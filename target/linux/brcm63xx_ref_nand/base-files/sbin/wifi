@@ -9,7 +9,7 @@ exec >/dev/null 2>&1
 local _enWifi=0
 local _enWps=0
 local _vno=0
-#local acsifs=""
+local acsifs=""
 
 map_networks() {
 	local ifdev ifobj devtype
@@ -501,31 +501,31 @@ set_wifi_device() {
 	# set channel
 	case "$channel" in
 		auto)
-#			if [ -n "$	ifs" ]; then
-#				nvram set acs_ifnames="$acsifs $device"
-#			else
-#				nvram set acs_ifnames="$device"
-#			fi
-#			acsifs="$(nvram get acs_ifnames)"
-#			nvram set "$device"_acs_chan_dwell_time="70"
-#			nvram set "$device"_acs_chan_flop_period="70"
-#			nvram set "$device"_acs_ci_scan_timeout="0"
-#			nvram set "$device"_acs_ci_scan_timer="4"
-#			nvram set "$device"_acs_cs_scan_timer="900"
-#			nvram set "$device"_acs_dfs="0"
-#			nvram set "$device"_acs_dfsr_activity="30 10240"
-#			nvram set "$device"_acs_dfsr_deferred="604800 5"
-#			nvram set "$device"_acs_dfsr_immediate="300 3"
-#			nvram set "$device"_acs_excl_chans=""
-#			nvram set "$device"_acs_fcs_mode="0"
-#			nvram set "$device"_acs_scan_entry_expire="3600"
-#			nvram set "$device"_acs_tx_idle_cnt="5"
-#			wlctl -i $device chanim_mode 2
-			wlctl -i $device csscantimer "${scantimer:-10}"
-			wlctl -i $device up
-			wlctl -i $device autochannel 1
-			wlctl -i $device autochannel 2
-			wlctl -i $device down
+			if [ -n "$ifs" ]; then
+				nvram set acs_ifnames="$acsifs $device"
+			else
+				nvram set acs_ifnames="$device"
+			fi
+			acsifs="$(nvram get acs_ifnames)"
+			nvram set "$device"_acs_chan_dwell_time="70"
+			nvram set "$device"_acs_chan_flop_period="70"
+			nvram set "$device"_acs_ci_scan_timeout="0"
+			nvram set "$device"_acs_ci_scan_timer="4"
+			nvram set "$device"_acs_cs_scan_timer="900"
+			nvram set "$device"_acs_dfs="0"
+			nvram set "$device"_acs_dfsr_activity="30 10240"
+			nvram set "$device"_acs_dfsr_deferred="604800 5"
+			nvram set "$device"_acs_dfsr_immediate="300 3"
+			nvram set "$device"_acs_excl_chans=""
+			nvram set "$device"_acs_fcs_mode="0"
+			nvram set "$device"_acs_scan_entry_expire="3600"
+			nvram set "$device"_acs_tx_idle_cnt="5"
+			wlctl -i $device chanim_mode 2
+#			wlctl -i $device csscantimer "${scantimer:-10}"
+#			wlctl -i $device up
+#			wlctl -i $device autochannel 1
+#			wlctl -i $device autochannel 2
+#			wlctl -i $device down
 		;;
 		*)
 			local bnd=2
@@ -580,6 +580,11 @@ set_wifi_device() {
 	# bring up the wireless device
 	wlctl -i $device leddc 0 2>/dev/null
 	ledctl wireless on
+
+	[ -n "$acsifs" ] && {
+		pidof acsd || acsd >/dev/console
+	}
+
 	wlctl -i $device up
 
 	[ -f /sbin/myfid ] && anyfi_enable $device
@@ -650,7 +655,7 @@ EOF
 # kill related daemons
 killall -9 eapd 2>/dev/null
 killall -9 nas 2>/dev/null
-#killall -9 acsd 2>/dev/null
+killall -9 acsd 2>/dev/null
 killall -15 wps_monitor 2>/dev/null
 
 # remove all QR code images
@@ -687,8 +692,9 @@ case "$1" in
 		# start related daemons
 		eapd
 		nas
-		#[ -n "$acsifs" ] && acsd &
 		[ $_enWps -gt 0 ] && wps_monitor &
 	;;
 esac
+
+nvram set wlmngr=done
 
