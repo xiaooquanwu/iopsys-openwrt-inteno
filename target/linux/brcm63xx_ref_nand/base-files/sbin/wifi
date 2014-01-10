@@ -2,6 +2,7 @@
 
 . /lib/functions.sh
 . /usr/share/libubox/jshn.sh
+. /lib/network/ebtables.sh
 [ -f /lib/network/anyfi.sh ] && . /lib/network/anyfi.sh
 
 exec >/dev/null 2>&1
@@ -112,6 +113,9 @@ set_wifi_down() {
 	wlctl -i $device down
 
 	for iface in $(grep "$device" /proc/net/dev | awk -F':' '{print$1}'); do
+		# remove ebtables wme rules
+		remove_ebtables_wme_rules $iface
+
 		network="$(find_network $iface)"
 		wlctl -i "$iface" bss down
 		wlctl -i "$iface" ssid ""
@@ -125,8 +129,12 @@ set_wifi_down() {
 set_wifi_up() {
 	local cfg="$1"
 	local ifname="$2"
+
 	uci_set_state wireless "$cfg" up 1
 	uci_set_state wireless "$cfg" ifname "$ifname"
+
+	# add ebtables wme rules
+	wlctl -i $iface wme | grep "1" && add_ebtables_wme_rules $iface
 }
 
 set_wifi_iface() {
@@ -171,7 +179,9 @@ set_wifi_iface() {
 
 		# create wireless VIFs
 		wlctl -i $device bss -C $_vno down
+		wlctl -i $device bss -C $_vno up
 		wlctl -i $device ssid -C $_vno $ssid
+
 		nvram set "$nif"_ifname=$iface
 		nvram set "$nif"_ssid=$ssid
 
@@ -335,7 +345,7 @@ set_wifi_iface() {
 		fi
 
 		# bring up the VIF and add to network
-		set_wifi_up "$vif" "$iface"
+		wlctl -i $device bss -C $_vno down
 		wlctl -i $device bss -C $_vno up
 		ifconfig $iface hw ether $(wlctl -i $iface cur_etheraddr | awk '{print$2}') 2>/dev/null
 		nvram set "$nif"_hwaddr="$(wlctl -i $iface cur_etheraddr | awk '{print$2}')"
@@ -344,6 +354,7 @@ set_wifi_iface() {
 		}
 		wlctl -i $iface bss down
 		wlctl -i $iface bss up
+		set_wifi_up "$vif" "$iface"
 
 		_vno=$(($_vno + 1))
 	fi
@@ -401,27 +412,26 @@ set_wifi_device() {
 	# BASE settings
 	# wlctl -i $device cap > /var/cap_$device
 	# wlctl -i $device phy_watchdog 0
-	# wlctl -i $device tp_id 1
 	wlctl -i $device stbc_rx 0
-	# wlctl -i $device stbc_tx -1
+	wlctl -i $device stbc_tx -1
 	wlctl -i $device fcache 1
 
 	# WDS Settings
 	wlctl -i $device wds none
-	# wlctl -i $device wdswsec 0
-	# wlctl -i $device wdswsec_enable 0
+	wlctl -i $device wdswsec 0
+	wlctl -i $device wdswsec_enable 0
 
 	# mode settings
 	wlctl -i $device up
 	wlctl -i $device down
-	# wlctl -i $device ap 1
+	wlctl -i $device ap 1
 	wlctl -i $device mpc 0
-	# wlctl -i $device infra 1
-	# wlctl -i $device closed 0
+	wlctl -i $device infra 1
+	wlctl -i $device closed 0
 
 	wlctl -i $device country "${country:-SE}"
 	wlctl -i $device band "${band:-b}"
-	# wlctl -i $device radar 0 2>/dev/null
+	wlctl -i $device radar 0
 
 	# regulatory and spectrum management settings
 	case "$doth" in
@@ -521,11 +531,6 @@ set_wifi_device() {
 			nvram set "$device"_acs_scan_entry_expire="3600"
 			nvram set "$device"_acs_tx_idle_cnt="5"
 			wlctl -i $device chanim_mode 2
-#			wlctl -i $device csscantimer "${scantimer:-10}"
-#			wlctl -i $device up
-#			wlctl -i $device autochannel 1
-#			wlctl -i $device autochannel 2
-#			wlctl -i $device down
 		;;
 		*)
 			local bnd=2
@@ -652,6 +657,10 @@ EOF
 
 }
 
+set_tp_id(){
+	wlctl -i wl1 ap || wlctl -i wl0 tp_id 1
+}
+
 # kill related daemons
 killall -9 eapd 2>/dev/null
 killall -9 nas 2>/dev/null
@@ -676,6 +685,7 @@ case "$1" in
 		config_foreach set_wifi_down wifi-device $2
 	;;
 	*)
+		set_tp_id
 		config_foreach set_wifi_down wifi-device $2
 		config_foreach set_wifi_device wifi-device $2
 
