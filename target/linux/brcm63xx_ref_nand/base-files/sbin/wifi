@@ -590,6 +590,7 @@ set_wifi_device() {
 		pidof acsd || acsd >/dev/console
 	}
 
+	wlctl -i $device down
 	wlctl -i $device up
 
 	[ -f /sbin/myfid ] && anyfi_enable $device
