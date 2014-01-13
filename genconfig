@@ -90,8 +90,7 @@ fi
 
 ##### if open change to open kernel and remove building of nand tool
 if [ $OPEN -eq 1 ]; then
-  
-  [ -e "$CONFIGPATH/$BOARDTYPE/$BOARDTYPE.diff" ] && generate_config $CONFIGPATH/OPEN/$BOARDTYPE.diff .config
+  [ -e "$CONFIGPATH/OPEN/open.diff" ] && generate_config $CONFIGPATH/OPEN/open.diff .config
 fi
 }
 
