@@ -24,7 +24,7 @@ iopsys_initialize_db() {
 		DESKEY="`cat /proc/nvram/DesKey`"
 		RFPI="`cat /proc/nvram/rfpi`"
 		BOARDID="`cat /proc/nvram/BoardId`"
-		BASEMAC="`cat /proc/nvram/BaseMacAddr`"
+		BASEMAC="`cat /proc/nvram/BaseMacAddr | tr ' ' ':' | sed 's/:$//' | tr [a-z] [A-Z]`"
 		HWMODEL="`cat /lib/db/version/iop_version | cut -d'_' -f1 | cut -d'-' -f2`"
 		[ "$(uci get /lib/db/config/hw.board.hasDect)" == "1" ] && DECT="D"
 		ROUTERMODEL="$HARDWARE$DSLANNEX-$HWMODEL$DECT"
