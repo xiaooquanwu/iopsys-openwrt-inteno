@@ -185,15 +185,6 @@ set_wifi_iface() {
 		nvram set "$nif"_ifname=$iface
 		nvram set "$nif"_ssid=$ssid
 
-		# check if VIF is disabled in config
-		if [ "$disabled" == "1" ]; then
-			nvram set "$nif"_bss_enabled=0
-			_vno=$(($_vno + 1))
-			continue
-		else
-			nvram set "$nif"_bss_enabled=1
-		fi
-
 		# set Mode Radio Infra
 		nvram set "$nif"_mode=ap
 		nvram set "$nif"_radio=1
@@ -352,9 +343,16 @@ set_wifi_iface() {
 		ifconfig "$iface" up >/dev/null 2>&1 && {
 			[ -n "$network" ] && ubus call network.interface."$network" add_device "{ \"name\": \"$iface\" }" 2>/dev/null
 		}
-		wlctl -i $iface bss down
-		wlctl -i $iface bss up
 		set_wifi_up "$vif" "$iface"
+
+		# check if VIF is disabled in config
+		wlctl -i $iface bss down
+		if [ "$disabled" == "1" ]; then
+			nvram set "$nif"_bss_enabled=0
+		else
+			nvram set "$nif"_bss_enabled=1
+			wlctl -i $iface bss up
+		fi
 
 		_vno=$(($_vno + 1))
 	fi
@@ -587,7 +585,7 @@ set_wifi_device() {
 	ledctl wireless on
 
 	[ -n "$acsifs" ] && {
-		pidof acsd || acsd >/dev/console
+		pidof acsd || acsd
 	}
 
 	wlctl -i $device down
