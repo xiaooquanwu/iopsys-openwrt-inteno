@@ -10,6 +10,7 @@ exec >/dev/null 2>&1
 local _enWifi=0
 local _enWps=0
 local _vno=0
+local _cno=0
 local acsifs=""
 
 map_networks() {
@@ -135,6 +136,19 @@ set_wifi_up() {
 
 	# add ebtables wme rules
 	wlctl -i $iface wme | grep "1" && add_ebtables_wme_rules $iface
+}
+
+create_vif() {
+	local vif="$1"
+	local device
+
+	config_get device "$vif" device
+
+	if [ "$2" == "$device" ]; then
+		wlctl -i $device bss -C $_cno down
+		wlctl -i $device ssid -C $_cno ""
+		_cno=$(($_cno + 1))
+	fi
 }
 
 set_wifi_iface() {
@@ -398,6 +412,8 @@ set_wifi_device() {
 	config_get radio "$device" radio
 
 	if [ "$radio" == "off" ]; then
+		config_foreach create_vif wifi-iface "$device"
+		_cno=0
 		continue
 	else
 		_enWifi=$(($_enWifi + 1))
