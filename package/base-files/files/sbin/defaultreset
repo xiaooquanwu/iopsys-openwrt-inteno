@@ -1,0 +1,3 @@
+#!/bin/sh
+
+ACTION=add INTERFACE=resetbutton /sbin/hotplug-call button
