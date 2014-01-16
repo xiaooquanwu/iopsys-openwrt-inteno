@@ -2,8 +2,8 @@
 
 create_broadcom_busysboxsymlinks() {
   if [ ! -f "/usr/sbin/ifconfig" ]; then
-    cd /usr/sbin/
-    ln -s busybox ifconfig
+    cd /bin/
+    ln -s /usr/sbin/busybox ifconfig
   fi
 }
 boot_hook_add preinit_main create_broadcom_busysboxsymlinks
