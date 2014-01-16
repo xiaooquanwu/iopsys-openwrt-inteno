@@ -18,7 +18,6 @@ config board 'board'
 	option lednames 'Status Ethernet WAN Wireless WPS USB DSL Internet ETHWAN'
 	option buttonnames 'RESET WPS WIFI'
 	option wpsButtonGpio '33'
-	option fxsRelayGpio '8'
 
 config buttons 'buttons'
 	option RESET '32 al resetbutton'
