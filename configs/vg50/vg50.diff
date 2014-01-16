@@ -3,6 +3,6 @@ s/^CONFIG_PACKAGE_asterisk18*/# CONFIG_PACKAGE_asterisk18/g
 s/^CONFIG_BCM_ENDPOINT_MODULE.*/# CONFIG_BCM_ENDPOINT_MODULE is not set/g
 s/^CONFIG_PACKAGE_luci-app-voice-client=y/# CONFIG_PACKAGE_luci-app-voice-client is not set/g
 s/^CONFIG_PACKAGE_natalie-dect=y/# CONFIG_PACKAGE_natalie-dect is not set/g
-s/^CONFIG_PACKAGE_natalie-dect-h=y/# CONFIG_PACKAGE_natalie-dect-h is not set/g
+s/^CONFIG_PACKAGE_ami=y/# CONFIG_PACKAGE_ami is not set/g
 s/^CONFIG_PACKAGE_dectmngr=y/# CONFIG_PACKAGE_dectmngr is not set/g
 s/^CONFIG_PACKAGE_luci-app-dect=y/# CONFIG_PACKAGE_luci-app-dect is not set/g
