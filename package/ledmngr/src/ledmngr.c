@@ -62,6 +62,7 @@ enum {
     RED,
     GREEN,
     BLUE,
+    YELLOW,
 };
 
 enum {
@@ -271,6 +272,10 @@ static struct leds_configuration* get_led_config(void) {
         led_config = ucix_get_option(uci_ctx, "hw", "leds", led_name_color);
         add_led(led_cfg, led_name_color, led_config, BLUE);
         //printf("%s_blue = %s\n", p, led_config);
+
+        snprintf(led_name_color,  256, "%s_yellow", p);
+        led_config = ucix_get_option(uci_ctx, "hw", "leds", led_name_color);
+        add_led(led_cfg, led_name_color, led_config, YELLOW);
 
         /* Get next */
         ptr = rest;
