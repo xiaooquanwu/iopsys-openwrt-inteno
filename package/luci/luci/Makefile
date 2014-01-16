@@ -4,8 +4,8 @@ PKG_BRANCH:=svn-0.11
 PKG_NAME:=luci
 PKG_RELEASE:=1.0.1
 
-PKG_VERSION:=inteno-1.0.48
-PKG_SOURCE_VERSION:=7970aeba06c26314808f35bf00ec32a58c5dd44a
+PKG_VERSION:=inteno-1.0.49
+PKG_SOURCE_VERSION:=6c6a57c4451be2808d4570ff491f18779ca1acba
 ifeq ($(CONFIG_PACKAGE_bcmkernel),y)
 PKG_SOURCE_URL:=ssh://inteno@ihgsp.inteno.se/home/inteno/public/git/luci-inteno.git
 else
@@ -204,7 +204,7 @@ $(eval $(call protocol,core,Support for static/dhcp/none))
 $(eval $(call protocol,ppp,Support for PPP/PPPoE/PPPoA/PPtP))
 $(eval $(call protocol,ipv6,Support for DHCPv6/6in4/6to4/6rd,+PACKAGE_luci-proto-ipv6:6in4 +PACKAGE_luci-proto-ipv6:6to4 +PACKAGE_luci-proto-ipv6:6rd +PACKAGE_luci-proto-ipv6:ipv6-support))
 $(eval $(call protocol,3g,Support for 3G,+PACKAGE_luci-proto-3g:comgt))
-$(eval $(call protocol,4g,Support for 4G,+PACKAGE_luci-proto-4g:libqmi))
+$(eval $(call protocol,4g,Support for 4G,+PACKAGE_luci-proto-4g:libmbim +libqmi))
 $(eval $(call protocol,relay,Support for relayd pseudo bridges,+PACKAGE_luci-proto-relay:relayd))
 
 
