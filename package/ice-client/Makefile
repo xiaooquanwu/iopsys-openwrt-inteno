@@ -15,11 +15,11 @@ export PLATFORM_INCLUDE:=platforms/iopsys/build.mk
 
 export DATE:=$(shell date +%Y-%m-%d-%H-%M-%S)
 export LOGIN:=$(shell whoami)
-BASE_PKG_VERSION:=2.8.2
-PKG_RELEASE:=RC12
+BASE_PKG_VERSION:=2.8.3
+PKG_RELEASE:=RC3
 PKG_VERSION:=$(BASE_PKG_VERSION)-$(PKG_RELEASE)_$(DATE)_$(LOGIN)
 PKG_SOURCE_URL:=ssh://git@iopsys.inteno.se/ice-client.git
-PKG_SOURCE_VERSION:=95c27b082db26227c308c86685329326dc862430
+PKG_SOURCE_VERSION:=1183337f9ab46d1b77b18753cd23199de56b5d71
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(BASE_PKG_VERSION)
 PKG_SOURCE:=$(PKG_NAME)-$(BASE_PKG_VERSION)-$(PKG_RELEASE).tar.gz
 
@@ -307,13 +307,10 @@ define Package/ice-client-fileme/install
 	$(INSTALL_DIR) $(1)/usr/lib
 	$(CP) $(PKG_BUILD_DIR)/core/lib/filemeService.so.1.0.1 $(1)/usr/lib
 	$(INSTALL_DIR) $(1)/etc/cloudfriends/fileme/lighttpd/conf.d
-	$(CP) $(PKG_BUILD_DIR)/scripts/fileme/lighttpd.conf $(1)/etc/cloudfriends/fileme/lighttpd
 	$(CP) $(PKG_BUILD_DIR)/scripts/fileme/mime.conf $(1)/etc/cloudfriends/fileme/lighttpd
 	$(CP) $(PKG_BUILD_DIR)/scripts/fileme/conf.d/10-webdav.conf $(1)/etc/cloudfriends/fileme/lighttpd/conf.d
 	$(INSTALL_DIR) $(1)/etc/cloudfriends/fileme/docroot/dav
 	$(INSTALL_DIR) $(1)/etc/cloudfriends/fileme/docroot/shares
-	$(INSTALL_DIR) $(1)/tmp/log/lighttpd
-	$(INSTALL_DIR) $(1)/tmp/run
 endef
 
 define Package/ice-client-fileme/postinst
