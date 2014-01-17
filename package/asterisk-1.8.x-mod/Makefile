@@ -13,7 +13,7 @@ PKG_RELEASE:=2
 
 PKG_SOURCE_URL:=git@ihgsp.inteno.se:asterisk-aa
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=1046d7b8f738fcdd80cf9abe9bf370b49e44147f
+PKG_SOURCE_VERSION:=dbb07fbc6dabf5850881c693e3b77a77c972fc75
 PKG_SOURCE_SUBDIR:=asterisk-$(PKG_VERSION)
 PKG_SOURCE:=asterisk-$(PKG_VERSION)-mod.tar.gz
 
@@ -426,7 +426,7 @@ define Package/asterisk18-mod/conffiles
 endef
 
 define Package/asterisk18-mod/install
-	$(INSTALL_DIR) $(1)/etc/asterisk
+	$(INSTALL_DIR) $(1)/etc/asterisk/ssl
 	for f in asterisk extensions features \
 		indications logger manager modules \
 		sip sip_notify rtp; do \
