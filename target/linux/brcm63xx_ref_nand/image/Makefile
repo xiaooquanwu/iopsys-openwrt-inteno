@@ -49,12 +49,19 @@ define Image/Prepare
 	$(STAGING_DIR_HOST)/bin/lzma e -d22 -lp2 -lc1 $(KDIR)/vmlinux.bcm $(KDIR)/vmlinux.lzma
 	$(STAGING_DIR_HOST)/bin/imagetag_nand -K -i $(KDIR)/vmlinux.lzma -o $(KDIR)/vmlinux.lz -e $(KERNEL_ENTRY)
 
-	#generate jffs2 eof file marker of 128k size
-	echo -ne '\xde\xad\xc0\xde' > $(KDIR)/jffs2_eof_marker
-	cat $(KDIR)/jffs2_eof_marker $(KDIR)/file128k.tmp | head --bytes=131072 > $(KDIR)/jffs2_eof_marker_128k
 	dd if=/dev/zero of=$(KDIR)/file128k.tmp bs=1k count=128
 
-    #add the files that should not be compressed
+	#generate jffs2 eof file marker of 128k size
+	echo -ne '\xde\xad\xc0\xde' > $(KDIR)/jffs2_eof_marker
+	#generate board tag
+	cat $(KDIR)/jffs2_eof_marker $(KDIR)/file128k.tmp | head --bytes=1024 > $(KDIR)/jffs2_eof_marker_1024
+	echo -ne $(CONFIG_TARGET_MODEL_NAME) >>$(KDIR)/jffs2_eof_marker_1024
+	cat $(KDIR)/jffs2_eof_marker_1024 $(KDIR)/file128k.tmp | head --bytes=2048 > $(KDIR)/jffs2_eof_marker_2048
+	#generate customer tag
+	echo -ne $(CONFIG_TARGET_CUSTOMER) >>$(KDIR)/jffs2_eof_marker_2048
+	cat $(KDIR)/jffs2_eof_marker_2048 $(KDIR)/file128k.tmp | head --bytes=131072 > $(KDIR)/jffs2_eof_marker_128k
+
+	#add the files that should not be compressed
 	echo -e "/cferam.000" > $(KDIR)/nocomprlist
 	echo -e "/vmlinux.lz" >> $(KDIR)/nocomprlist
 	cp $(KDIR)/vmlinux.lz $(TARGET_DIR)/
@@ -66,7 +73,8 @@ define Image/Prepare
 	sed -i '7iIOP Version: $(IHGSP_BUILD_VERSION)' $(BUILD_DIR_ROOT)/etc/banner
 	mkdir $(BUILD_DIR_ROOT)/lib/db/version
 	echo $(IHGSP_BUILD_VERSION)  > $(BUILD_DIR_ROOT)/lib/db/version/iop_version
-	echo $(CONFIG_TARGET_IBOARDID)> $(BUILD_DIR_ROOT)/lib/db/version/iop_iboardid
+#	echo $(CONFIG_TARGET_IBOARDID)> $(BUILD_DIR_ROOT)/lib/db/version/iop_iboardid
+	echo $(CONFIG_TARGET_CUSTOMER)> $(BUILD_DIR_ROOT)/lib/db/version/iop_customer
 
 	#strip out unneeded files
 	rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.3.8
