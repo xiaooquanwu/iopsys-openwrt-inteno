@@ -167,5 +167,7 @@ get_clients_onport(char *bridge, int portno, unsigned char **macaddr)
 		}
 	}
 	*macaddr = strdup(tmpmac);
+
+	free(fdb);
 	memset(tmpmac, '\0', sizeof(tmpmac));
 }
