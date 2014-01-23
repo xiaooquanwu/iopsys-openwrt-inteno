@@ -9,7 +9,7 @@
 #include <arpa/inet.h>
 
 //For dynamic firewall support
-#define IPTABLES_CHAIN "zone_wan"
+#define IPTABLES_CHAIN "zone_wan_input"
 #define IPTABLES_BIN "iptables"
 #define IPTABLES_FILE "/etc/firewall.sip"
 #ifdef USE_IPV6
