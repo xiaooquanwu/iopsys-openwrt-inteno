@@ -29,8 +29,10 @@ nf_nat_tftp
 xt_DSCP
 xt_LOG
 xt_SKIPLOG
+xt_connmark
 xt_dscp
 xt_mark
+xt_statistic
 usb-storage
 qcaux
 qcserial
