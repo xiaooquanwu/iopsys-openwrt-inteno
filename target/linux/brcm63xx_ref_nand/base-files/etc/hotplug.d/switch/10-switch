@@ -1,4 +1,3 @@
-
 . /lib/network/config.sh
 
 addif() {
@@ -16,6 +15,14 @@ delif() {
 	if [ "$INTERFACE" == "$wan"  ]; then
 		/etc/init.d/layer2_interface_ethernet stop
 	fi
+}
+
+gigatest() {
+	local speed=$(ethctl $INTERFACE media-type 2>&1 | awk '{if (NR == 2) print $6}')
+	case "$speed" in
+		1000*) return 1 ;;
+		*) return 0 ;;
+	esac
 }
 
 ethtest () {
@@ -48,8 +55,19 @@ case "$ACTION" in
 		local operstate=$(cat /sys/class/net/$INTERFACE/operstate)
 		if [ "$operstate" == "up" ]; then
 			case "$interfname" in
-				LAN*) ledctl lan on ;;
-				WAN*) ledctl broadband on ;;
+				GbE*)
+					ledctl gbe off
+					$(gigatest) && ledctl gbe alert || ledctl gbe notice
+					ledctl lan on
+				;;
+				LAN*)
+					ledctl lan on
+				;;
+				WAN*)
+					ledctl wan off
+					$(gigatest) && ledctl wan alert || ledctl wan notice
+					ledctl broadband on
+				;;
 			esac
 		fi		
 	;;
@@ -58,8 +76,17 @@ case "$ACTION" in
 		local operstate=$(cat /sys/class/net/$INTERFACE/operstate)
 		if [ "$operstate" == "down" ]; then
 			case "$interfname" in
-				LAN*) $(ethtest) && ledctl lan off ;;
-				WAN*) $(dsltest) && ledctl broadband off ;;
+				GbE*)
+					ledctl gbe off
+					$(ethtest) && ledctl lan off
+				;;
+				LAN*)
+					$(ethtest) && ledctl lan off
+				;;
+				WAN*)
+					ledctl wan off
+					$(dsltest) && ledctl broadband off
+				;;
 			esac
 		fi
 		delif
