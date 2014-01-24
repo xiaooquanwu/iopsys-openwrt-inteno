@@ -101,3 +101,8 @@ config include
 	option path /etc/firewall.user
 	option reload 1
 
+# include a file with rules for SIP and RTP traffic
+config include
+	option path /etc/firewall.sip
+	option reload 1
+
