@@ -3,6 +3,8 @@
 local name=$1
 local status=$2
 
+#ubus call leds set  '{"state":"test"}'
+
 name=$(echo $name | tr '[A-Z]' '[a-z]')
 status=$(echo $status | tr '[A-Z]' '[a-z]')
 
