@@ -41,7 +41,7 @@ define Package/asterisk18-mod
 $(call Package/asterisk18-mod/Default)
   TITLE:=Complete open source PBX, v1.8x
   MENU:=1
-  DEPENDS:= +natalie-dect-h +bcmkernel +libopenssl +libncurses +libpopt +libpthread +zlib @!TARGET_avr32
+  DEPENDS:= +natalie-dect-h +bcmkernel +bcmopen +libopenssl +libncurses +libpopt +libpthread +zlib @!TARGET_avr32
 endef
 
 define Package/asterisk18-mod/description
