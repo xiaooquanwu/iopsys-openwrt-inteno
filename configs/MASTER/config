@@ -1372,7 +1372,7 @@ CONFIG_PACKAGE_alsa-lib=y
 CONFIG_PACKAGE_bcmnvram=y
 # CONFIG_PACKAGE_bind-libs is not set
 # CONFIG_PACKAGE_bluez-libs is not set
-# CONFIG_PACKAGE_glib2 is not set
+CONFIG_PACKAGE_glib2=y
 CONFIG_PACKAGE_libblkid=y
 CONFIG_PACKAGE_libblobmsg-json=y
 CONFIG_PACKAGE_libbz2=y
@@ -1411,6 +1411,7 @@ CONFIG_PACKAGE_libjson-c=y
 # CONFIG_PACKAGE_libltdl is not set
 CONFIG_PACKAGE_liblua=y
 CONFIG_PACKAGE_liblzo=y
+CONFIG_PACKAGE_libmbim=y
 CONFIG_PACKAGE_libmicroxml=y
 CONFIG_PACKAGE_libmnl=y
 # CONFIG_PACKAGE_libmount is not set
@@ -1433,7 +1434,7 @@ CONFIG_PACKAGE_libpcre=y
 # CONFIG_PACKAGE_libpcrecpp is not set
 CONFIG_PACKAGE_libpng=y
 CONFIG_PACKAGE_libpopt=y
-# CONFIG_PACKAGE_libqmi is not set
+CONFIG_PACKAGE_libqmi=y
 CONFIG_PACKAGE_libreadline=y
 # CONFIG_PACKAGE_librpc is not set
 # CONFIG_PACKAGE_libspandsp is not set
