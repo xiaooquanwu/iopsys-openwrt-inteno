@@ -22,7 +22,7 @@ PKG_VERSION:=$(BASE_PKG_VERSION)-$(PKG_RELEASE)_$(DATE)_$(LOGIN)
 ###########################--RELEASE--################################
 
 PKG_SOURCE_URL:=ssh://git@iopsys.inteno.se/ice-client.git
-PKG_SOURCE_VERSION:=e2503e32a0c1f4a3714319372395b165947afe46
+PKG_SOURCE_VERSION:=6b8d2a287b3ad6a5fa99868cbaad53f72d3b1195
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(BASE_PKG_VERSION)
 PKG_SOURCE:=$(PKG_NAME)-$(BASE_PKG_VERSION)-$(PKG_RELEASE).tar.gz
 
@@ -119,6 +119,8 @@ define Package/ice-client/install
 	$(CP) $(PKG_BUILD_DIR)/scripts/*.crt $(1)/etc/cloudfriends
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(CP) $(PKG_BUILD_DIR)/scripts/ice-client $(1)/etc/init.d/ice-client
+	$(INSTALL_DIR) $(1)/etc/uci-defaults
+	$(CP) $(PKG_BUILD_DIR)/scripts/etc/uci-defaults/luci-ice-client $(1)/etc/uci-defaults/luci-ice-client
 	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/controller/admin
 	$(CP) $(PKG_BUILD_DIR)/scripts/luci/controller/admin/*.lua $(1)/usr/lib/lua/luci/controller/admin
 	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/model/cbi/ice
