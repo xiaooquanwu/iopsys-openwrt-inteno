@@ -16,16 +16,21 @@ export PLATFORM_INCLUDE:=platforms/iopsys/build.mk
 export DATE:=$(shell date +%Y-%m-%d-%H-%M-%S)
 export LOGIN:=$(shell whoami)
 BASE_PKG_VERSION:=2.8.3
-PKG_RELEASE:=RC3
+PKG_RELEASE:=RC5
 PKG_VERSION:=$(BASE_PKG_VERSION)-$(PKG_RELEASE)_$(DATE)_$(LOGIN)
+
+###########################--RELEASE--################################
+
 PKG_SOURCE_URL:=ssh://git@iopsys.inteno.se/ice-client.git
-PKG_SOURCE_VERSION:=1183337f9ab46d1b77b18753cd23199de56b5d71
+PKG_SOURCE_VERSION:=e2503e32a0c1f4a3714319372395b165947afe46
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(BASE_PKG_VERSION)
 PKG_SOURCE:=$(PKG_NAME)-$(BASE_PKG_VERSION)-$(PKG_RELEASE).tar.gz
 
 PKG_BUILD_DIR := $(BUILD_DIR)/$(PKG_NAME)-$(BASE_PKG_VERSION)
 
 RSTRIP:=true
+
+###########################--RELEASE--################################
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -43,6 +48,35 @@ $(call Package/ice-client/Default)
 	DEFAULT:=y
 endef
 
+###########################--DEVELOPMENT--################################
+# Development settings
+# Uncomment stuff  Build/Prepare
+#
+# Plus make sure to comment and provide the following lines above
+# #PKG_SOURCE_URL:=ssh://git@iopsys.inteno.se/ice-client.git
+# #PKG_SOURCE_VERSION:=a11bf64e6b1054803b52750aabd71bf440ff6e16
+# #PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(BASE_PKG_VERSION)
+# #PKG_SOURCE:=$(PKG_NAME)-$(BASE_PKG_VERSION)-$(PKG_RELEASE).tar.gz
+# 
+# PKG_BUILD_DIR := $(BUILD_DIR)/$(PKG_NAME)-$(BASE_PKG_VERSION)
+# 
+# #RSTRIP:=true
+#
+# These settings allow you to specify a soruce folder where your source code is located
+# This avoids having to tar-zip or fetch from git each time
+# Changes can be done in your sources while the build is performed somewhere else
+# If you forget some settings, your source folder will be deleted!!! So be carefull and 
+# check in or backup your sources first before doing this.
+#
+#define Build/Prepare
+#	rm -rf $(PKG_BUILD_DIR)
+#	ln -s /home/erik/Desktop/cloned_inteno_cfmod/iopsys-client $(PKG_BUILD_DIR)
+#endef
+#
+###########################--DEVELOPMENT--################################
+
+
+#
 # Specify where and how to install the program. Since we only have one file,
 # the helloworld executable, install it by copying it to the /bin directory on
 # the router. The $(1) variable represents the root directory on the router running
@@ -67,6 +101,7 @@ define Package/ice-client/preinst
 if [ -z "$${IPKG_INSTROOT}" ]; then
     echo "backup current config"
     cp /etc/cloudfriends/server.ini /tmp/cloudfriendsserver.ini
+    cp /etc/config/ice /tmp/ice.back
 fi
 exit 0
 endef
@@ -94,10 +129,10 @@ define Package/ice-client/postinst
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
     echo "Enabling rc.d symlink for cloudfriends"
-    #/etc/init.d/cloudfriends enable
-    /etc/init.d/ice-client stop
     cp /tmp/cloudfriendsserver.ini /etc/cloudfriends/server.ini 
     rm -f /tmp/cloudfriendsserver.ini 
+    cp /tmp/ice.back /etc/config/ice 
+    rm -f /tmp/ice.back
     ice -a /etc/cloudfriends/modify.ini -c /etc/cloudfriends/server.ini
     if [ -f "/etc/rc.d/S99ice-client" ]; then
         /etc/init.d/ice-client start
@@ -150,7 +185,6 @@ define Package/ice-client-guest
   $(call Package/ice-client/Default)
   TITLE:=Guest
   DEPENDS+= 
-  DEFAULT:=y
 endef
 
 define Package/ice-client-guest/description
@@ -278,6 +312,7 @@ define Package/ice-client-logreader/postinst
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
     head -n 1 /tmp/cfout &
+	sleep 1
     echo "system moduleAdd file=logService.so.1.0.1" > /tmp/cfin
 fi
 exit 0
