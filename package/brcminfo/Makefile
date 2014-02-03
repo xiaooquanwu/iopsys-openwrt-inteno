@@ -37,16 +37,16 @@ target=$(firstword $(subst -, ,$(BOARD)))
 MAKE_FLAGS += TARGET="$(target)"
 
 
-BCMKERNEL_DIR=$(BUILD_DIR)/bcmkernel-3.4-4.14/bcm963xx/
-EXTRA_CFLAGS += -I$(BCMKERNEL_DIR)/bcmdrivers/broadcom/include/bcm963xx/
-EXTRA_CFLAGS += -I$(BCMKERNEL_DIR)/bcmdrivers/opensource/include/bcm963xx/
-EXTRA_CFLAGS += -I$(BCMKERNEL_DIR)/xChange/dslx_common/voice_res_gw/endpt/inc/
-EXTRA_CFLAGS += -I$(BCMKERNEL_DIR)/xChange/dslx_common/voice_res_gw/inc
-EXTRA_CFLAGS += -I$(BCMKERNEL_DIR)/xChange/dslx_common/voice_res_gw/codec
-EXTRA_CFLAGS += -I$(BCMKERNEL_DIR)/xChange/dslx_common/xchg_common/bos/publicInc/
-EXTRA_CFLAGS += -I$(BCMKERNEL_DIR)/xChange/dslx_common/voice_res_gw/casCtl/inc/
-EXTRA_CFLAGS += -I$(BCMKERNEL_DIR)/xChange/dslx_common/xchg_drivers/inc
 EXTRA_CFLAGS += -DBOS_OS_LINUXUSER
+
+EXTRA_CFLAGS +=	-I$(STAGING_DIR)/usr/include/bcm963xx/bcmdrivers/broadcom/include/bcm963xx/
+EXTRA_CFLAGS +=	-I$(STAGING_DIR)/usr/include/bcm963xx/bcmdrivers/opensource/include/bcm963xx/
+EXTRA_CFLAGS +=	-I$(STAGING_DIR)/usr/include/bcm963xx/xChange/dslx_common/voice_res_gw/endpt/inc/
+EXTRA_CFLAGS +=	-I$(STAGING_DIR)/usr/include/bcm963xx/xChange/dslx_common/voice_res_gw/inc
+EXTRA_CFLAGS +=	-I$(STAGING_DIR)/usr/include/bcm963xx/xChange/dslx_common/voice_res_gw/codec
+EXTRA_CFLAGS +=	-I$(STAGING_DIR)/usr/include/bcm963xx/xChange/dslx_common/xchg_common/bos/publicInc/
+EXTRA_CFLAGS +=	-I$(STAGING_DIR)/usr/include/bcm963xx/xChange/dslx_common/voice_res_gw/casCtl/inc/
+EXTRA_CFLAGS +=	-I$(STAGING_DIR)/usr/include/bcm963xx/xChange/dslx_common/xchg_drivers/inc
 
 TARGET_CFLAGS += -D$(CONFIG_TARGET_IBOARDID) -Dtarget_$(target)=1 -Wall
 
