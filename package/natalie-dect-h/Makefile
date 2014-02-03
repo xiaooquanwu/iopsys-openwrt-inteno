@@ -18,7 +18,7 @@ else
 PKG_SOURCE_URL:=http://ihgsp.inteno.se/git/natalie-dect-h
 endif
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=HEAD
+PKG_SOURCE_VERSION:=99f17b11924acc3dee421cd423d6f023fda06e37
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
 
 include $(INCLUDE_DIR)/package.mk
