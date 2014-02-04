@@ -16,19 +16,18 @@ export PLATFORM_INCLUDE:=platforms/iopsys/build.mk
 export DATE:=$(shell date +%Y-%m-%d-%H-%M-%S)
 export LOGIN:=$(shell whoami)
 BASE_PKG_VERSION:=2.8.3
-PKG_RELEASE:=RC6
+PKG_RELEASE:=RC7
 PKG_VERSION:=$(BASE_PKG_VERSION)-$(PKG_RELEASE)_$(DATE)_$(LOGIN)
 
 ###########################--RELEASE--################################
 
 PKG_SOURCE_URL:=ssh://git@iopsys.inteno.se/ice-client.git
-PKG_SOURCE_VERSION:=2f870ec5b0c49ad620ac045de67a67e04da5a56f
+PKG_SOURCE_VERSION:=99be879741c34cbb9f29130f9505fe3e0ce74813
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(BASE_PKG_VERSION)
 PKG_SOURCE:=$(PKG_NAME)-$(BASE_PKG_VERSION)-$(PKG_RELEASE).tar.gz
 
 PKG_BUILD_DIR := $(BUILD_DIR)/$(PKG_NAME)-$(BASE_PKG_VERSION)
 
-RSTRIP:=true
 
 ###########################--RELEASE--################################
 
@@ -60,7 +59,6 @@ endef
 # 
 # PKG_BUILD_DIR := $(BUILD_DIR)/$(PKG_NAME)-$(BASE_PKG_VERSION)
 # 
-# #RSTRIP:=true
 #
 # These settings allow you to specify a soruce folder where your source code is located
 # This avoids having to tar-zip or fetch from git each time
@@ -72,7 +70,7 @@ endef
 #	rm -rf $(PKG_BUILD_DIR)
 #	ln -s /home/erik/Desktop/cloned_inteno_cfmod/iopsys-client $(PKG_BUILD_DIR)
 #endef
-#
+
 ###########################--DEVELOPMENT--################################
 
 
@@ -161,6 +159,7 @@ define Package/ice-client-camerawatch/preinst
 if [ -z "$${IPKG_INSTROOT}" ]; then
     head -n 1 /tmp/cfout &
     echo "system moduleRemove topic=cameramanager" > /tmp/cfin
+    sleep 5
 fi
 exit 0
 endef
@@ -301,6 +300,7 @@ define Package/ice-client-logreader/preinst
 if [ -z "$${IPKG_INSTROOT}" ]; then
     head -n 1 /tmp/cfout &
     echo "system moduleRemove topic=log" > /tmp/cfin
+    sleep 5
 fi
 exit 0
 endef
@@ -314,7 +314,6 @@ define Package/ice-client-logreader/postinst
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
     head -n 1 /tmp/cfout &
-	sleep 1
     echo "system moduleAdd file=logService.so.1.0.1" > /tmp/cfin
 fi
 exit 0
@@ -336,6 +335,7 @@ define Package/ice-client-fileme/preinst
 if [ -z "$${IPKG_INSTROOT}" ]; then
   head -n 1 /tmp/cfout &
   echo "system moduleRemove topic=fileMeMgr" > /tmp/cfin
+  sleep 2
 fi
 exit 0
 endef
