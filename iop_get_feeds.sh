@@ -34,7 +34,6 @@
 ./scripts/feeds install p910nd
 ./scripts/feeds install polipo
 ./scripts/feeds install radvd
-./scripts/feeds install snmpd
 ./scripts/feeds install tinyproxy
 ./scripts/feeds install transmission-daemon
 ./scripts/feeds install ushare
