@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # OpenWrt version: Attitude Adjustment (r36052)
-# Mon Feb  3 09:51:41 2014
+# Tue Feb  4 10:27:56 2014
 #
 CONFIG_HAVE_DOT_CONFIG=y
 # CONFIG_TARGET_ppc40x is not set
@@ -2431,7 +2431,7 @@ CONFIG_PACKAGE_getopt=y
 CONFIG_PACKAGE_ice-client=y
 # CONFIG_PACKAGE_ice-client-anyfi is not set
 # CONFIG_PACKAGE_ice-client-camerawatch is not set
-CONFIG_PACKAGE_ice-client-guest=y
+# CONFIG_PACKAGE_ice-client-guest is not set
 # CONFIG_PACKAGE_ice-client-logreader is not set
 # CONFIG_PACKAGE_ice-client-openvpn is not set
 # CONFIG_PACKAGE_iconv is not set
