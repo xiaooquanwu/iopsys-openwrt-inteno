@@ -10,7 +10,7 @@ include $(TOPDIR)/rules.mk
 PKG_RELEASE:=1
 PKG_VERSION:=1.0.9
 
-PKG_SOURCE_URL:=ssh://inteno@ihgsp.inteno.se/home/inteno/private/git/dectmngr.git
+PKG_SOURCE_URL:=git@iopsys.inteno.se:dectmngr.git
 PKG_SOURCE_VERSION:=5f86ba7a1cfa997eb22355f8340082010dae5135
 
 
