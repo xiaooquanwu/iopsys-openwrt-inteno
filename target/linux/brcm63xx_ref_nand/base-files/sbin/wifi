@@ -585,8 +585,8 @@ set_wifi_device() {
 	wlctl -i $device antdiv "${rxantenna:-3}"
 	wlctl -i $device txant "${txantenna:-3}"
 	wlctl -i $device pwr_percent "${txpower:-100}"
-	# wlctl -i $device rxchain_pwrsave_stas_assoc_check 1
-	# wlctl -i $device radio_pwrsave_stas_assoc_check 1
+	wlctl -i $device rxchain_pwrsave_stas_assoc_check 1
+	wlctl -i $device radio_pwrsave_stas_assoc_check 1
 	wlctl -i $device rxchain_pwrsave_enable "${rxchainps:-0}"
 	wlctl -i $device rxchain_pwrsave_quiet_time "${rxchainps_qt:-10}"
 	wlctl -i $device rxchain_pwrsave_pps "${rxchainps_pps:-10}"
