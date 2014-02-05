@@ -50,3 +50,7 @@
 ./scripts/feeds install lighttpd
 ./scripts/feeds install jansson
 ./scripts/feeds install mosquitto
+./scripts/feeds install libmosquitto
+./scripts/feeds install mosquitto-client
+./scripts/feeds install python
+
