@@ -48,3 +48,5 @@
 ./scripts/feeds install libpcre
 ./scripts/feeds install libxml2
 ./scripts/feeds install lighttpd
+./scripts/feeds install jansson
+./scripts/feeds install mosquitto
