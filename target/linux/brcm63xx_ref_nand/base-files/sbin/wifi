@@ -220,7 +220,7 @@ set_wifi_iface() {
 		wlctl -i $iface wme_bss_disable "${wmm_bss_disable:-0}"
 
 		# set BSS MAX assoc
-		wlctl -i $iface bss_maxassoc "${bss_max:-$(wlctl -i $device bss_maxassoc | awk '{print$1}')}"
+		wlctl -i $iface bss_maxassoc "${bss_max:-$(wlctl -i $device maxassoc | awk '{print$1}')}"
 
 		# set AP isolate and hidden
 		wlctl -i $iface ap_isolate "${isolate:-0}"
@@ -562,7 +562,7 @@ set_wifi_device() {
 	esac
 
 	# set MAX assoc
-	wlctl -i $device maxassoc "${maxassoc:-128}"
+	wlctl -i $device maxassoc "${maxassoc:-16}"
 
 	# WME settings
 	wlctl -i $device wme 0 2>/dev/null
