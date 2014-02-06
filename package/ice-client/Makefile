@@ -22,7 +22,7 @@ PKG_VERSION:=$(BASE_PKG_VERSION)-$(PKG_RELEASE)_$(DATE)_$(LOGIN)
 ###########################--RELEASE--################################
 
 PKG_SOURCE_URL:=ssh://git@iopsys.inteno.se/ice-client.git
-PKG_SOURCE_VERSION:=414ffe005e0cc33ce9e9a8bf3c5abfe645a6d148
+PKG_SOURCE_VERSION:=66e73ffb4c61cd10dc3e271d3ed5129f99a63780
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(BASE_PKG_VERSION)
 PKG_SOURCE:=$(PKG_NAME)-$(BASE_PKG_VERSION)-$(PKG_RELEASE).tar.gz
 
@@ -154,12 +154,14 @@ define Package/ice-client-camerawatch/description
 Camerawatch module for ice-client
 endef
 
-define Package/ice-client-camerawatch/preinst
+define Package/ice-client-camerawatch/prerm
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
-    head -n 1 /tmp/cfout &
-    echo "system moduleRemove topic=cameramanager" > /tmp/cfin
-    sleep 5
+    read -t 1 <>/tmp/cfout
+	if [ -f /tmp/ice.pid  ]; then
+		echo "system moduleRemove topic=cameramanager" > /tmp/cfin
+		/bin/sleep 5
+	fi
 fi
 exit 0
 endef
@@ -174,9 +176,11 @@ endef
 define Package/ice-client-camerawatch/postinst
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
-    grep "dhcp-script=" /etc/dnsmasq.conf || echo dhcp-script=/etc/cloudfriends/reg_camera >> /etc/dnsmasq.conf
-    head -n 1 /tmp/cfout &
-    echo "system moduleAdd file=camerawatch.so.1.0.1" > /tmp/cfin
+    grep "dhcp-script=" /etc/dnsmasq.conf || /bin/echo dhcp-script=/etc/cloudfriends/reg_camera >> /etc/dnsmasq.conf
+    read -t 1 <>/tmp/cfout
+	if [ -f /tmp/ice.pid  ]; then
+		/bin/echo "system moduleAdd file=camerawatch.so.1.0.1" > /tmp/cfin
+	fi
 fi
 exit 0
 endef
@@ -192,12 +196,14 @@ define Package/ice-client-guest/description
 Guest module for ice-client
 endef
 
-define Package/ice-client-guest/preinst
+define Package/ice-client-guest/prerm
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
-    head -n 1 /tmp/cfout &
-    echo "system moduleRemove topic=guestMgr" > /tmp/cfin
-    sleep 5
+    read -t 1 <>/tmp/cfout
+	if [ -f /tmp/ice.pid  ]; then
+		/bin/echo "system moduleRemove topic=guestMgr" > /tmp/cfin
+		/bin/sleep 3
+	fi
 fi
 exit 0
 endef
@@ -210,8 +216,10 @@ endef
 define Package/ice-client-guest/postinst
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
-    head -n 1 /tmp/cfout &
-    echo "system moduleAdd file=guestService.so.1.0.1" > /tmp/cfin
+    read -t 1 <>/tmp/cfout
+	if [ -f /tmp/ice.pid  ]; then
+		/bin/echo "system moduleAdd file=guestService.so.1.0.1" > /tmp/cfin
+	fi
 fi
 exit 0
 endef
@@ -227,11 +235,13 @@ define Package/ice-client-openvpn/description
 OpenVPN module for ice-client
 endef
 
-define Package/ice-client-openvpn/preinst
+define Package/ice-client-openvpn/prerm
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
-    head -n 1 /tmp/cfout &
-    echo "system moduleRemove topic=ovpnMgr" > /tmp/cfin
+    read -t 1 <>/tmp/cfout
+	if [ -f /tmp/ice.pid  ]; then
+		/bin/echo "system moduleRemove topic=ovpnMgr" > /tmp/cfin
+	fi
 fi
 exit 0
 endef
@@ -244,8 +254,10 @@ endef
 define Package/ice-client-openvpn/postinst
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
-    head -n 1 /tmp/cfout &
-    echo "system moduleAdd file=ovpnService.so.1.0.1" > /tmp/cfin
+    read -t 1 <>/tmp/cfout
+	if [ -f /tmp/ice.pid  ]; then
+		/bin/echo "system moduleAdd file=ovpnService.so.1.0.1" > /tmp/cfin
+	fi
 fi
 exit 0
 endef
@@ -261,11 +273,13 @@ define Package/ice-client-anyfi/description
 AnyFi module for ice-client
 endef
 
-define Package/ice-client-anyfi/preinst
+define Package/ice-client-anyfi/prerm
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
-    head -n 1 /tmp/cfout &
-    echo "system moduleRemove topic=anyfiMgr" > /tmp/cfin
+    read -t 1 <>/tmp/cfout
+	if [ -f /tmp/ice.pid  ]; then
+		/bin/echo "system moduleRemove topic=anyfiMgr" > /tmp/cfin
+	fi
 fi
 exit 0
 endef
@@ -278,8 +292,10 @@ endef
 define Package/ice-client-anyfi/postinst
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
-    head -n 1 /tmp/cfout &
-    echo "system moduleAdd file=anyfiService.so.1.0.1" > /tmp/cfin
+    read -t 1 <>/tmp/cfout
+	if [ -f /tmp/ice.pid  ]; then
+		/bin/echo "system moduleAdd file=anyfiService.so.1.0.1" > /tmp/cfin
+	fi
 fi
 exit 0
 endef
@@ -295,12 +311,14 @@ define Package/ice-client-logreader/description
 Logread module for ice-client
 endef
 
-define Package/ice-client-logreader/preinst
+define Package/ice-client-logreader/prerm
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
-    head -n 1 /tmp/cfout &
-    echo "system moduleRemove topic=log" > /tmp/cfin
-    sleep 5
+    read -t 1 <>/tmp/cfout
+	if [ -f /tmp/ice.pid  ]; then
+		/bin/echo "system moduleRemove topic=log" > /tmp/cfin
+		/bin/sleep 3
+	fi
 fi
 exit 0
 endef
@@ -313,11 +331,14 @@ endef
 define Package/ice-client-logreader/postinst
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
-    head -n 1 /tmp/cfout &
-    echo "system moduleAdd file=logService.so.1.0.1" > /tmp/cfin
+    read -t 1 <>/tmp/cfout
+	if [ -f /tmp/ice.pid  ]; then
+		echo "system moduleAdd file=logService.so.1.0.1" > /tmp/cfin
+	fi
 fi
 exit 0
 endef
+
 
 # fileme
 define Package/ice-client-fileme
@@ -330,12 +351,14 @@ define Package/ice-client-fileme/description
 FileMe module for ice-client
 endef
 
-define Package/ice-client-fileme/preinst
+define Package/ice-client-fileme/prerm
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
-  head -n 1 /tmp/cfout &
-  echo "system moduleRemove topic=fileMeMgr" > /tmp/cfin
-  sleep 2
+   read -t 1 <>/tmp/cfout
+	if [ -f /tmp/ice.pid  ]; then
+	  echo "system moduleRemove topic=fileMeMgr" > /tmp/cfin
+	  /bin/sleep 2
+	fi
 fi
 exit 0
 endef
@@ -353,8 +376,10 @@ endef
 define Package/ice-client-fileme/postinst
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
-  head -n 1 /tmp/cfout &
-  echo "system moduleAdd file=filemeService.so.1.0.1" > /tmp/cfin
+  read -t 1 <>/tmp/cfout
+	if [ -f /tmp/ice.pid  ]; then
+	  echo "system moduleAdd file=filemeService.so.1.0.1" > /tmp/cfin
+	fi
 fi
 exit 0
 endef
