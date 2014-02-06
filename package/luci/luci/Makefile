@@ -639,6 +639,9 @@ $(eval $(call collection,light,\
 	Minimum package set using only admin mini and the bootstrap theme,\
 	+lighttpd +luci-mod-admin-mini +luci-theme-bootstrap @BROKEN))
 
+$(eval $(call application,ipsec,LuCI Support for IPsec,\
+	+PACKAGE_luci-app-ipsec:openswan))
+
 
 ### Compile ###
 PKG_CONFIG_DEPENDS=$(patsubst %,CONFIG_PACKAGE_%,$(LUCI_BUILD_PACKAGES))
