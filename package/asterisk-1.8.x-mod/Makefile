@@ -155,6 +155,12 @@ $(call Package/asterisk18-mod/Default/description)
  Asterisk.
 endef
 
+define Package/asterisk18-mod-res-stun
+$(call Package/asterisk18-mod/Default)
+  TITLE:=STUN support
+  DEPENDS:= asterisk18-mod
+endef
+
 define Package/asterisk18-mod-chan-gtalk
 $(call Package/asterisk18-mod/Default)
   TITLE:=GTalk support
@@ -663,6 +669,11 @@ define Package/asterisk18-mod-res-srtp/install
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/lib/asterisk/modules/res_srtp.so $(1)/usr/lib/asterisk/modules/
 endef
 
+define Package/asterisk18-mod-res-stun/install
+	$(INSTALL_DIR) $(1)/usr/lib/asterisk/modules
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/lib/asterisk/modules/res_stun_monitor.so $(1)/usr/lib/asterisk/modules/
+endef
+
 define Buildasterisk18-modModuleTemplate
 
   define Package/asterisk18-mod-$(subst _,-,$(1))
@@ -706,6 +717,7 @@ $(eval $(call BuildPackage,asterisk18-mod-curl))
 $(eval $(call BuildPackage,asterisk18-mod-mysql))
 $(eval $(call BuildPackage,asterisk18-mod-chan-lantiq))
 $(eval $(call BuildPackage,asterisk18-mod-res-srtp))
+$(eval $(call BuildPackage,asterisk18-mod-res-stun))
 $(eval $(call Buildasterisk18-modModuleTemplate,app_authenticate,Authenticate,support for executing arbitrary authenticate commands))
 $(eval $(call Buildasterisk18-modModuleTemplate,app_chanisavail,Channel availability check,support for checking if a channel is available))
 $(eval $(call Buildasterisk18-modModuleTemplate,app_chanspy,Channel listen in,support for listening in on any channel))
