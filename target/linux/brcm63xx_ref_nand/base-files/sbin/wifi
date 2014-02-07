@@ -231,11 +231,12 @@ set_wifi_iface() {
 		wlctl -i $iface vlan_mode 0
 
 		# set Encryption
-		key=
-		wsec_r=0
-		eap_r=0
-		wsec=0
-		auth=0
+		local key=
+		local wsec=0
+		local wsec_r=0
+		local eap=0
+		local eap_r=0
+		local auth=0
 		nvram set "$nif"_wep=disabled
 		case "$enc" in
 			*wep*)
@@ -265,6 +266,8 @@ set_wifi_iface() {
 			;;
 			*psk*)
 				wsec_r=1
+				eap=1
+				eap_r=1
 				config_get key "$vif" key
 				config_get gtk "$vif" gtk_rekey
 
@@ -291,6 +294,7 @@ set_wifi_iface() {
 			;;
 			*wpa*)
 				wsec_r=1
+				eap=1
 				eap_r=1
 				config_get key "$vif" key
 				#config_get server "$vif" server
@@ -324,6 +328,7 @@ set_wifi_iface() {
 		wlctl -i $iface wsec $wsec
 		wlctl -i $iface wpa_auth $auth
 		wlctl -i $iface wsec_restrict $wsec_r
+		wlctl -i $iface eap $eap
 		wlctl -i $iface eap_restrict $eap_r
 
 		# create QR code of the Wi-Fi network
