@@ -18,6 +18,7 @@ config board 'board'
 	option lednames 'Status Ethernet WAN Wireless WPS USB DSL Internet GbE'
 	option buttonnames 'RESET WPS WIFI'
 	option wpsButtonGpio '33'
+	option hasBrcmAvs '1'
 
 config buttons 'buttons'
 	option RESET '32 al resetbutton'

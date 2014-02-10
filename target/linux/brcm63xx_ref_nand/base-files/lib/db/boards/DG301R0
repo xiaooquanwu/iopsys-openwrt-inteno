@@ -19,6 +19,7 @@ config board 'board'
 	option buttonnames 'RESET DECT WPS INFO ECO'
 	option wpsButtonGpio '22'
 	option fxsRelayGpio '8'
+	option hasBrcmAvs '0'
 
 config buttons 'buttons'
 	option RESET '32 al resetbutton'
