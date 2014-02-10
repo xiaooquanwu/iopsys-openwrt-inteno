@@ -237,6 +237,8 @@ set_wifi_iface() {
 		local eap=0
 		local eap_r=0
 		local auth=0
+		nvram set "$nif"_preauth=0
+		nvram set "$nif"_net_auth_type=1
 		nvram set "$nif"_wep=disabled
 		case "$enc" in
 			*wep*)
@@ -272,7 +274,7 @@ set_wifi_iface() {
 				config_get gtk "$vif" gtk_rekey
 
 				nvram set "$nif"_auth=0
-				nvram set "$nif"_wpa_gtk_rekey="${gtk:-3600}"
+				nvram set "$nif"_wpa_gtk_rekey="${gtk:-0}"
 
 				# psk version + default cipher
 				case "$enc" in
@@ -302,6 +304,9 @@ set_wifi_iface() {
 				config_get rad_serv "$vif" radius_server
 				config_get rad_port "$vif" radius_port
 				config_get rad_sec "$vif" radius_secret
+				config_get net_reauth "$vif" key net_reauth
+
+				nvram set "$nif"_net_reauth="${net_reauth:-36000}"
 
 				# wpa version + default cipher
 				case "$enc" in
