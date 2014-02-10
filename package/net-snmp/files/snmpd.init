@@ -110,12 +110,15 @@ snmpd_exec_add() {
 	echo "exec $miboid $name $prog $args" >> $RUN_C
 }
 start() {
+	config_load snmpd
+	config_get enabled daemon enabled
+
+	[ "$enabled" == "1" ] || return
+
 	[ -d $LIB_D ] || mkdir -p $LIB_D
 	[ -d $LOG_D ] || mkdir -p $LOG_D
 	[ -d $RUN_D ] || mkdir -p $RUN_D
 	[ -f $RUN_C ] && rm -f $RUN_C
-
-	config_load snmpd
 
 	config_foreach snmpd_agent_add agent
 	config_foreach snmpd_system_add system
