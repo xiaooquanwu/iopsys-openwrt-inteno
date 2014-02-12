@@ -147,33 +147,27 @@ typedef struct SUBCHANNEL
 	char		state[80];
 } SUBCHANNEL;
 
-#define MAX_DIALTONE_STATE_LENGTH 11
-#define DEFAULT_DIALTONE_STATE "unknown"
 #define MAX_PORT_NAME	10
 typedef struct PORT_MAP
 {
 	char		name[MAX_PORT_NAME];
 	BRCM_PORT	port;
 	int		off_hook;
-	char		dialtone_state[MAX_DIALTONE_STATE_LENGTH];
-	char		new_dialtone_state[MAX_DIALTONE_STATE_LENGTH];
-	int		dialtone_dirty;		//Do we need to set a new dialtone in chan_brcm?
-	int		dialtone_configured;	//Do we need to set dialtone off in chan_brcm?
 	SUBCHANNEL	sub[2]; //TODO define for number of subchannels?
 	struct ubus_object *ubus_object;
 } PORT_MAP;
 
 static PORT_MAP brcm_ports[] =
 {
-	{"brcm0",	PORT_BRCM0,	0,	DEFAULT_DIALTONE_STATE,	"", 0,	0, { {"ONHOOK"}, {"ONHOOK"} }, NULL },
-	{"brcm1",	PORT_BRCM1,	0,	DEFAULT_DIALTONE_STATE, "", 0,	0, { {"ONHOOK"}, {"ONHOOK"} }, NULL },
-	{"brcm2",	PORT_BRCM2,	0,	DEFAULT_DIALTONE_STATE, "", 0,	0, { {"ONHOOK"}, {"ONHOOK"} }, NULL },
-	{"brcm3",	PORT_BRCM3,	0,	DEFAULT_DIALTONE_STATE, "", 0,	0, { {"ONHOOK"}, {"ONHOOK"} }, NULL },
-	{"brcm4",	PORT_BRCM4,	0,	DEFAULT_DIALTONE_STATE, "", 0,	0, { {"ONHOOK"}, {"ONHOOK"} }, NULL },
-	{"brcm5",	PORT_BRCM5,	0,	DEFAULT_DIALTONE_STATE, "", 0,	0, { {"ONHOOK"}, {"ONHOOK"} }, NULL },
+	{"brcm0",	PORT_BRCM0,	0,	0,	0, { {"ONHOOK"}, {"ONHOOK"} }, NULL },
+	{"brcm1",	PORT_BRCM1,	0,	0,	0, { {"ONHOOK"}, {"ONHOOK"} }, NULL },
+	{"brcm2",	PORT_BRCM2,	0,	0,	0, { {"ONHOOK"}, {"ONHOOK"} }, NULL },
+	{"brcm3",	PORT_BRCM3,	0,	0,	0, { {"ONHOOK"}, {"ONHOOK"} }, NULL },
+	{"brcm4",	PORT_BRCM4,	0,	0,	0, { {"ONHOOK"}, {"ONHOOK"} }, NULL },
+	{"brcm5",	PORT_BRCM5,	0,	0,	0, { {"ONHOOK"}, {"ONHOOK"} }, NULL },
 	//Add other ports here as needed
-	{"port_all",	PORT_ALL,	0,	DEFAULT_DIALTONE_STATE, "", 0,	0, { {"ONHOOK"}, {"ONHOOK"} }, NULL },
-	{"-",		PORT_UNKNOWN,	0,	DEFAULT_DIALTONE_STATE, "", 0,	0, { {"ONHOOK"}, {"ONHOOK"} }, NULL },
+	{"port_all",	PORT_ALL,	0,	0,	0, { {"ONHOOK"}, {"ONHOOK"} }, NULL },
+	{"-",		PORT_UNKNOWN,	0,	0,	0, { {"ONHOOK"}, {"ONHOOK"} }, NULL },
 };
 
 typedef enum SIP_ACCOUNT_ID

@@ -463,92 +463,6 @@ static int brcm_subchannel_active(const PORT_MAP *port) {
 	return 0;
 }
 
-/***********************************
- * Dialtone management
- ***********************************/
-void manage_dialtones(ami_connection* con)
-{
-	if (state == DISCONNECTED || state == CONNECTED) {
-		return; //We cant set dialtones until we are properly logged in
-	}
-
-	SIP_PEER *peer;
-	const SIP_PEER *peers = sip_peers;
-
-	while (peers->account.id != SIP_ACCOUNT_UNKNOWN) {
-		peer = &sip_peers[peers->account.id]; //TODO: why do this?
-
-		/* Skip if SIP account is not enabled */
-		if (!uci_get_peer_enabled(peer)) {
-			peers++;
-			continue;
-		}
-
-		/* Get dialtone state to be used for ports under this SIP account */
-		char dialtone_state[MAX_DIALTONE_STATE_LENGTH];
-		if (peer->sip_registry_registered == 1) {
-			strcpy(dialtone_state, "on");
-		} else {
-			strcpy(dialtone_state, "congestion");
-		}
-
-		//Get ports used for incomming calls to this SIP account
-		const char* call_lines = uci_get_called_lines(peers);
-		if (call_lines) {
-			char buf[20];
-			char *delimiter = " ";
-			char *value;
-			int line_id = -1;
-			strncpy(buf, call_lines, 20);
-			value = strtok(buf, delimiter);
-
-			while (value != NULL) {
-				line_id = atoi(value);
-				if (line_id < PORT_ALL) {
-					/* Set congestion if not already set (worst case) or on if not already changed */
-					if ((!strcmp(dialtone_state, "congestion") && strcmp(brcm_ports[line_id].new_dialtone_state, "congestion")) ||
-						(!brcm_ports[line_id].dialtone_dirty && strcmp(brcm_ports[line_id].new_dialtone_state, dialtone_state))) {
-
-						brcm_ports[line_id].dialtone_dirty = 1; //This port needs an update
-						strcpy(brcm_ports[line_id].new_dialtone_state, dialtone_state);
-					}
-					brcm_ports[line_id].dialtone_configured = 1; //This port is configured, don't set to off below
-				}
-				else {
-					printf("Unparsable line id in %s.call_lines\n", peer->account.name);
-				}
-				value = strtok(NULL, delimiter);
-			}
-		}
-		peers++;
-	}
-
-	PORT_MAP *ports = brcm_ports;
-	BRCM_PORT port;
-	while (ports->port < PORT_ALL) {
-		if (!ports->dialtone_configured && strcmp(ports->dialtone_state, "off")) {
-			/* No SIP account is configured to send incomming calls on this line */
-			strcpy(ports->new_dialtone_state, "off");
-			ports->dialtone_dirty = 1;
-		}
-
-		if (ports->dialtone_dirty && strcmp(ports->new_dialtone_state, ports->dialtone_state) && strlen(ports->new_dialtone_state)) {
-			/* Dialtone changed, apply in chan_brcm */
-			port = ports->port;
-			printf("Apply dialtone %s for port %d\n", ports->new_dialtone_state, port);
-			strcpy(ports->dialtone_state, ports->new_dialtone_state);
-			strcpy(ports->new_dialtone_state, "");
-			ami_send_brcm_dialtone_settings(con, port, ports->dialtone_state, NULL);
-		}
-
-		/* Reset states */
-		ports->dialtone_dirty = 0;
-		ports->dialtone_configured = 0;
-
-		ports++;
-	}
-}
-
 /**********************************
  * LED management
  **********************************/
@@ -811,10 +725,6 @@ void init_brcm_ports() {
 	ports = brcm_ports;
 	while (ports->port != PORT_UNKNOWN) {
 		ports->off_hook = 0;
-		strcpy(ports->dialtone_state, DEFAULT_DIALTONE_STATE);
-		strcpy(ports->new_dialtone_state, "");
-		ports->dialtone_dirty = 0;
-		ports->dialtone_configured = 0;
 		strcpy(ports->sub[0].state, "ONHOOK");
 		strcpy(ports->sub[1].state, "ONHOOK");
 		ports++;
@@ -890,7 +800,6 @@ void ami_handle_event(ami_connection* con, ami_event event)
 	}
 
 	manage_leds();
-	manage_dialtones(con);
 }
 
 void handle_registry_event(ami_event event)
@@ -1126,7 +1035,6 @@ static int ubus_get_brcm_line(struct blob_buf *b, int line)
 	}
 
 	const PORT_MAP *p = &(brcm_ports[line]);
-	blobmsg_add_string(b, "dialtone", p->dialtone_state);
 	blobmsg_add_string(b, "sub_0_state", p->sub[0].state);
 	blobmsg_add_string(b, "sub_1_state", p->sub[1].state);
 
@@ -1420,7 +1328,6 @@ void set_state(AMI_STATE new_state, ami_connection* con)
 				printf("In state READY\n");
 				configure_leds();
 				manage_leds();
-				manage_dialtones(con);
 				break;
 			default:
 				break;

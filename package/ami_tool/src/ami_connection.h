@@ -112,5 +112,4 @@ struct ami_action {
 void ami_send_sip_reload(ami_connection* con, ami_response_cb on_response);
 void ami_send_login(ami_connection* con, char*username, char* password, ami_response_cb on_response);
 void ami_send_brcm_module_show(ami_connection* con, ami_response_cb on_response);
-void ami_send_brcm_dialtone_settings(ami_connection* con, const int line_id, const char *dialtone_state, ami_response_cb on_response);
 void ami_send_brcm_ports_show(ami_connection* con, ami_response_cb on_response);

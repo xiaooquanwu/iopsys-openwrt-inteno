@@ -631,17 +631,6 @@ void ami_send_brcm_module_show(ami_connection* con, ami_response_cb on_response)
 }
 
 /*
- * Set dialtone for a specific line
- */
-void ami_send_brcm_dialtone_settings(ami_connection* con, const int line_id, const char *dialtone_state, ami_response_cb on_response) {
-	//printf("Queueing Action: ami_send_brcm_dialtone_settings\n");
-	ami_action* action = malloc(sizeof(ami_action));
-	action->callback = on_response;
-	sprintf(action->message, "Action: BRCMDialtoneSet\r\nLineId: %d\r\nDialtone: %s\r\n\r\n", line_id, dialtone_state);
-	queue_action(con, action);
-}
-
-/*
  * Request an indication on the port configuration
  *
  * Example response:
