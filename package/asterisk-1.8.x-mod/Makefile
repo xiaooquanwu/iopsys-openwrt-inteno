@@ -16,7 +16,7 @@ PKG_SOURCE_URL:=git@ihgsp.inteno.se:asterisk-aa
 else
 PKG_SOURCE_URL:=http://ihgsp.inteno.se/git/asterisk-aa
 endif
-PKG_SOURCE_VERSION:=dbb07fbc6dabf5850881c693e3b77a77c972fc75
+PKG_SOURCE_VERSION:=1bda8ca5f486570c56c0fa51b7ffa269d17b77a5
 PKG_SOURCE_SUBDIR:=asterisk-$(PKG_VERSION)
 PKG_SOURCE:=asterisk-$(PKG_VERSION)-mod.tar.gz
 
