@@ -449,6 +449,11 @@ static int led_set(struct leds_configuration* led_cfg, int led_idx, int state) {
 static void led_set_state(struct leds_configuration* led_cfg, int led_idx, int state) {
     struct led_config* lc;
 
+    if ((led_idx == -1) || (led_idx > led_cfg->leds_nr-1)) {
+        DEBUG_PRINT("led_set_state: Led index: %d out of bounds, nr_leds = %d\n", led_idx, led_cfg->leds_nr);
+        return 0;
+    }
+
     lc = led_cfg->leds[led_idx];
     lc->state = state;
 }
