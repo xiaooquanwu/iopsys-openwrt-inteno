@@ -524,7 +524,7 @@ router_dump_usbs(struct blob_buf *b)
 			blobmsg_close_table(b, t);
 			uno++;
 		}
-		fclose(usbdevs);
+		pclose(usbdevs);
 	}
 }
 

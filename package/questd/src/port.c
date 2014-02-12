@@ -65,6 +65,7 @@ get_port_name(Port *port)
 		exit(1);
 
 	fgets(buf, sizeof(buf), in);
+	pclose(in);
 	remove_newline(&buf);
 	strcpy(&port->name, buf);
 }
@@ -83,6 +84,7 @@ get_bridge_ports(char *bridge, unsigned char **ports)
 		exit(1);
 
 	fgets(buf, sizeof(buf), in);
+	pclose(in);
 	*ports = strdup(buf);
 }
 

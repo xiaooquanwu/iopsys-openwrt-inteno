@@ -356,6 +356,7 @@ set_wifi_iface() {
 			nvram set lan"$lno"_wps_oob="disabled"
 			nvram set wps_proc_status="0"
 			nvram set wps_button_gpio=`db get -q hw.board.wpsButtonGpio`
+			nvram set wps_config="DONE"
 			_enWps=$(($_enWps + 1))
 		fi
 
@@ -439,6 +440,9 @@ set_wifi_device() {
 	wlctl -i $device stbc_rx 0
 	wlctl -i $device stbc_tx -1
 	wlctl -i $device fcache 1
+	# wlctl -i $device rxstreams 1
+	# wlctl -i $device txstreams 2
+	wlctl -i $device wnm 0x103
 
 	# WDS Settings
 	wlctl -i $device wds none
@@ -461,19 +465,19 @@ set_wifi_device() {
 	case "$doth" in
 		1)
 			wlctl -i $device regulatory 0
-			wlctl -i $device spect 1 2>/dev/null
+			wlctl -i $device spect 1
 		;;
 		2)
 			wlctl -i $device regulatory 0
-			wlctl -i $device spect 2 2>/dev/null
+			wlctl -i $device spect 2
 		;;
 		3)
 			wlctl -i $device regulatory 1
-			wlctl -i $device spect 0 2>/dev/null
+			wlctl -i $device spect 0
 		;;
 		*)
 			wlctl -i $device regulatory 0
-			wlctl -i $device spect 0 2>/dev/null
+			wlctl -i $device spect 0
 		;;
 	esac
 
@@ -481,10 +485,11 @@ set_wifi_device() {
 	wlctl -i $device nmode -1
 	wlctl -i $device mimo_bw_cap 2
 	wlctl -i $device mimo_preamble 2
-	wlctl -i $device bw_cap 2g 0xff 2>/dev/null
-	wlctl -i $device bw_cap 5g 0xff 2>/dev/null
+	wlctl -i $device bw_cap 2g 0xff
+	wlctl -i $device bw_cap 5g 0xff
 	wlctl -i $device obss_coex 1
 	wlctl -i $device gmode 1
+	wlctl -i $device gmode_protection 1
 	wlctl -i $device gmode_protection_override -1
 	wlctl -i $device gmode_protection_control 2
 	wlctl -i $device nmode_protection_override -1
@@ -575,14 +580,15 @@ set_wifi_device() {
 	wlctl -i $device maxassoc "${maxassoc:-16}"
 
 	# WME settings
-	wlctl -i $device wme 0 2>/dev/null
-	wlctl -i $device afterburner_override 0 2>/dev/null
-	wlctl -i $device ampdu 1 2>/dev/null
-	wlctl -i $device amsdu 1 2>/dev/null
-	wlctl -i $device wme "${wmm:-0}" 2>/dev/null
-	wlctl -i $device wme_noack "${wmm_noack:-0}" 2>/dev/null
-	wlctl -i $device wme_apsd "${wmm_apsd:-1}" 2>/dev/null
-	wlctl -i $device wme_bss_disable "${wmm_bss_disable:-0}" 2>/dev/null
+	wlctl -i $device wme 0
+	wlctl -i $device afterburner_override 0
+	wlctl -i $device ampdu 1
+	wlctl -i $device amsdu 0
+	wlctl -i $device rx_amsdu_in_ampdu 0
+	wlctl -i $device wme "${wmm:-1}"
+	wlctl -i $device wme_noack "${wmm_noack:-0}"
+	wlctl -i $device wme_apsd "${wmm_apsd:-1}"
+	wlctl -i $device wme_bss_disable "${wmm_bss_disable:-0}"
 
 	# tweak Settings
 	wlctl -i $device rtsthresh "${rts:-2347}"
@@ -601,6 +607,7 @@ set_wifi_device() {
 	wlctl -i $device rxchain_pwrsave_quiet_time "${rxchainps_qt:-10}"
 	wlctl -i $device rxchain_pwrsave_pps "${rxchainps_pps:-10}"
 
+
 	# create and configure wireless VIFs
 	wlctl -i $device down
 	wlctl -i $device mbss 1
@@ -608,7 +615,7 @@ set_wifi_device() {
 	_vno=0
 
 	# bring up the wireless device
-	wlctl -i $device leddc 0 2>/dev/null
+	wlctl -i $device leddc 0
 	ledctl wireless on
 
 	[ -n "$acsifs" ] && {
