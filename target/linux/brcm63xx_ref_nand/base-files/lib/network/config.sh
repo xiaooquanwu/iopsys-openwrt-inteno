@@ -131,6 +131,8 @@ interfacename() {
 		VG50_Reth4) echo "GbE";;
 		963268BUeth4|DG301R0eth4) echo "LAN1" ;;
 		96362ADVNgreth4) echo "WAN" ;;
+		CG300R0eth0) echo "WAN" ;;
+		CG300R0eth1) echo "LAN1" ;;
 		*wl*) echo "WLAN" ;;
 		*) echo "ethernet" ;;
 	esac
