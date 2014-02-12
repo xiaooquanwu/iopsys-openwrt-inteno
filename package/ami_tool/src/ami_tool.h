@@ -159,15 +159,15 @@ typedef struct PORT_MAP
 
 static PORT_MAP brcm_ports[] =
 {
-	{"brcm0",	PORT_BRCM0,	0,	0,	0, { {"ONHOOK"}, {"ONHOOK"} }, NULL },
-	{"brcm1",	PORT_BRCM1,	0,	0,	0, { {"ONHOOK"}, {"ONHOOK"} }, NULL },
-	{"brcm2",	PORT_BRCM2,	0,	0,	0, { {"ONHOOK"}, {"ONHOOK"} }, NULL },
-	{"brcm3",	PORT_BRCM3,	0,	0,	0, { {"ONHOOK"}, {"ONHOOK"} }, NULL },
-	{"brcm4",	PORT_BRCM4,	0,	0,	0, { {"ONHOOK"}, {"ONHOOK"} }, NULL },
-	{"brcm5",	PORT_BRCM5,	0,	0,	0, { {"ONHOOK"}, {"ONHOOK"} }, NULL },
+	{"brcm0",	PORT_BRCM0,	0,	{ {"ONHOOK"}, {"ONHOOK"} }, NULL },
+	{"brcm1",	PORT_BRCM1,	0,	{ {"ONHOOK"}, {"ONHOOK"} }, NULL },
+	{"brcm2",	PORT_BRCM2,	0,	{ {"ONHOOK"}, {"ONHOOK"} }, NULL },
+	{"brcm3",	PORT_BRCM3,	0,	{ {"ONHOOK"}, {"ONHOOK"} }, NULL },
+	{"brcm4",	PORT_BRCM4,	0,	{ {"ONHOOK"}, {"ONHOOK"} }, NULL },
+	{"brcm5",	PORT_BRCM5,	0,	{ {"ONHOOK"}, {"ONHOOK"} }, NULL },
 	//Add other ports here as needed
-	{"port_all",	PORT_ALL,	0,	0,	0, { {"ONHOOK"}, {"ONHOOK"} }, NULL },
-	{"-",		PORT_UNKNOWN,	0,	0,	0, { {"ONHOOK"}, {"ONHOOK"} }, NULL },
+	{"port_all",	PORT_ALL,	0,	{ {"ONHOOK"}, {"ONHOOK"} }, NULL },
+	{"-",		PORT_UNKNOWN,	0,	{ {"ONHOOK"}, {"ONHOOK"} }, NULL },
 };
 
 typedef enum SIP_ACCOUNT_ID
