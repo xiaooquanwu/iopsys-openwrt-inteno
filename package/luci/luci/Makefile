@@ -4,8 +4,8 @@ PKG_BRANCH:=svn-0.11
 PKG_NAME:=luci
 PKG_RELEASE:=1.0.1
 
-PKG_VERSION:=inteno-1.0.51
-PKG_SOURCE_VERSION:=29dcf262698d45c83ee57947294482d7efec921a
+PKG_VERSION:=inteno-1.0.52
+PKG_SOURCE_VERSION:=c0edca56046c4c18f546e7f6b745ff649d038e1e
 ifeq ($(CONFIG_PACKAGE_bcmkernel),y)
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=git@iopsys.inteno.se:luci-inteno-private.git
@@ -482,6 +482,9 @@ $(eval $(call application,snmp,LuCI Support for SNMP,\
        
 $(eval $(call application,port-management,LuCI Support for Port Management,\
 	+PACKAGE_luci-app-port-management))
+
+$(eval $(call application,power-mgmt,LuCI Support for Power Management,\
+	+PACKAGE_luci-app-power-mgmt))
 
 $(eval $(call application,voice-client,LuCI Voice Interface (client),\
 	+luci-lib-json \
