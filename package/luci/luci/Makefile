@@ -7,7 +7,8 @@ PKG_RELEASE:=1.0.1
 PKG_VERSION:=inteno-1.0.51
 PKG_SOURCE_VERSION:=29dcf262698d45c83ee57947294482d7efec921a
 ifeq ($(CONFIG_PACKAGE_bcmkernel),y)
-PKG_SOURCE_URL:=ssh://inteno@ihgsp.inteno.se/home/inteno/public/git/luci-inteno.git
+PKG_SOURCE_PROTO:=git
+PKG_SOURCE_URL:=git@iopsys.inteno.se:luci-inteno-private.git
 else
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=http://ihgsp.inteno.se/git/luci-inteno.git
