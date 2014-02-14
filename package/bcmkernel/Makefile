@@ -15,7 +15,7 @@ PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=git@iopsys.inteno.se:bcmkernel-4.14L.04
 PKG_SOURCE_PROTO:=git
 
-PKG_SOURCE_VERSION:=dd2b60fdb789ee908b0a6987976e033fd598ec2e
+PKG_SOURCE_VERSION:=92c1e715863b3f2091846fe36e9d66fb32a4bb9c
 
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
 
@@ -143,7 +143,19 @@ define Package/bcmkernel/install
 	rm -f $(1)/usr/sbin/openssl
 	rm -f $(1)/usr/sbin/telnetd
 	rm -f $(1)/usr/sbin/vodsl
-
+	rm -f $(1)/usr/sbin/tr64c
+	rm -f $(1)/usr/sbin/tr69c
+	rm -f $(1)/usr/sbin/racoon
+	rm -f $(1)/usr/sbin/upnpd
+	rm -f $(1)/usr/sbin/smd
+	rm -f $(1)/usr/sbin/ssk
+	rm -f $(1)/usr/sbin/dnsproxy
+	rm -f $(1)/usr/sbin/zebra
+	rm -f $(1)/usr/sbin/udhcpd
+	rm -f $(1)/usr/sbin/wlmngr
+	rm -f $(1)/usr/sbin/ripd
+	rm -f $(1)/usr/sbin/send_cms_msg
+	rm -f $(1)/usr/sbin/ubi*
 
 	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/*		$(1)/usr/lib/
 	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/gpl/*	$(1)/usr/lib/
