@@ -62,10 +62,6 @@ start() {
 	echo "Software version: $(db get hw.board.iopVersion)" > /dev/kmsg
 	rm -f /usr/lib/lua/luci/controller/info.lua
 
-	# power management
-	pwrctl config --cpuspeed 256
-	pwrctl config --sr on
-
 	mkdir -p /var/run
 	mkdir -p /var/log
 	mkdir -p /var/lock
