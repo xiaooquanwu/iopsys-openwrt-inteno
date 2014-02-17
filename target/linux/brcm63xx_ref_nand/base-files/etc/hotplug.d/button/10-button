@@ -28,6 +28,7 @@ case "$ACTION" in
                 local parsed=$(ubus call led.dect status)
                 json_load "$parsed"
                 json_get_var ledstate state
+		/usr/bin/dect -r > /dev/null
 
                 [ "$ledstate" == "off" ] && {
                         ubus call led.dect set '{ "state": "notice"}'
