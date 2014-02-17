@@ -1815,6 +1815,7 @@ CONFIG_PACKAGE_luci-app-openvpn=y
 # CONFIG_PACKAGE_luci-app-pbx is not set
 # CONFIG_PACKAGE_luci-app-polipo is not set
 CONFIG_PACKAGE_luci-app-port-management=y
+CONFIG_PACKAGE_luci-app-power-mgmt=y
 # CONFIG_PACKAGE_luci-app-qos is not set
 # CONFIG_PACKAGE_luci-app-radvd is not set
 CONFIG_PACKAGE_luci-app-samba=y
