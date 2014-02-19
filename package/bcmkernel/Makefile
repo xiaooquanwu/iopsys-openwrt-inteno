@@ -205,7 +205,11 @@ define Package/bcmkernel/install
 	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/net/ipv6/netfilter/*      $(1)/lib/modules/$(BCM_KERNEL_VERSION)/
 	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/net/netfilter/*           $(1)/lib/modules/$(BCM_KERNEL_VERSION)/
 #	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/drivers/char/hw_random/*  $(1)/lib/modules/$(BCM_KERNEL_VERSION)/
-	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/drivers/i2c/*             $(1)/lib/modules/$(BCM_KERNEL_VERSION)/
+	cp    $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/drivers/i2c/i2c-core.ko                    $(1)/lib/modules/$(BCM_KERNEL_VERSION)/
+	cp    $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/drivers/i2c/i2c-dev.ko                     $(1)/lib/modules/$(BCM_KERNEL_VERSION)/
+	cp    $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/drivers/i2c/algos/i2c-algo-bit.ko          $(1)/lib/modules/$(BCM_KERNEL_VERSION)/
+	cp    $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/drivers/i2c/busses/i2c-gpio.ko             $(1)/lib/modules/$(BCM_KERNEL_VERSION)/
+	cp    $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/drivers/i2c/busses/i2c-gpio-custom.ko      $(1)/lib/modules/$(BCM_KERNEL_VERSION)/
 
 	touch $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/bcmdrivers/broadcom/char/adsl/impl1/adsl_phy.bin
 #	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/bcmdrivers/broadcom/char/adsl/impl1/adsl_phy.bin                                      $(1)/etc/adsl/adsl_phy.bin
