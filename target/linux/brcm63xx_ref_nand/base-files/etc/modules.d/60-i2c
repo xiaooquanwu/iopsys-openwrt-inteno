@@ -1,0 +1,5 @@
+i2c-core
+i2c-dev
+i2c-algo-bit
+i2c-gpio
+i2c-gpio-custom bus0=0,23,22
