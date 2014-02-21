@@ -15,14 +15,14 @@ export PLATFORM_INCLUDE:=platforms/iopsys/build.mk
 
 export DATE:=$(shell date +%Y-%m-%d-%H-%M-%S)
 export LOGIN:=$(shell whoami)
-BASE_PKG_VERSION:=2.8.3
-PKG_RELEASE:=RC8
+BASE_PKG_VERSION:=2.9.1
+PKG_RELEASE:=RC1
 PKG_VERSION:=$(BASE_PKG_VERSION)-$(PKG_RELEASE)_$(DATE)_$(LOGIN)
 
 ###########################--RELEASE--################################
 
 PKG_SOURCE_URL:=ssh://git@iopsys.inteno.se/ice-client.git
-PKG_SOURCE_VERSION:=8230741c276cc7f2e84a90fd1d757694ab5a9ab8
+PKG_SOURCE_VERSION:=f546182cd2486ac0f2fd55d39a37cbb6afec8feb
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(BASE_PKG_VERSION)
 PKG_SOURCE:=$(PKG_NAME)-$(BASE_PKG_VERSION)-$(PKG_RELEASE).tar.gz
 
@@ -336,31 +336,56 @@ fi
 exit 0
 endef
 
-define Package/ice-client-anyfi/preinst
+# Netrounds
+define Package/ice-client-netrounds
+  $(call Package/ice-client/Default)
+  TITLE:=Netrounds
+  DEPENDS+= 
+endef
+
+define Package/ice-client-netrounds/description
+Netrounds module for ice-client
+endef
+
+define Package/ice-client-netrounds/prerm
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
 	if [  $$PROC_EXISTS ]; then
 	  read -t 1 <>/tmp/cfout
-	  /bin/echo "system moduleRemove topic=anyfiMgr" > /tmp/cfin
+	  /bin/echo "system moduleRemove topic=netroundsMgr" > /tmp/cfin
 	  /bin/sleep 3
 	fi
 fi
 exit 0
 endef
 
-define Package/ice-client-anyfi/install
-	$(INSTALL_DIR) $(1)/usr/lib
-	$(CP) $(PKG_BUILD_DIR)/core/lib/anyfiService.so.1.0.1 $(1)/usr/lib
+define Package/ice-client-netrounds/preinst
+#!/bin/sh
+if [ -z "$${IPKG_INSTROOT}" ]; then
+	PROC_ID=$$(cat /tmp/ice.pid)
+	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
+	if [  $$PROC_EXISTS ]; then
+	  read -t 1 <>/tmp/cfout
+	  /bin/echo "system moduleRemove topic=netroundsMgr" > /tmp/cfin
+	  /bin/sleep 3
+	fi
+fi
+exit 0
 endef
 
-define Package/ice-client-anyfi/postinst
+define Package/ice-client-netrounds/install
+	$(INSTALL_DIR) $(1)/usr/lib
+	$(CP) $(PKG_BUILD_DIR)/core/lib/netroundsService.so.1.0.1 $(1)/usr/lib
+endef
+
+define Package/ice-client-netrounds/postinst
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
     read -t 1 <>/tmp/cfout
 	if [ -f /tmp/ice.pid  ]; then
-		/bin/echo "system moduleAdd file=anyfiService.so.1.0.1" > /tmp/cfin
+		/bin/echo "system moduleAdd file=netroundsService.so.1.0.1" > /tmp/cfin
 	fi
 fi
 exit 0
@@ -494,5 +519,6 @@ $(eval $(call BuildPackage,ice-client-guest))
 $(eval $(call BuildPackage,ice-client-camerawatch))
 $(eval $(call BuildPackage,ice-client-openvpn))
 $(eval $(call BuildPackage,ice-client-anyfi))
+$(eval $(call BuildPackage,ice-client-netrounds))
 $(eval $(call BuildPackage,ice-client-logreader))
 $(eval $(call BuildPackage,ice-client-fileme))
