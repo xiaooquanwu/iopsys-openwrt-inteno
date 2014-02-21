@@ -15,7 +15,7 @@ PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=git@iopsys.inteno.se:bcmkernel-4.14L.04
 PKG_SOURCE_PROTO:=git
 
-PKG_SOURCE_VERSION:=be64843f6addc2071a018278cd5ad44364e55717
+PKG_SOURCE_VERSION:=2598a6dae1259e987ec4ff8327cafc0cd00b6dd3
 
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
 
@@ -59,6 +59,17 @@ endef
 ifeq ($(CONFIG_BCM_ENDPOINT_MODULE),y)
 define Package/bcmkernel/removevoice
 	echo not removing $(1)/lib/modules/$(BCM_KERNEL_VERSION)/extra/endpointdd.ko
+endef
+endif
+
+
+define Package/bcmkernel/removei2c
+	rm $(1)/lib/modules/$(BCM_KERNEL_VERSION)/i2c*
+endef
+
+ifeq ($(CONFIG_BCM_I2C),y)
+define Package/bcmkernel/removei2c
+	echo not removing $(1)/lib/modules/$(BCM_KERNEL_VERSION)/i2c*
 endef
 endif
 
@@ -233,6 +244,7 @@ define Package/bcmkernel/install
 #	$(KERNEL_CROSS)objcopy $(OBJCOPY_STRIP) -S $(LINUX_DIR)/vmlinux $(KERNEL_BUILD_DIR)/vmlinux.elf
 
 	$(call Package/bcmkernel/removevoice,$(1))
+	$(call Package/bcmkernel/removei2c,$(1))
 endef
 
 $(eval $(call BuildPackage,bcmkernel))
