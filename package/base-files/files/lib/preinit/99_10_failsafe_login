@@ -8,8 +8,8 @@ failsafe_netlogin () {
 
 failsafe_shell() {
     lock /tmp/.failsafe
-    ash --login
     echo "Please reboot system when done with failsafe network logins"
+    /bin/login
 }
 
 
