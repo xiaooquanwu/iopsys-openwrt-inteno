@@ -4,10 +4,11 @@ Print system info and logs
 --]]
 
 local cmd = {
-    'cat /etc/banner' ,
+    'cat /etc/banner',
     'date',
     'cat /proc/cpuinfo',
-    "ubus call router quest '{ \"info\": \"system\" }'", "ubus call router quest '{ \"info\": \"memory\" }'",
+    "ubus call router quest '{ \"info\": \"system\" }'",
+    "ubus call router quest '{ \"info\": \"memory\" }'",
     "ubus call router quest '{ \"info\": \"specs\" }'",
     "ubus call router networks",
     "ubus call router clients",
@@ -20,10 +21,10 @@ local cmd = {
     'lsusb',
     'lspci -k',
     'lsmod',
+    'cat /proc/slabinfo',
     'cat /etc/config/network',
     'ifconfig',
     'iptables-save',
-    'uci show',
     'db show | grep has[A-Z]',
     'freecwmp --json get InternetGatewayDevice.',
 }
