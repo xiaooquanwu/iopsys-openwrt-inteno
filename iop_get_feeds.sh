@@ -41,7 +41,6 @@
 ./scripts/feeds install watchcat
 ./scripts/feeds install etherwake
 ./scripts/feeds install wshaper
-./scripts/feeds install syslog-ng3
 ./scripts/feeds install bind-tools
 ./scripts/feeds install logrotate
 ./scripts/feeds install ndisc6

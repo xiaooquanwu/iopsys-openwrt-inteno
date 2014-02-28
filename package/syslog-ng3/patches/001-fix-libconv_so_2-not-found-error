@@ -1,0 +1,12 @@
+--- a/configure
++++ b/configure
+@@ -7357,6 +7357,9 @@ dynamic_threads () {
+ 	esac
+ }
+ 
++GLIB_LIBS="-Wl,-rpath-link=$STAGING_DIR/usr/lib/libiconv-full/lib $GLIB_LIBS"
++LIBS="-Wl,-rpath-link=$STAGING_DIR/usr/lib/libiconv-full/lib $LIBS"
++
+ case "$ostype" in
+ 	FreeBSD)
+ 		GLIB_LIBS="$GLIB_LIBS -lintl"
