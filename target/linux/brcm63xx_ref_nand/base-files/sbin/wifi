@@ -13,6 +13,13 @@ local _vno=0
 local _cno=0
 local acsifs=""
 
+set_bridge() {
+	local br=$1
+	brctl stp $br off
+	brctl setfd $br 0
+	sendarp -s $br -d $br
+}
+
 map_networks() {
 	local ifdev ifobj devtype
 	local devs=""
@@ -30,6 +37,7 @@ map_networks() {
 				json_get_var devtype type
 				if [[ "$devtype" = "Bridge" ]]; then
 					_i=1
+					set_bridge $ifdev
 					json_select bridge-members
 					while json_get_var dev $_i; do
 						[ -z "$devs" ] && devs="$dev" || devs="$devs $dev"

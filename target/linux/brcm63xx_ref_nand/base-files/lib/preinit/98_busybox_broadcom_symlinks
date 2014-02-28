@@ -5,5 +5,9 @@ create_broadcom_busysboxsymlinks() {
     cd /bin/
     ln -s /usr/sbin/busybox ifconfig
   fi
+  if [ ! -f "/usr/sbin/sendarp" ]; then
+    cd /bin/
+    ln -s /usr/sbin/busybox sendarp
+  fi
 }
 boot_hook_add preinit_main create_broadcom_busysboxsymlinks
