@@ -448,8 +448,6 @@ set_wifi_device() {
 	wlctl -i $device stbc_rx 0
 	wlctl -i $device stbc_tx -1
 	wlctl -i $device fcache 1
-	# wlctl -i $device rxstreams 1
-	# wlctl -i $device txstreams 2
 	wlctl -i $device wnm 0x103
 
 	# WDS Settings
@@ -604,6 +602,7 @@ set_wifi_device() {
 	wlctl -i $device dtim "${dtim_period:-1}"
 	wlctl -i $device bi "${beacon_int:-100}"
 	wlctl -i $device frameburst "${frameburst:-0}"
+	wlctl -i $device noise_metric 1
 
 	# power settings
 	wlctl -i $device antdiv "${rxantenna:-3}"
