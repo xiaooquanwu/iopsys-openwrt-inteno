@@ -15,7 +15,7 @@ PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=git@iopsys.inteno.se:bcmkernel-4.14L.04
 PKG_SOURCE_PROTO:=git
 
-PKG_SOURCE_VERSION:=0f2a63a67cbbae060d596d0a636b3ba45f186c45
+PKG_SOURCE_VERSION:=06bad3b74f50aa86c2701c36d8eb594944e4ad9d
 
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
 
@@ -81,6 +81,7 @@ define Package/bcmkernel/install
 	$(INSTALL_DIR) $(1)/usr/lib
 	$(INSTALL_DIR) $(1)/etc/adsl
 	$(INSTALL_DIR) $(1)/etc/wlan
+	$(INSTALL_DIR) $(1)/etc/cms_entity_info.d
 
 
 
@@ -150,6 +151,11 @@ define Package/bcmkernel/install
 ###
 	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/bin/*		$(1)/usr/sbin/
 
+
+	mkdir -p $(1)/etc/cms_entity_info.d
+	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/etc/cms_entity_info.d/eid_bcm_kthreads.txt	$(1)/etc/cms_entity_info.d/
+	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/etc/cms_entity_info.d/symbol_table.txt		$(1)/etc/cms_entity_info.d/
+
 	rm -f $(1)/usr/sbin/httpd
 	rm -f $(1)/usr/sbin/openssl
 	rm -f $(1)/usr/sbin/telnetd
@@ -158,7 +164,6 @@ define Package/bcmkernel/install
 	rm -f $(1)/usr/sbin/tr69c
 	rm -f $(1)/usr/sbin/racoon
 	rm -f $(1)/usr/sbin/upnpd
-	rm -f $(1)/usr/sbin/smd
 	rm -f $(1)/usr/sbin/ssk
 	rm -f $(1)/usr/sbin/dnsproxy
 	rm -f $(1)/usr/sbin/zebra
@@ -180,7 +185,6 @@ define Package/bcmkernel/install
 	rm -f $(1)/usr/lib/libm.so.0
 	rm -f $(1)/usr/lib/libpthread.so.0
 	rm -f $(1)/usr/lib/libutil.so.0
-
 	rm -f $(1)/usr/lib/libcms_boardctl.so
 	rm -f $(1)/usr/lib/libcms_msg.so
 	rm -f $(1)/usr/lib/libcms_util.so
