@@ -3,7 +3,19 @@
 
 START=11
 
-start()
+handle_threads()
+{
+	local pid
+	local threads="wl0-kthrd wl0-tmr-kthrd"
+
+	# set priority for given threads
+        for thread in $threads; do
+                pid=$(ps | grep $thread | head -1 | awk '{print$1}')
+		chrt -rp 5 $pid
+        done
+}
+
+handle_configs()
 {
 	local BMAC=$(cat /proc/nvram/BaseMacAddr | tr '[a-z]' '[A-Z]')
 	BMAC=${BMAC// /}
@@ -45,5 +57,14 @@ start()
 			[ "$config" == "network" ] && sed -i "s/multiwan/anywan/g" /etc/config/$config
 		fi
 	done
+}
+
+start()
+{
+	# initialize system
+	smd -s
+
+	handle_threads
+	handle_configs
 }
 
