@@ -151,8 +151,6 @@ define Package/bcmkernel/install
 ###
 	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/bin/*		$(1)/usr/sbin/
 
-
-	mkdir -p $(1)/etc/cms_entity_info.d
 	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/etc/cms_entity_info.d/eid_bcm_kthreads.txt	$(1)/etc/cms_entity_info.d/
 	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/etc/cms_entity_info.d/symbol_table.txt		$(1)/etc/cms_entity_info.d/
 
