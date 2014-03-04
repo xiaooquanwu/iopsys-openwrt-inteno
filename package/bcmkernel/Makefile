@@ -151,25 +151,33 @@ define Package/bcmkernel/install
 ###
 	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/bin/*		$(1)/usr/sbin/
 
+        rm -f $(1)/usr/sbin/dhcp6c
+        rm -f $(1)/usr/sbin/dhcp6s
+        rm -f $(1)/usr/sbin/dhcpc
+        rm -f $(1)/usr/sbin/dhcpd
+        rm -f $(1)/usr/sbin/dnsproxy
+        rm -f $(1)/usr/sbin/httpd
+        rm -f $(1)/usr/sbin/openssl
+        rm -f $(1)/usr/sbin/racoon
+        rm -f $(1)/usr/sbin/ripd
+        rm -f $(1)/usr/sbin/send_cms_msg
+        rm -f $(1)/usr/sbin/sshd
+        rm -f $(1)/usr/sbin/ssk
+        rm -f $(1)/usr/sbin/telnetd
+        rm -f $(1)/usr/sbin/tr64c
+        rm -f $(1)/usr/sbin/tr69c
+        rm -f $(1)/usr/sbin/ubi*
+        rm -f $(1)/usr/sbin/udhcpd
+        rm -f $(1)/usr/sbin/upnp
+        rm -f $(1)/usr/sbin/upnpd
+        rm -f $(1)/usr/sbin/vodsl
+        rm -f $(1)/usr/sbin/wlmngr
+        rm -f $(1)/usr/sbin/zebra
+
+
 	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/etc/cms_entity_info.d/eid_bcm_kthreads.txt	$(1)/etc/cms_entity_info.d/
 	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/etc/cms_entity_info.d/symbol_table.txt		$(1)/etc/cms_entity_info.d/
 
-	rm -f $(1)/usr/sbin/httpd
-	rm -f $(1)/usr/sbin/openssl
-	rm -f $(1)/usr/sbin/telnetd
-	rm -f $(1)/usr/sbin/vodsl
-	rm -f $(1)/usr/sbin/tr64c
-	rm -f $(1)/usr/sbin/tr69c
-	rm -f $(1)/usr/sbin/racoon
-	rm -f $(1)/usr/sbin/upnpd
-	rm -f $(1)/usr/sbin/ssk
-	rm -f $(1)/usr/sbin/dnsproxy
-	rm -f $(1)/usr/sbin/zebra
-	rm -f $(1)/usr/sbin/udhcpd
-	rm -f $(1)/usr/sbin/wlmngr
-	rm -f $(1)/usr/sbin/ripd
-	rm -f $(1)/usr/sbin/send_cms_msg
-	rm -f $(1)/usr/sbin/ubi*
 
 	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/*		$(1)/usr/lib/
 	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/gpl/*	$(1)/usr/lib/
