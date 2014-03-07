@@ -15,7 +15,7 @@ PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=git@iopsys.inteno.se:bcmkernel-4.14L.04
 PKG_SOURCE_PROTO:=git
 
-PKG_SOURCE_VERSION:=06bad3b74f50aa86c2701c36d8eb594944e4ad9d
+PKG_SOURCE_VERSION:=37f921846c2427927ad513007829d29527689028
 
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
 
@@ -77,6 +77,7 @@ endif
 #endif
 
 define Package/bcmkernel/install
+	$(INSTALL_DIR) $(1)/lib/bcm
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_DIR) $(1)/usr/lib
 	$(INSTALL_DIR) $(1)/etc/adsl
@@ -183,13 +184,14 @@ define Package/bcmkernel/install
 	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/gpl/*	$(1)/usr/lib/
 	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/private/*	$(1)/usr/lib/
 
-	rm -f $(1)/usr/lib/ld-uClibc.so.0
-	rm -f $(1)/usr/lib/libc.so.0
+	mv $(1)/usr/lib/ld-uClibc.so.0		$(1)/lib/bcm/
+	mv $(1)/usr/lib/libc.so.0		$(1)/lib/bcm/
+	mv $(1)/usr/lib/libdl.so.0		$(1)/lib/bcm/
+	mv $(1)/usr/lib/libgcc_s.so.1		$(1)/lib/bcm/
+	mv $(1)/usr/lib/libpthread.so.0		$(1)/lib/bcm/
+
 	rm -f $(1)/usr/lib/libcrypt.so.0
-	rm -f $(1)/usr/lib/libdl.so.0
-	rm -f $(1)/usr/lib/libgcc_s.so.1
 	rm -f $(1)/usr/lib/libm.so.0
-	rm -f $(1)/usr/lib/libpthread.so.0
 	rm -f $(1)/usr/lib/libutil.so.0
 	rm -f $(1)/usr/lib/libcms_boardctl.so
 	rm -f $(1)/usr/lib/libcms_msg.so
