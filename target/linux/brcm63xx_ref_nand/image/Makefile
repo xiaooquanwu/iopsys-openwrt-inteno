@@ -78,6 +78,7 @@ define Image/Prepare
 
 	#strip out unneeded files
 	rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.3.8
+	rm -rf $(BUILD_DIR_ROOT)/usr/lib/libvorbisenc*
 endef
 
 define Image/Build
