@@ -2,6 +2,7 @@
 
 . /lib/functions.sh
 include /lib/network
+
 START=21
 
 removeethernet() {
@@ -39,10 +40,10 @@ boot() {
 	config_load layer2_interface_ethernet
 	config_get baseifname Wan baseifname
 	for interf in `db get hw.board.ethernetPortOrder`; do ethswctl -c wan -i $interf -o disable ; done
-	/usr/sbin/ethswctl -c pause -p 8 -v 1
-	/usr/sbin/ethswctl -c hw-switching -o enable
+	ethswctl -c pause -p 8 -v 1
+	ethswctl -c hw-switching -o enable
 	if [ $baseifname ]; then
-		/usr/sbin/ethswctl -c wan -i $baseifname -o enable
+		ethswctl -c wan -i $baseifname -o enable
 	fi
 	ifconfig $baseifname up
 }

@@ -8,10 +8,13 @@ handle_threads()
 	local pid
 	local threads="wl0-kthrd wl0-tmr-kthrd"
 
+	# initialize kernel schedule priorities
+	smd -s
+
 	# set priority for given threads
         for thread in $threads; do
                 pid=$(ps | grep $thread | head -1 | awk '{print$1}')
-		chrt -rp 5 $pid
+		[ -n "$pid" ] && chrt -rp 5 $pid
         done
 }
 
@@ -61,9 +64,6 @@ handle_configs()
 
 start()
 {
-	# initialize system
-	smd -s
-
 	handle_threads
 	handle_configs
 }

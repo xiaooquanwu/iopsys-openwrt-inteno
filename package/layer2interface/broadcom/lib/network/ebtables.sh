@@ -1,4 +1,7 @@
 #!/bin/sh
+
+. /etc/profile
+
 remove_ebtables_bridge_rules ()
 {
 	ebtables -D FORWARD -p ip --ip-protocol 17 --ip-destination-port 68 -j SKIPLOG 2>/dev/null

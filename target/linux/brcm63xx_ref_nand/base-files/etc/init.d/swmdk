@@ -6,6 +6,5 @@
 START=41
 
 start() {
-#	export LD_LIBRARY_PATH=/usr/lib
-        /usr/sbin/swmdk &
+        swmdk &
 }

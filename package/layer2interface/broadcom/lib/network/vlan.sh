@@ -2,6 +2,8 @@
 
 . /usr/share/libubox/jshn.sh
 . /lib/network/ebtables.sh
+. /etc/profile
+
 removeall_vlandevices()
 {
 	local vif

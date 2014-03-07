@@ -1,0 +1,39 @@
+#!/bin/sh
+[ -f /etc/banner ] && cat /etc/banner
+
+export PATH=/bin:/sbin:/usr/bin:/usr/sbin
+export HOME=$(grep -e "^${USER:-root}:" /etc/passwd | cut -d ":" -f 6)
+export HOME=${HOME:-/root}
+export PS1='\u@\h:\w\$ '
+
+[ -x /bin/more ] || alias more=less
+[ -x /usr/bin/vim ] && alias vi=vim || alias vim=vi
+
+[ -z "$KSH_VERSION" -o \! -s /etc/mkshrc ] || . /etc/mkshrc
+
+[ -x /usr/bin/arp ] || arp() { cat /proc/net/arp; }
+[ -x /usr/bin/ldd ] || ldd() { LD_TRACE_LOADED_OBJECTS=1 $*; }
+
+# aliases for broadcom tools
+[ -x /usr/sbin/acsd ] && alias acsd='export LD_LIBRARY_PATH=/lib/bcm && acsd'
+[ -x /usr/sbin/acs_cli ] && alias acs_cli='export LD_LIBRARY_PATH=/lib/bcm && acs_cli'
+[ -x /usr/sbin/adslctl ] && alias adslctl='export LD_LIBRARY_PATH=/lib/bcm && adslctl'
+[ -x /usr/sbin/arlctl ] && alias arlctl='export LD_LIBRARY_PATH=/lib/bcm && arlctl'
+[ -x /usr/sbin/bpmctl ] && alias bpmctl='export LD_LIBRARY_PATH=/lib/bcm && bpmctl'
+[ -x /usr/sbin/brctl ] && alias brctl='export LD_LIBRARY_PATH=/lib/bcm && brctl'
+[ -x /usr/sbin/ebtables ] && alias ebtables='export LD_LIBRARY_PATH=/lib/bcm && ebtables'
+[ -x /usr/sbin/ethswctl ] && alias ethswctl='export LD_LIBRARY_PATH=/lib/bcm && ethswctl'
+[ -x /usr/sbin/fapctl ] && alias fapctl='export LD_LIBRARY_PATH=/lib/bcm && fapctl'
+[ -x /usr/sbin/fcctl ] && alias fcctl='export LD_LIBRARY_PATH=/lib/bcm && fcctl'
+[ -x /usr/sbin/gmacctl ] && alias gmacctl='export LD_LIBRARY_PATH=/lib/bcm && gmacctl'
+[ -x /usr/sbin/hspotap ] && alias hspotap='export LD_LIBRARY_PATH=/lib/bcm && hspotap'
+[ -x /usr/sbin/mcpctl ] && alias mcpctl='export LD_LIBRARY_PATH=/lib/bcm && mcpctl'
+[ -x /usr/sbin/mcpd ] && alias mcpd='export LD_LIBRARY_PATH=/lib/bcm && mcpd'
+[ -x /usr/sbin/pwrctl ] && alias pwrctl='export LD_LIBRARY_PATH=/lib/bcm && pwrctl'
+[ -x /usr/sbin/smd ] && alias smd='export LD_LIBRARY_PATH=/lib/bcm && smd'
+[ -x /usr/sbin/swmdk ] && alias swmdk='export LD_LIBRARY_PATH=/lib/bcm && swmdk'
+[ -x /usr/sbin/vlanctl ] && alias vlanctl='export LD_LIBRARY_PATH=/lib/bcm && vlanctl'
+[ -x /usr/sbin/wlctl ] && alias wlctl='export LD_LIBRARY_PATH=/lib/bcm && wlctl'
+[ -x /usr/sbin/wps ] && alias wps_monitor='export LD_LIBRARY_PATH=/lib/bcm && wps_monitor'
+[ -x /usr/sbin/xdslctl ] && alias xdslctl='export LD_LIBRARY_PATH=/lib/bcm && xdslctl'
+[ -x /usr/sbin/xtmctl ] && alias xtmctl='export LD_LIBRARY_PATH=/lib/bcm && xtmctl'
