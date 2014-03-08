@@ -1,4 +1,6 @@
 #!/bin/sh
+ENABLE_HOOKS=
+DISABLE_HOOKS=
 
 . /lib/brcmaliases.sh
 . /lib/functions.sh
@@ -116,8 +118,6 @@ set_wifi_down() {
 	if [ -n "$2" ] && [ "$device" != "$2" ]; then
 		continue
 	fi
-
-	[ -f /sbin/myfid ] && anyfi_disable $device
 
 	uci_revert_state wireless "$device"
 	wlctl -i $device down
@@ -631,8 +631,6 @@ set_wifi_device() {
 
 	wlctl -i $device down
 	wlctl -i $device up
-
-	[ -f /sbin/myfid ] && anyfi_enable $device
 }
 
 generate_wireless_config() {
@@ -701,6 +699,14 @@ set_tp_id(){
 	wlctl -i wl1 ap || wlctl -i wl0 tp_id 1
 }
 
+# Run all hook functions $2...$N for each config entry $1
+run_hooks() {
+	local arg="$1"; shift
+	for func in "$@"; do
+		config_foreach $func $arg
+	done
+}
+
 # kill related daemons
 killall -9 eapd 2>/dev/null
 killall -9 nas 2>/dev/null
@@ -723,11 +729,14 @@ case "$1" in
 	;;
 	down)
 		config_foreach set_wifi_down wifi-device $2
+		run_hooks wifi-device $DISABLE_HOOKS
 	;;
 	*)
 		set_tp_id
 		config_foreach set_wifi_down wifi-device $2
+		run_hooks wifi-device $DISABLE_HOOKS
 		config_foreach set_wifi_device wifi-device $2
+		run_hooks wifi-device $ENABLE_HOOKS
 
 		if [ $_enWifi -gt 0 ]; then
 			ledctl eco off
