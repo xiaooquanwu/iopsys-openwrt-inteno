@@ -1,5 +1,6 @@
 #!/bin/sh
 
+. /lib/brcmaliases.sh
 . /lib/functions.sh
 . /usr/share/libubox/jshn.sh
 . /lib/network/ebtables.sh
@@ -576,9 +577,8 @@ set_wifi_device() {
 				lower) sband=-1 ;;
 				upper) sband=1 ;;
 			esac
-			if ! wlctl -i $device chanspec -b $bnd -c $channel -w ${bandwidth:-20} -s $sband 2>/dev/null; then
-				wlctl -i $device chanspec $channel
-			fi
+			wlctl -i $device chanspec -b $bnd -c $channel -w ${bandwidth:-20} -s $sband
+			# wlctl -i $device chanspec $channel
 		;;
 	esac
 

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-. /etc/profile
+. /lib/brcmaliases.sh
 
 remove_ebtables_bridge_rules ()
 {

@@ -2,7 +2,7 @@
 
 . /usr/share/libubox/jshn.sh
 . /lib/network/ebtables.sh
-. /etc/profile
+. /lib/brcmaliases.sh
 
 removeall_vlandevices()
 {
