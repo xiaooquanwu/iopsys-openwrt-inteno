@@ -355,7 +355,7 @@ set_wifi_iface() {
 			nvram set router_disable="0"
 			nvram set wps_modelnum="123456"
 			nvram set boardnum="1234"
-			nvram set wps_config_method="0x4"
+			nvram set wps_config_method="0x80"
 			nvram set wps_modelname="Broadcom"
 			nvram set wps_mfstring="Broadcom"
 			nvram set wps_device_name="$(uci -q get wireless.@wifi-iface[0].ssid)"
