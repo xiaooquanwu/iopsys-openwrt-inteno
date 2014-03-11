@@ -19,11 +19,11 @@ if [ "$INTERFACE" == "led" ]; then
 	fi
 
 	if [ "$ACTION" == "started_training" ]; then
-		ledctl dsl notice
+		ledctl dsl alert
 	fi
 
 	if [ "$ACTION" == "looking_for_carrier" ]; then
-		ledctl dsl alert
+		ledctl dsl notice
 	fi
 fi
 
