@@ -1469,7 +1469,7 @@ CONFIG_PACKAGE_asterisk18-mod-pbx-spool=y
 # CONFIG_PACKAGE_asterisk18-mod-res-fax is not set
 # CONFIG_PACKAGE_asterisk18-mod-res-fax-spandsp is not set
 # CONFIG_PACKAGE_asterisk18-mod-res-musiconhold is not set
-# CONFIG_PACKAGE_asterisk18-mod-res-stun is not set
+CONFIG_PACKAGE_asterisk18-mod-res-stun=y
 # CONFIG_PACKAGE_asterisk18-mod-res-timing-pthread is not set
 # CONFIG_PACKAGE_asterisk18-mod-res-timing-timerfd is not set
 CONFIG_PACKAGE_asterisk18-mod-sounds=y
