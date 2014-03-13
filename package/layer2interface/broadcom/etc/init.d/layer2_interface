@@ -5,6 +5,12 @@
 include /lib/network
 
 START=21
+boot() {
+	vlanctl --if-suffix .
+	add_ebtables_default_arp
+	start
+}
+
 
 start() {
 	local AnnexM
@@ -82,8 +88,7 @@ start() {
 		echo "xdslctl start --up --mod $GDmt$Glite$T1413$ADSL2$AnnexL$ADSL2plus$AnnexM --sra $sra --bitswap $bitswap"
 		xdslctl start --up --mod $GDmt$Glite$T1413$ADSL2$AnnexL$ADSL2plus$AnnexM --sra $sra --bitswap $bitswap
 	fi
-	vlanctl --if-suffix .
-	add_ebtables_default_arp
+	
 }
 
 
