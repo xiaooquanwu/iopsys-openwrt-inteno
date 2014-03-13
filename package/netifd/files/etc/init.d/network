@@ -9,6 +9,7 @@ SERVICE_WRITE_PID=1
 cwmp_netcache() {
 	[ -f /usr/sbin/freecwmp ] && {
 		ps -w | grep freecwmp | grep LANDevice >/dev/null || freecwmp get cache InternetGatewayDevice.LANDevice. &
+		ps -w | grep freecwmp | grep Layer2Bridging >/dev/null || freecwmp get cache InternetGatewayDevice.Layer2Bridging. &
 	}
 }
 
