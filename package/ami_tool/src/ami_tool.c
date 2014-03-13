@@ -611,7 +611,7 @@ void configure_leds()
 		for (i = 0; i < (dect_line_count + fxs_line_count); i++) {
 			all_ports[i] = &brcm_ports[i];
 		}
-		led_config[0].state = LS_OFF;
+		led_config[0].state = LS_UNKNOWN;
 		led_config[0].name = LN_VOICE1;
 		led_config[0].ports = all_ports;
 		led_config[0].num_ports = dect_line_count + fxs_line_count;
@@ -631,7 +631,7 @@ void configure_leds()
 			for (i = 0; i < dect_line_count; i++) {
 				dect_ports[i] = &brcm_ports[i];
 			}
-			led_config[1].state = LS_OFF;
+			led_config[1].state = LS_UNKNOWN;
 			led_config[1].name = LN_VOICE2;
 			led_config[1].ports = dect_ports;
 			led_config[1].num_ports = dect_line_count;
@@ -640,7 +640,7 @@ void configure_leds()
 			for (i = 0; i < fxs_line_count; i++) {
 				fxs_ports[i] = &brcm_ports[dect_line_count + i];
 			}
-			led_config[0].state = LS_OFF;
+			led_config[0].state = LS_UNKNOWN;
 			led_config[0].name = LN_VOICE1;
 			led_config[0].ports = fxs_ports;
 			led_config[0].num_ports = fxs_line_count;
@@ -652,14 +652,14 @@ void configure_leds()
 			printf("Dual LED configuration, FXS1 and FXS2\n");
 			PORT_MAP** fxs1 = calloc(1, sizeof(PORT_MAP*));
 			fxs1[0] = &brcm_ports[0];
-			led_config[0].state = LS_OFF;
+			led_config[0].state = LS_UNKNOWN;
 			led_config[0].name = LN_VOICE1;
 			led_config[0].ports = fxs1;
 			led_config[0].num_ports = 1;
 
 			PORT_MAP** fxs2 = calloc(1, sizeof(PORT_MAP*));
 			fxs2[0] = &brcm_ports[1];
-			led_config[1].state = LS_OFF;
+			led_config[1].state = LS_UNKNOWN;
 			led_config[1].name = LN_VOICE2;
 			led_config[1].ports = fxs2;
 			led_config[1].num_ports = 1;
