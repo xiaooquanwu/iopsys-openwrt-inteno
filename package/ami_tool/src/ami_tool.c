@@ -1127,6 +1127,44 @@ static int ubus_asterisk_sip_cb (
 	return 0;
 }
 
+/*
+ * ubus callback that replies to "asterisk status".
+ * Recursively reports status for all lines/accounts
+ */
+static int ubus_asterisk_cb (
+	struct ubus_context *ctx, struct ubus_object *obj,
+	struct ubus_request_data *req, const char *method,
+	struct blob_attr *msg)
+{
+	struct blob_attr *tb[__UBUS_ARGMAX];
+
+	blobmsg_parse(ubus_string_argument, __UBUS_ARGMAX, tb, blob_data(msg), blob_len(msg));
+	blob_buf_init(&bb, 0);
+
+	SIP_PEER *peer = sip_peers;
+	void *sip_table = blobmsg_open_table(&bb, "sip");
+	while (peer->account.id != SIP_ACCOUNT_UNKNOWN) {
+		void *sip_account_table = blobmsg_open_table(&bb, peer->account.name);
+		ubus_get_sip_account(&bb, peer->account.id); //Add SIP account status to message
+		blobmsg_close_table(&bb, sip_account_table);
+		peer++;
+	}
+	blobmsg_close_table(&bb, sip_table);
+
+	PORT_MAP *port = brcm_ports;
+	void *brcm_table = blobmsg_open_table(&bb, "brcm");
+	while (port->port != PORT_UNKNOWN && port->port != PORT_ALL) {
+		void *line_table = blobmsg_open_table(&bb, port->name);
+		ubus_get_brcm_line(&bb, port->port); //Add port status to message
+		blobmsg_close_table(&bb, line_table);
+		port++;
+	}
+	blobmsg_close_table(&bb, brcm_table);
+
+	ubus_send_reply(ctx, req, bb.head);
+	return 0;
+}
+
 static struct ubus_method sip_object_methods[] = {
 	{ .name = "status", .handler = ubus_asterisk_sip_cb },
 };
@@ -1161,6 +1199,19 @@ static struct ubus_object ubus_brcm_objects[] = {
 	{ .name = "asterisk.brcm.5", .type = &brcm_object_type, .methods = brcm_object_methods, .n_methods = ARRAY_SIZE(brcm_object_methods) },
 };
 
+static struct ubus_method asterisk_object_methods[] = {
+	{ .name = "status", .handler = ubus_asterisk_cb },
+};
+
+static struct ubus_object_type asterisk_object_type =
+	UBUS_OBJECT_TYPE("asterisk_object", asterisk_object_methods);
+
+static struct ubus_object ubus_asterisk_object = {
+		.name = "asterisk",
+		.type = &asterisk_object_type,
+		.methods = asterisk_object_methods,
+		.n_methods = ARRAY_SIZE(asterisk_object_methods) };
+
 static int ubus_add_objects(struct ubus_context *ctx)
 {
 	int ret = 0;
@@ -1180,6 +1231,8 @@ static int ubus_add_objects(struct ubus_context *ctx)
 		ret &= ubus_add_object(ctx, port->ubus_object);
 		port++;
 	}
+
+	ret &= ubus_add_object(ctx, &ubus_asterisk_object);
 
 	return ret;
 }
