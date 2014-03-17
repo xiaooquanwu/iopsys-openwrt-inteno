@@ -368,11 +368,6 @@ $(eval $(call application,diag-devinfo,LuCI Diagnostics Tools (Device Info),\
 	+PACKAGE_luci-app-diag-devinfo:smap-to-devinfo \
 	+PACKAGE_luci-app-diag-devinfo:netdiscover-to-devinfo))
 
-$(eval $(call application,voice-core,LuCI Voice Software (Core)))
-
-$(eval $(call application,voice-diag,LuCI Voice Software (Diagnostics),\
-	luci-app-diag-devinfo))
-
 $(eval $(call application,commands,LuCI Shell Command Module))
 
 $(eval $(call application,upnp,Universal Plug & Play configuration module,\
@@ -430,20 +425,53 @@ $(eval $(call application,ahcp,LuCI Support for AHCPd,\
 $(eval $(call application,wshaper,LuCI Support for wshaper,\
 	+PACKAGE_luci-app-wshaper:wshaper))
 
-$(eval $(call application,pbx,LuCI PBX Administration,\
-	+PACKAGE_luci-app-pbx:asterisk18 \
-	+PACKAGE_luci-app-pbx:asterisk18-app-authenticate \
-	+PACKAGE_luci-app-pbx:asterisk18-app-disa \
-	+PACKAGE_luci-app-pbx:asterisk18-app-setcallerid \
-	+PACKAGE_luci-app-pbx:asterisk18-app-system \
-	+PACKAGE_luci-app-pbx:asterisk18-chan-gtalk \
-	+PACKAGE_luci-app-pbx:asterisk18-codec-a-mu \
-	+PACKAGE_luci-app-pbx:asterisk18-codec-alaw \
-	+PACKAGE_luci-app-pbx:asterisk18-func-cut \
-	+PACKAGE_luci-app-pbx:asterisk18-res-clioriginate))
+$(eval $(call application,voice-client,LuCI Voice Client Interface,\
+	+luci-lib-json \
+	+asterisk18-mod \
+	+asterisk18-mod-func-channel \
+	+asterisk18-mod-func-db \
+	+asterisk18-mod-app-transfer \
+	+asterisk18-mod-app-read \
+	+asterisk18-mod-func-shell \
+	+asterisk18-mod-pbx-spool \
+	+asterisk18-mod-app-playtones \
+	+asterisk18-mod-sounds \
+	+asterisk18-mod-res-stun \
+	+brcminfo))
 
-$(eval $(call application,pbx-voicemail,LuCI PBX Administration Voicemail Support,\
-	luci-app-pbx +PACKAGE_luci-app-pbx-voicemail:msmtp))
+define Package/luci-app-voice-client/preinst
+	#!/bin/sh
+	if [ -f /etc/init.d/voice_pbx ]; then
+		echo "luci-app-voice-pbx is already installed, remove it with"
+		echo " opkg remove luci-app-voice-pbx"
+		echo "before installing luci-app-voice-client"
+		exit 1
+	fi
+endef
+
+$(eval $(call application,voice-pbx,LuCI Voice PBX Interface,\
+	+luci-lib-json \
+	+asterisk18-mod \
+	+asterisk18-mod-func-channel \
+	+asterisk18-mod-func-db \
+	+asterisk18-mod-app-transfer \
+	+asterisk18-mod-app-read \
+	+asterisk18-mod-func-shell \
+	+asterisk18-mod-pbx-spool \
+	+asterisk18-mod-app-playtones \
+	+asterisk18-mod-sounds \
+	+asterisk18-mod-res-stun \
+	+brcminfo))
+
+define Package/luci-app-voice-pbx/preinst
+	#!/bin/sh
+	if [ -f /etc/init.d/voice_client ]; then
+		echo "luci-app-voice-client is installed, remove it with"
+		echo " opkg remove luci-app-voice-client"
+		echo "before installing luci-app-voice-pbx"
+		exit 1
+	fi
+endef
 
 $(eval $(call application,ltqtapi,Lantiq voip))
 
@@ -485,21 +513,6 @@ $(eval $(call application,port-management,LuCI Support for Port Management,\
 
 $(eval $(call application,power-mgmt,LuCI Support for Power Management,\
 	+PACKAGE_luci-app-power-mgmt))
-
-$(eval $(call application,voice-client,LuCI Voice Interface (client),\
-	+luci-lib-json \
-	+asterisk18-mod \
-	+asterisk18-mod-func-channel \
-	+asterisk18-mod-func-db \
-	+asterisk18-mod-app-transfer \
-	+asterisk18-mod-app-read \
-	+asterisk18-mod-func-shell \
-	+asterisk18-mod-pbx-spool \
-	+asterisk18-mod-app-playtones \
-	+asterisk18-mod-sounds \
-	+brcminfo))
-
-$(eval $(call application,voice-pbx,LuCI Voice Interface (pbx)))
 
 ### Server Gateway Interfaces ###
 define sgi
