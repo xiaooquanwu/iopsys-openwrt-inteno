@@ -114,26 +114,30 @@ test_default_route() {
 }
 
 interfacename() {
-	local BOARDID=$(cat /proc/nvram/BoardId)
-	case "$BOARDID$1" in
-		VG50_Reth0) echo "LAN3" ;;
-		963268BUeth0|DG301R0eth0) echo "WAN" ;;
-		96362ADVNgreth0) echo "LAN4" ;;
-		VG50_Reth1) echo "LAN2";;
-		963268BUeth1|DG301R0eth1) echo "LAN3" ;;
-		96362ADVNgreth1) echo "LAN3" ;;
-		VG50_Reth2) echo "LAN1";;
-		963268BUeth2|DG301R0eth2) echo "LAN4" ;;
-		96362ADVNgreth2) echo "LAN2" ;;
-		VG50_Reth3) echo "WAN";;
-		963268BUeth3|DG301R0eth3) echo "LAN2" ;;
-		96362ADVNgreth3) echo "LAN1" ;;
-		VG50_Reth4) echo "GbE";;
-		963268BUeth4|DG301R0eth4) echo "LAN1" ;;
-		96362ADVNgreth4) echo "WAN" ;;
-		CG300R0eth0) echo "WAN" ;;
-		CG300R0eth1) echo "LAN1" ;;
-		*wl*) echo "WLAN" ;;
-		*) echo "ethernet" ;;
+	local PORT_ORDER=$(db get hw.board.ethernetPortOrder)
+	local PORT_NAMES=$(db get hw.board.ethernetPortNames)
+	local cnt=1
+	local idx=0
+
+	# get index of interface name
+	for i in $PORT_ORDER; do
+	    if [ "$i" == "$1" ]; then
+		idx=$cnt
+	    fi
+	    cnt=$((cnt+1))
+	done
+
+	# get port name from index
+	cnt=1
+	for i in $PORT_NAMES; do
+	    if [ "$cnt" == "$idx" ]; then
+		echo $i
+	    fi
+	    cnt=$((cnt+1))
+	done
+
+	# for wifi use default
+	case "$1" in
+	    *wl*) echo "WLAN" ;;
 	esac
 }
