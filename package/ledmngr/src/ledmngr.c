@@ -237,8 +237,10 @@ static struct leds_configuration* get_led_config(void) {
     char *p, *ptr, *rest;
 
     struct leds_configuration* led_cfg = malloc(sizeof(struct leds_configuration));
+    memset(led_cfg,0,sizeof(struct leds_configuration));
     led_cfg->leds_nr = 0;
     led_cfg->leds = malloc(MAX_LEDS * sizeof(struct led_config*));
+    memset(led_cfg->leds, 0, MAX_LEDS * sizeof(struct led_config*));
 
     /* Initialize */
 	uci_ctx = ucix_init_path("/lib/db/config/", "hw");
