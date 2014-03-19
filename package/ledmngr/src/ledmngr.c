@@ -43,7 +43,13 @@ static struct uci_context *uci_ctx = NULL;
 
 int fd;
 extern int daemonize;
-#define DEBUG_PRINT(...) if (!daemonize) fprintf( stderr, __VA_ARGS__ );
+
+#define DEBUG_PRINT_RAW(...) if (!daemonize) fprintf( stderr, __VA_ARGS__ );
+#define DEBUG_PRINT(fmt, args...) \
+    do { \
+        if (!daemonize) \
+            fprintf( stderr,"%-20s: " fmt , __func__, ##args); \
+    } while(0)
 
 #define LED_FUNCTIONS 14
 #define MAX_LEDS 20
@@ -201,7 +207,7 @@ void open_ioctl() {
         DEBUG_PRINT("failed to open: /dev/brcmboard\n");
         return;
     }
-    DEBUG_PRINT("ioctl fd %d allocated\n", fd);
+    DEBUG_PRINT("fd %d allocated\n", fd);
     return;
 }
 
@@ -452,8 +458,8 @@ static void led_set_state(struct leds_configuration* led_cfg, int led_idx, int s
     struct led_config* lc;
 
     if ((led_idx == -1) || (led_idx > led_cfg->leds_nr-1)) {
-        DEBUG_PRINT("led_set_state: Led index: %d out of bounds, nr_leds = %d\n", led_idx, led_cfg->leds_nr);
-        return 0;
+        DEBUG_PRINT("Led index: %d out of bounds, nr_leds = %d\n", led_idx, led_cfg->leds_nr);
+        return;
     }
 
     lc = led_cfg->leds[led_idx];
@@ -605,14 +611,14 @@ static void set_function_led(struct leds_configuration* led_cfg, char* fn_name, 
     int action_idx;
     struct led_map *map;
 
-    DEBUG_PRINT("set_function_led\n");
+    DEBUG_PRINT("(%s ->%s)\n",fn_name, action);
     for (i=0 ; i<LED_FUNCTIONS ; i++) {
         if (!strcmp(fn_name, led_functions[i])) {
             led_name = led_functions[i];
             led_fn_idx = i;
         }
     }
-    DEBUG_PRINT("set_function_led_mid\n");
+    DEBUG_PRINT("fun=%s idx=%d\n",led_name,led_fn_idx);
     if (!(led_name)) return;
 
 // printf("Action\n");
@@ -633,8 +639,7 @@ static void set_function_led(struct leds_configuration* led_cfg, char* fn_name, 
         }
             led_set_state(led_cfg, map->led_actions[i].led_index, map->led_actions[i].led_state);
     }
-    DEBUG_PRINT("set_function_led_end\n");
-
+    DEBUG_PRINT("end\n");
 }
 
 
@@ -661,7 +666,7 @@ static int led_set_method(struct ubus_context *ubus_ctx, struct ubus_object *obj
 {
 	struct blob_attr *tb[__LED_MAX];
     char* state;
-	DEBUG_PRINT("led_set_method\n");
+	DEBUG_PRINT("led_set_method (%s)\n",method);
 
 	blobmsg_parse(led_policy, ARRAY_SIZE(led_policy), tb, blob_data(msg), blob_len(msg));
 
@@ -681,7 +686,7 @@ static int led_set_method(struct ubus_context *ubus_ctx, struct ubus_object *obj
 static void led_status_reply(struct uloop_timeout *t)
 {
 	struct hello_request *req = container_of(t, struct hello_request, timeout);
-	DEBUG_PRINT("led_status_reply\n");
+	DEBUG_PRINT("\n");
 
 	blob_buf_init(&b, 0);
 	blobmsg_add_string(&b, "state", req->data);
@@ -725,7 +730,7 @@ static int leds_set_method(struct ubus_context *ubus_ctx, struct ubus_object *ob
 	struct blob_attr *tb[__LED_MAX];
     char* state;
     int i,j;
-	DEBUG_PRINT("leds_set_method\n");
+	DEBUG_PRINT("\n");
 
 	blobmsg_parse(led_policy, ARRAY_SIZE(led_policy), tb, blob_data(msg), blob_len(msg));
 
@@ -770,7 +775,7 @@ static int leds_status_method(struct ubus_context *ubus_ctx, struct ubus_object 
 		      struct blob_attr *msg)
 {
 	struct hello_request *hreq;
-	DEBUG_PRINT("leds_status_method\n");
+	DEBUG_PRINT("\n");
 	hreq = calloc(1, sizeof(*hreq) +  100);
 	sprintf(hreq->data, "%s", leds_states[led_cfg->leds_state]);
 	ubus_defer_request(ubus_ctx, req, &hreq->req);
