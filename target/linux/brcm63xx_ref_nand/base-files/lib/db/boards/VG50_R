@@ -21,9 +21,9 @@ config board 'board'
 	option hasBrcmAvs '1'
 
 config buttons 'buttons'
-	option RESET '32 al resetbutton'
-	option WPS '33 al wpsbutton'
-	option WIFI '34 al ecobutton'
+	option RESET 'gpio 32 al resetbutton'
+	option WPS 'gpio 33 al wpsbutton'
+	option WIFI 'gpio 34 al ecobutton'
 
 config leds 'leds'
 	option Status_green 'sr 4 ah'
