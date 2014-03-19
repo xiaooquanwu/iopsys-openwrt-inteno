@@ -245,13 +245,6 @@ static struct leds_configuration* get_led_config(void) {
     led_cfg->leds = malloc(MAX_LEDS * sizeof(struct led_config*));
     memset(led_cfg->leds, 0, MAX_LEDS * sizeof(struct led_config*));
 
-    /* Initialize */
-	uci_ctx = ucix_init_path("/lib/db/config/", "hw");
-    if(!uci_ctx) {
-        DEBUG_PRINT("Failed to load config file \"hw\"\n");
-        return NULL;
-    }
-
     led_names = ucix_get_option(uci_ctx, "hw", "board", "lednames");
 //    printf("Led names: %s\n", led_names);
 
@@ -908,16 +901,28 @@ static struct button_configuration* get_button_config(void) {
     return butt_cfg;
 }
 
+static int load_cfg_file()
+{
+    /* Initialize */
+    uci_ctx = ucix_init_path("/lib/db/config/", "hw");
+    if(!uci_ctx) {
+        return 0;
+    }
+    return 1;
+}
+
 int ledmngr(void) {
 	const char *ubus_socket = NULL;
 
     open_ioctl();
 
-    DEBUG_PRINT("get_led_config\n");
-    led_cfg  = get_led_config();
-    DEBUG_PRINT("get_button_config\n");
-    butt_cfg = get_button_config();
+    if (! load_cfg_file() ){
+        DEBUG_PRINT("Failed to load config file \"hw\"\n");
+        exit(1);
+    }
 
+    led_cfg  = get_led_config();
+    butt_cfg = get_button_config();
 
     /* initialize ubus */
 	DEBUG_PRINT("initialize ubus\n");
@@ -933,7 +938,6 @@ int ledmngr(void) {
 	ubus_add_uloop(ubus_ctx);
 
 	server_main(led_cfg);
-
 
     //all_leds_test(led_cfg);
 
