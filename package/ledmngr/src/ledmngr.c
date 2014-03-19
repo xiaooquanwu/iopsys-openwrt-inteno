@@ -152,7 +152,6 @@ struct button_config {
 struct button_configuration {
     int         button_nr;
     struct button_config**  buttons;
-    
 } button_configuration;
 
 
@@ -177,7 +176,6 @@ static int add_led(struct leds_configuration* led_cfg, char* led_name, const cha
         // gpio,39,al
         sscanf(led_config, "%s %d %s %s", type, &address, active, function);
 //        printf("Config %s,%d,%s,%s\n", type, address, active, function);
-        
         if (!strcmp(type, "gpio")) lc->type = GPIO;
         if (!strcmp(type, "sr"))   lc->type = SHIFTREG2;
         if (!strcmp(type, "csr"))  lc->type = SHIFTREG3;
@@ -229,7 +227,6 @@ static int get_state_by_name(char* state_name) {
 static void all_leds_off(struct leds_configuration* led_cfg) {
     int i;
     for (i=0 ; i<led_cfg->leds_nr ; i++) {
-        
         led_set(led_cfg, i, OFF);
     }
 }
@@ -254,7 +251,7 @@ static struct leds_configuration* get_led_config(void) {
         DEBUG_PRINT("Failed to load config file \"hw\"\n");
         return NULL;
     }
-    
+
     led_names = ucix_get_option(uci_ctx, "hw", "board", "lednames");
 //    printf("Led names: %s\n", led_names);
 
@@ -271,7 +268,7 @@ static struct leds_configuration* get_led_config(void) {
         add_led(led_cfg, led_name_color, led_config, GREEN);
         //printf("%s_green = %s\n", p, led_config);
 
-        snprintf(led_name_color,   256, "%s_red", p); 
+        snprintf(led_name_color,   256, "%s_red", p);
         led_config = ucix_get_option(uci_ctx, "hw", "leds", led_name_color);
         add_led(led_cfg, led_name_color, led_config, RED);
         //printf("%s_red = %s\n", p, led_config);
@@ -469,7 +466,6 @@ static void led_set_state(struct leds_configuration* led_cfg, int led_idx, int s
 static void all_leds_on(struct leds_configuration* led_cfg) {
     int i;
     for (i=0 ; i<led_cfg->leds_nr ; i++) {
-        
         led_set(led_cfg, i, ON);
     }
 }
@@ -479,7 +475,7 @@ static void all_leds_test(struct leds_configuration* led_cfg) {
     //all_leds_off(led_cfg);
     for (i=0 ; i<led_cfg->leds_nr ; i++) {
         led_set(led_cfg, i, ON);
-        sleep(1);        
+        sleep(1);
         led_set(led_cfg, i, OFF);
     }
     all_leds_off(led_cfg);
@@ -588,7 +584,7 @@ static void blink_handler(struct uloop_timeout *timeout)
         check_buttons(0);
 
 	uloop_timeout_set(&blink_inform_timer, 100);
-    
+
     //printf("Timer\n");
 }
 
@@ -625,7 +621,7 @@ static void set_function_led(struct leds_configuration* led_cfg, char* fn_name, 
     DEBUG_PRINT("set_function_led_mid2\n");
 
 
-//    snprintf(led_name_color, 256, "%s_%s", led_name, color);  
+//    snprintf(led_name_color, 256, "%s_%s", led_name, color);
     action_idx = index_from_action(action);
     if (action_idx == -1) return;
 
@@ -633,11 +629,11 @@ static void set_function_led(struct leds_configuration* led_cfg, char* fn_name, 
 
     map = &led_cfg->led_map_config[led_fn_idx][action_idx];
     for (i=0 ; i<map->led_actions_nr ; i++) {
-            DEBUG_PRINT("[%d] %d %d\n", map->led_actions_nr,  map->led_actions[i].led_index, map->led_actions[i].led_state);
+        DEBUG_PRINT("[%d] %d %d\n", map->led_actions_nr,  map->led_actions[i].led_index, map->led_actions[i].led_state);
         if (led_cfg->leds_state != LEDS_INFO) {
             led_set(led_cfg, map->led_actions[i].led_index, map->led_actions[i].led_state);
         }
-            led_set_state(led_cfg, map->led_actions[i].led_index, map->led_actions[i].led_state);
+        led_set_state(led_cfg, map->led_actions[i].led_index, map->led_actions[i].led_state);
     }
     DEBUG_PRINT("end\n");
 }
@@ -675,7 +671,6 @@ static int led_set_method(struct ubus_context *ubus_ctx, struct ubus_object *obj
 		state = blobmsg_data(tb[LED_STATE]);
 //    	fprintf(stderr, "Led %s method: %s state %s\n", fn_name, method, state);
         syslog(LOG_INFO, "Led %s method: %s state %s", fn_name, method, state);
-        
         set_function_led(led_cfg, fn_name, state);
     }
 
@@ -807,7 +802,7 @@ static struct ubus_object_type leds_object_type =
 #define LED_OBJECTS 15
 
 static struct ubus_object led_objects[LED_OBJECTS] = {
-    { .name = "leds",	    .type = &leds_object_type, .methods = leds_methods, .n_methods = ARRAY_SIZE(leds_methods), },    
+    { .name = "leds",	    .type = &leds_object_type, .methods = leds_methods, .n_methods = ARRAY_SIZE(leds_methods), },
     { .name = "led.dsl",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
     { .name = "led.wifi",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
     { .name = "led.wps",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
