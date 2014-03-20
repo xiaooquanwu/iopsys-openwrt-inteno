@@ -28,6 +28,7 @@ handle_configs()
 	local SERIALNR=$(cat /proc/nvram/SerialNumber)
 	local HWVER=$(db get hw.board.hardwareVersion)
 	local RMODEL=$(db get hw.board.routerModel)
+	local DESKEY=$(db get hw.board.desKey)
 
 	local oid=${BMAC:0:6}
 	local mac=$BMAC
@@ -54,6 +55,7 @@ handle_configs()
 			sed -i "s/\$BSSID2/$bssid2/g" /etc/config/$config
 			sed -i "s/\$BSSID/$bssid/g" /etc/config/$config
 			sed -i "s/\$WPAKEY/$wpakey/g" /etc/config/$config
+			sed -i "s/\$DESKEY/$DESKEY/g" /etc/config/$config
 			sed -i "s/\$SER/$SERIALNR/g" /etc/config/$config
 			sed -i "s/\$OUI/$oid/g" /etc/config/$config
 			sed -i "s/\$HARDWAREID/$hardwareid/g" /etc/config/$config
