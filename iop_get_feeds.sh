@@ -18,8 +18,6 @@
 ./scripts/feeds install libevent2
 ./scripts/feeds install libpng
 ./scripts/feeds install iperf
-./scripts/feeds install curl
-./scripts/feeds install libcurl
 ./scripts/feeds install liblzo
 ./scripts/feeds install miniupnpd
 ./scripts/feeds install minidlna
