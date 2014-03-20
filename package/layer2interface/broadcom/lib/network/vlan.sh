@@ -43,25 +43,19 @@ ifvlanexits()
 ifbaseexists ()
 {
 	local if=$1
-	local i
 
-	for i in `ls /proc/sys/net/ipv4/conf`; do
-		if [ "$i" == "$if" ]; then
-			echo "$i == $if"
-			cat /sys/class/net/ptm0/carrier > /dev/null 2>&1
-			if [ $? ]; then
-				if [ $(cat /sys/class/net/"$if"/carrier) -eq 1 ]; then
-					return 1
-				else
-					json_load "$(devstatus "$if")"
-					json_get_var present present 
-					if [ $present -eq 1 ]; then
-						return 1
-					fi
-				fi
+	if [ -d /sys/class/net/$if ]; then
+		ifcarrier="/sys/class/net/$if/carrier"
+		if [ -f $ifcarrier ] && [ "$(cat $ifcarrier)" == "1" ]; then
+			return 1
+		else
+			json_load "$(devstatus "$if")"
+			json_get_var link link
+			if [ "$link" == "1" ]; then
+				return 1
 			fi
 		fi
-	done
+	fi
 	return 0
 }
 
