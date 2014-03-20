@@ -279,7 +279,7 @@ static int init_i2c()
     i2c_dev->dev = open("/dev/i2c-0", O_RDWR);
     if (i2c_dev->dev < 0) {
         syslog(LOG_INFO,"%s: could not open /dev/i2c-0\n",__func__);
-        goto error;
+        goto error1;
     }
     /*KEN_BUG: address in config */
     if (ioctl(i2c_dev->dev, I2C_SLAVE, 0x2b) < 0) {
@@ -319,7 +319,8 @@ static int init_i2c()
     return 1;
 error:
     close(i2c_dev->dev);
-    i2c_dev = 0;
+error1:
+    i2c_dev->dev = 0;
     return 0;
 }
 
@@ -329,7 +330,8 @@ int check_i2c(struct i2c_dev *i2c_dev)
     int ret;
     int got_irq = 0;
 
-    /*BUG: check irq pin here */
+    if (!i2c_dev->dev)
+        return -1;
 
     if (i2c_dev->irq_button){
         int button;
@@ -393,6 +395,9 @@ int check_i2c_button(struct button_config *bc, struct i2c_dev *i2c_dev) {
 
     int bit = 1 << bc->address;
 
+    if (!i2c_dev->dev)
+        return -1;
+
     if (bc->address < 8) {
         if ( bit & i2c_dev->shadow_touch ) {
             i2c_dev->shadow_touch = i2c_dev->shadow_touch & ~bit;
@@ -424,6 +429,9 @@ int check_i2c_button(struct button_config *bc, struct i2c_dev *i2c_dev) {
 void i2c_led_set( struct led_config* lc, int state){
     int ret;
     int bit = 1 << lc->address;
+
+    if (!i2c_dev->dev)
+        return;
 
     if (lc->address > 7){
         DEBUG_PRINT("Led %s:with address %d outside range 0-7\n",lc->name, lc->address);
@@ -840,6 +848,8 @@ static void check_buttons(int initialize) {
             button = board_ioctl(fd, BOARD_IOCTL_GET_GPIO, 0, 0, NULL, bc->address, 0);
         }else if (bc->type == I2C){
             button = check_i2c_button(bc,i2c_dev);
+            if (button < 0)
+                continue;
         }
 
         if (!initialize) {
