@@ -177,6 +177,8 @@ static int board_ioctl(int fd, int ioctl_id, int action, int hex, char* string_b
 #define SX9512_IRQ_COM			1<<2
 #define SX9512_IRQ_CONV			1<<1
 
+#define I2C_RESET_TIME (1000 * 60 * 30) /* 30 min in ms */
+
 struct i2c_reg_tab {
     char addr;
     char value;
@@ -246,6 +248,9 @@ struct i2c_dev i2c_dev_list[] = {
      .init_tab_len = sizeof(i2c_init_tab_cg300)/sizeof(struct i2c_reg_tab),
     }
 };
+
+static void i2c_reset_handler(struct uloop_timeout *timeout);
+static struct uloop_timeout i2c_reset_timer = { .cb = i2c_reset_handler };
 
 void dump_i2c(int fd,int start,int stop)
 {
@@ -322,6 +327,20 @@ error:
 error1:
     i2c_dev->dev = 0;
     return 0;
+}
+
+static void i2c_reset_handler(struct uloop_timeout *timeout)
+{
+
+    DEBUG_PRINT("\n");
+
+    if (i2c_dev->dev)
+        close(i2c_dev->dev);
+
+    init_i2c();
+
+    uloop_timeout_set(&i2c_reset_timer, I2C_RESET_TIME);
+
 }
 
 
@@ -1139,6 +1158,8 @@ static void server_main(struct leds_configuration* led_cfg)
 
 
     uloop_timeout_set(&blink_inform_timer, 100);
+
+    uloop_timeout_set(&i2c_reset_timer, I2C_RESET_TIME);
 
 	uloop_run();
 }
