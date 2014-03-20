@@ -211,7 +211,7 @@ struct i2c_reg_tab i2c_init_tab_cg300[]={
                                           {0x1F, 0x43, 0x00 },      /* Cap sens BL0 */
                                           {0x20, 0x40, 0x07 },      /* Cap sens range  20-27 BL1->BL7 */
                                           {0x28, 0x02, 0x00 },      /* Cap sens thresh BL 0  */
-                                          {0x29, 0x20, 0x07 },      /* Cap sens thresh 28-30 */
+                                          {0x29, 0x10, 0x07 },      /* Cap sens thresh 28-30 */
                                           {0x31, 0x54, 0x00 },      /* Cap sens Op */
                                           {0x32, 0x3B, 0x00 },      /* Cap Sens Mode KEN_BUG? */
                                           {0x33, 0x01, 0x00 },      /* Cap Sens Debounce */
