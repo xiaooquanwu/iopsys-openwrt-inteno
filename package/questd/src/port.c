@@ -66,12 +66,12 @@ get_port_name(Port *port)
 
 	fgets(buf, sizeof(buf), in);
 	pclose(in);
-	remove_newline(&buf);
-	strcpy(&port->name, buf);
+	remove_newline(buf);
+	strcpy(port->name, buf);
 }
 
 void
-get_bridge_ports(char *bridge, unsigned char **ports)
+get_bridge_ports(char *bridge, char **ports)
 {
 	FILE *in;
 	char buf[64];
@@ -128,7 +128,7 @@ bridge_read_fdb(const char *bridge, struct fdb_entry *fdbs, unsigned long offset
 }
 
 void
-get_clients_onport(char *bridge, int portno, unsigned char **macaddr)
+get_clients_onport(char *bridge, int portno, char **macaddr)
 {
 	int i, n;
 	struct fdb_entry *fdb = NULL;
@@ -142,7 +142,7 @@ get_clients_onport(char *bridge, int portno, unsigned char **macaddr)
 		fdb = realloc(fdb, (offset + CHUNK) * sizeof(struct fdb_entry));
 		if (!fdb) {
 			fprintf(stderr, "Out of memory\n");
-			return 1;
+			return;
 		}
 			
 		n = bridge_read_fdb(bridge, fdb+offset, offset, CHUNK);
@@ -152,7 +152,7 @@ get_clients_onport(char *bridge, int portno, unsigned char **macaddr)
 		if (n < 0) {
 			fprintf(stderr, "read of forward table failed: %s\n",
 				strerror(errno));
-			return 1;
+			return;
 		}
 
 		offset += n;

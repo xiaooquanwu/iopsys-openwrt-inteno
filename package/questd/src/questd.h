@@ -62,16 +62,16 @@ typedef struct {
 
 typedef struct {
 	char name[64];
-	const char *hardware;
-	const char *model;
-	const char *firmware;
-	const char *brcmver;
-	const char *socmod;
-	const char *socrev;
-	const char *cfever;
-	const char *kernel;
-	const char *basemac;
-	const char *serialno;
+	char *hardware;
+	char *model;
+	char *firmware;
+	char *brcmver;
+	char *socmod;
+	char *socrev;
+	char *cfever;
+	char *kernel;
+	char *basemac;
+	char *serialno;
 	char uptime[64];
 	unsigned int procs;
 	unsigned int cpu;
@@ -86,9 +86,9 @@ typedef struct {
 } Memory;
 
 typedef struct {
-	const char *auth;
-	const char *des;
-	const char *wpa;
+	char *auth;
+	char *des;
+	char *wpa;
 } Key;
 
 typedef struct {
@@ -107,11 +107,11 @@ typedef struct {
 	char no[8];
 	char name[8];
 	unsigned long size;
-	unsigned char *device;
-	unsigned char *vendor;
-	unsigned char *serial;
-	unsigned char *speed;
-	unsigned char *maxchild;
+	char *device;
+	char *vendor;
+	char *serial;
+	char *speed;
+	char *maxchild;
 } USB;
 
 typedef struct jiffy_counts_t {
@@ -141,6 +141,6 @@ void dump_sysinfo(Router *router, Memory *memory);
 void dump_cpuinfo(Router *router, jiffy_counts_t *prev_jif, jiffy_counts_t *cur_jif);
 void get_port_name(Port *port);
 void get_port_stats(Port *port);
-void get_bridge_ports(char *network, unsigned char **ifname);
-void get_clients_onport(char *bridge, int portno, unsigned char **macaddr);
+void get_bridge_ports(char *network, char **ifname);
+void get_clients_onport(char *bridge, int portno, char **macaddr);
 void dump_usb_info(USB *usb, char *usbno);

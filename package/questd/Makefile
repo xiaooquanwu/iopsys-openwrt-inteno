@@ -25,7 +25,7 @@ export BCMKERNEL_DIR
 
 define Package/questd
   CATEGORY:=Utilities
-  DEPENDS:=+libuci +libubox +ubus +netifd
+  DEPENDS:=+libuci +libubox +ubus +libpthread
   TITLE:=router info daemon
 endef
 

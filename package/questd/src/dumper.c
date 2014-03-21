@@ -36,7 +36,7 @@ init_db_hw_config(void)
 }
 
 static void
-get_db_hw_value(char *opt, unsigned char **val)
+get_db_hw_value(char *opt, char **val)
 {
 	memset(&ptr, 0, sizeof(ptr));
 	ptr.package = "hw";
@@ -77,7 +77,7 @@ get_jif_val(jiffy_counts_t *p_jif)
 	char line[128];
 	int ret;
 
-	if (file = fopen("/proc/stat", "r")) {
+	if ((file = fopen("/proc/stat", "r"))) {
 		while(fgets(line, sizeof(line), file) != NULL)
 		{
 			remove_newline(line);
@@ -99,7 +99,7 @@ get_jif_val(jiffy_counts_t *p_jif)
 void
 dump_specs(Spec *spec)
 {
-	unsigned char *val;
+	char *val;
 
 	spec->wifi = false;
 	spec->adsl = false;
@@ -161,17 +161,17 @@ dump_hostname(Router *router)
 	char line[64];
 	char name[64];
 
-	strcpy(&router->name, "");
-	if (file = fopen("/proc/sys/kernel/hostname", "r")) {
+	strcpy(router->name, "");
+	if ((file = fopen("/proc/sys/kernel/hostname", "r"))) {
 		while(fgets(line, sizeof(line), file) != NULL)
 		{
 			remove_newline(line);
-			if (sscanf(line, "%s", &name) == 1)
+			if (sscanf(line, "%s", name) == 1)
 				break;
 		}
 		fclose(file);
 	}
-	if(name) strcpy(&router->name, name);
+	strcpy(router->name, name);
 }
 
 void
@@ -189,7 +189,7 @@ dump_sysinfo(Router *router, Memory *memory)
 		seconds -= hours * (60 * 60);
 		minutes = seconds / 60;
 		seconds -= minutes * 60;
-		sprintf(&router->uptime, "%dd %dh %dm %ds", days, hours, minutes, seconds);
+		sprintf(router->uptime, "%dd %dh %dm %lds", days, hours, minutes, seconds);
 
 		router->procs = sinfo.procs;
 

@@ -86,7 +86,7 @@ system_fd_set_cloexec(int fd)
 }
 
 static bool
-wdev_already_there(char *ifname, char *wdev)
+wdev_already_there(const char *ifname, char *wdev)
 {
 	bool ret = false;
 	char *token;
@@ -108,7 +108,7 @@ wdev_already_there(char *ifname, char *wdev)
 }
 
 static void
-get_wifs(char *netname, char *ifname, unsigned char **wifs)
+get_wifs(char *netname, const char *ifname, char **wifs)
 {
 	struct uci_element *e;
 	const char *device = NULL;
@@ -124,7 +124,7 @@ get_wifs(char *netname, char *ifname, unsigned char **wifs)
 	*wifs = NULL;
 
 	memset(wrl, '\0', sizeof(wrl));
-	if(uci_wireless = init_package("wireless")) {
+	if((uci_wireless = init_package("wireless"))) {
 		for(wno = 0; wno <= 1; wno++) {
 			vif = 0;
 			uci_foreach_element(&uci_wireless->sections, e) {
@@ -165,12 +165,12 @@ load_networks()
 	const char *ipaddr = NULL;
 	const char *netmask = NULL;
 	const char *ifname = NULL;
-	unsigned char *wifs;
+	char *wifs;
 	int nno = 0;
 
 	memset(network, '\0', sizeof(network));
 
-	if(uci_network = init_package("network")) {
+	if((uci_network = init_package("network"))) {
 		uci_foreach_element(&uci_network->sections, e) {
 			struct uci_section *s = uci_to_section(e);
 
@@ -209,11 +209,10 @@ load_networks()
 }
 
 static void
-match_client_to_network(Network *lan, char *hostaddr, unsigned int *local, unsigned char **dev)
+match_client_to_network(Network *lan, char *hostaddr, unsigned int *local, char **dev)
 {
 
 	struct in_addr ip, mask, snet, host, rslt;
-	const char *device;
 	char devbuf[32];
 
 	inet_pton(AF_INET, lan->ipaddr, &(ip.s_addr));
@@ -227,8 +226,7 @@ match_client_to_network(Network *lan, char *hostaddr, unsigned int *local, unsig
 		*local = 1;
 		if (lan->type && !strcmp(lan->type, "bridge")) {
 			sprintf(devbuf, "br-%s", lan->name);
-			device = strdup(devbuf);
-			*dev = device;
+			*dev = strdup(devbuf);
 		}
 		else
 			*dev = lan->ifname;
@@ -239,7 +237,7 @@ static void
 handle_client(Client *clnt)
 {
 	unsigned int local = 0;
-	unsigned char *dev;
+	char *dev;
 	int ip[4];
 	int netno;
 
@@ -250,8 +248,8 @@ handle_client(Client *clnt)
 				match_client_to_network(&network[netno], clnt->hostaddr, &local, &dev);
 				if (local) {
 					clnt->local = true;
-					sprintf(&clnt->network, network[netno].name);
-					sprintf(&clnt->device, dev);
+					sprintf(clnt->network, network[netno].name);
+					sprintf(clnt->device, dev);
 					break;
 				}
 			}
@@ -272,7 +270,7 @@ populate_clients()
 	int i;
 	bool nothere;
 
-	if (leases = fopen("/var/dhcp.leases", "r")) {
+	if ((leases = fopen("/var/dhcp.leases", "r"))) {
 		while(fgets(line, sizeof(line), leases) != NULL)
 		{
 			remove_newline(line);
@@ -288,13 +286,13 @@ populate_clients()
 		fclose(leases);
 	}
 
-	if (arpt = fopen("/proc/net/arp", "r")) {
+	if ((arpt = fopen("/proc/net/arp", "r"))) {
 		while(fgets(line, sizeof(line), arpt) != NULL)
 		{
 			remove_newline(line);
 			nothere = true;
 			clients[cno].exists = false;
-			if ((lno > 0) && sscanf(line, "%s 0x%d 0x%d %s %s", clients[cno].hostaddr, &hw, &flag, clients[cno].macaddr, mask, clients[cno].device)) {
+			if ((lno > 0) && sscanf(line, "%s 0x%d 0x%d %s %s %s", clients[cno].hostaddr, &hw, &flag, clients[cno].macaddr, mask, clients[cno].device)) {
 				for (i=0; i < cno; i++) {
 					if (!strcmp(clients[cno].hostaddr, clients[i].hostaddr)) {
 						nothere = false;
@@ -326,12 +324,12 @@ static void
 populate_ports(Network *network)
 {
 	char bridge[32];
-	unsigned char *macaddr;
-	unsigned char *theports;
+	char *macaddr;
+	char *theports;
 	char *prt, *mac;
 	int i = 1;
 	int j, k, l;
-	Port *port = &network->port;
+	Port *port = (Port*)&network->port;
 	
 	sprintf(bridge, "br-%s", network->name);
 
@@ -501,7 +499,7 @@ router_dump_usbs(struct blob_buf *b)
 	char line[16];
 
 	sprintf(cmnd, "ls /sys/bus/usb/devices/ | grep -v ':' | grep -v 'usb'");
-	if (usbdevs = popen(cmnd, "r")) {
+	if ((usbdevs = popen(cmnd, "r"))) {
 		while(fgets(line, sizeof(line), usbdevs) != NULL)
 		{
 			remove_newline(line);
@@ -548,7 +546,7 @@ router_dump_ports(struct blob_buf *b, char *interface)
 	for (i = 0; i < MAX_NETWORK; i++) {
 		if (network[i].exists && !strcmp(network[i].name, interface)) {
 			populate_ports(&network[i]);
-			port = &network[i].port;
+			port = (Port*)&network[i].port;
 			found = true;
 			break;
 		}
@@ -929,8 +927,35 @@ quest_ubus_init(const char *path)
 	return 0;
 }
 
+static bool
+over_memory_cons(void)
+{
+	FILE *status;
+	char line[128];
+	long consumed_mem = 0;
+	bool restart = false;
+
+	if ((status = fopen( "/proc/self/status", "r" ))) {
+		while(fgets(line, sizeof(line), status) != NULL)
+		{
+			remove_newline(line);
+			if (sscanf(line, "VmPeak:    %ld kB", &consumed_mem)) {
+				if (consumed_mem > 12000) {
+					restart = true;
+					break;
+				}
+			}
+		}
+		fclose(status);
+	}
+	return restart;
+}
+
 void *dump_router_info(void *arg)
 {
+	char qpath[16];
+	int lpcnt = 0;
+
 	jiffy_counts_t cur_jif, prev_jif;
 
 	init_db_hw_config();
@@ -947,6 +972,14 @@ void *dump_router_info(void *arg)
 		usleep(sleep_time);
 		recalc_sleep_time(false, 0);
 		get_jif_val(&cur_jif);
+		lpcnt++;
+		if (lpcnt == 20) {
+			if (over_memory_cons()) {
+				readlink("/proc/self/exe", qpath, 16);
+				execve(qpath, NULL, NULL);
+			}
+			lpcnt = 0;
+		}
 	}
 
 	return NULL;
@@ -960,7 +993,7 @@ int main(int argc, char **argv)
 		fprintf(stderr, "Failed to connect to ubus\n");
 		return 1;
 	}
-        if (pt = pthread_create(&(tid[0]), NULL, &dump_router_info, NULL) != 0) {
+        if ((pt = pthread_create(&(tid[0]), NULL, &dump_router_info, NULL) != 0)) {
 		fprintf(stderr, "Failed to create thread\n");
 		return 1;
 	}

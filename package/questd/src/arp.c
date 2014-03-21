@@ -41,7 +41,7 @@ send_pack(struct in_addr *src_addr, struct in_addr *dst_addr, struct sockaddr_ll
 }
 
 static bool
-recv_pack(unsigned char *buf, int len, struct sockaddr_ll *FROM)
+recv_pack(char *buf, int len, struct sockaddr_ll *FROM)
 {
 	struct arphdr *ah = (struct arphdr *) buf;
 	unsigned char *p = (unsigned char *) (ah + 1);
@@ -127,7 +127,7 @@ arping(char *targetIP, char *device)
 
 	send_pack(&src, &dst, &me, &he);
 
-	unsigned char *packet[64];
+	char packet[64];
 	struct sockaddr_ll from;
 	socklen_t alen = sizeof(from);
 	bool connected = false;
@@ -147,11 +147,13 @@ arping(char *targetIP, char *device)
 	if (select(sock_fd + 1, &read_fds, &write_fds, &except_fds, &timeout) == 1)
 	{
 		cc = recvfrom(sock_fd, packet, sizeof(packet), 0, (struct sockaddr *) &from, &alen);
-		if (cc < 0)
-			perror("recvfrom");
 	}
 
-	connected = recv_pack(packet, cc, &from);
+	if (cc < 0)
+		perror("recvfrom");
+	else
+		connected = recv_pack(packet, cc, &from);
+
 	close(sock_fd);
 
 	if (!connected)
