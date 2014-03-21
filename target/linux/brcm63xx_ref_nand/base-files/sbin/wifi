@@ -577,8 +577,8 @@ set_wifi_device() {
 				lower) sband=-1 ;;
 				upper) sband=1 ;;
 			esac
-			wlctl -i $device chanspec -b $bnd -c $channel -w ${bandwidth:-20} -s $sband
-			# wlctl -i $device chanspec $channel
+			# wlctl -i $device chanspec -b $bnd -c $channel -w ${bandwidth:-20} -s $sband
+			wlctl -i $device chanspec $channel
 		;;
 	esac
 
