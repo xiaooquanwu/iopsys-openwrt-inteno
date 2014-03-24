@@ -237,8 +237,18 @@ id_upgrade_reconfig() {
     fi
 }
 
+check_num_mac_address() {
+    local nummac=$(cat /proc/nvram/NumMacAddrs)
+    if [ "$nummac" != "00 00 00 08 " ]; then
+        echo "Setting NumMacAddrs to 8"
+        echo "00 00 00 08" >/proc/nvram/NumMacAddrs
+        sync
+    fi
+}
+
 brcm_env
 id_upgrade_reconfig
 bcm_dsl_annex
+check_num_mac_address
 brcm_insmod
 
