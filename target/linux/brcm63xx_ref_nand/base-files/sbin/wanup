@@ -6,4 +6,5 @@
 [ -e /var/run/asterisk/asterisk.ctl ] && /etc/init.d/asterisk restart
 [ -f /etc/config/mcpd ] && /etc/init.d/mcpd restart
 [ -f /etc/config/cwmp ] && /usr/sbin/freecwmp get cache InternetGatewayDevice.WANDevice. &
+[ -f /etc/config/cwmp ] && /usr/sbin/freecwmp get cache InternetGatewayDevice.X_INTENO_SE_IpAccCfg. &
 [ -f /etc/config/cwmp ] && /etc/init.d/cwmpd restart &
