@@ -24,6 +24,7 @@ stop() {
 
 restart() {
 	fw3 restart
+	cwmp_firewallcache
 }
 
 reload() {
