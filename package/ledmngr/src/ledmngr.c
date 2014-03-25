@@ -286,8 +286,8 @@ static int init_i2c()
         syslog(LOG_INFO,"%s: could not open /dev/i2c-0\n",__func__);
         goto error1;
     }
-    /*KEN_BUG: address in config */
-    if (ioctl(i2c_dev->dev, I2C_SLAVE, 0x2b) < 0) {
+
+    if (ioctl(i2c_dev->dev, I2C_SLAVE, i2c_dev->addr) < 0) {
         syslog(LOG_INFO,"%s: could not sett address for i2c chip\n",__func__);
         goto error;
     }
@@ -304,7 +304,7 @@ static int init_i2c()
         goto error;
     }
 
-    DEBUG_PRINT("Opened device and selected address %x \n",0x2b);
+    DEBUG_PRINT("Opened device and selected address %x \n", i2c_dev->addr);
 
     tab = i2c_dev->init_tab;
 
