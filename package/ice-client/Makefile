@@ -147,7 +147,7 @@ endef
 define Package/ice-client-camerawatch
 $(call Package/ice-client/Default)
 TITLE:=Camerawatch
-DEPENDS+= +libjpeg +libcurl
+DEPENDS+= +libjpeg 
 endef
 
 define Package/ice-client-camerawatch/description
