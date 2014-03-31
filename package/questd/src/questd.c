@@ -275,7 +275,7 @@ populate_clients()
 		{
 			remove_newline(line);
 			clients[cno].exists = false;
-			if (sscanf(line, "%s %s %s %s %s", clients[cno].leaseno, clients[cno].macaddr, clients[cno].hostaddr, clients[cno].hostname, clients[cno].hwaddr) == 5) {
+			if (sscanf(line, "%s %s %s %s %s", clients[cno].leaseno, clients[cno].macaddr, clients[cno].hostaddr, clients[cno].hostname, mask) == 5) {
 				clients[cno].exists = true;
 				clients[cno].dhcp = true;
 				handle_client(&clients[cno]);
@@ -979,6 +979,7 @@ void *dump_router_info(void *arg)
 				execve(qpath, NULL, NULL);
 			}
 			lpcnt = 0;
+			memset(clients, '\0', sizeof(clients));
 		}
 	}
 

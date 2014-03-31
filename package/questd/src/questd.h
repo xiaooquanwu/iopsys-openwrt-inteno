@@ -25,7 +25,6 @@ typedef struct {
 	char macaddr[24];
 	char hostaddr[24];
 	char hostname[32];
-	char hwaddr[24];
 	char network[32];
 	char device[32];
 	bool connected;
