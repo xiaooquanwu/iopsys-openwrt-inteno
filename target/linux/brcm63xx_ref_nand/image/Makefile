@@ -82,8 +82,8 @@ define Image/Prepare
 endef
 
 define Image/Build
-	$(call Image/Build/CFE,9$(CONFIG_BCM_CHIP_ID),$(CONFIG_BCM_CHIP_ID))
-	$(call Image/Build/REF,$(1),9$(CONFIG_BCM_CHIP_ID),$(CONFIG_BCM_CHIP_ID))
+	$(call Image/Build/CFE,D301,$(CONFIG_BCM_CHIP_ID))
+	$(call Image/Build/REF,$(1),D301,$(CONFIG_BCM_CHIP_ID))
 endef
 
 $(eval $(call BuildImage))
