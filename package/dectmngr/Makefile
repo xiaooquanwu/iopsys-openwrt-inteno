@@ -15,7 +15,7 @@ else
 PKG_SOURCE_URL:=http://ihgsp.inteno.se/git/dectmngr.git
 endif
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=21f8956ec669b404ac2f35b4325e437e7ebb5347
+PKG_SOURCE_VERSION:=d27bcc7e42b8c7709ea4007aecc00f8644872b5d
 PKG_NAME:=dectmngr
 
 
@@ -55,6 +55,7 @@ define Package/dectmngr/install
 	cp $(PKG_BUILD_DIR)/dectmngr $(1)/usr/bin/
 	cp $(PKG_BUILD_DIR)/atohx $(1)/usr/bin/
 	cp $(PKG_BUILD_DIR)/dectproxy $(1)/usr/bin/
+	cp $(PKG_BUILD_DIR)/dectdbgd $(1)/usr/bin/
 	cp $(PKG_BUILD_DIR)/dect $(1)/usr/bin/
 	cp files/etc/init.d/* $(1)/etc/init.d/
 	cp files/etc/hotplug.d/dect/* $(1)/etc/hotplug.d/dect/
