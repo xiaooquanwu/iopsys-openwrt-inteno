@@ -16,13 +16,13 @@ export PLATFORM_INCLUDE:=platforms/iopsys/build.mk
 export DATE:=$(shell date +%Y-%m-%d-%H-%M-%S)
 export LOGIN:=$(shell whoami)
 BASE_PKG_VERSION:=2.9.5
-PKG_RELEASE:=RC1
+PKG_RELEASE:=RC2
 PKG_VERSION:=$(BASE_PKG_VERSION)-$(PKG_RELEASE)_$(DATE)_$(LOGIN)
 
 ###########################--RELEASE--################################
 
 PKG_SOURCE_URL:=ssh://git@iopsys.inteno.se/ice-client.git
-PKG_SOURCE_VERSION:=9ffa969b2a75bd9a3dd991ba5863f8fa81881b4b
+PKG_SOURCE_VERSION:=ae44434941cfbd660bb04a918101fb8897702544
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(BASE_PKG_VERSION)
 PKG_SOURCE:=$(PKG_NAME)-$(BASE_PKG_VERSION)-$(PKG_RELEASE).tar.gz
 
