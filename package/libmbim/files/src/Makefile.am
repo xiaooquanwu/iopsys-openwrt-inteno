@@ -1,2 +1,0 @@
-
-SUBDIRS = libmbim-glib mbimcli

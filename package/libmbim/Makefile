@@ -12,10 +12,10 @@ PKG_NAME:=libmbim
 PKG_VERSION:=1.8.0
 PKG_RELEASE:=1
 
-PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
+PKG_SOURCE:=libmbim-$(PKG_VERSION).tar.gz
+PKG_SOURCE_URL:=http://cgit.freedesktop.org/libmbim/libmbim/snapshot/
 
 PKG_FIXUP:=autoreconf
-
 PKG_INSTALL:=1
 
 include $(INCLUDE_DIR)/package.mk
@@ -33,12 +33,11 @@ define Package/libmbim/description
   Helper library and utils to talk to MBIM enabled modems
 endef
 
-define Build/Prepare
-	mkdir -p $(PKG_BUILD_DIR)
-	$(CP) ./files/* $(PKG_BUILD_DIR)
+define Build/Configure
 	$(SH) $(PKG_BUILD_DIR)/autogen.sh
-	$(call Build/Prepare/Default)
+	$(Build/Configure/Default)
 endef
+
 CONFIGURE_VARS+= CFLAGS="$$$$CFLAGS -DMESSAGE_ENABLE_TRACE"
 
 define Build/InstallDev
