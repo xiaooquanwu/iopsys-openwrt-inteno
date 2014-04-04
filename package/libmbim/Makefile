@@ -9,7 +9,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=libmbim
-PKG_VERSION:=1.6.0
+PKG_VERSION:=1.8.0
 PKG_RELEASE:=1
 
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
@@ -30,12 +30,13 @@ define Package/libmbim
 endef
 
 define Package/libmbim/description
-  Helper library and utils to talk to QMI enabled modems
+  Helper library and utils to talk to MBIM enabled modems
 endef
 
 define Build/Prepare
 	mkdir -p $(PKG_BUILD_DIR)
-	$(CP) ./src/* $(PKG_BUILD_DIR)
+	$(CP) ./files/* $(PKG_BUILD_DIR)
+	$(SH) $(PKG_BUILD_DIR)/autogen.sh
 	$(call Build/Prepare/Default)
 endef
 CONFIGURE_VARS+= CFLAGS="$$$$CFLAGS -DMESSAGE_ENABLE_TRACE"
