@@ -6,6 +6,10 @@ iopsys_initialize_db() {
 	NEWCFERAM="`ls /cferam* | awk -F'.' '{print$NF}'`"
 	if [ -f "/lib/db/config/hw" ] && [ "$NEWCFERAM" == "$OLDCFERAM" ]; then
 		echo "Static db already initialized"
+		IOPVERSION="`cat /lib/db/version/iop_version`"
+                uci set /lib/db/config/hw.board.iopVersion="$IOPVERSION"                
+                uci commit    
+
 	else
 		echo "Setting up static db"
 		BOARDID=`cat /proc/nvram/BoardId`
