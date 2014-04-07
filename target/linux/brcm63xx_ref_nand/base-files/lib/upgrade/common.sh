@@ -249,6 +249,7 @@ default_do_upgrade() {
 	if [ $is_nand -eq 1 ]; then
 		v "Setting bootline parameter to boot from newly flashed image"
 		brcm_fw_tool set -u 0
+		v "Current Software Upgrade Count: $(ls /cferam* | awk -F'.' '{print$NF}')"
 		v "Erasing Overlay ..."
         echo -e "\xde\xad\xc0\xde" | mtd -x -qq write - rootfs_update_data
 #		mtd erase rootfs_update_data
@@ -258,6 +259,8 @@ default_do_upgrade() {
 			mount -t jffs2 /dev/mtdblock$overlay_block /mnt
 			v "Copying configuration files to overlay ..."
 			cp -r /overlay/* /mnt
+			v "Erasing board db"
+			rm -rf /mnt/lib/db/config/hw
 			v "Unmounting Overlay ..."
 			umount /mnt
 		fi
