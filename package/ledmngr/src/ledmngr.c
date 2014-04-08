@@ -100,6 +100,7 @@ enum {
     LEDS_NORMAL,
     LEDS_INFO,
     LEDS_TEST,
+    LEDS_PROD,
     LEDS_MAX,
 };
 
@@ -131,7 +132,7 @@ struct led_map {
 static char* fn_actions[LED_ACTION_MAX] = { "ok", "notice", "alert", "error", "off",};
 static char* led_functions[LED_FUNCTIONS] = { "dsl", "wifi", "wps", "lan", "status", "dect", "tv", "usb", "wan", "internet", "voice1", "voice2", "eco", "gbe"};
 static char* led_states[LED_STATES_MAX] = { "off", "on", "blink_slow", "blink_fast" };
-static char* leds_states[LEDS_MAX] = { "normal", "info", "test" };
+static char* leds_states[LEDS_MAX] = { "normal", "info", "test", "production" };
 
 struct leds_configuration {
     int             leds_nr;
@@ -151,6 +152,7 @@ struct button_config {
     char*   command;
     int     pressed_state;
     int     type;
+    char*   feedback_led;
 };
 
 struct button_configuration {
@@ -725,6 +727,7 @@ static void shift_register3_set(struct leds_configuration* led_cfg, int address,
     // clock in bits
     for (i=0 ; i<SR_MAX ; i++) {
 
+
         //set clock low
         board_ioctl(fd, BOARD_IOCTL_SET_GPIO, 0, 0, NULL, 0, 0);
         //place bit on data line
@@ -850,6 +853,10 @@ static void leds_test(struct leds_configuration* led_cfg) {
         led_cfg->test_state = 0;
 }
 
+static void leds_production(struct leds_configuration* led_cfg) {
+    all_leds_off(led_cfg);
+}
+
 static void blink_handler(struct uloop_timeout *timeout);
 static struct uloop_timeout blink_inform_timer = { .cb = blink_handler };
 static unsigned int cnt = 0;
@@ -876,13 +883,19 @@ static void check_buttons(int initialize) {
                 DEBUG_PRINT("Button %s pressed\n",bc->name);
                 //syslog(LOG_INFO, "Button %s pressed\n",bc->name);
                 bc->pressed_state = 1;
+                if(led_cfg->leds_state == LEDS_PROD) {
+                    DEBUG_PRINT("Setting %s on\n", bc->feedback_led);
+                    if (bc->feedback_led) led_set(led_cfg, get_led_index_by_name(led_cfg, bc->feedback_led), ON);
+                }
             }
             if ((!(button^bc->active)) && (bc->pressed_state)) {
                 char str[512] = {0};
-                DEBUG_PRINT("Button %s released, executing hotplug button command: %s\n",bc->name, bc->command);
-                snprintf(str, 512, "ACTION=register INTERFACE=%s /sbin/hotplug-call button &",bc->command);
-                system(str);
-                syslog(LOG_INFO, "ACTION=register INTERFACE=%s /sbin/hotplug-call button", bc->command);
+                if (!(led_cfg->leds_state == LEDS_PROD)) {
+                    DEBUG_PRINT("Button %s released, executing hotplug button command: %s\n",bc->name, bc->command);
+                    snprintf(str, 512, "ACTION=register INTERFACE=%s /sbin/hotplug-call button &",bc->command);
+                    system(str);
+                    syslog(LOG_INFO, "ACTION=register INTERFACE=%s /sbin/hotplug-call button", bc->command);
+                }
                 bc->pressed_state = 0;
             }
         }
@@ -903,6 +916,9 @@ static void blink_handler(struct uloop_timeout *timeout)
 
         if (!(cnt%8))
             blink_led(led_cfg, BLINK_SLOW);
+    } else if (led_cfg->leds_state == LEDS_PROD) {
+        if (!(cnt%16))
+            leds_production(led_cfg);
     }
 
     if (!(cnt%4))
@@ -1064,17 +1080,15 @@ static int leds_set_method(struct ubus_context *ubus_ctx, struct ubus_object *ob
 
         if (i == LEDS_INFO) {
             all_leds_off(led_cfg);
+            set_function_led(led_cfg, "eco", "off");
             set_function_led(led_cfg, "eco", "ok");
         }
 
-
         led_cfg->leds_state = i;
-
 
         if (i == LEDS_TEST) {
             all_leds_off(led_cfg);
         }
-
 
         if (i == LEDS_NORMAL) {
             all_leds_off(led_cfg);
@@ -1083,7 +1097,6 @@ static int leds_set_method(struct ubus_context *ubus_ctx, struct ubus_object *ob
                 set_function_led(led_cfg, led_functions[j], fn_actions[led_cfg->led_fn_action[j]]);
             }
         }
-
     }
 
 	return 0;
@@ -1196,14 +1209,15 @@ static struct button_configuration* get_button_config(void) {
         char type[256];
         char active[256];
         char command[256];
+        char feedback_led[256];
         int  address;
 
         butt_config = ucix_get_option(uci_ctx, "hw", "buttons", p);
 
         bc = malloc(sizeof(struct button_config));
         bc->name = strdup(p);
-        sscanf(butt_config, "%s %d %s %s",type, &address, active, command);
-        DEBUG_PRINT("butt_config %s %d %s %s\n",type,address, active, command);
+        sscanf(butt_config, "%s %d %s %s %s",type, &address, active, command, feedback_led);
+        DEBUG_PRINT("butt_config %s %d %s %s %s\n",type,address, active, command, feedback_led);
 
         if (!strcmp(active, "al"))   bc->active = ACTIVE_LOW;
         if (!strcmp(active, "ah"))   bc->active = ACTIVE_HIGH;
@@ -1214,6 +1228,7 @@ static struct button_configuration* get_button_config(void) {
         bc->command = strdup(command);
         bc->address = address;
         bc->pressed_state = 0;
+        bc->feedback_led = strdup(feedback_led);
 
         /* Get next */
         ptr = rest;
