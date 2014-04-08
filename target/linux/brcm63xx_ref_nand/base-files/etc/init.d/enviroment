@@ -70,3 +70,8 @@ start()
 	handle_configs
 }
 
+restart()
+{
+	handle_configs
+}
+
