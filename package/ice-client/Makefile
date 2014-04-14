@@ -16,13 +16,13 @@ export PLATFORM_INCLUDE:=platforms/iopsys/build.mk
 export DATE:=$(shell date +%Y-%m-%d-%H-%M-%S)
 export LOGIN:=$(shell whoami)
 BASE_PKG_VERSION:=2.9.5
-PKG_RELEASE:=RC4
+PKG_RELEASE:=RC5
 PKG_VERSION:=$(BASE_PKG_VERSION)-$(PKG_RELEASE)_$(DATE)_$(LOGIN)
 
 ###########################--RELEASE--################################
 
 PKG_SOURCE_URL:=ssh://git@iopsys.inteno.se/ice-client.git
-PKG_SOURCE_VERSION:=1f1e19ef9fe392e994353bc5cdccba9e4dd68967
+PKG_SOURCE_VERSION:=ec157f81dad22aec407c2fd75efab9a90290ec53
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(BASE_PKG_VERSION)
 PKG_SOURCE:=$(PKG_NAME)-$(BASE_PKG_VERSION)-$(PKG_RELEASE).tar.gz
 
@@ -119,8 +119,8 @@ define Package/ice-client/install
 	$(CP) $(PKG_BUILD_DIR)/scripts/ice-client $(1)/etc/init.d/ice-client
 	$(INSTALL_DIR) $(1)/etc/uci-defaults
 	$(CP) $(PKG_BUILD_DIR)/scripts/etc/uci-defaults/luci-ice-client $(1)/etc/uci-defaults/luci-ice-client
-	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/controller/admin
-	$(CP) $(PKG_BUILD_DIR)/scripts/luci/controller/admin/*.lua $(1)/usr/lib/lua/luci/controller/admin
+	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/controller/
+	$(CP) $(PKG_BUILD_DIR)/scripts/luci/controller/*.lua $(1)/usr/lib/lua/luci/controller
 	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/model/cbi/ice
 	$(CP) $(PKG_BUILD_DIR)/scripts/luci/model/cbi/ice/*.lua $(1)/usr/lib/lua/luci/model/cbi/ice
 endef
