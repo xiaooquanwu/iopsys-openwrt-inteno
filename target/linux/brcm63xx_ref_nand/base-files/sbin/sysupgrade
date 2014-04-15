@@ -48,6 +48,12 @@ export CONF_TAR=/tmp/sysupgrade.tgz
 
 export ARGV="$*"
 export ARGC="$#"
+##always add complete path to argument and move to / directory
+
+if [ $(dirname $ARGV) == "." ]; then 
+  ARGV="$PWD/`basename $ARGV`"
+fi
+cd /
 
 [ -z "$ARGV" -a -z "$NEED_IMAGE" -o $HELP -gt 0 ] && {
 	cat <<EOF
