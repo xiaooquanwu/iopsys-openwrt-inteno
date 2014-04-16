@@ -101,6 +101,7 @@ enum {
     LEDS_INFO,
     LEDS_TEST,
     LEDS_PROD,
+    LEDS_RESET,
     LEDS_MAX,
 };
 
@@ -132,7 +133,7 @@ struct led_map {
 static char* fn_actions[LED_ACTION_MAX] = { "ok", "notice", "alert", "error", "off",};
 static char* led_functions[LED_FUNCTIONS] = { "dsl", "wifi", "wps", "lan", "status", "dect", "tv", "usb", "wan", "internet", "voice1", "voice2", "eco", "gbe"};
 static char* led_states[LED_STATES_MAX] = { "off", "on", "blink_slow", "blink_fast" };
-static char* leds_states[LEDS_MAX] = { "normal", "info", "test", "production" };
+static char* leds_states[LEDS_MAX] = { "normal", "info", "test", "production", "reset" };
 
 struct leds_configuration {
     int             leds_nr;
@@ -857,6 +858,29 @@ static void leds_production(struct leds_configuration* led_cfg) {
     all_leds_off(led_cfg);
 }
 
+static void leds_reset(struct leds_configuration* led_cfg) {
+    if (led_cfg->test_state == 0)
+        all_leds_on(led_cfg);
+    if (led_cfg->test_state == 1)
+        all_leds_off(led_cfg);
+
+    if (led_cfg->test_state == 2)
+        all_leds_on(led_cfg);
+    if (led_cfg->test_state == 3)
+        all_leds_off(led_cfg);
+
+    if (led_cfg->test_state == 4)
+        all_leds_on(led_cfg);
+    if (led_cfg->test_state == 5)
+        all_leds_off(led_cfg);
+
+    led_cfg->test_state++;
+    if (led_cfg->test_state >  5) {
+        led_cfg->test_state = 0;
+//        led_cfg->leds_state = LEDS_NORMAL;
+    }
+}
+
 static void blink_handler(struct uloop_timeout *timeout);
 static struct uloop_timeout blink_inform_timer = { .cb = blink_handler };
 static unsigned int cnt = 0;
@@ -919,7 +943,9 @@ static void blink_handler(struct uloop_timeout *timeout)
     } else if (led_cfg->leds_state == LEDS_PROD) {
         if (!(cnt%16))
             leds_production(led_cfg);
-    }
+    } else if (led_cfg->leds_state == LEDS_RESET) {
+			leds_reset(led_cfg);
+	}
 
     if (!(cnt%4))
         check_buttons(0);
