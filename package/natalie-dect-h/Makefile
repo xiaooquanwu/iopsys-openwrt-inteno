@@ -8,7 +8,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=natalie-dect-h
-PKG_VERSION:=11.08
+PKG_VERSION:=11.19
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
@@ -18,7 +18,7 @@ else
 PKG_SOURCE_URL:=http://ihgsp.inteno.se/git/natalie-dect-h
 endif
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=71e6072b695312ea4c65f68ee85908d648bb0e75
+PKG_SOURCE_VERSION:=c2139d05e3d082f1dcf58ce3f19306cb76fd0873
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
 
 include $(INCLUDE_DIR)/package.mk

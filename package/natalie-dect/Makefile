@@ -8,13 +8,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=natalie-dect
-PKG_VERSION:=11.08
+PKG_VERSION:=11.19
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=git@iopsys.inteno.se:natalie-dect
+PKG_SOURCE_URL:=git@iopsys.inteno.se:natalie-dect-11.19
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=c5602a86c57ae32048aecf99c8a52965c3bca71b
+PKG_SOURCE_VERSION:=HEAD
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
 
 include $(INCLUDE_DIR)/package.mk
@@ -44,7 +44,7 @@ endef
 define Package/natalie-dect/install
 
 	mkdir -p $(1)/lib/modules/$(BCM_KERNEL_VERSION)/extra/
-	$(CP) $(PKG_BUILD_DIR)/NatalieFpCvm6362_v1108/Src/Projects/NatalieV3/FpCvm/Linux6362/dects.ko $(1)/lib/modules/$(BCM_KERNEL_VERSION)/extra/dect.ko
+	$(CP) $(PKG_BUILD_DIR)/NatalieFpCvm6362/Src/Projects/NatalieV3/FpCvm/Linux6362/dects.ko $(1)/lib/modules/$(BCM_KERNEL_VERSION)/extra/dect.ko
 
 endef
 
