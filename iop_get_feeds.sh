@@ -56,3 +56,4 @@
 ./scripts/feeds install libwrap
 ./scripts/feeds install wget
 ./scripts/feeds install xxd
+./scripts/feeds install xl2tpd
