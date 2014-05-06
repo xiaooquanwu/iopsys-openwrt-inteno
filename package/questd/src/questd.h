@@ -41,6 +41,7 @@ typedef struct {
 
 typedef struct {
 	char name[16];
+	char ssid[32];
 	char device[32];
 	Statistic stat;
 	Client client[MAX_CLIENT];

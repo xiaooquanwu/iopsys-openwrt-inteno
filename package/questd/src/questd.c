@@ -437,7 +437,7 @@ router_dump_memory_info(struct blob_buf *b, bool table)
 {
 	void *t;
 
-	if (table) t = blobmsg_open_table(b, "memory(kB)");
+	if (table) t = blobmsg_open_table(b, "memoryKB");
 	blobmsg_add_u64(b, "total", memory.total);
 	blobmsg_add_u64(b, "used", memory.used);
 	blobmsg_add_u64(b, "free", memory.free);
@@ -515,7 +515,7 @@ router_dump_usbs(struct blob_buf *b)
 				blobmsg_add_string(b, "serial", usb[uno].serial);
 				if(usb[uno].device) {
 					blobmsg_add_string(b, "device", usb[uno].device);
-					//blobmsg_add_u64(b, "size", usb[uno].size);
+					blobmsg_add_u64(b, "sizeMB", usb[uno].size);
 					blobmsg_add_string(b, "mntdir", usb[uno].mount);
 				}
 			}
@@ -531,7 +531,7 @@ router_dump_ports(struct blob_buf *b, char *interface)
 {
 	void *t, *c, *h, *s;
 	int pno, i, j;
-	const char *ports[6];
+	const char *ports[7];
 	bool found = false;
 
 	ports[0] = "LAN1";
@@ -540,7 +540,8 @@ router_dump_ports(struct blob_buf *b, char *interface)
 	ports[3] = "LAN4";
 	ports[4] = "GbE";	
 	ports[5] = "WAN";
-	//ports[6] = "WLAN";
+	ports[6] = "WLAN";
+
 	Port *port;
 	
 	for (i = 0; i < MAX_NETWORK; i++) {
@@ -555,11 +556,15 @@ router_dump_ports(struct blob_buf *b, char *interface)
 	if (!found)
 		return;
 
-	for (pno=0; pno<=5; pno++) {
+	for (pno=0; pno<=6; pno++) {
 		for (i = 1; strlen(port[i].name) > 2; i++) {
 			if(strcmp(port[i].name, ports[pno]))
 				continue;
-			t = blobmsg_open_table(b, port[i].name);
+			if(!strncmp(port[i].device, "wl", 2) && strlen(port[i].ssid) > 2)
+				t = blobmsg_open_table(b, port[i].ssid);
+			else
+				t = blobmsg_open_table(b, port[i].name);
+			blobmsg_add_string(b, "device", port[i].device);
 			c = blobmsg_open_array(b, "hosts");
 			for(j=0; port[i].client[j].exists; j++) {
 				h = blobmsg_open_table(b, "NULL");
@@ -789,9 +794,11 @@ quest_router_ports(struct ubus_context *ctx, struct ubus_object *obj,
 	if (!(tb[NETWORK_NAME]))
 		return UBUS_STATUS_INVALID_ARGUMENT;
 		
-	for (i=0; network[i].exists; i++)
+	for (i=0; network[i].exists; i++) {
 		if(!strcmp(network[i].name, blobmsg_data(tb[NETWORK_NAME])))
-			nthere = true;
+			if(network[i].is_lan || !strcmp(network[i].type, "bridge"))
+				nthere = true;
+	}
 
 	if (!(nthere))
 		return UBUS_STATUS_INVALID_ARGUMENT;

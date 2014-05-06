@@ -74,22 +74,22 @@ get_usb_device(char **val, char *mount) {
 	}
 }
 
-/*static void*/
-/*get_usb_size(unsigned long *val, char *device) {*/
-/*	FILE *in;*/
-/*	char cmnd[64];*/
-/*	char result[32];*/
-/*	*/
-/*	*val = 0;*/
+static void
+get_usb_size(unsigned long *val, char *device) {
+	FILE *in;
+	char cmnd[64];
+	char result[32];
 
-/*	sprintf(cmnd, "/sys/class/block/%s/size", device);*/
-/*	if ((in = fopen(cmnd, "r"))) {*/
-/*		fgets(result, sizeof(result), in);*/
-/*		remove_newline(result);*/
-/*		fclose(in);*/
-/*		*val = atoi(result);*/
-/*	}*/
-/*}*/
+	*val = 0;
+
+	sprintf(cmnd, "/sys/class/block/%s/size", device);
+	if ((in = fopen(cmnd, "r"))) {
+		fgets(result, sizeof(result), in);
+		remove_newline(result);
+		fclose(in);
+		*val = (long)(atoi(result) / 2048);
+	}
+}
 
 void
 dump_usb_info(USB *usb, char *usbno)
@@ -114,6 +114,6 @@ dump_usb_info(USB *usb, char *usbno)
 		sprintf(usb->mount, "%s%s", usb->vendor, usb->serial);
 		replace_space(usb->mount);
 		get_usb_device(&usb->device, usb->mount);
-		//get_usb_size(&usb->size, usb->device);
+		get_usb_size(&usb->size, usb->device);
 	}
 }

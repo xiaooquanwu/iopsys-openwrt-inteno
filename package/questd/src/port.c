@@ -57,7 +57,7 @@ void
 get_port_name(Port *port)
 {
 	FILE *in;
-	char buf[8];
+	char buf[32];
 	char cmnd[64];
 
 	sprintf(cmnd, ". /lib/network/config.sh && interfacename %s 2>/dev/null", port->device);
@@ -68,6 +68,20 @@ get_port_name(Port *port)
 	pclose(in);
 	remove_newline(buf);
 	strcpy(port->name, buf);
+
+	memset(cmnd, '\0', sizeof(cmnd));
+	memset(buf, '\0', sizeof(buf));
+
+	if(!strncmp(port->device, "wl", 2)) {
+		sprintf(cmnd, "wlctl -i %s ssid | awk '{print$3}' | sed 's/\"//g' 2>/dev/null", port->device);
+		if (!(in = popen(cmnd, "r")))
+			exit(1);
+
+		fgets(buf, sizeof(buf), in);
+		pclose(in);
+		remove_newline(buf);
+		strcpy(port->ssid, buf);
+	}
 }
 
 void
