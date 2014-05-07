@@ -1,8 +1,10 @@
 
 [ ifup = "$ACTION" ] && {
-	if [ "$(uci -q get network.$INTERFACE.is_lan)" != "1" ]; then
+	local islan="$(uci -q get network.$INTERFACE.is_lan)"
+	local proto="$(uci -q get network.$INTERFACE.proto)"
+	if [ "$islan" != "1" ] && [ "$proto" != "none" ]; then
 		. /lib/functions/network.sh
-		network_get_ipaddr wan_ip wan
+		network_get_ipaddr wan_ip $INTERFACE
 
 		shift_range $wan_ip && {
 			/etc/init.d/network reload

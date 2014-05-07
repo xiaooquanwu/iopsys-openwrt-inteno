@@ -1,6 +1,8 @@
 
 [ ifup = "$ACTION" -o ifdown = "$ACTION" ] && {
-	if [ "$(uci -q get network.$INTERFACE.is_lan)" != "1" ]; then
+	local islan="$(uci -q get network.$INTERFACE.is_lan)"
+	local proto="$(uci -q get network.$INTERFACE.proto)"
+	if [ "$islan" != "1" ] && [ "$proto" != "none" ]; then
 		killall testnet >/dev/null 2>&1
 		/sbin/testnet &
 	fi
