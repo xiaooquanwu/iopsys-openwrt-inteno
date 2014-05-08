@@ -79,27 +79,28 @@ find_network() {
 	local ifdev ifl3dev ifobj devtype
 	for ifobj in `ubus list network.interface.\*`; do
 		interface="${ifobj##network.interface.}"
-		(
-			json_load "$(ifstatus $interface)"
-			json_get_var ifdev device
-			json_get_var ifl3dev l3_device
-			if [[ "$device" = "$ifdev" ]] || [[ "$device" = "$ifl3dev" ]]; then
-				echo "$interface"
-				exit 0
-			elif json_load "$(devstatus $ifdev)"; json_get_var devtype type; [[ "$devtype" = "Bridge" ]]; then
+		[ "$interface" == "loopback" ] && continue
+		json_load "$(ifstatus $interface)"
+		json_get_var ifdev device
+		json_get_var ifl3dev l3_device
+		if [[ "$device" = "$ifdev" ]] || [[ "$device" = "$ifl3dev" ]]; then
+			echo "$interface"
+			return
+		else
+			json_load "$(devstatus $ifdev)"
+			json_get_var devtype type
+			if [[ "$devtype" = "Bridge" ]]; then
 				_i=1
 				json_select bridge-members
 				while json_get_var dev $_i; do
 					if [[ "$dev" = "$device" ]]; then
 						echo "$interface"
-						exit 0
+						return
 					fi
 					_i=$(($_i + 1))
 				done
-			else
-				exit 1
 			fi
-		) && return
+		fi
 	done
 }
 

@@ -50,7 +50,7 @@
 +				break;
 +			}
 +		}
-+		memset(ifnames, sizeof(ifnames), '\0');
++		memset(ifnames, '\0', sizeof(ifnames));
 +	}
 +	else if (dev)
  		interface_set_main_dev(iface, dev);
