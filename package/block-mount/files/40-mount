@@ -7,6 +7,15 @@
 
 . /lib/functions/block.sh
 
+inform_ice_client() {
+	PROC_ID="$(cat /tmp/ice.pid)"
+	PROC_EXISTS="$(/usr/bin/pgrep -P $PROC_ID)"
+	if [  -n "$PROC_EXISTS" ]; then
+		read -t 1 <>/tmp/cfout
+		echo "system ubusEvent topic=usb" > /tmp/cfin
+	fi
+}
+
 blkdev=`dirname $DEVPATH`
 if [ `basename $blkdev` != "block" ]; then
 
@@ -85,6 +94,7 @@ if [ `basename $blkdev` != "block" ]; then
 						mntdir=$(echo $mnfct$serial | tr ' ' '_')
 						( mkdir -p /mnt/$mntdir && mount /dev/$device /mnt/$mntdir -o umask=0 || ntfs-3g /dev/$device /mnt/$mntdir ) 2>&1 | tee /proc/self/fd/2 | logger -t 'fstab'
 						echo "/dev/$device /mnt/$mntdir" >> /var/usbmounts
+						[ -n "$mntdir" ] && inform_ice_client
 					;;
 				esac
 			}
@@ -96,6 +106,7 @@ if [ `basename $blkdev` != "block" ]; then
 		umount $mountpoint
 		rm -rf $mountpoint
 		sed -i "/$device/ d" /var/usbmounts
+		[ -n "$device" ] && inform_ice_client
 		;;
     esac	
 

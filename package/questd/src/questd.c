@@ -38,7 +38,7 @@ static struct blob_buf bb;
 static const char *ubus_path;
 
 static Network network[MAX_NETWORK];
-static Client clients[MAX_CLIENT];
+static Client clients[MAX_CLIENT], clients_old[MAX_CLIENT], clients_new[MAX_CLIENT];
 static Router router;
 static Memory memory;
 static Key keys;
@@ -258,10 +258,27 @@ handle_client(Client *clnt)
 }
 
 static void
+inform_ice()
+{
+	FILE *icepid;
+	char pid[8];
+	char commpath[24];
+
+	if ((icepid = fopen("/tmp/ice.pid", "r"))) {
+		fgets(pid, sizeof(pid), icepid);
+		remove_newline(pid);
+		fclose(icepid);
+		sprintf(commpath, "/proc/%s/comm", pid);
+		if (access(commpath, F_OK) == 0)
+			system("read -t 1 <>/tmp/cfout && echo \"system ubusEvent topic=clients\" > /tmp/cfin &");
+	}
+}
+
+static void
 populate_clients()
 {
 	FILE *leases, *arpt;
-	char line[1028];
+	char line[256];
 	int cno = 0;
 	int lno = 0;
 	int hw;
@@ -269,6 +286,8 @@ populate_clients()
 	char mask[32];
 	int i;
 	bool nothere;
+
+	memset(clients_new, '\0', sizeof(clients));
 
 	if ((leases = fopen("/var/dhcp.leases", "r"))) {
 		while(fgets(line, sizeof(line), leases) != NULL)
@@ -318,6 +337,11 @@ populate_clients()
 		if (clients[i].dhcp && !strcmp(clients[cno-1].macaddr, clients[i].macaddr))
 			strcpy(clients[cno-1].hostname, clients[i].hostname);
 	}
+
+	memcpy(&clients_new, &clients, sizeof(clients));
+	if(memcmp(&clients_new, &clients_old, sizeof(clients)))
+		inform_ice();
+	memcpy(&clients_old, &clients_new, sizeof(clients));
 }
 
 static void
