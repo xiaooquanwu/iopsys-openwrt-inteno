@@ -247,6 +247,8 @@ set_wifi_iface() {
 		local eap=0
 		local eap_r=0
 		local auth=0
+		wlctl -i $iface auth 0
+		nvram set "$nif"_auth=0
 		nvram set "$nif"_preauth=0
 		nvram set "$nif"_net_auth_type=1
 		nvram set "$nif"_wep=disabled
@@ -258,7 +260,6 @@ set_wifi_iface() {
 				config_get key "$vif" key
 				case "$enc" in
 					*shared*) wlctl -i $iface auth 1; nvram set "$nif"_auth=1;;
-					*) wlctl -i $iface auth 0; nvram set "$nif"_auth=0;;
 				esac
 				case "$key" in
 					[1234])
@@ -289,7 +290,6 @@ set_wifi_iface() {
 				config_get key "$vif" key
 				config_get gtk "$vif" gtk_rekey
 
-				nvram set "$nif"_auth=0
 				nvram set "$nif"_wpa_gtk_rekey="${gtk:-0}"
 
 				# psk version + default cipher
