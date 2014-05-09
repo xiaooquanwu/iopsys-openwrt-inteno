@@ -263,16 +263,22 @@ set_wifi_iface() {
 				case "$key" in
 					[1234])
 						for knr in 1 2 3 4; do
-							wlctl -i $iface rmwep $(($knr - 1))
+							echo "wlctl -i $iface rmwep $(($knr - 1))" >> /tmp/wepset
 							config_get k "$vif" key$knr
 							[ "$knr" == "$key" ] && qr_key="$k"
 							[ -n "$k" ] || continue
-							wlctl -i $iface addwep $(($knr - 1)) $k
+							echo "wlctl -i $iface addwep $(($knr - 1)) $k" >> /tmp/wepset
 						done
-						wlctl -i $iface primary_key $(($key - 1))
+						echo "wlctl -i $iface primary_key $(($key - 1))" >> /tmp/wepset
 					;;
-					"");;
-					*) wlctl -i $iface addwep 0 $key; wlctl -i $iface primary_key 0; qr_key="$key";;
+					*)
+						if [ -n "$key" ]; then
+							echo "wlctl -i $iface rmwep 0" >> /tmp/wepset
+							echo "wlctl -i $iface addwep 0 $key" >> /tmp/wepset
+							echo "wlctl -i $iface primary_key 0" >> /tmp/wepset
+							qr_key="$key"
+						fi
+					;;
 				esac
 				qr_enc="WEP"
 			;;
@@ -696,8 +702,24 @@ EOF
 
 }
 
-set_tp_id(){
+set_tp_id() {
 	wlctl -i wl1 ap || wlctl -i wl0 tp_id 1
+}
+
+handle_wep() {
+	case "$1" in
+		init)
+			echo "#/bin/sh" > /tmp/wepset
+			chmod u+x /tmp/wepset
+		;;
+		set)
+			# set wepkeys if configured
+			if [ -f /tmp/wepset ]; then
+				sh /tmp/wepset
+				rm /tmp/wepset
+			fi
+		;;
+	esac
 }
 
 # Run all hook functions $2...$N for each config entry $1
@@ -736,8 +758,10 @@ case "$1" in
 		set_tp_id
 		config_foreach set_wifi_down wifi-device $2
 		run_hooks wifi-device $DISABLE_HOOKS
+		handle_wep "init"
 		config_foreach set_wifi_device wifi-device $2
 		run_hooks wifi-device $ENABLE_HOOKS
+		handle_wep "set"
 
 		if [ $_enWifi -gt 0 ]; then
 			ledctl eco off
