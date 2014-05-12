@@ -305,8 +305,8 @@ set_wifi_iface() {
 					*aes*|*ccmp*) wsec=4; nvram set "$nif"_crypto=aes;;
 					*tkip*) wsec=2; nvram set "$nif"_crypto=tkip;;
 				esac
-				nvram set "$nif"_wpa_psk=$key
-				nvram set "$nif"_auth_mode=psk
+				nvram set "$nif"_wpa_psk="$key"
+				nvram set "$nif"_auth_mode="psk"
 				qr_enc="WPA"
 				qr_key="$key"
 			;;
@@ -337,11 +337,11 @@ set_wifi_iface() {
 					*aes*|*ccmp*) wsec=4; nvram set "$nif"_crypto=aes;;
 					*tkip*) wsec=2; nvram set "$nif"_crypto=tkip;;
 				esac
-				nvram set "$nif"_wpa_psk=$key
-				nvram set "$nif"_auth_mode=radius
-				nvram set "$nif"_radius_ipaddr=$rad_serv
+				nvram set "$nif"_wpa_psk="$key"
+				nvram set "$nif"_auth_mode="radius"
+				nvram set "$nif"_radius_ipaddr="$rad_serv"
 				nvram set "$nif"_radius_port="${rad_port:-1812}"
-				nvram set "$nif"_radius_key=$rad_sec
+				nvram set "$nif"_radius_key="$rad_sec"
 				qr_enc="WPA"
 				qr_key="$key"
 			;;
