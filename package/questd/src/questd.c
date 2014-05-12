@@ -496,12 +496,14 @@ static void
 router_dump_clients(struct blob_buf *b)
 {
 	void *t;
+	char clientnum[16];
 	int i;
 
 	for (i = 0; i < MAX_CLIENT; i++) {
 		if (!clients[i].exists)
 			break;
-		t = blobmsg_open_table(b, NULL);
+		sprintf(clientnum, "client-%d", i + 1);
+		t = blobmsg_open_table(b, clientnum);
 		blobmsg_add_string(b, "hostname", clients[i].hostname);
 		blobmsg_add_string(b, "ipaddr", clients[i].hostaddr);
 		blobmsg_add_string(b, "macaddr", clients[i].macaddr);

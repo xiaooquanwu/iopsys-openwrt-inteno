@@ -64,7 +64,7 @@ get_usb_device(char **val, char *mount) {
 		{
 			remove_newline(line);
 			if (sscanf(line, "/dev/%s /mnt/%s", dev, mnt) == 2) {
-				if (!strcmp(mnt, mount)) {
+				if (!strcmp(mnt, mount) || strstr(mount, mnt)) {
 					*val = strdup(dev);
 					break;
 				}
