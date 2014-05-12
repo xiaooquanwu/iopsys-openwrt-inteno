@@ -617,13 +617,16 @@ static void
 network_dump_leases(struct blob_buf *b, char *leasenet)
 {
 	void *t;
+	char leasenum[16];
 	int i;
 
 	for (i = 0; i < MAX_CLIENT; i++) {
 		if (!clients[i].exists)
 			break;
 		if (clients[i].dhcp && !strcmp(clients[i].network, leasenet)) {
-			t = blobmsg_open_table(b, clients[i].leaseno);
+			sprintf(leasenum, "lease-%d", i + 1);
+			t = blobmsg_open_table(b, leasenum);
+			blobmsg_add_string(b, "leaseno", clients[i].leaseno);
 			blobmsg_add_string(b, "hostname", clients[i].hostname);
 			blobmsg_add_string(b, "ipaddr", clients[i].hostaddr);
 			blobmsg_add_string(b, "macaddr", clients[i].macaddr);
@@ -885,7 +888,7 @@ static struct ubus_method router_object_methods[] = {
 	{ .name = "networks", .handler = quest_router_networks },
 	{ .name = "clients", .handler = quest_router_clients },
 	UBUS_METHOD("ports", quest_router_ports, network_policy),
-	UBUS_METHOD("lease", quest_network_leases, network_policy),
+	UBUS_METHOD("leases", quest_network_leases, network_policy),
 	UBUS_METHOD("host", quest_host_status, host_policy),
 	{ .name = "usb", .handler = quest_router_usbs },
 	{ .name = "reload", .handler = quest_reload },
