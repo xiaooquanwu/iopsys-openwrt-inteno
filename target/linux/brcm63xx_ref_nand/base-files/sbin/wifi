@@ -204,10 +204,10 @@ set_wifi_iface() {
 		# create wireless VIFs
 		wlctl -i $device bss -C $_vno down
 		wlctl -i $device bss -C $_vno up
-		wlctl -i $device ssid -C $_vno $ssid
+		wlctl -i $device ssid -C $_vno "$ssid"
 
-		nvram set "$nif"_ifname=$iface
-		nvram set "$nif"_ssid=$ssid
+		nvram set "$nif"_ifname="$iface"
+		nvram set "$nif"_ssid="$ssid"
 
 		# set Mode Radio Infra
 		nvram set "$nif"_mode=ap
@@ -353,7 +353,7 @@ set_wifi_iface() {
 		wlctl -i $iface eap_restrict $eap_r
 
 		# create QR code of the Wi-Fi network
-		create_qr_code $ssid $qr_enc $qr_key $qr_hidden
+		create_qr_code "$ssid" "$qr_enc" "$qr_key" "$qr_hidden"
 
 		# set WPS
 		config_get wps_mode "$vif" wps_pbc
