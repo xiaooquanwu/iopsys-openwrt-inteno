@@ -98,7 +98,7 @@ endef
 define Package/asterisk18-mod-app-meetme
 $(call Package/asterisk18-mod/Default)
   TITLE:=conferencing support
-  DEPENDS:= asterisk18-mod +dahdi-tools-libtonezone +kmod-dahdi-linux
+  DEPENDS:= asterisk18-mod +dahdi-tools-libtonezone +dahdi
 endef
 
 define Package/asterisk18-mod-app-meetme/description
@@ -698,7 +698,7 @@ endef
 $(eval $(call BuildPackage,asterisk18-mod))
 $(eval $(call BuildPackage,asterisk18-mod-voicemail))
 $(eval $(call BuildPackage,asterisk18-mod-sounds))
-#$(eval $(call BuildPackage,asterisk18-mod-app-meetme))
+$(eval $(call BuildPackage,asterisk18-mod-app-meetme))
 $(eval $(call BuildPackage,asterisk18-mod-app-transfer))
 $(eval $(call BuildPackage,asterisk18-mod-app-softhangup))
 $(eval $(call BuildPackage,asterisk18-mod-chan-iax2))
