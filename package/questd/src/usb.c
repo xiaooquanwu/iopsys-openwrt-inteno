@@ -23,14 +23,20 @@
 #include "questd.h"
 
 static void
-replace_space(char *buf)
+remove_space(char *buf)
 {
+	char *newbuf;
 	int i = 0;
+	int j = 0;
+
 	while (buf[i]) {
-		if (buf[i] == ' ')
-			buf[i] = '_';
+		newbuf[j] = buf[i];
+		if (buf[i] != ' ')
+			j++;
 		i++;
 	}
+	newbuf[j] = '\0';
+	strcpy(buf, newbuf);
 }
 
 static void
@@ -112,7 +118,11 @@ dump_usb_info(USB *usb, char *usbno)
 		//get_usb_infos(&usb->speed, usb->no, "speed");
 		get_usb_infos(&usb->maxchild, usb->no, "maxchild");
 		sprintf(usb->mount, "%s%s", usb->vendor, usb->serial);
-		replace_space(usb->mount);
+		remove_space(usb->mount);
+		if(!strcmp(usb->mount, usb->serial)) {
+			sprintf(usb->mount, "%s%s", usb->product, usb->serial);
+			remove_space(usb->mount);
+		}
 		get_usb_device(&usb->device, usb->mount);
 		get_usb_size(&usb->size, usb->device);
 	}

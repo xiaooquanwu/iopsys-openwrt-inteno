@@ -27,8 +27,10 @@ if [ `basename $blkdev` != "block" ]; then
     case "$usbno" in
 	*:*) usbno=$(echo $DEVPATH | awk -F'/' '{print$6}') ;;
     esac
-    mnfct=$(cat /sys/bus/usb/devices/$usbno/manufacturer)
-    serial=$(cat /sys/bus/usb/devices/$usbno/serial)
+    mnfct="$(cat /sys/bus/usb/devices/$usbno/manufacturer | sed 's/ //g')"
+    prdct="$(cat /sys/bus/usb/devices/$usbno/product | sed 's/ //g')"
+    mnthd="${mnfct:-$prdct}"
+    serial="$(cat /sys/bus/usb/devices/$usbno/serial)"
 
     case "$ACTION" in
 	add)
@@ -91,7 +93,7 @@ if [ `basename $blkdev` != "block" ]; then
 				case "$device" in
 					mtdblock*) ;;
 					*)
-						mntdir=$(echo $mnfct$serial | tr ' ' '_')
+						mntdir="$mnthd$serial"
 						( mkdir -p /mnt/$mntdir && mount /dev/$device /mnt/$mntdir -o umask=0 || ntfs-3g /dev/$device /mnt/$mntdir ) 2>&1 | tee /proc/self/fd/2 | logger -t 'fstab'
 						echo "/dev/$device /mnt/$mntdir" >> /var/usbmounts
 						[ -n "$mntdir" ] && inform_ice_client
