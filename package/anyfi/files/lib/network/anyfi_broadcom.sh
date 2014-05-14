@@ -42,7 +42,8 @@ anyfi_broadcom_alloc_iflist() {
 		local wlif=$device.$idx
 
 		# Do the 'wlctl' dance to make the driver assign proper BSSIDs
-		wlctl -i $device ssid -C $idx "dummy" > /dev/null || break
+		wlctl -i $device bss -C $idx up > /dev/null || break
+		wlctl -i $device ssid -C $idx "dummy" > /dev/null
 		wlctl -i $device bss -C $idx up > /dev/null
 		wlctl -i $device bss -C $idx down > /dev/null
 		wlctl -i $device ssid -C $idx "" > /dev/null
