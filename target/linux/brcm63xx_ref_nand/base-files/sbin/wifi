@@ -173,6 +173,19 @@ create_vif() {
 	fi
 }
 
+remove_wlifs_from_dnsmasq_bind_list() {
+	local ifc
+	for ifc in $(uci get dhcp.@dnsmasq[0].interface); do
+		case "$ifc" in
+			wl*)
+				uci del_list dhcp.@dnsmasq[0].interface="$ifc"
+				uci commit dhcp
+				_rstDnsMsq=$(($_rstDnsMsq + 1))
+			;;
+		esac
+	done
+}
+
 dnsmasq_bind_check() {
 	local iface="$1"
 	local network="$2"
@@ -190,19 +203,8 @@ dnsmasq_bind_check() {
 		dnsmasq="1"
 	fi
 
-	for ifc in $(uci get dhcp.@dnsmasq[0].interface); do
-		if [ "$ifc" == "$iface" ]; then
-			found="1"
-			break
-		fi
-	done
-
-	if [ "$found" == "0" ] && [ "$dnsmasq" == "1" ] ; then
+	if [ "$dnsmasq" == "1" ] ; then
 		uci add_list dhcp.@dnsmasq[0].interface="$iface"
-		uci commit dhcp
-		_rstDnsMsq=$(($_rstDnsMsq + 1))
-	elif [ "$found" == "1" ] && [ "$dnsmasq" != "1" ]; then
-		uci del_list dhcp.@dnsmasq[0].interface="$iface"
 		uci commit dhcp
 		_rstDnsMsq=$(($_rstDnsMsq + 1))
 	fi
@@ -772,6 +774,11 @@ handle_wep() {
 	esac
 }
 
+# restart dnsmasq if necessary
+restart_dnsmasq() {
+	[ $_rstDnsMsq -gt 0 ] && ps | pgrep dnsmasq >/dev/null && /etc/init.d/dnsmasq restart &
+}
+
 # Run all hook functions $2...$N for each config entry $1
 run_hooks() {
 	local arg="$1"; shift
@@ -789,6 +796,9 @@ killall -15 wps_monitor 2>/dev/null
 # remove all QR code images
 rm -f /www/luci-static/resources/icons/wqr_*
 
+# remove wireless interfaces from dnsmasq bind interface list
+remove_wlifs_from_dnsmasq_bind_list
+
 # clean NVRAM parameters and set debug mode
 sed -i '/option/ d' /etc/config/broadcom
 nvram set init=1
@@ -803,6 +813,7 @@ case "$1" in
 	down)
 		config_foreach set_wifi_down wifi-device $2
 		run_hooks wifi-device $DISABLE_HOOKS
+		restart_dnsmasq
 	;;
 	*)
 		set_tp_id
@@ -811,9 +822,7 @@ case "$1" in
 		handle_wep "init"
 		config_foreach set_wifi_device wifi-device $2
 		handle_wep "set"
-
-		# restart dnsmasq if necessary
-		[ $_rstDnsMsq -gt 0 ] && ps | pgrep dnsmasq >/dev/null && /etc/init.d/dnsmasq restart &
+		restart_dnsmasq
 
 		if [ $_enWifi -gt 0 ]; then
 			ledctl eco off
