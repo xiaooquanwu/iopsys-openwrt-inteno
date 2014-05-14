@@ -7,6 +7,7 @@ DISABLE_HOOKS=
 . /usr/share/libubox/jshn.sh
 . /lib/network/ebtables.sh
 [ -f /lib/network/anyfi.sh ] && . /lib/network/anyfi.sh
+[ -f /lib/network/anyfi_broadcom.sh ] && . /lib/network/anyfi_broadcom.sh
 
 exec >/dev/null 2>&1
 

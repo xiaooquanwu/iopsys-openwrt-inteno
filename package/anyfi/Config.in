@@ -1,0 +1,7 @@
+config ANYFI_CONTROLLER
+	string "Controller IP or FQDN"
+	depends PACKAGE_anyfi
+	help
+	  The default IP address or fully qualified domain name (FQDN)
+	  of the Controller that should manage the Anyfi.net software.
+
