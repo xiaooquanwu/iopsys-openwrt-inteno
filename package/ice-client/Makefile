@@ -15,14 +15,14 @@ export PLATFORM_INCLUDE:=platforms/iopsys/build.mk
 
 export DATE:=$(shell date +%Y-%m-%d-%H-%M-%S)
 export LOGIN:=$(shell whoami)
-BASE_PKG_VERSION:=2.9.5
-PKG_RELEASE:=RC5
+BASE_PKG_VERSION:=2.9.6
+PKG_RELEASE:=RC1
 PKG_VERSION:=$(BASE_PKG_VERSION)-$(PKG_RELEASE)_$(DATE)_$(LOGIN)
 
 ###########################--RELEASE--################################
 
 PKG_SOURCE_URL:=ssh://git@iopsys.inteno.se/ice-client.git
-PKG_SOURCE_VERSION:=ec157f81dad22aec407c2fd75efab9a90290ec53
+PKG_SOURCE_VERSION:=4377183e6edcc5f8c187ae465038f54a65a213c2
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(BASE_PKG_VERSION)
 PKG_SOURCE:=$(PKG_NAME)-$(BASE_PKG_VERSION)-$(PKG_RELEASE).tar.gz
 
@@ -69,6 +69,7 @@ endef
 #define Build/Prepare
 #	rm -rf $(PKG_BUILD_DIR)
 #	ln -s /home/erik/Desktop/cloned_inteno_cfmod/iopsys-client $(PKG_BUILD_DIR)
+#	$(MAKE) -C $(PKG_BUILD_DIR) config
 #endef
 
 ###########################--DEVELOPMENT--################################
@@ -84,7 +85,6 @@ endef
 # directory) to the install directory.
 
 define Build/Configure
-	$(MAKE) -C $(PKG_BUILD_DIR) config
 	echo $(BASE_PKG_VERSION)-$(PKG_RELEASE) > $(PKG_BUILD_DIR)/core/version.txt
 	echo $(DATE) > $(PKG_BUILD_DIR)/core/date.txt
 	echo $(LOGIN) > $(PKG_BUILD_DIR)/core/login.txt
@@ -520,6 +520,61 @@ fi
 exit 0
 endef
 
+# example
+define Package/ice-client-example
+  $(call Package/ice-client/Default)
+  TITLE:=example
+  DEPENDS+= 
+endef
+
+define Package/ice-client-example/description
+example module for ice-client
+endef
+
+define Package/ice-client-example/prerm
+#!/bin/sh
+if [ -z "$${IPKG_INSTROOT}" ]; then
+	PROC_ID=$$(cat /tmp/ice.pid)
+	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
+	if [  $$PROC_EXISTS ]; then
+	  read -t 1 <>/tmp/cfout
+	  echo "system moduleRemove topic=example" > /tmp/cfin
+	fi
+fi
+exit 0
+endef
+
+define Package/ice-client-example/preinst
+#!/bin/sh
+if [ -z "$${IPKG_INSTROOT}" ]; then
+	PROC_ID=$$(cat /tmp/ice.pid)
+	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
+	if [  $$PROC_EXISTS ]; then
+	  read -t 1 <>/tmp/cfout
+	  echo "system moduleRemove topic=example" > /tmp/cfin
+	fi
+fi
+exit 0
+endef
+
+define Package/ice-client-example/install
+	$(INSTALL_DIR) $(1)/usr/lib
+	$(CP) $(PKG_BUILD_DIR)/core/lib/exampleService.so.1.0.1 $(1)/usr/lib
+endef
+
+define Package/ice-client-example/postinst
+#!/bin/sh
+if [ -z "$${IPKG_INSTROOT}" ]; then
+	PROC_ID=$$(cat /tmp/ice.pid)
+	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
+	if [  $$PROC_EXISTS ]; then
+	  read -t 1 <>/tmp/cfout
+	  echo "system moduleAdd file=exampleService.so.1.0.1" > /tmp/cfin
+	fi
+fi
+exit 0
+endef
+
 
 # This line executes the necessary commands to compile our program.
 # The above define directives specify all the information needed, but this
@@ -533,3 +588,4 @@ $(eval $(call BuildPackage,ice-client-anyfi))
 $(eval $(call BuildPackage,ice-client-netrounds))
 $(eval $(call BuildPackage,ice-client-logreader))
 $(eval $(call BuildPackage,ice-client-fileme))
+$(eval $(call BuildPackage,ice-client-example))
