@@ -12,6 +12,7 @@ exec >/dev/null 2>&1
 
 local _enWifi=0
 local _enWps=0
+local _rstDnsMsq=0
 local _vno=0
 local _cno=0
 local acsifs=""
@@ -151,13 +152,59 @@ set_wifi_up() {
 create_vif() {
 	local vif="$1"
 	local device
+	local iface
 
 	config_get device "$vif" device
 
 	if [ "$2" == "$device" ]; then
 		wlctl -i $device bss -C $_cno down
 		wlctl -i $device ssid -C $_cno ""
+
+		[ $_cno -eq 0 ] && iface="$device" || iface="$device"."$_cno"
+		for ifc in $(uci get dhcp.@dnsmasq[0].interface); do
+			if [ "$ifc" == "$iface" ]; then
+				uci del_list dhcp.@dnsmasq[0].interface="$iface"
+				uci commit dhcp
+				_rstDnsMsq=$(($_rstDnsMsq + 1))
+				break
+			fi
+		done
 		_cno=$(($_cno + 1))
+	fi
+}
+
+dnsmasq_bind_check() {
+	local iface="$1"
+	local network="$2"
+	local dnsmasq="0"
+	local bridged="0"
+	local dhcpnet="0"
+	local nwldcrd="$(uci get dhcp.@dnsmasq[0].nonwildcard)"
+	local dnsbind="${nwldcrd:-0}"
+	local found="0"
+
+	[ "$(uci get network.$network.type)" == "bridge" ] && bridged="1"
+	uci -q get dhcp.$network >/dev/null && dhcpnet="1"
+
+	if [ "$bridged" == "0" ] && [ "$dhcpnet" == "1" ] ; then
+		dnsmasq="1"
+	fi
+
+	for ifc in $(uci get dhcp.@dnsmasq[0].interface); do
+		if [ "$ifc" == "$iface" ]; then
+			found="1"
+			break
+		fi
+	done
+
+	if [ "$found" == "0" ] && [ "$dnsmasq" == "1" ] ; then
+		uci add_list dhcp.@dnsmasq[0].interface="$iface"
+		uci commit dhcp
+		_rstDnsMsq=$(($_rstDnsMsq + 1))
+	elif [ "$found" == "1" ] && [ "$dnsmasq" != "1" ]; then
+		uci del_list dhcp.@dnsmasq[0].interface="$iface"
+		uci commit dhcp
+		_rstDnsMsq=$(($_rstDnsMsq + 1))
 	fi
 }
 
@@ -394,6 +441,9 @@ set_wifi_iface() {
 			nvram set "$nif"_bss_enabled=1
 			wlctl -i $iface bss up
 		fi
+
+		# check if dnsmasq should bind to this interface
+		dnsmasq_bind_check $iface $network
 
 		_vno=$(($_vno + 1))
 	fi
@@ -760,8 +810,10 @@ case "$1" in
 		run_hooks wifi-device $DISABLE_HOOKS
 		handle_wep "init"
 		config_foreach set_wifi_device wifi-device $2
-		run_hooks wifi-device $ENABLE_HOOKS
 		handle_wep "set"
+
+		# restart dnsmasq if necessary
+		[ $_rstDnsMsq -gt 0 ] && ps | pgrep dnsmasq >/dev/null && /etc/init.d/dnsmasq restart &
 
 		if [ $_enWifi -gt 0 ]; then
 			ledctl eco off
@@ -772,6 +824,9 @@ case "$1" in
 
 		# map all interfaces to corresponding networks by nvram parameters
 		map_networks
+
+		# start anyfi daemons
+		run_hooks wifi-device $ENABLE_HOOKS
 
 		# start related daemons
 		eapd
