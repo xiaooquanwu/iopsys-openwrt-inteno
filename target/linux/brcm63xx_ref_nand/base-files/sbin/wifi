@@ -193,17 +193,20 @@ dnsmasq_bind_check() {
 	local dnsmasq="0"
 	local bridged="0"
 	local dhcpnet="0"
-	local nwldcrd="$(uci get dhcp.@dnsmasq[0].nonwildcard)"
-	local dnsbind="${nwldcrd:-0}"
+	local dhcpat="$(uci -q get dhcp.$network)"
+	local dhcpignr="$(uci -q get dhcp.$network.ignore)"
+	local nwldcrd="$(uci -q get dhcp.@dnsmasq[0].nonwildcard)"
 	local found="0"
 
-	[ "$(uci get network.$network.type)" == "bridge" ] && bridged="1"
-	uci -q get dhcp.$network >/dev/null && dhcpnet="1"
-
-	if [ "$bridged" == "0" ] && [ "$dhcpnet" == "1" ] ; then
+	if [ "$(uci get network.$network.type)" == "bridge" ]; then
+		bridged="1"
+	fi
+	if [ -n "$dhcpat" ] && [ "$dhcpignr" != "1" ]; then
+		dhcpnet="1"
+	fi
+	if [ "$bridged" == "0" ] && [ "$dhcpnet" == "1" ] && [ "$nwldcrd" == "1" ]; then
 		dnsmasq="1"
 	fi
-
 	if [ "$dnsmasq" == "1" ] ; then
 		uci add_list dhcp.@dnsmasq[0].interface="$iface"
 		uci commit dhcp
