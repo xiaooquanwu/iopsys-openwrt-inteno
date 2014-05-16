@@ -37,7 +37,7 @@ proto_dhcp_setup() {
 	[ -n "$iface6rd" ] && proto_export "IFACE6RD=$iface6rd"
 
 	proto_export "INTERFACE=$config"
-	proto_run_command "$config" udhcpc \
+	proto_run_command "$config" udhcpc -R \
 		-p /var/run/udhcpc-$iface.pid \
 		-s /lib/netifd/dhcp.script \
 		-f -t 0 -i "$iface" \
