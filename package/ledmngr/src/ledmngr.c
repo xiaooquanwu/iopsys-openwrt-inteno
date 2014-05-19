@@ -291,7 +291,7 @@ static int init_i2c()
     }
 
     if (ioctl(i2c_dev->dev, I2C_SLAVE, i2c_dev->addr) < 0) {
-        syslog(LOG_INFO,"%s: could not sett address for i2c chip\n",__func__);
+        syslog(LOG_INFO,"%s: could not set address for i2c chip\n",__func__);
         goto error;
     }
     if (ioctl(i2c_dev->dev, I2C_FUNCS, &funcs) < 0) {
@@ -367,18 +367,18 @@ int check_i2c(struct i2c_dev *i2c_dev)
 
         ret = i2c_smbus_read_byte_data(i2c_dev->dev, SX9512_IRQSRC);
         if (ret < 0 )
-            syslog(LOG_ERR, "Could not readfrom i2c device, irq status register\n");
+            syslog(LOG_ERR, "Could not read from i2c device, irq status register\n");
         i2c_dev->shadow_irq = ret;
 
         ret = i2c_smbus_read_byte_data(i2c_dev->dev, SX9512_TOUCHSTATUS);
         if (ret < 0 )
-            syslog(LOG_ERR, "Could not readfrom i2c device, thouch register\n");
+            syslog(LOG_ERR, "Could not read from i2c device, touch register\n");
         i2c_dev->shadow_touch = ret;
 
 
         ret = i2c_smbus_read_byte_data(i2c_dev->dev, SX9512_PROXSTATUS);
         if (ret < 0 )
-            syslog(LOG_ERR, "Could not readfrom i2c device,proximity register\n");
+            syslog(LOG_ERR, "Could not read from i2c device, proximity register\n");
         i2c_dev->shadow_proximity = ret;
 
 #if 0
@@ -469,7 +469,7 @@ void i2c_led_set( struct led_config* lc, int state){
     else if (state == OFF)
         ret = ret & ~bit;
     else{
-        DEBUG_PRINT("Led %s: Set to not suported state %d\n",lc->name, state);
+        DEBUG_PRINT("Led %s: Set to not supported state %d\n",lc->name, state);
         return;
     }
 
