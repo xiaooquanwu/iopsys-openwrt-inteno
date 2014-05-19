@@ -355,13 +355,12 @@ int check_i2c(struct i2c_dev *i2c_dev)
     if (!i2c_dev->dev)
         return -1;
 
-    if (i2c_dev->irq_button){
+    if (i2c_dev->irq_button) {
         int button;
         button = board_ioctl(fd, BOARD_IOCTL_GET_GPIO, 0, 0, NULL, i2c_dev->irq_button, 0);
         if (button == 0)
             got_irq = 1;
     }
-
 
     if ( got_irq ) {
 
@@ -1027,13 +1026,13 @@ static int led_set_method(struct ubus_context *ubus_ctx, struct ubus_object *obj
 		      struct ubus_request_data *req, const char *method,
 		      struct blob_attr *msg)
 {
-	struct blob_attr *tb[__LED_MAX];
+    struct blob_attr *tb[__LED_MAX];
     char* state;
-	DEBUG_PRINT("led_set_method (%s)\n",method);
+    DEBUG_PRINT("led_set_method (%s)\n",method);
 
-	blobmsg_parse(led_policy, ARRAY_SIZE(led_policy), tb, blob_data(msg), blob_len(msg));
+    blobmsg_parse(led_policy, ARRAY_SIZE(led_policy), tb, blob_data(msg), blob_len(msg));
 
-	if (tb[LED_STATE]) {
+    if (tb[LED_STATE]) {
         char *fn_name = strchr(obj->name, '.') + 1;
 		state = blobmsg_data(tb[LED_STATE]);
 //    	fprintf(stderr, "Led %s method: %s state %s\n", fn_name, method, state);
@@ -1041,27 +1040,27 @@ static int led_set_method(struct ubus_context *ubus_ctx, struct ubus_object *obj
         set_function_led(led_cfg, fn_name, state);
     }
 
-	return 0;
+    return 0;
 }
 
 
 static void led_status_reply(struct uloop_timeout *t)
 {
-	struct hello_request *req = container_of(t, struct hello_request, timeout);
-	DEBUG_PRINT("\n");
+    struct hello_request *req = container_of(t, struct hello_request, timeout);
+    DEBUG_PRINT("\n");
 
-	blob_buf_init(&b, 0);
-	blobmsg_add_string(&b, "state", req->data);
-	ubus_send_reply(ubus_ctx, &req->req, b.head);
-	ubus_complete_deferred_request(ubus_ctx, &req->req, 0);
-	free(req);
+    blob_buf_init(&b, 0);
+    blobmsg_add_string(&b, "state", req->data);
+    ubus_send_reply(ubus_ctx, &req->req, b.head);
+    ubus_complete_deferred_request(ubus_ctx, &req->req, 0);
+    free(req);
 }
 
 static int led_status_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
 		      struct ubus_request_data *req, const char *method,
 		      struct blob_attr *msg)
 {
-	struct hello_request *hreq;
+    struct hello_request *hreq;
     int action, i, led_fn_idx=0;
     char *fn_name = strchr(obj->name, '.') + 1;
 
@@ -1075,13 +1074,13 @@ static int led_status_method(struct ubus_context *ubus_ctx, struct ubus_object *
 
     DEBUG_PRINT( "Led %s method: %s action %d\n", fn_name, method, action);
 
-	hreq = calloc(1, sizeof(*hreq) +  100);
-	sprintf(hreq->data, "%s", fn_actions[action]);
-	ubus_defer_request(ubus_ctx, req, &hreq->req);
-	hreq->timeout.cb = led_status_reply;
-	uloop_timeout_set(&hreq->timeout, 1000);
+    hreq = calloc(1, sizeof(*hreq) +  100);
+    sprintf(hreq->data, "%s", fn_actions[action]);
+    ubus_defer_request(ubus_ctx, req, &hreq->req);
+    hreq->timeout.cb = led_status_reply;
+    uloop_timeout_set(&hreq->timeout, 1000);
 
-	return 0;
+    return 0;
 }
 
 
@@ -1089,15 +1088,15 @@ static int leds_set_method(struct ubus_context *ubus_ctx, struct ubus_object *ob
 		      struct ubus_request_data *req, const char *method,
 		      struct blob_attr *msg)
 {
-	struct blob_attr *tb[__LED_MAX];
+    struct blob_attr *tb[__LED_MAX];
     char* state;
     int i,j;
-	DEBUG_PRINT("\n");
+    DEBUG_PRINT("\n");
 
-	blobmsg_parse(led_policy, ARRAY_SIZE(led_policy), tb, blob_data(msg), blob_len(msg));
+    blobmsg_parse(led_policy, ARRAY_SIZE(led_policy), tb, blob_data(msg), blob_len(msg));
 
-	if (tb[LED_STATE]) {
-		state = blobmsg_data(tb[LED_STATE]);
+    if (tb[LED_STATE]) {
+	state = blobmsg_data(tb[LED_STATE]);
 
         for (i=0 ; i<LEDS_MAX ; i++) {
             if (!strcasecmp(state, leds_states[i]))
@@ -1187,12 +1186,12 @@ static struct ubus_object led_objects[LED_OBJECTS] = {
 
 static void server_main(struct leds_configuration* led_cfg)
 {
-	int ret, i;
+    int ret, i;
 
     for (i=0 ; i<LED_OBJECTS ; i++) {
-	    ret = ubus_add_object(ubus_ctx, &led_objects[i]);
-	    if (ret)
-		    DEBUG_PRINT("Failed to add object: %s\n", ubus_strerror(ret));
+	ret = ubus_add_object(ubus_ctx, &led_objects[i]);
+	if (ret)
+	    DEBUG_PRINT("Failed to add object: %s\n", ubus_strerror(ret));
     }
 
 
@@ -1200,7 +1199,7 @@ static void server_main(struct leds_configuration* led_cfg)
 
     uloop_timeout_set(&i2c_reset_timer, I2C_RESET_TIME);
 
-	uloop_run();
+    uloop_run();
 }
 
 
@@ -1291,7 +1290,7 @@ static int load_cfg_file()
 }
 
 int ledmngr(void) {
-	const char *ubus_socket = NULL;
+    const char *ubus_socket = NULL;
 
     open_ioctl();
 
@@ -1306,25 +1305,25 @@ int ledmngr(void) {
     butt_cfg = get_button_config();
 
     /* initialize ubus */
-	DEBUG_PRINT("initialize ubus\n");
+    DEBUG_PRINT("initialize ubus\n");
 
-	uloop_init();
+    uloop_init();
 
-	ubus_ctx = ubus_connect(ubus_socket);
-	if (!ubus_ctx) {
-		DEBUG_PRINT("Failed to connect to ubus\n");
-		return -1;
-	}
+    ubus_ctx = ubus_connect(ubus_socket);
+    if (!ubus_ctx) {
+	DEBUG_PRINT("Failed to connect to ubus\n");
+	return -1;
+    }
 
-	ubus_add_uloop(ubus_ctx);
+    ubus_add_uloop(ubus_ctx);
 
-	server_main(led_cfg);
+    server_main(led_cfg);
 
     //all_leds_test(led_cfg);
 
-	ubus_free(ubus_ctx);
-	uloop_done();
+    ubus_free(ubus_ctx);
+    uloop_done();
 
-	return 0;
+    return 0;
 }
 
