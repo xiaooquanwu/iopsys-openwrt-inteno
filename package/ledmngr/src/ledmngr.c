@@ -246,7 +246,7 @@ struct i2c_dev{
 struct i2c_dev i2c_dev_list[] = {
     {.addr = 0x2b,
      .name = "cg300",
-     .irq_button = 35,
+     .irq_button = 1,
      .init_tab = i2c_init_tab_cg300,
      .init_tab_len = sizeof(i2c_init_tab_cg300)/sizeof(struct i2c_reg_tab),
     }
