@@ -214,21 +214,22 @@ struct i2c_reg_tab i2c_init_tab_cg300[]={
                                           {0x1B, 0x00, 0x00 },      /* Disable BL7 as power button */
                                           {0x1E, 0x0F, 0x00 },      /* Cap sens enabled, bl0-bl3 */
                                           {0x1F, 0x43, 0x00 },      /* Cap sens BL0 */
-                                          {0x20, 0x40, 0x07 },      /* Cap sens range  20-27 BL1->BL7 */
+                                          {0x20, 0x43, 0x07 },      /* Cap sens range  20-27 BL1->BL7 */
                                           {0x28, 0x02, 0x00 },      /* Cap sens thresh BL 0  */
-                                          {0x29, 0x10, 0x07 },      /* Cap sens thresh 28-30 */
+                                          {0x29, 0x04, 0x07 },      /* Cap sens thresh 28-30 */
                                           {0x31, 0x54, 0x00 },      /* Cap sens Op */
-                                          {0x32, 0x3B, 0x00 },      /* Cap Sens Mode KEN_BUG? */
+                                          {0x32, 0x70, 0x00 },      /* Cap Sens Mode, filter 1-1/8, report all */
                                           {0x33, 0x01, 0x00 },      /* Cap Sens Debounce */
                                           {0x34, 0x80, 0x00 },      /* Cap Sens Neg Comp Thresh */
                                           {0x35, 0x80, 0x00 },      /* Cap Sens Pos Comp Thresh */
-                                          {0x36, 0x15, 0x00 },      /* Cap Sens Pos Filt */
-                                          {0x37, 0x12, 0x00 },      /* Cap Sens Neg Filt */
+                                          {0x36, 0x17, 0x00 },      /* Cap Sens Pos Filt, hyst 2, debounce 4, 1-1/128 */
+                                          {0x37, 0x15, 0x00 },      /* Cap Sens Neg Filt, hyst 2, debounce 4, 1-1/32 */
                                           {0x38, 0x00, 0x00 },      /* Cap Sens */
                                           {0x39, 0x00, 0x00 },      /* Cap Sens Frame Skip  */
                                           {0x3A, 0x00, 0x00 },      /* Cap Sens Misc  */
                                           {0x3B, 0x00, 0x00 },      /* Prox Comb Chan Mask */
-                                          {0x3E, 0xFF, 0x00 }       /* SPO Chan Map */
+                                          {0x3E, 0xFF, 0x00 },      /* SPO Chan Map */
+                                          {0x00, 0x04, 0x00 },      /* Trigger compensation */
 };
 
 struct i2c_dev{
