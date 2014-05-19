@@ -46,10 +46,6 @@
 ./scripts/feeds install libpcre
 ./scripts/feeds install libxml2
 ./scripts/feeds install lighttpd
-./scripts/feeds install jansson
-./scripts/feeds install mosquitto
-./scripts/feeds install libmosquitto
-./scripts/feeds install mosquitto-client
 ./scripts/feeds install python
 ./scripts/feeds install openswan
 ./scripts/feeds install libgmp
@@ -57,3 +53,5 @@
 ./scripts/feeds install wget
 ./scripts/feeds install xxd
 ./scripts/feeds install xl2tpd
+
+
