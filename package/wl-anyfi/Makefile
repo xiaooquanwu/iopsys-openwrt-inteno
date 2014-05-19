@@ -2,7 +2,7 @@ include $(TOPDIR)/rules.mk
 include $(INCLUDE_DIR)/kernel.mk
 
 PKG_NAME    := wl-anyfi
-PKG_VERSION := 6.37.14.4803.cpe4.14L04.0-anyfi1.2
+PKG_VERSION := 6.37.14.4803.cpe4.14L04.0-anyfi1.3
 PKG_RELEASE := 1
 
 PKG_BUILD_DIR := $(BUILD_DIR)/wl-$(PKG_VERSION)
