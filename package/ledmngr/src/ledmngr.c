@@ -59,68 +59,68 @@ extern int daemonize;
 #define SR_MAX 16
 #define MAX_BUTTON 10
 
-enum {
+typedef enum {
     OFF,
     ON,
     BLINK_SLOW,
     BLINK_FAST,
     LED_STATES_MAX,
-};
+} led_state_t;
 
-enum {
+typedef enum {
     RED,
     GREEN,
     BLUE,
     YELLOW,
-};
+} led_color_t;
 
-enum {
+typedef enum {
     GPIO,
     LEDCTL,
     SHIFTREG2,
     SHIFTREG3,
     I2C,
-};
+} led_type_t;
 
 typedef enum {
     ACTIVE_HIGH,
     ACTIVE_LOW,
-}button_active_t;
+} button_active_t;
 
-enum {
+typedef enum {
     LED_OK,
     LED_NOTICE,
     LED_ALERT,
     LED_ERROR,
     LED_OFF,
     LED_ACTION_MAX,
-};
+} led_action_t;
 
-enum {
+typedef enum {
     LEDS_NORMAL,
     LEDS_INFO,
     LEDS_TEST,
     LEDS_PROD,
     LEDS_RESET,
     LEDS_MAX,
-};
+} leds_state_t;
 
 struct led_config {
     /* Configuration */
-    char*   name;
-    char*   function;
-    int     color;
-    int     type;
-    int     address;
+    char*	name;
+    char*	function;
+    led_color_t	color;
+    led_type_t	type;
+    int		address;
     button_active_t active;
     /* State */
-    int     state;
-    int     blink_state;
+    led_state_t	state;
+    int		blink_state;
 } led_config;
 
 struct led_action {
-    int     led_index;
-    int     led_state;
+    int		led_index;
+    led_state_t	led_state;
 } led_action;
 
 struct led_map {
@@ -142,7 +142,7 @@ struct leds_configuration {
     int shift_register_state[SR_MAX];
     int led_fn_action[LED_FUNCTIONS];
     struct led_map led_map_config[LED_FUNCTIONS][LED_ACTION_MAX];
-    int leds_state;
+    leds_state_t leds_state;
     int test_state;
 };
 
@@ -479,7 +479,7 @@ void i2c_led_set( struct led_config* lc, int state){
 
 }
 
-static int add_led(struct leds_configuration* led_cfg, char* led_name, const char* led_config, int color) {
+static int add_led(struct leds_configuration* led_cfg, char* led_name, const char* led_config, led_color_t color) {
 
     if (!led_config) {
 //        printf("Led %s: not configured\n",led_name);
@@ -770,7 +770,7 @@ static int led_set(struct leds_configuration* led_cfg, int led_idx, int state) {
     return 0;
 }
 
-static void led_set_state(struct leds_configuration* led_cfg, int led_idx, int state) {
+static void led_set_state(struct leds_configuration* led_cfg, int led_idx, led_state_t state) {
     struct led_config* lc;
 
     if ((led_idx == -1) || (led_idx > led_cfg->leds_nr-1)) {
