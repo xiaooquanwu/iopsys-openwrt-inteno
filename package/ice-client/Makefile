@@ -15,8 +15,8 @@ export PLATFORM_INCLUDE:=platforms/iopsys/build.mk
 
 export DATE:=$(shell date +%Y-%m-%d-%H-%M-%S)
 export LOGIN:=$(shell whoami)
-BASE_PKG_VERSION:=2.9.6
-PKG_RELEASE:=RC3
+BASE_PKG_VERSION:=2.9.7
+PKG_RELEASE:=RC1
 PKG_VERSION:=$(BASE_PKG_VERSION)-$(PKG_RELEASE)_$(DATE)_$(LOGIN)
 
 ###########################--RELEASE--################################
@@ -116,6 +116,7 @@ define Package/ice-client/install
 	$(CP) $(PKG_BUILD_DIR)/scripts/server.ini $(1)/etc/cloudfriends	
 	$(CP) $(PKG_BUILD_DIR)/scripts/modify.ini $(1)/etc/cloudfriends
 	$(CP) $(PKG_BUILD_DIR)/scripts/*.crt $(1)/etc/cloudfriends
+	$(CP) $(PKG_BUILD_DIR)/scripts/*.cer $(1)/etc/cloudfriends
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(CP) $(PKG_BUILD_DIR)/scripts/ice-client $(1)/etc/init.d/ice-client
 	$(INSTALL_DIR) $(1)/etc/uci-defaults
