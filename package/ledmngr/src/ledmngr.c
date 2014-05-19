@@ -113,6 +113,7 @@ struct led_config {
     led_type_t	type;
     int		address;
     button_active_t active;
+    int		use_proximity;
     /* State */
     led_state_t	state;
     int		blink_state;
@@ -144,6 +145,8 @@ struct leds_configuration {
     struct led_map led_map_config[LED_FUNCTIONS][LED_ACTION_MAX];
     leds_state_t leds_state;
     int test_state;
+    /* Number of blink_handler ticks the buttons should stay lit up */
+    unsigned long proximity_timer;
 };
 
 struct button_config {
@@ -512,6 +515,12 @@ static int add_led(struct leds_configuration* led_cfg, char* led_name, const cha
             DEBUG_PRINT("Too many leds configured! Only adding the %d first\n", MAX_LEDS);
             return -1;
         }
+        /* FIXME: Add to configuration file? */
+        if (!strncmp(lc->name, "WAN_", 4) || !strncmp(lc->name, "Status_", 7))
+            lc->use_proximity = 0;
+        else
+            lc->use_proximity = 1;
+
         led_cfg->leds[led_cfg->leds_nr] = lc;
         led_cfg->leds_nr++;
         return 0;
@@ -648,6 +657,7 @@ static struct leds_configuration* get_led_config(void) {
 
     led_cfg->leds_state = LEDS_NORMAL;
     led_cfg->test_state = 0;
+    led_cfg->proximity_timer = 0;
 
     /* Turn off all leds */
     DEBUG_PRINT("Turn off all leds\n");
@@ -813,7 +823,8 @@ void blink_led(struct leds_configuration* led_cfg, int state) {
     int i;
     for (i=0 ; i<led_cfg->leds_nr ; i++) {
         struct led_config* lc = led_cfg->leds[i];
-        if (lc->state == state) {
+        if (lc->state == state
+            && (!lc->use_proximity || led_cfg->proximity_timer)) {
             //printf("Blinking %s\n", lc->name);
             led_set(led_cfg, i, lc->blink_state?0:1);
         }
@@ -931,10 +942,21 @@ static void blink_handler(struct uloop_timeout *timeout)
 {
     cnt++;
 
+    if (led_cfg->proximity_timer)
+        led_cfg->proximity_timer--;
+
     if (led_cfg->leds_state == LEDS_TEST) {
         if (!(cnt%3))
             leds_test(led_cfg);
     } else if (led_cfg->leds_state == LEDS_NORMAL){
+        if (!led_cfg->proximity_timer) {
+            int i;
+            for (i=0 ; i<led_cfg->leds_nr ; i++) {
+                struct led_config* lc = led_cfg->leds[i];
+                if (lc->use_proximity && lc->blink_state)
+                    led_set(led_cfg, i, 0);
+            }
+        }
         if (!(cnt%4))
             blink_led(led_cfg, BLINK_FAST);
 
@@ -1084,6 +1106,38 @@ static int led_status_method(struct ubus_context *ubus_ctx, struct ubus_object *
     return 0;
 }
 
+static int leds_proximity_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
+				 struct ubus_request_data *req, const char *method,
+				 struct blob_attr *msg)
+{
+    const struct blobmsg_policy proximity_policy[] = {
+	/* FIXME: Can we use an integer type here? */
+	{ .name = "timeout", .type = BLOBMSG_TYPE_STRING, },
+    };
+    struct blob_attr *tb[ARRAY_SIZE(proximity_policy)];
+    blobmsg_parse(proximity_policy, ARRAY_SIZE(proximity_policy),
+		  tb, blob_data(msg), blob_len(msg));
+    if (tb[0]) {
+	const char *digits = blobmsg_data(tb[0]);
+	char *end;
+	unsigned long timeout = strtoul(digits, &end, 10);
+	if (!*digits || *end) {
+	    syslog(LOG_INFO, "Leds proximity method: Invalid timeout %s\n", digits);
+	    return 1;
+	}
+	DEBUG_PRINT ("proximity method: timeout %lu\n", timeout);
+	if (timeout && !led_cfg->proximity_timer) {
+	    int i;
+	    for (i=0 ; i<led_cfg->leds_nr ; i++) {
+		struct led_config* lc = led_cfg->leds[i];
+		if (lc->use_proximity && lc->state)
+		    led_set(led_cfg, i, 1);
+	    }
+	}
+	led_cfg->proximity_timer = 10*timeout;
+    }
+    return 0;
+}
 
 static int leds_set_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
 		      struct ubus_request_data *req, const char *method,
@@ -1157,6 +1211,7 @@ static struct ubus_object_type led_object_type =
 static const struct ubus_method leds_methods[] = {
 	UBUS_METHOD("set", leds_set_method, led_policy),
     { .name = "status", .handler = leds_status_method },
+    { .name = "proximity", .handler = leds_proximity_method },
 };
 
 static struct ubus_object_type leds_object_type =
