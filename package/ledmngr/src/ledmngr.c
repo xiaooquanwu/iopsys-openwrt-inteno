@@ -98,6 +98,7 @@ typedef enum {
 
 typedef enum {
     LEDS_NORMAL,
+    LEDS_PROXIMITY,
     LEDS_INFO,
     LEDS_TEST,
     LEDS_PROD,
@@ -134,7 +135,7 @@ struct led_map {
 static char* fn_actions[LED_ACTION_MAX] = { "ok", "notice", "alert", "error", "off",};
 static char* led_functions[LED_FUNCTIONS] = { "dsl", "wifi", "wps", "lan", "status", "dect", "tv", "usb", "wan", "internet", "voice1", "voice2", "eco", "gbe"};
 static char* led_states[LED_STATES_MAX] = { "off", "on", "blink_slow", "blink_fast" };
-static char* leds_states[LEDS_MAX] = { "normal", "info", "test", "production", "reset" };
+static char* leds_states[LEDS_MAX] = { "normal", "proximity", "info", "test", "production", "reset" };
 
 struct leds_configuration {
     int             leds_nr;
@@ -167,6 +168,8 @@ struct button_configuration {
 static int get_led_index_by_name(struct leds_configuration* led_cfg, char* led_name);
 static int led_set(struct leds_configuration* led_cfg, int led_idx, int state);
 static int board_ioctl(int fd, int ioctl_id, int action, int hex, char* string_buf, int string_buf_len, int offset);
+static void proximity_light(struct leds_configuration* led_cfg);
+static void proximity_dim(struct leds_configuration* led_cfg);
 
 /* register names, from page 29, */
 #define SX9512_IRQSRC			0
@@ -819,12 +822,13 @@ static void all_leds_test(struct leds_configuration* led_cfg) {
 }
 
 
-void blink_led(struct leds_configuration* led_cfg, int state) {
+void blink_led(struct leds_configuration* led_cfg, led_state_t state,
+	       int dimmed) {
     int i;
     for (i=0 ; i<led_cfg->leds_nr ; i++) {
         struct led_config* lc = led_cfg->leds[i];
         if (lc->state == state
-            && (!lc->use_proximity || led_cfg->proximity_timer)) {
+            && (!lc->use_proximity || !dimmed)) {
             //printf("Blinking %s\n", lc->name);
             led_set(led_cfg, i, lc->blink_state?0:1);
         }
@@ -942,37 +946,34 @@ static void blink_handler(struct uloop_timeout *timeout)
 {
     cnt++;
 
-    if (led_cfg->proximity_timer)
+    if (led_cfg->proximity_timer) {
         led_cfg->proximity_timer--;
-
+	if (led_cfg->leds_state == LEDS_PROXIMITY
+	    && !led_cfg->proximity_timer)
+	    proximity_dim(led_cfg);
+    }
     if (led_cfg->leds_state == LEDS_TEST) {
         if (!(cnt%3))
             leds_test(led_cfg);
-    } else if (led_cfg->leds_state == LEDS_NORMAL){
-        if (!led_cfg->proximity_timer) {
-            int i;
-            for (i=0 ; i<led_cfg->leds_nr ; i++) {
-                struct led_config* lc = led_cfg->leds[i];
-                if (lc->use_proximity && lc->blink_state)
-                    led_set(led_cfg, i, 0);
-            }
-        }
-        if (!(cnt%4))
-            blink_led(led_cfg, BLINK_FAST);
-
-        if (!(cnt%8))
-            blink_led(led_cfg, BLINK_SLOW);
     } else if (led_cfg->leds_state == LEDS_PROD) {
         if (!(cnt%16))
             leds_production(led_cfg);
     } else if (led_cfg->leds_state == LEDS_RESET) {
 			leds_reset(led_cfg);
-	}
+    } else if (led_cfg->leds_state != LEDS_INFO) {
+	/* LEDS_NORMAL or LEDS_PROXIMITY */
+	int dimmed = (led_cfg->leds_state == LEDS_PROXIMITY
+		      && !led_cfg->proximity_timer);
+	if (!(cnt%4))
+	    blink_led(led_cfg, BLINK_FAST, dimmed);
 
+	if (!(cnt%8))
+	    blink_led(led_cfg, BLINK_SLOW, dimmed);
+    }
     if (!(cnt%4))
         check_buttons(0);
 
-	uloop_timeout_set(&blink_inform_timer, 100);
+    uloop_timeout_set(&blink_inform_timer, 100);
 
     //printf("Timer\n");
 }
@@ -1027,6 +1028,27 @@ static void set_function_led(struct leds_configuration* led_cfg, char* fn_name, 
     DEBUG_PRINT("end\n");
 }
 
+/* Leds marked with use_proximity are lit up when led_cfg->state ==
+   LEDS_NORMAL or led_cfg->proximity_timer > 0. */
+static void proximity_light(struct leds_configuration* led_cfg)
+{
+    int i;
+    for (i=0 ; i<led_cfg->leds_nr ; i++) {
+	struct led_config* lc = led_cfg->leds[i];
+	if (lc->use_proximity && lc->state)
+	    led_set(led_cfg, i, 1);
+    }
+}
+
+static void proximity_dim(struct leds_configuration* led_cfg)
+{
+    int i;
+    for (i=0 ; i<led_cfg->leds_nr ; i++) {
+	struct led_config* lc = led_cfg->leds[i];
+	if (lc->use_proximity && lc->blink_state)
+	    led_set(led_cfg, i, 0);
+    }
+}
 
 enum {
 	LED_STATE,
@@ -1126,14 +1148,10 @@ static int leds_proximity_method(struct ubus_context *ubus_ctx, struct ubus_obje
 	    return 1;
 	}
 	DEBUG_PRINT ("proximity method: timeout %lu\n", timeout);
-	if (timeout && !led_cfg->proximity_timer) {
-	    int i;
-	    for (i=0 ; i<led_cfg->leds_nr ; i++) {
-		struct led_config* lc = led_cfg->leds[i];
-		if (lc->use_proximity && lc->state)
-		    led_set(led_cfg, i, 1);
-	    }
-	}
+	if (led_cfg->leds_state == LEDS_PROXIMITY
+	    && timeout && !led_cfg->proximity_timer)
+	    proximity_light(led_cfg);
+
 	led_cfg->proximity_timer = 10*timeout;
     }
     return 0;
@@ -1171,12 +1189,20 @@ static int leds_set_method(struct ubus_context *ubus_ctx, struct ubus_object *ob
             all_leds_off(led_cfg);
         }
 
-        if (i == LEDS_NORMAL) {
+        if (i == LEDS_NORMAL || i == LEDS_PROXIMITY) {
             all_leds_off(led_cfg);
             set_function_led(led_cfg, "eco", "off");
             for (j=0 ; j<LED_FUNCTIONS ; j++) {
                 set_function_led(led_cfg, led_functions[j], fn_actions[led_cfg->led_fn_action[j]]);
             }
+	    if (i == LEDS_NORMAL)
+		proximity_light(led_cfg);
+	    else if (i == LEDS_PROXIMITY) {
+		if (led_cfg->proximity_timer)
+		    proximity_light(led_cfg);
+		else
+		    proximity_dim(led_cfg);
+	    }
         }
     }
     else
