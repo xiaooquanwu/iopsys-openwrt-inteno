@@ -914,6 +914,15 @@ static void blink_handler(struct uloop_timeout *timeout);
 static struct uloop_timeout blink_inform_timer = { .cb = blink_handler };
 static unsigned int cnt = 0;
 
+static int button_use_feedback(const struct leds_configuration *led_cfg,
+			       const struct button_config* bc)
+{
+    return (led_cfg->leds_state == LEDS_NORMAL || led_cfg->leds_state == LEDS_PROXIMITY)
+	&& led_cfg->button_feedback_led >= 0
+	/* Touch buttons, excluding proximity. */
+	&& bc->type == I2C && bc->address < 8;
+}
+
 static void check_buttons(int initialize) {
     int button, i;
     struct button_config* bc;
@@ -934,7 +943,10 @@ static void check_buttons(int initialize) {
         if (!initialize) {
             if (button^bc->active) {
                 DEBUG_PRINT("Button %s pressed\n",bc->name);
-                //syslog(LOG_INFO, "Button %s pressed\n",bc->name);
+		if (button_use_feedback(led_cfg, bc))
+		    led_set(led_cfg, led_cfg->button_feedback_led,
+			    !led_cfg->leds[led_cfg->button_feedback_led]->blink_state);
+		//syslog(LOG_INFO, "Button %s pressed\n",bc->name);
                 bc->pressed_state = 1;
                 if(led_cfg->leds_state == LEDS_PROD) {
                     DEBUG_PRINT("Setting %s on\n", bc->feedback_led);
@@ -943,6 +955,14 @@ static void check_buttons(int initialize) {
             }
             if ((!(button^bc->active)) && (bc->pressed_state)) {
                 char str[512] = {0};
+		if (button_use_feedback(led_cfg, bc)) {
+		    if (led_cfg->leds_state == LEDS_PROXIMITY
+			&& led_cfg->proximity_timer)
+			led_set(led_cfg, led_cfg->button_feedback_led, 1);
+		    else
+			led_set(led_cfg, led_cfg->button_feedback_led, -1);
+		}
+
                 if (!(led_cfg->leds_state == LEDS_PROD)) {
                     DEBUG_PRINT("Button %s released, executing hotplug button command: %s\n",bc->name, bc->command);
                     snprintf(str, 512, "ACTION=register INTERFACE=%s /sbin/hotplug-call button &",bc->command);
