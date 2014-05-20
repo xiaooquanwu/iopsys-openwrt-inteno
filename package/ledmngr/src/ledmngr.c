@@ -754,6 +754,8 @@ static void shift_register3_set(struct leds_configuration* led_cfg, int address,
     board_ioctl(fd, BOARD_IOCTL_SET_GPIO, 0, 0, NULL, 23, 1);
 }
 
+/* Sets a led on or off (doesn't handle the blinking states). state ==
+   -1 means update from the led's stored state. */
 static int led_set(struct leds_configuration* led_cfg, int led_idx, int state) {
     struct led_config* lc;
 
@@ -763,6 +765,9 @@ static int led_set(struct leds_configuration* led_cfg, int led_idx, int state) {
     }
 
     lc = led_cfg->leds[led_idx];
+
+    if (state < 0)
+	state = (lc->state != OFF);
 
     //printf("Led index: %d\n", led_idx);
     // DEBUG_PRINT("Led index: %d\n", led_idx);
@@ -1020,10 +1025,12 @@ static void set_function_led(struct leds_configuration* led_cfg, char* fn_name, 
     map = &led_cfg->led_map_config[led_fn_idx][action_idx];
     for (i=0 ; i<map->led_actions_nr ; i++) {
         DEBUG_PRINT("[%d] %d %d\n", map->led_actions_nr,  map->led_actions[i].led_index, map->led_actions[i].led_state);
+
+        led_set_state(led_cfg, map->led_actions[i].led_index,
+		      map->led_actions[i].led_state);
         if (led_cfg->leds_state != LEDS_INFO) {
-            led_set(led_cfg, map->led_actions[i].led_index, map->led_actions[i].led_state);
+            led_set(led_cfg, map->led_actions[i].led_index, -1);
         }
-        led_set_state(led_cfg, map->led_actions[i].led_index, map->led_actions[i].led_state);
     }
     DEBUG_PRINT("end\n");
 }
