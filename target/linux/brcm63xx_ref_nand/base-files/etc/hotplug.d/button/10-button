@@ -48,6 +48,10 @@ case "$ACTION" in
                         ubus call leds set '{ "state": "normal"}'
                 }
         }
+	[ "touch_near" == "$INTERFACE" \
+	    -o "touch_far" == "$INTERFACE" ] && {
+	        ubus call leds proximity '{ "timeout" : "20" }'
+	}
         ;;
         remove|unregister)
         ;;
