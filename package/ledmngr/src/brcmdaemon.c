@@ -17,8 +17,8 @@ void PrintUsage(int argc, char *argv[]) {
     if (argc >=1) {
         printf("Usage: %s -h -n\n", argv[0]);
         printf("  Options: \n");
-        printf("      -ntDon't fork off as a daemon.\n");
-        printf("      -htShow this help screen.\n");
+        printf("      -n\tDon't fork off as a daemon.\n");
+        printf("      -h\tShow this help screen.\n");
         printf("\n");
     }
 }
@@ -43,6 +43,9 @@ void signal_handler(int sig) {
     switch(sig) {
         case SIGHUP:
             syslog(LOG_WARNING, "Received SIGHUP signal.");
+            return;	    
+        case SIGINT:
+            syslog(LOG_WARNING, "Received SIGINT signal.");
             break;
         case SIGTERM:
             syslog(LOG_WARNING, "Received SIGTERM signal.");
@@ -51,6 +54,8 @@ void signal_handler(int sig) {
             syslog(LOG_WARNING, "Unhandled signal (%d)", sig);
             break;
     }
+    syslog(LOG_INFO, "%s daemon exiting", DAEMON_NAME);
+    exit(0);
 }
  
 /**************************************************************************
@@ -93,7 +98,7 @@ int main(int argc, char *argv[]) {
                 break;
             default:
                 PrintUsage(argc, argv);
-                exit(0);
+                exit(1);
                 break;
         }
     }
