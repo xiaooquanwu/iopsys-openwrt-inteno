@@ -160,7 +160,7 @@ struct button_config {
     int     active;
     char*   command;
     int     pressed_state;
-    int     type;
+    led_type_t type;
     char*   feedback_led;
 };
 
