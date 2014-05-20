@@ -50,7 +50,7 @@ case "$ACTION" in
         }
 	[ "touch_near" == "$INTERFACE" \
 	    -o "touch_far" == "$INTERFACE" ] && {
-	        ubus call leds proximity '{ "timeout" : "20" }'
+	        ubus call leds proximity '{ "timeout" : "10" }'
 	}
         ;;
         remove|unregister)
