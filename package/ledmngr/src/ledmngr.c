@@ -1164,7 +1164,8 @@ static int leds_set_method(struct ubus_context *ubus_ctx, struct ubus_object *ob
             set_function_led(led_cfg, "eco", "ok");
         }
 
-        led_cfg->leds_state = i;
+	if (i < LEDS_MAX)
+	    led_cfg->leds_state = i;
 
         if (i == LEDS_TEST) {
             all_leds_off(led_cfg);
@@ -1178,8 +1179,10 @@ static int leds_set_method(struct ubus_context *ubus_ctx, struct ubus_object *ob
             }
         }
     }
+    else
+	syslog(LOG_INFO, "leds_set_method: Unknown attribute.\n");
 
-	return 0;
+    return 0;
 }
 
 
