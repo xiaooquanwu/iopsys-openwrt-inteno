@@ -1,0 +1,20 @@
+#!/bin/sh /etc/rc.common
+#
+# Start the ubus-mqtt
+#
+
+START=80
+PID_FILE=/var/state/ubus-mqtt.pid
+
+start() {
+        start-stop-daemon -S -b -m -p $PID_FILE -x /usr/sbin/ubus-mqtt
+}
+ 
+stop() {
+        start-stop-daemon -K -p $PID_FILE
+}  
+             
+restart() {
+        stop
+        start
+}
