@@ -5,6 +5,8 @@
 /dl
 /.config
 /.config.old
+.current_config_file
+/customerconfigs
 /bin
 /build_dir
 /staging_dir
