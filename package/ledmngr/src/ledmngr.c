@@ -1053,12 +1053,23 @@ static void set_function_led(struct leds_configuration* led_cfg, char* fn_name, 
 
     map = &led_cfg->led_map_config[led_fn_idx][action_idx];
     for (i=0 ; i<map->led_actions_nr ; i++) {
-        DEBUG_PRINT("[%d] %d %d\n", map->led_actions_nr,  map->led_actions[i].led_index, map->led_actions[i].led_state);
-
-        led_set_state(led_cfg, map->led_actions[i].led_index,
+	int led_idx = map->led_actions[i].led_index;
+        DEBUG_PRINT("[%d] %d %d\n", map->led_actions_nr, led_idx, map->led_actions[i].led_state);
+	
+        led_set_state(led_cfg, led_idx,
 		      map->led_actions[i].led_state);
         if (led_cfg->leds_state != LEDS_INFO) {
             led_set(led_cfg, map->led_actions[i].led_index, -1);
+
+	    if (led_cfg->leds_state == LEDS_PROXIMITY &&
+		led_cfg->leds[led_idx]->use_proximity) {
+		/* Changing led status of any dimmed led should also
+		   light up the display. */
+		if (!led_cfg->proximity_timer)
+		    proximity_light(led_cfg);
+		if (led_cfg->proximity_timer < 5*10)
+		    led_cfg->proximity_timer = 5*10;
+	    }
         }
     }
     DEBUG_PRINT("end\n");
@@ -1212,6 +1223,7 @@ static int leds_set_method(struct ubus_context *ubus_ctx, struct ubus_object *ob
     blobmsg_parse(led_policy, ARRAY_SIZE(led_policy), tb, blob_data(msg), blob_len(msg));
 
     if (tb[LED_STATE]) {
+	leds_state_t old;
 	state = blobmsg_data(tb[LED_STATE]);
 
         for (i=0 ; i<LEDS_MAX ; i++) {
@@ -1219,25 +1231,32 @@ static int leds_set_method(struct ubus_context *ubus_ctx, struct ubus_object *ob
                 break;
         }
 
+	if (i == LEDS_MAX) {
+	    syslog(LOG_INFO, "leds_set_method: Unknown state %s.\n", state);
+	    return 0;
+	}
+
+	old = led_cfg->leds_state;
+	led_cfg->leds_state = i;
+	
         if (i == LEDS_INFO) {
             all_leds_off(led_cfg);
             set_function_led(led_cfg, "eco", "off");
             set_function_led(led_cfg, "eco", "ok");
         }
 
-	if (i < LEDS_MAX)
-	    led_cfg->leds_state = i;
-
         if (i == LEDS_TEST) {
             all_leds_off(led_cfg);
         }
 
         if (i == LEDS_NORMAL || i == LEDS_PROXIMITY) {
-            all_leds_off(led_cfg);
-            set_function_led(led_cfg, "eco", "off");
-            for (j=0 ; j<LED_FUNCTIONS ; j++) {
-                set_function_led(led_cfg, led_functions[j], fn_actions[led_cfg->led_fn_action[j]]);
-            }
+	    if (old != LEDS_NORMAL && old != LEDS_PROXIMITY) {
+		all_leds_off(led_cfg);
+		set_function_led(led_cfg, "eco", "off");
+		for (j=0 ; j<LED_FUNCTIONS ; j++) {
+		    set_function_led(led_cfg, led_functions[j], fn_actions[led_cfg->led_fn_action[j]]);
+		}
+	    }
 	    if (i == LEDS_NORMAL)
 		proximity_light(led_cfg);
 	    else if (i == LEDS_PROXIMITY) {
