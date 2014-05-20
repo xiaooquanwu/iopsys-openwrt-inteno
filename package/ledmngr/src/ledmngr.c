@@ -144,6 +144,10 @@ struct leds_configuration {
     int shift_register_state[SR_MAX];
     int led_fn_action[LED_FUNCTIONS];
     struct led_map led_map_config[LED_FUNCTIONS][LED_ACTION_MAX];
+
+    /* If >= 0, index for the led used for button and proximity
+       feedback. */
+    int button_feedback_led;    
     leds_state_t leds_state;
     int test_state;
     /* Number of blink_handler ticks the buttons should stay lit up */
@@ -524,6 +528,9 @@ static int add_led(struct leds_configuration* led_cfg, char* led_name, const cha
         else
             lc->use_proximity = 1;
 
+	if (!strcmp(lc->name, "Status_red"))
+	    led_cfg->button_feedback_led = led_cfg->leds_nr;
+
         led_cfg->leds[led_cfg->leds_nr] = lc;
         led_cfg->leds_nr++;
         return 0;
@@ -580,6 +587,8 @@ static struct leds_configuration* get_led_config(void) {
 
     led_names = ucix_get_option(uci_ctx, "hw", "board", "lednames");
 //    printf("Led names: %s\n", led_names);
+
+    led_cfg->button_feedback_led = -1;
 
     /* Populate led configuration structure */
     ptr = (char *)led_names;
@@ -1045,6 +1054,9 @@ static void proximity_light(struct leds_configuration* led_cfg)
 	if (lc->use_proximity && lc->state)
 	    led_set(led_cfg, i, 1);
     }
+    if (led_cfg->button_feedback_led >= 0)
+	led_set(led_cfg, led_cfg->button_feedback_led,
+		led_cfg->leds_state == LEDS_PROXIMITY ? 1 : -1);
 }
 
 static void proximity_dim(struct leds_configuration* led_cfg)
@@ -1054,6 +1066,10 @@ static void proximity_dim(struct leds_configuration* led_cfg)
 	struct led_config* lc = led_cfg->leds[i];
 	if (lc->use_proximity && lc->blink_state)
 	    led_set(led_cfg, i, 0);
+    }
+    if (led_cfg->leds_state == LEDS_PROXIMITY
+	&& led_cfg->button_feedback_led >= 0) {
+	led_set(led_cfg, led_cfg->button_feedback_led, -1);
     }
 }
 
