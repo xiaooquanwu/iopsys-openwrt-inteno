@@ -697,7 +697,8 @@ set_wifi_device() {
 }
 
 generate_wireless_config() {
-	local wls="wl0 wl1 wl2 wl3"
+	local wls="wl0 wl1"
+	local ac_pcids="43a0 43a2"
 	local bands band freq
 	local BMAC=$(cat /proc/nvram/BaseMacAddr | tr '[a-z]' '[A-Z]')
 	BMAC=${BMAC// /}
@@ -706,15 +707,29 @@ generate_wireless_config() {
 	local WPAKEY=$(cat /proc/nvram/WpaKey)
 	WPAKEY="${WPAKEY:-1234567890}"
 
+	is_ac() {
+		local wldev="$1"
+		local idx="${wldev:2:1}"
+		local fpcid=$(cat /proc/bus/pci/devices | grep wl | sed -n $(($idx+1))'p' | awk '{print$2}')
+		local pcid="${fpcid:4:4}"
+		for pcd in $ac_pcids; do
+			if [ "$pcd" == "$pcid" ]; then
+				return 0
+			fi
+		done
+		return 1
+	}
+
 	for wl in $wls; do
 		if wlctl -i $wl ap >/dev/null 2>&1; then
 			if ! uci get wireless.$wl >/dev/null 2>&1; then
-				bands=$(wlctl -i $wl bands)
-				case "$bands" in
-					*b*) band="b"; freq="" ;;
-					*a*) band="a"; freq="-5G" ;;
-					*) band="auto"; freq="" ;;
-				esac
+				if $(is_ac $wl); then
+					band="a"
+					freq="-5G"
+				else
+					band="b"
+					freq=""
+				fi
 				cat >> /etc/config/wireless <<EOF
 config 'wifi-device' '$wl'
         option 'type' 'broadcom'
