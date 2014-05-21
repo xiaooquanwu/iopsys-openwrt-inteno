@@ -363,7 +363,7 @@ int check_i2c(struct i2c_dev *i2c_dev)
     int ret;
     int got_irq = 0;
 
-    if (!i2c_dev->dev)
+    if (!i2c_dev || !i2c_dev->dev)
         return -1;
 
     if (i2c_dev->irq_button) {
@@ -684,6 +684,14 @@ static struct leds_configuration* get_led_config(void) {
     return led_cfg;
 }
 
+static int led_need_type(const struct leds_configuration* led_cfg, led_type_t type) 
+{
+    int i;
+    for (i=0 ; i<led_cfg->leds_nr ; i++)
+        if (led_cfg->leds[i]->type == type)
+	    return 1;
+    return 0;
+}
 
 void print_config(struct leds_configuration* led_cfg) {
     int i;
@@ -1344,7 +1352,8 @@ static void server_main(struct leds_configuration* led_cfg)
 
     uloop_timeout_set(&blink_inform_timer, 100);
 
-    uloop_timeout_set(&i2c_reset_timer, I2C_RESET_TIME);
+    if (i2c_dev)
+	uloop_timeout_set(&i2c_reset_timer, I2C_RESET_TIME);
 
     uloop_run();
 }
@@ -1426,6 +1435,15 @@ static struct button_configuration* get_button_config(void) {
     return butt_cfg;
 }
 
+static int button_need_type(const struct button_configuration* butt_cfg, led_type_t type) 
+{
+    int i;
+    for (i=0 ; i<butt_cfg->button_nr ; i++)
+        if (butt_cfg->buttons[i]->type == type)
+	    return 1;
+    return 0;
+}
+
 static int load_cfg_file()
 {
     /* Initialize */
@@ -1446,11 +1464,14 @@ int ledmngr(void) {
         exit(1);
     }
 
-    init_i2c();
-
     led_cfg  = get_led_config();
     butt_cfg = get_button_config();
 
+    if (led_need_type (led_cfg, I2C) || button_need_type (butt_cfg, I2C))
+	init_i2c();
+    else
+	i2c_dev = NULL;
+    
     /* initialize ubus */
     DEBUG_PRINT("initialize ubus\n");
 
