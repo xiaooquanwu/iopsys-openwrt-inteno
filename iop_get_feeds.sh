@@ -48,7 +48,6 @@
 ./scripts/feeds install lighttpd
 ./scripts/feeds install python
 ./scripts/feeds install openswan
-./scripts/feeds install libgmp
 ./scripts/feeds install libwrap
 ./scripts/feeds install wget
 ./scripts/feeds install xxd
