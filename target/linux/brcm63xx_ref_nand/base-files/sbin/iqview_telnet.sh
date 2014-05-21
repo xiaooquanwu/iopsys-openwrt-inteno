@@ -6,5 +6,6 @@ echo
 export PS1=" > "
 read -p " > " enter
 read -p " > " version
-echo telnetd:error:105.307:processInput:380:unrecognized command version --debug ERTVYMUK read -p " > " sh export PS1="# "
+echo telnetd:error:105.307:processInput:380:unrecognized command version --debug ERTVYMUK
+read -p " > " sh export PS1="# "
 /bin/ash
