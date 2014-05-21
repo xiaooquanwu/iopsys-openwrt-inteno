@@ -127,8 +127,11 @@ define Package/cwmp-$(BUILD_VARIANT)/install
 	$(CP) $(PKG_BUILD_DIR)/bin/cwmpd $(1)/usr/sbin
 	$(INSTALL_DIR) $(1)/etc/config
 	$(INSTALL_CONF) $(PKG_BUILD_DIR)/config/cwmp $(1)/etc/config
+	$(INSTALL_CONF) $(PKG_BUILD_DIR)/config/firewall.cwmp $(1)/etc/firewall.cwmp
 	$(INSTALL_DIR) $(1)/etc/init.d
+	$(INSTALL_DIR) $(1)/etc/uci-defaults
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/init/cwmpd.init $(1)/etc/init.d/cwmpd
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/uci-defaults/90-cwmpfirewall $(1)/etc/uci-defaults/90-cwmpfirewall
 ifeq ($(CONFIG_CWMP_SCRIPTS_FULL),y)
 	$(INSTALL_DIR) $(1)/usr/share/freecwmp
 	$(CP) $(PKG_BUILD_DIR)/scripts/defaults $(1)/usr/share/freecwmp
