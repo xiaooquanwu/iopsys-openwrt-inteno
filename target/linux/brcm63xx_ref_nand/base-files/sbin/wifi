@@ -688,10 +688,6 @@ set_wifi_device() {
 	wlctl -i $device leddc 0
 	ledctl wireless on
 
-	[ -n "$acsifs" ] && {
-		pidof acsd || acsd
-	}
-
 	wlctl -i $device down
 	wlctl -i $device up
 }
@@ -857,6 +853,7 @@ case "$1" in
 		run_hooks wifi-device $ENABLE_HOOKS
 
 		# start related daemons
+		[ -n "$acsifs" ] && acsd
 		eapd
 		nas
 		[ $_enWps -gt 0 ] && wps_monitor &
