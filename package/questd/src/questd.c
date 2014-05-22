@@ -536,12 +536,15 @@ router_dump_usbs(struct blob_buf *b)
 	char cmnd[64];
 	char line[16];
 
+	memset(usb, '\0', sizeof(usb));
 	sprintf(cmnd, "ls /sys/bus/usb/devices/ | grep -v ':' | grep -v 'usb'");
 	if ((usbdevs = popen(cmnd, "r"))) {
 		while(fgets(line, sizeof(line), usbdevs) != NULL)
 		{
 			remove_newline(line);
 			dump_usb_info(&usb[uno], line);
+			if(strlen(usb[uno].product) < 1)
+				continue;
 			t = blobmsg_open_table(b, usb[uno].name);
 			blobmsg_add_string(b, "product", usb[uno].product);
 			//blobmsg_add_string(b, "speed", usb[uno].speed);
