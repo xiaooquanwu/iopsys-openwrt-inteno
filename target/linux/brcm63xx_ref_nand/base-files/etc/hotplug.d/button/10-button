@@ -22,6 +22,7 @@ case "$ACTION" in
         }
         [ "wpsbutton" == "$INTERFACE" ] && {
 		        printf "\n\nWPS button is pressed\n\n" > /dev/console
+		        killall -USR2 wps_monitor
         }
         [ "dectbutton" == "$INTERFACE" ] && {
                 printf "\n\nRegistering DECT\n\n" > /dev/console
