@@ -5,7 +5,7 @@ PKG_NAME:=luci
 PKG_RELEASE:=1.0.1
 
 PKG_VERSION:=inteno-1.0.83
-PKG_SOURCE_VERSION:=09cadba59e76794c0873488ee76806feac97a427
+PKG_SOURCE_VERSION:=55f59c6bd560dd4483adfb352f7ce3091da79f16
 ifeq ($(CONFIG_PACKAGE_bcmkernel),y)
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=git@iopsys.inteno.se:luci-inteno-private.git
