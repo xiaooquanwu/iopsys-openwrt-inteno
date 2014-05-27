@@ -894,6 +894,7 @@ case "$1" in
 		[ -n "$acsifs" ] && acsd
 		eapd
 		nas
+		rm -f /tmp/wps_monitor.pid
 		[ $_enWps -gt 0 ] && wps_monitor &
 	;;
 esac
