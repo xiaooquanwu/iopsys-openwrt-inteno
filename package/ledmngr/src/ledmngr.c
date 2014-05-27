@@ -295,6 +295,15 @@ static int init_i2c()
     /* only one hardware type at this time so just set it. */
     i2c_dev = &i2c_dev_list[0];
 
+    // FIXME iterate over the chip
+    if (strcmp(i2c_dev->name, p)) {
+		DEBUG_PRINT("I2C hardware platform %s found.\n", p);
+	} else {
+		DEBUG_PRINT("No I2C hardware found: %s.\n", p);
+		i2c_dev = NULL;
+		return;
+	}
+
     i2c_dev->dev = open("/dev/i2c-0", O_RDWR);
     if (i2c_dev->dev < 0) {
         syslog(LOG_INFO,"%s: could not open /dev/i2c-0\n",__func__);
@@ -1463,14 +1472,15 @@ int ledmngr(void) {
         DEBUG_PRINT("Failed to load config file \"hw\"\n");
         exit(1);
     }
+//    if (led_need_type (led_cfg, I2C) || button_need_type (butt_cfg, I2C))
+	i2c_dev = NULL;
+	init_i2c();
+//    else
+//	i2c_dev = NULL;
 
     led_cfg  = get_led_config();
     butt_cfg = get_button_config();
 
-    if (led_need_type (led_cfg, I2C) || button_need_type (butt_cfg, I2C))
-	init_i2c();
-    else
-	i2c_dev = NULL;
     
     /* initialize ubus */
     DEBUG_PRINT("initialize ubus\n");
