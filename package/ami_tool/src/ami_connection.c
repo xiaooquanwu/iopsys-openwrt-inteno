@@ -191,14 +191,14 @@ ami_event parse_brcm_event(char* buf)
 
 	char* event_type = NULL;
 	char parse_buffer[AMI_BUFLEN];
-	char *delimiter = " ";
+	char delimiter = ' ';
 	char *value;
 
 	if ((event_type = strstr(buf, "Status: "))) {
 		event.brcm_event->type = BRCM_STATUS_EVENT;
 		strcpy(parse_buffer, event_type + 8);
 
-		value = strtok(parse_buffer, delimiter);
+		value = strtok(parse_buffer, &delimiter);
 		if (value && !strcmp(value, "OFF")) {
 			event.brcm_event->status.off_hook = 1;
 		}
@@ -209,7 +209,7 @@ ami_event parse_brcm_event(char* buf)
 			printf("Warning: No/Unknown status in brcm status event\n");
 		}
 
-		value = strtok(NULL, delimiter);
+		value = strtok(NULL, &delimiter);
 		if (value) {
 			event.brcm_event->status.line_id = strtol(value, NULL, 10);
 		}
@@ -222,7 +222,7 @@ ami_event parse_brcm_event(char* buf)
 		event.brcm_event->type = BRCM_STATE_EVENT;
 		strcpy(parse_buffer, event_type + 7);
 
-		value = strtok(parse_buffer, delimiter);
+		value = strtok(parse_buffer, &delimiter);
 		if (value) {
 			value = trim_whitespace(value);
 			event.brcm_event->state.state = calloc(strlen(value) + 1, sizeof(char));
@@ -233,7 +233,7 @@ ami_event parse_brcm_event(char* buf)
 			event.brcm_event->state.state = NULL;
 		}
 
-		value = strtok(NULL, delimiter);
+		value = strtok(NULL, &delimiter);
 		if (value) {
 			event.brcm_event->state.line_id = strtol(value, NULL, 10);
 		}
@@ -242,7 +242,7 @@ ami_event parse_brcm_event(char* buf)
 			event.brcm_event->state.line_id = -1;
 		}
 
-		value = strtok(NULL, delimiter);
+		value = strtok(NULL, &delimiter);
 		if (value) {
 			event.brcm_event->state.subchannel_id = strtol(value, NULL, 10);
 		}
@@ -457,7 +457,7 @@ ami_connection* ami_init(ami_event_cb on_event) {
 
 	con->connected = 0;
 	con->sd = -1;
-	con->message_frame = NULL;
+	bzero(con->message_frame, sizeof(con->message_frame));
 	memset(con->left_over, 0, AMI_BUFLEN * 2 + 1);
 	con->current_action = NULL;
 	con->event_callback = on_event;
@@ -469,7 +469,7 @@ int ami_connect(ami_connection* con, const char* hostname, const char* portno)
 {
 	ami_disconnect(con);
 	int result = 0;
-	con->message_frame = MESSAGE_FRAME_LOGIN;
+	strncpy(con->message_frame, MESSAGE_FRAME_LOGIN, MESSAGE_FRAME_LEN);
 
 	struct addrinfo *host;
 	int err = getaddrinfo(hostname, portno, NULL, &host);
@@ -607,7 +607,7 @@ void ami_send_sip_reload(ami_connection* con, ami_response_cb on_response) {
 void ami_send_login(ami_connection* con, char* username, char* password, ami_response_cb on_response)
 {
 	//printf("Queueing Action: ami_send_login\n");
-	con->message_frame = MESSAGE_FRAME; //Login sent, now there's always <CR><LF><CR><LR> after a message
+	strncpy(con->message_frame, MESSAGE_FRAME, MESSAGE_FRAME_LEN); //Login sent, now there's always <CR><LF><CR><LR> after a message
 	ami_action* action = malloc(sizeof(ami_action));
 	action->callback = on_response;
 	sprintf(action->message,"Action: Login\r\nUsername: %s\r\nSecret: %s\r\n\r\n", username, password);

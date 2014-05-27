@@ -10,6 +10,7 @@
 
 #define MESSAGE_FRAME "\r\n\r\n"
 #define MESSAGE_FRAME_LOGIN "\r\n"
+ #define MESSAGE_FRAME_LEN 5
 
 #define AMI_BUFLEN 512
 
@@ -84,7 +85,7 @@ typedef void (*ami_response_cb) (ami_connection* con, char* buf);
 struct ami_connection {
 	int connected; //ami_connection is connected to asterisk
 	int sd;
-	char* message_frame;
+	char message_frame[MESSAGE_FRAME_LEN];
 	char left_over[AMI_BUFLEN * 2 + 1];
 	ami_event_cb event_callback;
 	ami_action* current_action;

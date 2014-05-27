@@ -89,7 +89,7 @@ typedef enum LED_NAME
 	LN_UNKNOWN
 } LED_NAME;
 
-#define MAX_LED_NAME	12
+#define MAX_LED_NAME	13
 typedef struct LED_NAME_MAP
 {
 	LED_NAME	name;
