@@ -427,7 +427,7 @@ int check_i2c_button(struct button_config *bc, struct i2c_dev *i2c_dev) {
 
     int bit = 1 << bc->address;
 
-    if (!i2c_dev->dev)
+    if (!i2c_dev || !i2c_dev->dev)
         return -1;
 
     if (bc->address < 8) {
@@ -462,7 +462,7 @@ void i2c_led_set( struct led_config* lc, int state){
     int ret;
     int bit = 1 << lc->address;
 
-    if (!i2c_dev->dev)
+    if (!i2c_dev || !i2c_dev->dev)
         return;
 
     if (lc->address > 7){
