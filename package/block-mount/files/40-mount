@@ -30,7 +30,7 @@ if [ `basename $blkdev` != "block" ]; then
     mnfct="$(cat /sys/bus/usb/devices/$usbno/manufacturer | sed 's/ //g')"
     prdct="$(cat /sys/bus/usb/devices/$usbno/product | sed 's/ //g')"
     mnthd="${mnfct:-$prdct}"
-    serial="$(cat /sys/bus/usb/devices/$usbno/serial)"
+    serial="$(cat /sys/bus/usb/devices/$usbno/serial | sed 's/ //g')"
 
     case "$ACTION" in
 	add)
