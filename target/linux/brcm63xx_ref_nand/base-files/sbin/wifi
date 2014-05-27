@@ -154,14 +154,22 @@ create_vif() {
 	local vif="$1"
 	local device
 	local iface
+	local network
 
 	config_get device "$vif" device
+	config_get network "$vif" network
 
 	if [ "$2" == "$device" ]; then
 		wlctl -i $device bss -C $_cno down
 		wlctl -i $device ssid -C $_cno ""
 
 		[ $_cno -eq 0 ] && iface="$device" || iface="$device"."$_cno"
+		# tag guestMgr interface
+		[ "$network" == "guestMgr" ] && {
+			mkdir -p /var/guestmgr/
+			echo $iface > /var/guestmgr/wliface
+		}
+		# check if dnsmasq restart needed
 		for ifc in $(uci get dhcp.@dnsmasq[0].interface); do
 			if [ "$ifc" == "$iface" ]; then
 				uci del_list dhcp.@dnsmasq[0].interface="$iface"
@@ -248,6 +256,12 @@ set_wifi_iface() {
 			# set NAS alternate if multi SSIDs are used
 			nvram set nas_alternate=1
 		fi
+
+		# tag guestMgr interface
+		[ "$network" == "guestMgr" ] && {
+			mkdir -p /var/guestmgr/
+			echo $iface > /var/guestmgr/wliface
+		}
 
 		# set wireless VIFs in broadcom nvram
 		vifs=$(nvram get "$device"_vifs)
@@ -802,6 +816,27 @@ run_hooks() {
 	done
 }
 
+case "$1" in
+	disable|enable)
+		[ -z "$2" ] && exit
+		local wif="$2"
+		local wdev="${wif:0:3}"
+		local nif="$(echo $wif | sed 's/\./_/g')"
+#		wlctl -i $wdev down
+		if [ "$1" == "disable" ]; then
+			nvram set "$nif"_bss_enabled=0
+			wlctl -i $wif bss down
+		else
+			nvram set "$nif"_bss_enabled=1
+			wlctl -i $wif bss up
+		fi
+#		if [ "$(uci -q get wireless.$wdev.radio)" != "off" ]; then
+#			wlctl -i $wdev up
+#		fi
+		exit
+	;;
+esac
+
 # kill related daemons
 killall -9 eapd 2>/dev/null
 killall -9 nas 2>/dev/null
@@ -810,6 +845,9 @@ killall -15 wps_monitor 2>/dev/null
 
 # remove all QR code images
 rm -f /www/luci-static/resources/icons/wqr_*
+
+# remove guestMgr interface tag
+rm -f /var/guestmgr/wliface
 
 # remove wireless interfaces from dnsmasq bind interface list
 remove_wlifs_from_dnsmasq_bind_list
