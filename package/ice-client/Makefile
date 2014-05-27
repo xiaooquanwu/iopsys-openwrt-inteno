@@ -16,13 +16,13 @@ export PLATFORM_INCLUDE:=platforms/iopsys/build.mk
 export DATE:=$(shell date +%Y-%m-%d-%H-%M-%S)
 export LOGIN:=$(shell whoami)
 BASE_PKG_VERSION:=2.9.7
-PKG_RELEASE:=RC2
+PKG_RELEASE:=RC4
 PKG_VERSION:=$(BASE_PKG_VERSION)-$(PKG_RELEASE)_$(DATE)_$(LOGIN)
 
 ###########################--RELEASE--################################
 
 PKG_SOURCE_URL:=ssh://git@iopsys.inteno.se/ice-client.git
-PKG_SOURCE_VERSION:=e518ac023e3fd73843d341050376c09eca3a2770
+PKG_SOURCE_VERSION:=edff42f282770d94fb859018799af720a94188d7
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(BASE_PKG_VERSION)
 PKG_SOURCE:=$(PKG_NAME)-$(BASE_PKG_VERSION)-$(PKG_RELEASE).tar.gz
 
@@ -340,6 +340,37 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	  read -t 1 <>/tmp/cfout
 	  /bin/echo "system moduleRemove topic=anyfiMgr" > /tmp/cfin
 	  /bin/sleep 3
+	fi
+fi
+exit 0
+endef
+
+define Package/ice-client-anyfi/preinst
+#!/bin/sh
+if [ -z "$${IPKG_INSTROOT}" ]; then
+	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
+	PROC_ID=$$(cat /tmp/ice.pid)
+	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
+	if [  $$PROC_EXISTS ]; then
+	  read -t 1 <>/tmp/cfout
+	  /bin/echo "system moduleRemove topic=anyfiMgr" > /tmp/cfin
+	  /bin/sleep 3
+	fi
+fi
+exit 0
+endef
+
+define Package/ice-client-anyfi/install
+	$(INSTALL_DIR) $(1)/usr/lib
+	$(CP) $(PKG_BUILD_DIR)/core/lib/anyfiService.so.1.0.1 $(1)/usr/lib
+endef
+
+define Package/ice-client-anyfi/postinst
+#!/bin/sh
+if [ -z "$${IPKG_INSTROOT}" ]; then
+    read -t 1 <>/tmp/cfout
+	if [ -f /tmp/ice.pid  ]; then
+		/bin/echo "system moduleAdd file=anyfiService.so.1.0.1" > /tmp/cfin
 	fi
 fi
 exit 0
