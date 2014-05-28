@@ -256,7 +256,7 @@ struct i2c_dev{
 
 struct i2c_dev i2c_dev_list[] = {
     {.addr = 0x2b,
-     .name = "cg300",
+     .name = "CG300",
      .irq_button = 1,
      .init_tab = i2c_init_tab_cg300,
      .init_tab_len = sizeof(i2c_init_tab_cg300)/sizeof(struct i2c_reg_tab),
@@ -296,7 +296,7 @@ static int init_i2c()
     i2c_dev = &i2c_dev_list[0];
 
     // FIXME iterate over the chip
-    if (strcmp(i2c_dev->name, p)) {
+    if (!strcmp(i2c_dev->name, p)) {
 		DEBUG_PRINT("I2C hardware platform %s found.\n", p);
 	} else {
 		DEBUG_PRINT("No I2C hardware found: %s.\n", p);
