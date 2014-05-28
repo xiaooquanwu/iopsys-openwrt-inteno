@@ -301,7 +301,7 @@ static int init_i2c()
 	} else {
 		DEBUG_PRINT("No I2C hardware found: %s.\n", p);
 		i2c_dev = NULL;
-		return;
+		return 0;
 	}
 
     i2c_dev->dev = open("/dev/i2c-0", O_RDWR);
