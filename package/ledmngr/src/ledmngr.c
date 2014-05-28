@@ -354,6 +354,7 @@ error1:
 
 static void i2c_reset_handler(struct uloop_timeout *timeout)
 {
+    int i;
 
     DEBUG_PRINT("\n");
 
@@ -361,6 +362,10 @@ static void i2c_reset_handler(struct uloop_timeout *timeout)
         close(i2c_dev->dev);
 
     init_i2c();
+
+    for (i=0 ; i<led_cfg->leds_nr ; i++)
+	if (led_cfg->leds[i]->type == I2C)
+	    led_set(led_cfg, i, -1);
 
     uloop_timeout_set(&i2c_reset_timer, I2C_RESET_TIME);
 
