@@ -841,7 +841,10 @@ esac
 killall -9 eapd 2>/dev/null
 killall -9 nas 2>/dev/null
 killall -9 acsd 2>/dev/null
-killall -15 wps_monitor 2>/dev/null
+killall -9 wps_monitor 2>/dev/null
+
+# remove wps_monitor pid file
+rm -f /tmp/wps_monitor.pid
 
 # remove all QR code images
 rm -f /www/luci-static/resources/icons/wqr_*
@@ -894,7 +897,6 @@ case "$1" in
 		[ -n "$acsifs" ] && acsd
 		eapd
 		nas
-		rm -f /tmp/wps_monitor.pid
 		[ $_enWps -gt 0 ] && wps_monitor &
 	;;
 esac
