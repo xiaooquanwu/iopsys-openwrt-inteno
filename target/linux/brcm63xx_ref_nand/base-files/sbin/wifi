@@ -168,6 +168,7 @@ create_vif() {
 		[ "$network" == "guestMgr" ] && {
 			mkdir -p /var/guestmgr/
 			echo $iface > /var/guestmgr/wliface
+			echo $vif > /var/guestmgr/wlcfgno
 		}
 		# check if dnsmasq restart needed
 		for ifc in $(uci get dhcp.@dnsmasq[0].interface); do
@@ -261,6 +262,7 @@ set_wifi_iface() {
 		[ "$network" == "guestMgr" ] && {
 			mkdir -p /var/guestmgr/
 			echo $iface > /var/guestmgr/wliface
+			echo $vif > /var/guestmgr/wlcfgno
 		}
 
 		# set wireless VIFs in broadcom nvram
