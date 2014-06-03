@@ -44,6 +44,17 @@ typedef struct {
 } registry_event;
 
 typedef struct {
+	char* host;				//Account name (e.g. sip0)
+	int port;				//5060
+	char* username;			//0510409896
+	char* domain;			//62.80.209.10
+	int domain_port;		//5060
+	int refresh;			//Refresh interval, 285
+	char* state;			//Registration state Registered
+	int registration_time;	//Registration timestamp, 1401282865
+} registry_entry_event;
+
+typedef struct {
 	enum {
 		CHANNELRELOAD_UNKNOWN_EVENT,
 		CHANNELRELOAD_SIP_EVENT
@@ -59,6 +70,8 @@ typedef struct {
 typedef enum ami_event_type {
 	LOGIN,
 	REGISTRY,
+	REGISTRY_ENTRY,
+	REGISTRATIONS_COMPLETE,
 	BRCM,
 	CHANNELRELOAD,
 	FULLYBOOTED,
@@ -71,6 +84,7 @@ typedef struct ami_event {
 	ami_event_type type;
 	brcm_event* brcm_event;
 	registry_event* registry_event;
+	registry_entry_event* registry_entry_event;
 	channel_reload_event* channel_reload_event;
 	varset_event* varset_event;
 } ami_event;
@@ -114,3 +128,4 @@ void ami_send_sip_reload(ami_connection* con, ami_response_cb on_response);
 void ami_send_login(ami_connection* con, char*username, char* password, ami_response_cb on_response);
 void ami_send_brcm_module_show(ami_connection* con, ami_response_cb on_response);
 void ami_send_brcm_ports_show(ami_connection* con, ami_response_cb on_response);
+void ami_send_sip_show_registry(ami_connection* con, ami_response_cb on_response);

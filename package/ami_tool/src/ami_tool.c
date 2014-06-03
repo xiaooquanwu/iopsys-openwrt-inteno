@@ -65,6 +65,7 @@ void ami_handle_event(ami_connection* con, ami_event event);
 void handle_registry_event(ami_event event);
 void handle_brcm_event(ami_connection* con, ami_event event);
 void handle_varset_event(ami_event event);
+void handle_registry_entry_event(ami_event event);
 void on_login_response(ami_connection* con, char* buf);
 void on_brcm_module_show_response(ami_connection* con, char* buf);
 void on_brcm_ports_show_response(ami_connection* con, char* buf);
@@ -742,7 +743,18 @@ void init_sip_peers() {
 		sip_peers[accounts->id].sip_registry_request_sent = 0;
 		sip_peers[accounts->id].sip_registry_time = 0;
 		sip_peers[accounts->id].ip_list_length = 0;
+
+		/* Init sip show registry data */
+		strcpy(sip_peers[accounts->id].username, "Unknown");
+		strcpy(sip_peers[accounts->id].domain, "Unknown");
+		strcpy(sip_peers[accounts->id].state, "Unknown");
+		sip_peers[accounts->id].port = 0;
+		sip_peers[accounts->id].domain_port = 0;
+		sip_peers[accounts->id].refresh = 0;
+		sip_peers[accounts->id].registration_time = 0;
+
 		/* No need to (re)initialize ubus_object (created once at startup) */
+
 		if (accounts->id == SIP_ACCOUNT_UNKNOWN) {
 			break;
 		}
@@ -768,6 +780,14 @@ void ami_handle_event(ami_connection* con, ami_event event)
 			break;
 		case REGISTRY:
 			handle_registry_event(event);
+			printf("Sending sip show registry\n");
+			ami_send_sip_show_registry(con, 0);
+			break;
+		case REGISTRY_ENTRY:
+			handle_registry_entry_event(event);
+			break;
+		case REGISTRATIONS_COMPLETE:
+			printf("Sip show registry complete\n");
 			break;
 		case BRCM:
 			handle_brcm_event(con, event);
@@ -794,9 +814,9 @@ void ami_handle_event(ami_connection* con, ami_event event)
 			set_state(DISCONNECTED, con);
 			break;
 		case UNKNOWN_EVENT:
+			break; //An event that ami_connection could not parse
 		default:
-			printf("Got unknown AMI event\n");
-			break;
+			break; //An event that we dont handle
 	}
 
 	manage_leds();
@@ -853,6 +873,40 @@ void handle_registry_event(ami_event event)
 		default:
 			break;
 	}
+}
+
+void handle_registry_entry_event(ami_event event)
+{
+	printf("Info: Got registry entry event for SIP account %s\n", event.registry_entry_event->host);
+	const SIP_ACCOUNT* accounts = sip_accounts;
+	SIP_PEER *peer = &sip_peers[PORT_UNKNOWN];
+	char* account_name = event.registry_entry_event->host;
+
+	//Lookup peer by account name
+	while (accounts->id != SIP_ACCOUNT_UNKNOWN) {
+		if (!strcmp(accounts->name, account_name)) {
+			peer = &sip_peers[accounts->id];
+			break;
+		}
+		accounts++;
+	}
+
+	if (peer->account.id == SIP_ACCOUNT_UNKNOWN) {
+		printf("RegistryEntry event for unknown account: %s\n", account_name);
+		return;
+	}
+	
+	//Update our sip peer with event information
+	strncpy(peer->username, event.registry_entry_event->username, MAX_SIP_PEER_USERNAME);
+	peer->username[MAX_SIP_PEER_USERNAME - 1]= '\0';
+	strncpy(peer->domain, event.registry_entry_event->domain, MAX_SIP_PEER_DOMAIN);
+	peer->domain[MAX_SIP_PEER_USERNAME - 1]= '\0';
+	strncpy(peer->state, event.registry_entry_event->state, MAX_SIP_PEER_STATE);
+	peer->state[MAX_SIP_PEER_USERNAME - 1]= '\0';
+	peer->port = event.registry_entry_event->port;
+	peer->domain_port = event.registry_entry_event->domain_port;
+	peer->refresh = event.registry_entry_event->refresh;
+	peer->registration_time = event.registry_entry_event->registration_time;
 }
 
 void handle_brcm_event(ami_connection* con, ami_event event)
@@ -1053,22 +1107,42 @@ static int ubus_get_sip_account(struct blob_buf *b, int account_id)
 	blobmsg_add_u8(b, "registered", sip_peers[account_id].sip_registry_registered);
 	blobmsg_add_u8(b, "registry_request_sent", sip_peers[account_id].sip_registry_request_sent);
 
-	//format last successful registration time
+	//IP address(es) of the sip registrar
+	int i;
+	for (i = 0; i<sip_peers[account_id].ip_list_length; i++) {
+		blobmsg_add_string(b, "ip", sip_peers[account_id].ip_list[i].addr);
+	}
+
+	blobmsg_add_u32(b, "port", sip_peers[account_id].port);
+	blobmsg_add_string(b, "username", sip_peers[account_id].username);
+	blobmsg_add_string(b, "domain", sip_peers[account_id].domain);
+	blobmsg_add_u32(b, "domain_port", sip_peers[account_id].domain_port);
+	blobmsg_add_u32(b, "refresh_interval", sip_peers[account_id].refresh);
+	blobmsg_add_string(b, "state", sip_peers[account_id].state);
+
+	//Format registration time
+	if (sip_peers[account_id].registration_time > 0) {
+		struct tm* timeinfo;
+		char buf[80];
+		timeinfo = localtime(&(sip_peers[account_id].registration_time));
+		strftime(buf, 80, "%Y-%m-%d %H:%M:%S", timeinfo);
+		blobmsg_add_string(b, "registration_time", buf);
+	}
+	else {
+		blobmsg_add_string(b, "registration_time", "-");
+	}
+
+	//This is the time of last successful registration for this account,
+	//regardless of the current registration state (differs from registration_time)
 	if (sip_peers[account_id].sip_registry_time > 0) {
 		struct tm* timeinfo;
 		char buf[80];
 		timeinfo = localtime(&(sip_peers[account_id].sip_registry_time));
 		strftime(buf, 80, "%Y-%m-%d %H:%M:%S", timeinfo);
-		blobmsg_add_string(b, "last_registration", buf);
+		blobmsg_add_string(b, "last_successful_registration", buf);
 	}
 	else {
-		blobmsg_add_string(b, "last_registration", "-");
-	}
-
-	//IP address(es) of the sip registrar
-	int i;
-	for (i = 0; i<sip_peers[account_id].ip_list_length; i++) {
-		blobmsg_add_string(b, "ip", sip_peers[account_id].ip_list[i].addr);
+		blobmsg_add_string(b, "last_successful_registration", "-");
 	}
 
 	return 0;

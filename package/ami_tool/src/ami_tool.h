@@ -204,18 +204,29 @@ static const SIP_ACCOUNT sip_accounts[] = {
 
 #define MAX_SIP_PEERS 10
 #define MAX_SIP_PEER_NAME 10
+#define MAX_SIP_PEER_USERNAME 128
+#define MAX_SIP_PEER_DOMAIN 128
+#define MAX_SIP_PEER_STATE 128
 typedef struct SIP_PEER
 {
 	SIP_ACCOUNT	account;
-	int		sip_registry_request_sent;
-	int		sip_registry_registered;
-	time_t	sip_registry_time;
-	IP		ip_list[MAX_IP_LIST_LENGTH];
-	int		ip_list_length;
+	int		sip_registry_request_sent;		//Bool indicating if we have sent a registration request
+	int		sip_registry_registered;		//Bool indicating if we are registered or not
+	time_t	sip_registry_time;				//The time when we received the registry event
+	IP		ip_list[MAX_IP_LIST_LENGTH];	//IP addresses of the sip registrar
+	int		ip_list_length;					//Number of addresses
+
+	//Info from sip show registry
+	int port;								//The port we are connected to
+	char username[MAX_SIP_PEER_USERNAME];	//Our username
+	char domain[MAX_SIP_PEER_DOMAIN];		//The domain we are registered on
+	int domain_port;						//The domain port
+	int refresh;							//Refresh interval for this registration
+	char state[MAX_SIP_PEER_STATE];			//Registration state e.g. Registered
+	time_t registration_time;				//Registration timestamp, 1401282865
+
 	struct ubus_object *ubus_object;
 } SIP_PEER;
-
-
 
 /*
  * Struct that stores configuration for a LED

@@ -75,13 +75,27 @@ static ami_message parse_buffer(char *message_frame, char *buffer, char **framed
 static ami_event_type get_event_type(char* buf, int* idx) {
 	int i = 0;
 
-	if (!memcmp(buf, "Registry", 8)) {
+	if (!memcmp(buf, "RegistryEntry", 13)) {
+		i +=13;
+		while((buf[i] == '\n') || (buf[i] == '\r'))
+			i++;
+
+		*idx = i;
+		return REGISTRY_ENTRY;
+	} else if (!memcmp(buf, "Registry", 8)) {
 		i +=8;
 		while((buf[i] == '\n') || (buf[i] == '\r'))
 			i++;
 
 		*idx = i;
 		return REGISTRY;
+	} else if (!memcmp(buf, "RegistrationsComplete", 4)) {
+		i +=21;
+		while((buf[i] == '\n') || (buf[i] == '\r'))
+			i++;
+
+		*idx = i;
+		return REGISTRATIONS_COMPLETE;
 	} else if (!memcmp(buf, "BRCM", 4)) {
 		i +=8;
 		while((buf[i] == '\n') || (buf[i] == '\r'))
@@ -120,6 +134,7 @@ static ami_event_type get_event_type(char* buf, int* idx) {
 		i++;
 	}
 	*idx = i;
+	printf("Unhandled event\n%s\n", buf);
 	return UNKNOWN_EVENT;
 }
 
@@ -176,6 +191,102 @@ ami_event parse_registry_event(char* buf)
 	}
 	else {
 		printf("Warning: No status found in Registry event\n");
+	}
+
+	return event;
+}
+
+ami_event parse_registry_entry_event(char* buf)
+{
+	ami_event event;
+	event.type = REGISTRY_ENTRY;
+	event.registry_entry_event = (registry_entry_event*)malloc(sizeof(registry_entry_event));
+	event.registry_entry_event->host = 0;
+	event.registry_entry_event->port = 0;
+	event.registry_entry_event->username = 0;
+	event.registry_entry_event->domain = 0;
+	event.registry_entry_event->refresh = 0;
+	event.registry_entry_event->state = 0;
+	event.registry_entry_event->registration_time = 0;
+	
+	char* host_start = strstr(buf, "Host:");
+	if (host_start) {
+		//Found host
+		host_start += 6; //Advance to start of content
+		char* host_end = strstr(host_start, "\r\n");
+		if (host_end) {
+			//Found end of host
+			int host_len = host_end - host_start;
+			event.registry_entry_event->host = (char*)calloc(host_len + 1, 1);
+			strncpy(event.registry_entry_event->host, host_start, host_len);
+		}
+	}
+
+	char* port_start = strstr(buf, "Port:");
+	if (port_start) {
+		//Found port
+		port_start += 6; //Advance to start of content
+		event.registry_entry_event->port = strtol(port_start, NULL, 10);
+	}
+
+	char* username_start = strstr(buf, "Username:");
+	if (username_start) {
+		//Found username
+		username_start += 10; //Advance to start of content
+		char* username_end = strstr(username_start, "\r\n");
+		if (username_end) {
+			//Found end of username
+			int username_len = username_end - username_start;
+			event.registry_entry_event->username = (char*)calloc(username_len + 1, 1);
+			strncpy(event.registry_entry_event->username, username_start, username_len);
+		}
+	}	
+
+	char* domain_start = strstr(buf, "Domain:");
+	if (domain_start) {
+		//Found domain
+		domain_start += 8; //Advance to start of content
+		char* domain_end = strstr(domain_start, "\r\n");
+		if (domain_end) {
+			//Found end of domain
+			int domain_len = domain_end - domain_start;
+			event.registry_entry_event->domain = (char*)calloc(domain_len + 1, 1);
+			strncpy(event.registry_entry_event->domain, domain_start, domain_len);
+		}
+	}
+
+	char* domain_port_start = strstr(buf, "DomainPort:");
+	if (domain_port_start) {
+		//Found port
+		domain_port_start += 12; //Advance to start of content
+		event.registry_entry_event->port = strtol(domain_port_start, NULL, 10);
+	}
+
+	char* refresh_start = strstr(buf, "Refresh:");
+	if (refresh_start) {
+		//Found refresh interval
+		refresh_start += 9; //Advance to start of content
+		event.registry_entry_event->refresh = strtol(refresh_start, NULL, 10);
+	}
+
+	char* state_start = strstr(buf, "State:");
+	if (state_start) {
+		//Found state
+		state_start += 7; //Advance to start of content
+		char* state_end = strstr(state_start, "\r\n");
+		if (state_end) {
+			//Found end of state
+			int state_len = state_end - state_start;
+			event.registry_entry_event->state = (char*)calloc(state_len + 1, 1);
+			strncpy(event.registry_entry_event->state, state_start, state_len);
+		}
+	}
+
+	char* registration_time_start = strstr(buf, "RegistrationTime:");
+	if (registration_time_start) {
+		//Found reg timestamp
+		registration_time_start += 18; //Advance to start of content
+		event.registry_entry_event->registration_time = strtol(registration_time_start, NULL, 10);
 	}
 
 	return event;
@@ -391,6 +502,19 @@ static void ami_handle_event(ami_connection* con, char* message)
 			break;
 		case REGISTRY:
 			event = parse_registry_event(&message[idx]);
+			break;
+		case REGISTRY_ENTRY:
+			event = parse_registry_entry_event(&message[idx]);
+			break;
+		case REGISTRATIONS_COMPLETE:
+			/*
+			 * Probably not needed.
+			 * (this happens after all registry entry events have been received)
+			 * Event: RegistrationsComplete
+			 * EventList: Complete
+			 * ListItems: 1
+			*/
+			event.type = REGISTRATIONS_COMPLETE;
 			break;
 		case UNKNOWN_EVENT:
 		default:
@@ -646,3 +770,33 @@ void ami_send_brcm_ports_show(ami_connection* con, ami_response_cb on_response) 
 	sprintf(action->message, "Action: BRCMPortsShow\r\n\r\n");
 	queue_action(con, action);
 }
+
+/*
+ * Request SIP Registry information
+ * (response is a simple message, then the registry events
+ * follow separately, one per registered account)
+ * Example response:
+ * Response: Success
+ * EventList: start
+ * Message: Registrations will follow
+ * 
+ * Event: RegistryEntry
+ * Host: sip0
+ * Port: 5060
+ * Username: 0510409896
+ * Domain: 62.80.209.10
+ * DomainPort: 5060
+ * Refresh: 5385
+ * State: Registered
+ * RegistrationTime: 1401282865
+ * 
+ * Event: RegistrationsComplete
+ * EventList: Complete
+ * ListItems: 1
+ */
+ void ami_send_sip_show_registry(ami_connection* con, ami_response_cb on_response) {
+ 	ami_action* action = (ami_action*)malloc(sizeof(ami_action));
+ 	action->callback = on_response;
+ 	sprintf(action->message, "Action: SIPshowregistry\r\n\r\n");
+ 	queue_action(con, action);
+ }
