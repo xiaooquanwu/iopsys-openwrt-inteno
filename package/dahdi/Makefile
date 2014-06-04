@@ -51,6 +51,8 @@ define Package/dahdi/install
 	mkdir -p $(1)/lib/modules/$(BCM_KERNEL_VERSION)/extra/
 	$(CP) $(PKG_BUILD_DIR)/linux/drivers/dahdi/dahdi.ko $(1)/lib/modules/$(BCM_KERNEL_VERSION)/extra/
 
+	mkdir -p $(1)/etc/modules.d/
+	$(CP) etc/modules.d/90-dahdi $(1)/etc/modules.d/
 endef
 
 $(eval $(call BuildPackage,dahdi))

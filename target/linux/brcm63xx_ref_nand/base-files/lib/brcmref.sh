@@ -48,7 +48,6 @@ brcm_insmod() {
 	test -e /lib/modules/3.4.11-rt19/extra/pwrmngtd.ko     && insmod /lib/modules/3.4.11-rt19/extra/pwrmngtd.ko
 	test -e /lib/modules/3.4.11-rt19/rng-core.ko           && insmod /lib/modules/3.4.11-rt19/rng-core.ko
 	test -e /lib/modules/3.4.11-rt19/extra/bcmtrng.ko      && insmod /lib/modules/3.4.11-rt19/extra/bcmtrng.ko
-	test -e /lib/modules/3.4.11-rt19/extra/dahdi.ko      && insmod /lib/modules/3.4.11-rt19/extra/dahdi.ko
 	echo brcm modules loaded
 }
 
