@@ -19,6 +19,7 @@ config board 'board'
 	option buttonnames 'RESET Wireless WPS DECT TOUCH_NEAR TOUCH_FAR'
 	option wpsButtonGpio '0'
 	option hasBrcmAvs '1'
+	option i2cGpioCustom 'bus0=0,23,22'
 
 config buttons 'buttons'
 	option RESET 'gpio 32 al resetbutton Status_green'

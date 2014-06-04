@@ -19,6 +19,7 @@ config board 'board'
 	option buttonnames 'RESET WPS WIFI'
 	option wpsButtonGpio '0'
 	option hasBrcmAvs '1'
+	option i2cGpioCustom 'bus0=0,10,9'
 
 config buttons 'buttons'
 	option RESET 'gpio 32 al resetbutton'
