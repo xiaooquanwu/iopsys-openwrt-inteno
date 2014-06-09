@@ -38,4 +38,7 @@ void ucix_revert(struct uci_context *ctx,
 	const char *p, const char *s, const char *o);
 void ucix_del(struct uci_context *ctx, const char *p,
 	const char *s, const char *o);
+void ucix_for_each_section_type(struct uci_context *ctx,
+	const char *p, const char *t,
+	void (*cb)(const char*, void*), void *priv);
 #endif
