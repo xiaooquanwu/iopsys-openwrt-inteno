@@ -461,6 +461,10 @@ $(eval $(call application,voice-pbx,LuCI Voice PBX Interface,\
 	+asterisk18-mod-app-playtones \
 	+asterisk18-mod-sounds \
 	+asterisk18-mod-res-stun \
+	+asterisk18-mod-app-queue \
+	+asterisk18-mod-voicemail \
+	+asterisk18-mod-res-musiconhold \
+	+asterisk18-mod-app-record \
 	+brcminfo))
 
 define Package/luci-app-voice-pbx/preinst
