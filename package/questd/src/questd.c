@@ -1018,7 +1018,7 @@ void *dump_router_info(void *arg)
 	while (true) {
 		dump_sysinfo(&router, &memory);
 		dump_cpuinfo(&router, &prev_jif, &cur_jif);
-		populate_clients(&clients);
+		populate_clients();
 		get_jif_val(&prev_jif);
 		usleep(sleep_time);
 		recalc_sleep_time(false, 0);
