@@ -36,11 +36,17 @@
 #include <error.h>
 #include <time.h>
 #include <string.h>
+#include <sys/mman.h>
+#include <err.h>
 #include "brcm_fw_tool.h"
 #include "crc32.h"
 #include "jffs2.h"
 #include <board.h>
 #include "bcmnet.h"
+
+#define MAP_SIZE (4096)
+#define MAP_MASK 0xFFF
+void          *mapped_base;
 
 #if __BYTE_ORDER == __BIG_ENDIAN
 #define STORE32_LE(X)           ((((X) & 0x000000FF) << 24) | (((X) & 0x0000FF00) << 8) | (((X) & 0x00FF0000) >> 8) | (((X) & 0xFF000000) >> 24))
@@ -193,6 +199,22 @@ static int write_flash_image(const char *in_file, int cfe, int fs) {
     return 0;
 }
 
+void dump(int reg)
+{
+    printf("%x -> %08x\n",reg,*(int*)(mapped_base+reg));
+}
+
+void wr(int addr,int reg)
+{
+    *(int*)(mapped_base+addr) = reg;
+}
+
+int rr(int addr)
+{
+    return *(int*)(mapped_base+addr);
+}
+
+
 static int get_info(int memdump, int chip_id, int flash_size, int chip_rev, int cfe_version, int wan_interfaces, int status, int boot_mode, int boot_mode_id) {
     char ioctl_buf[64]={0};
     fd = open("/dev/brcmboard", O_RDWR);
@@ -215,10 +237,28 @@ static int get_info(int memdump, int chip_id, int flash_size, int chip_rev, int 
     }
     /* Dump 4 bytes */
     if (memdump) {
-        if (verbose) printf("Dumping addr: 0x%x\n",memdump);
-        board_ioctl(BOARD_IOCTL_DUMP_ADDR ,          0, 1, (char*)memdump, 4, 0);
+//        if (verbose) printf("Dumping addr: 0x%x\n",memdump);
+//        board_ioctl(BOARD_IOCTL_DUMP_ADDR ,          0, 1, (char*)memdump, 4, 0);
+    off_t          dev_base = 0x10000000; /* physical address of internal registers */
+    int            memfd;
+    int tmp;
+
+    memfd = open("/dev/mem", O_RDWR | O_SYNC);
+
+    if (memfd < 0){
+        errx(1, "Could not open /dev/mem\n");
     }
-    
+
+    mapped_base = mmap(0, MAP_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, memfd, dev_base & ~MAP_MASK);
+
+    if (mapped_base == MAP_FAILED)
+        errx(1, "mmap failure");
+
+    dump(memdump);
+    munmap(mapped_base, MAP_SIZE);
+    close(memfd);
+    }
+
     close(fd);
 
 
