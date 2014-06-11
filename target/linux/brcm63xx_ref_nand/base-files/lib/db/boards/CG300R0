@@ -21,6 +21,9 @@ config board 'board'
 	option fxsRelayGpio '0'
 	option i2cGpioCustom 'bus0=0,23,22'
 
+config wifi-chip '435f'
+	option bands 'b'
+
 config buttons 'buttons'
 	option RESET 'gpio 32 al resetbutton Status_green'
 	option DECT 'i2c 3 ah dectbutton WPS_green'

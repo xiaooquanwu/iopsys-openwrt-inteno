@@ -18,6 +18,9 @@ config board 'board'
 	option buttonnames 'RESET WPS ECO'
 	option wpsButtonGpio '11'
 
+config wifi-chip '435f'
+	option bands 'b'
+
 config buttons 'buttons'
 	option RESET 'gpio 9 al resetbutton'
 	option WPS 'gpio 11 al wpsbutton'

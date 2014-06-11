@@ -20,6 +20,9 @@ config board 'board'
 	option wpsButtonGpio '33'
 	option hasBrcmAvs '1'
 
+config wifi-chip '435f'
+	option bands 'b'
+
 config buttons 'buttons'
 	option RESET 'gpio 32 al resetbutton'
 	option WPS 'gpio 33 al wpsbutton'
