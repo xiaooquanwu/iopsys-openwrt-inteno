@@ -10,12 +10,12 @@ local line, dmsg, stmp1, stmp2, msg, date
 
 for ln in utl.execi("dmesg") do
 	line = ln
-	stmp1, stmp2, msg = ln:match("%s+(%d+).(%d+)] (%S.*)")
+	stmp1, stmp2, msg = ln:match("(%d+).(%d+)] (%S.*)")
 
 	if stmp1 and stmp2 and msg then
 		dmsg = " " .. msg
 	else
-		stmp1, stmp2 = ln:match("%s+(%d+).(%d+)]%s")
+		stmp1, stmp2 = ln:match("(%d+).(%d+)]%s")
 		dmsg = ""
 	end
 
