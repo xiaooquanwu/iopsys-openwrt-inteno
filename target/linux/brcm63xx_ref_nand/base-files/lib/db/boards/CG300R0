@@ -24,6 +24,14 @@ config board 'board'
 config wifi-chip '435f'
 	option bands 'b'
 
+config wifi-chip '43a0'
+	option bands 'a'
+	option is_ac '1'
+
+config wifi-chip '43a2'
+	option bands 'a'
+	option is_ac '1'
+
 config buttons 'buttons'
 	option RESET 'gpio 32 al resetbutton Status_green'
 	option DECT 'i2c 3 ah dectbutton WPS_green'
