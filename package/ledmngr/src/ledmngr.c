@@ -682,7 +682,11 @@ static struct leds_configuration* get_led_config(void) {
         }
     }
 
-    led_cfg->leds_state = LEDS_NORMAL;
+    p = ucix_get_option(uci_ctx, "hw", "board", "hardware");
+    if (p && !strcmp(p, "CG300"))
+	led_cfg->leds_state = LEDS_PROXIMITY;
+    else
+	led_cfg->leds_state = LEDS_NORMAL;
     led_cfg->test_state = 0;
     led_cfg->proximity_timer = 0;
     led_cfg->proximity_all_timer = 0;
