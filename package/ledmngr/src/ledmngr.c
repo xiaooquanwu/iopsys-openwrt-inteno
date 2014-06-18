@@ -614,8 +614,9 @@ static int add_led(struct leds_configuration* led_cfg, char* led_name, const cha
             DEBUG_PRINT("Too many leds configured! Only adding the %d first\n", MAX_LEDS);
             return -1;
         }
-        /* FIXME: Add to configuration file? */
-        if (!strncmp(lc->name, "WAN_", 4) || !strncmp(lc->name, "Status_", 7))
+        /* FIXME: Add to configuration file? Maybe we also want to
+	   exclude WAN_ leds on CG300. */
+        if (!strncmp(lc->name, "Status_", 7))
             lc->use_proximity = 0;
         else
             lc->use_proximity = 1;
