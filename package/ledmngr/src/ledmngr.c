@@ -88,21 +88,22 @@ typedef enum {
 } button_active_t;
 
 typedef enum {
+    LED_OFF,
     LED_OK,
     LED_NOTICE,
     LED_ALERT,
     LED_ERROR,
-    LED_OFF,
     LED_ACTION_MAX,
 } led_action_t;
 
 typedef enum {
     LEDS_NORMAL,
     LEDS_PROXIMITY,
+    LEDS_SILENT,
     LEDS_INFO,
     LEDS_TEST,
     LEDS_PROD,
-    LEDS_RESET,
+    LEDS_RESET,    
     LEDS_MAX,
 } leds_state_t;
 
@@ -132,17 +133,25 @@ struct led_map {
     struct led_action led_actions[LED_ACTION_MAX];
 };
 
-static char* fn_actions[LED_ACTION_MAX] = { "ok", "notice", "alert", "error", "off",};
-static char* led_functions[LED_FUNCTIONS] = { "dsl", "wifi", "wps", "lan", "status", "dect", "tv", "usb", "wan", "internet", "voice1", "voice2", "eco", "gbe"};
-static char* led_states[LED_STATES_MAX] = { "off", "on", "blink_slow", "blink_fast" };
-static char* leds_states[LEDS_MAX] = { "normal", "proximity", "info", "test", "production", "reset" };
+/* Names for led_action_t */
+static const char * const fn_actions[LED_ACTION_MAX] =
+    { "off", "ok", "notice", "alert", "error",};
+static const char* const led_functions[LED_FUNCTIONS] =
+    { "dsl", "wifi", "wps", "lan", "status", "dect", "tv", "usb",
+      "wan", "internet", "voice1", "voice2", "eco", "gbe"};
+/* Names for led_state_t */
+static const char* const led_states[LED_STATES_MAX] =
+    { "off", "on", "blink_slow", "blink_fast" };
+/* Names for leds_state_t */
+static const char* const leds_states[LEDS_MAX] =
+    { "normal", "proximity", "silent", "info", "test", "production", "reset" };
 
 struct leds_configuration {
     int             leds_nr;
     struct led_config**  leds;
     int fd;
     int shift_register_state[SR_MAX];
-    int led_fn_action[LED_FUNCTIONS];
+    led_action_t led_fn_action[LED_FUNCTIONS];
     struct led_map led_map_config[LED_FUNCTIONS][LED_ACTION_MAX];
 
     /* If >= 0, index for the led used for button and proximity
@@ -1125,7 +1134,7 @@ static void blink_handler(struct uloop_timeout *timeout)
     //printf("Timer\n");
 }
 
-static int index_from_action(const char* action) {
+static led_action_t index_from_action(const char* action) {
     int i;
     for (i=0 ; i<LED_ACTION_MAX ; i++) {
         if (!strcasecmp(action, fn_actions[i]))
@@ -1137,11 +1146,11 @@ static int index_from_action(const char* action) {
 };
 
 
-static void set_function_led(struct leds_configuration* led_cfg, char* fn_name, const char* action) {
+static void set_function_led(struct leds_configuration* led_cfg, const char* fn_name, const char* action) {
     int i;
-    char* led_name = NULL;
+    const char* led_name = NULL;
     int led_fn_idx = -1;
-    int action_idx;
+    led_action_t action_idx;
     struct led_map *map;
 
     DEBUG_PRINT("(%s ->%s)\n",fn_name, action);
@@ -1168,9 +1177,21 @@ static void set_function_led(struct leds_configuration* led_cfg, char* fn_name, 
     for (i=0 ; i<map->led_actions_nr ; i++) {
 	int led_idx = map->led_actions[i].led_index;
         DEBUG_PRINT("[%d] %d %d\n", map->led_actions_nr, led_idx, map->led_actions[i].led_state);
-	
-        led_set_state(led_cfg, led_idx,
-		      map->led_actions[i].led_state);
+
+	/* In silent mode, we set lc->state to off. It might make more
+	   sense to maintain the desired state, and omit blinking it
+	   in the blink_handler, but then we would need some
+	   additional flag per led. In all cases,
+	   led_cfg->led_fn_action records the desired state, so it
+	   isn't lost when switching back to non-silent mode. */
+	if (led_cfg->leds_state == LEDS_SILENT
+	    && led_cfg->leds[led_idx]->use_proximity
+	    && action_idx < LED_ALERT)
+	    led_set_state(led_cfg, led_idx, OFF);
+	else
+	    led_set_state(led_cfg, led_idx,
+			  map->led_actions[i].led_state);
+
         if (led_cfg->leds_state != LEDS_INFO) {
             led_set(led_cfg, map->led_actions[i].led_index, -1);
 
@@ -1385,8 +1406,8 @@ static int leds_set_method(struct ubus_context *ubus_ctx, struct ubus_object *ob
             all_leds_off(led_cfg);
         }
 
-        if (i == LEDS_NORMAL || i == LEDS_PROXIMITY) {
-	    if (old != LEDS_NORMAL && old != LEDS_PROXIMITY) {
+        if (i <= LEDS_SILENT) {
+	    if (i == LEDS_SILENT || old >= LEDS_SILENT) {
 		all_leds_off(led_cfg);
 		set_function_led(led_cfg, "eco", "off");
 		for (j=0 ; j<LED_FUNCTIONS ; j++) {
