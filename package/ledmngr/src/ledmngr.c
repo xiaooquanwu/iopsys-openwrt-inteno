@@ -1544,6 +1544,23 @@ static int sfp_rom_byte(unsigned addr)
     return ret;
 };
 
+static int sfp_rom_bytes(unsigned addr, char *p, size_t length)
+{
+    int byte = sfp_rom_byte(addr);
+    int i;
+    if (byte < 0)
+	return 0;
+    p[0] = byte;
+
+    for (i = 1; i < length; i++) {
+	byte = i2c_smbus_read_byte_data(sfp_rom_fd, addr + i);
+	if (byte < 0)
+	    return 0;
+	p[i] = byte;
+    }
+    return 1;
+}
+
 static int sfp_rom_get_type_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
 				   struct ubus_request_data *req, const char *method,
 				   struct blob_attr *msg)
@@ -1695,13 +1712,21 @@ static int sfp_rom_get_rate_method(struct ubus_context *ubus_ctx, struct ubus_ob
 				   struct blob_attr *msg)
 {
     int byte = sfp_rom_byte (12);
-
+    int tol;
     if (byte < 0)
 	return UBUS_STATUS_NO_DATA;
 
     blob_buf_init (&b, 0);
     /* Read byte is in units of 100 Mbit/s, scale to Mbit/s. */
     blobmsg_add_u32(&b, "rate", 100*byte);
+    tol = sfp_rom_byte (66);
+    if (tol > 0)
+	blobmsg_add_u32(&b, "rate-max", (100 + tol)*byte);
+
+    tol = sfp_rom_byte (67);
+    if (tol > 0 && tol <= 100)
+	blobmsg_add_u32(&b, "rate-min", (100 - tol)*byte);
+
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
 }
@@ -1739,6 +1764,136 @@ static int sfp_rom_get_length_method(struct ubus_context *ubus_ctx, struct ubus_
     return 0;
 }
 
+static int sfp_rom_get_vendor_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
+				     struct ubus_request_data *req, const char *method,
+				     struct blob_attr *msg)
+{
+    char buf[17];
+    int i;
+    if (!sfp_rom_bytes(20, buf, 16))
+	return UBUS_STATUS_NO_DATA;
+
+    for (i = 16; i > 0 && buf[i-1] == ' '; i--)
+	;
+    buf[i] = '\0';
+
+    blob_buf_init (&b, 0);
+    blobmsg_add_string(&b, "vendor", buf);
+    ubus_send_reply(ubus_ctx, req, b.head);
+    return 0;
+}
+
+static int sfp_rom_get_oui_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
+				  struct ubus_request_data *req, const char *method,
+				  struct blob_attr *msg)
+{
+    char buf[3];
+    char value[9];
+
+    if (!sfp_rom_bytes(37, buf, 3))
+	return UBUS_STATUS_NO_DATA;
+
+    snprintf(value, sizeof(value), "%02x:%02x:%02x",
+	     (unsigned char) buf[0], (unsigned char) buf[1], (unsigned char) buf[2]);
+    blob_buf_init (&b, 0);
+    blobmsg_add_string(&b, "oui", value);
+    ubus_send_reply(ubus_ctx, req, b.head);
+    return 0;
+}
+
+static int sfp_rom_get_pn_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
+				 struct ubus_request_data *req, const char *method,
+				 struct blob_attr *msg)
+{
+    char buf[17];
+    int i;
+    if (!sfp_rom_bytes(40, buf, 16))
+	return UBUS_STATUS_NO_DATA;
+
+    for (i = 16; i > 0 && buf[i-1] == ' '; i--)
+	;
+    buf[i] = '\0';
+
+    blob_buf_init (&b, 0);
+    blobmsg_add_string(&b, "pn", buf);
+    ubus_send_reply(ubus_ctx, req, b.head);
+    return 0;
+}
+
+static int sfp_rom_get_rev_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
+				  struct ubus_request_data *req, const char *method,
+				  struct blob_attr *msg)
+{
+    char buf[5];
+    int i;
+    if (!sfp_rom_bytes(68, buf, 4))
+	return UBUS_STATUS_NO_DATA;
+
+    for (i = 4; i > 0 && buf[i-1] == ' '; i--)
+	;
+    buf[i] = '\0';
+
+    blob_buf_init (&b, 0);
+    blobmsg_add_string(&b, "rev", buf);
+    ubus_send_reply(ubus_ctx, req, b.head);
+    return 0;
+}
+
+static int sfp_rom_get_sn_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
+				 struct ubus_request_data *req, const char *method,
+				 struct blob_attr *msg)
+{
+    char buf[17];
+    int i;
+    if (!sfp_rom_bytes(68, buf, 16))
+	return UBUS_STATUS_NO_DATA;
+
+    for (i = 16; i > 0 && buf[i-1] == ' '; i--)
+	;
+    buf[i] = '\0';
+
+    blob_buf_init (&b, 0);
+    blobmsg_add_string(&b, "sn", buf);
+    ubus_send_reply(ubus_ctx, req, b.head);
+    return 0;
+}
+
+static int sfp_rom_get_date_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
+				   struct ubus_request_data *req, const char *method,
+				   struct blob_attr *msg)
+{
+    char buf[8];
+    char value[14];
+    int i;
+    if (!sfp_rom_bytes(84, buf, 8))
+	return UBUS_STATUS_NO_DATA;
+
+    value[0] = '2';
+    value[1] = '0';
+    value[2] = buf[0];
+    value[3] = buf[1];
+    value[4] = '-';
+    value[5] = buf[2];
+    value[6] = buf[3];
+    value[7] = '-';
+    value[8] = buf[4];
+    value[9] = buf[5];
+    for (i = 8; i > 6 && buf[i-1] == ' '; i--)
+	;
+    memset(value+10, 0, 4);
+    if (i > 6) {
+	value[10] = ' ';
+	value[11] = buf[6];
+	if (i > 7)
+	    value[12] = buf[7];
+    }
+
+    blob_buf_init (&b, 0);
+    blobmsg_add_string(&b, "date", value);
+    ubus_send_reply(ubus_ctx, req, b.head);
+    return 0;
+}
+
 static const struct ubus_method sfp_rom_methods[] = {
     { .name = "get-type", .handler = sfp_rom_get_type_method },
     { .name = "get-connector", .handler = sfp_rom_get_connector_method },
@@ -1746,6 +1901,12 @@ static const struct ubus_method sfp_rom_methods[] = {
     { .name = "get-encoding", .handler = sfp_rom_get_encoding_method },
     { .name = "get-rate", .handler = sfp_rom_get_rate_method },
     { .name = "get-length", .handler = sfp_rom_get_length_method },
+    { .name = "get-vendor", .handler = sfp_rom_get_vendor_method },
+    { .name = "get-oui", .handler = sfp_rom_get_oui_method },
+    { .name = "get-pn", .handler = sfp_rom_get_pn_method },
+    { .name = "get-rev", .handler = sfp_rom_get_rev_method },
+    { .name = "get-sn", .handler = sfp_rom_get_sn_method },
+    { .name = "get-date", .handler = sfp_rom_get_date_method },
 };
 
 static struct ubus_object_type sfp_rom_type =
