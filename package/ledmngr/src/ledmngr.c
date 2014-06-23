@@ -600,6 +600,53 @@ void i2c_led_set( struct led_config* lc, int state){
 
 }
 
+struct i2c_sfp {
+    const char *bus;
+    int rom_addr;
+    int ddm_addr;
+    const char *name;
+};
+
+const struct i2c_sfp i2c_sfp_list[] = {
+    { .bus = "/dev/i2c-0",
+      .rom_addr = 0x50,
+      .ddm_addr = 0x51,
+      .name = "EG200"
+    },
+};
+
+const struct i2c_sfp *i2c_sfp;
+
+static int sfp_rom_fd = -1;
+static int sfp_ddm_fd = -1;
+
+static int init_i2c_sfp(void)
+{
+    const char *p;
+    int i;
+
+    p = ucix_get_option(uci_ctx, "hw", "board", "hardware");
+    if (p == 0){
+        syslog(LOG_INFO, "%s: Missing Hardware identifier in configuration. I2C is not started\n",__func__);
+        return 0;
+    }
+
+    /* Here we match the hardware name to a init table, and get the
+       i2c chip address */
+    i2c_sfp = NULL;
+    for (i = 0; i < sizeof(i2c_sfp_list) / sizeof(i2c_sfp_list[0]); i++)
+	if (!strcmp(i2c_sfp_list[i].name, p)) {
+	    DEBUG_PRINT("I2C hardware platform %s found.\n", p);
+	    i2c_sfp = &i2c_sfp_list[i];
+	    break;
+	}
+    if (!i2c_sfp) {
+	DEBUG_PRINT("No I2C hardware found: %s.\n", p);
+	return 0;
+    }
+    return 1;
+}
+
 static int add_led(struct leds_configuration* led_cfg, char* led_name, const char* led_config, led_color_t color) {
 
     if (!led_config) {
@@ -1470,7 +1517,83 @@ static struct ubus_object led_objects[LED_OBJECTS] = {
     { .name = "led.gbe",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
 };
 
+static int sfp_rom_byte(unsigned addr)
+{
+    int ret;
+    if (!i2c_sfp)
+	return -1;
 
+    if (sfp_rom_fd >= 0) {
+	ret = i2c_smbus_read_byte_data(sfp_rom_fd, addr);
+	if (ret >= 0)
+	    return ret;
+	/* Close and retry */
+	close (sfp_rom_fd);
+	goto open;
+    }
+    if (sfp_rom_fd < 0) {
+    open:
+	sfp_rom_fd = i2c_open_dev(i2c_sfp->bus, i2c_sfp->rom_addr, I2C_FUNC_SMBUS_READ_BYTE);
+	if (sfp_rom_fd < 0)
+	    return -1;
+    }
+    ret = i2c_smbus_read_byte_data(sfp_rom_fd, addr);
+    if (ret < 0) {
+	DEBUG_PRINT ("%s: i2c_smbus_read_byte_data failed: addr %d\n", __func__, addr);
+    }
+    return ret;
+};
+
+static int sfp_rom_get_type_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
+				   struct ubus_request_data *req, const char *method,
+				   struct blob_attr *msg)
+{
+    int type = sfp_rom_byte (0);
+    char buf[20];
+    const char *value;
+
+    DEBUG_PRINT("%s: type = %d\n", __func__, type);
+    if (type < 0)
+	return UBUS_STATUS_NO_DATA;
+
+    switch (type) {
+    case 0:
+	value = "unspecified";
+	break;
+    case 1:
+	value = "GBIC";
+	break;
+    case 2:
+	value = "soldered module/connector";
+	break;
+    case 3:
+	value = "SFP";
+	break;
+    default:
+	snprintf(buf, sizeof(buf), "%s %d",
+		 type < 0x80 ? "reserved" : "vendor specific",
+		 type);
+	value = buf;
+	break;
+    }
+
+    blob_buf_init (&b, 0);
+    blobmsg_add_string(&b, "type", value);
+    ubus_send_reply(ubus_ctx, req, b.head);
+    return 0;
+}
+
+static const struct ubus_method sfp_rom_methods[] = {
+    { .name = "get-type", .handler = sfp_rom_get_type_method },
+};
+
+static struct ubus_object_type sfp_rom_type =
+    UBUS_OBJECT_TYPE("sfp", sfp_rom_methods);
+
+static struct ubus_object sfp_objects[] = {
+    { .name = "sfp.rom", .type = &sfp_rom_type,
+      .methods = sfp_rom_methods, ARRAY_SIZE(sfp_rom_methods) }
+};
 
 static void server_main(struct leds_configuration* led_cfg)
 {
@@ -1482,6 +1605,12 @@ static void server_main(struct leds_configuration* led_cfg)
 	    DEBUG_PRINT("Failed to add object: %s\n", ubus_strerror(ret));
     }
 
+    if (i2c_sfp)
+	for (i = 0; i < ARRAY_SIZE(sfp_objects); i++) {
+	    ret = ubus_add_object (ubus_ctx, &sfp_objects[i]);
+	    if (ret)
+		DEBUG_PRINT("Failed to add sfp object: %s\n", ubus_strerror(ret));
+	}
 
     uloop_timeout_set(&blink_inform_timer, 100);
 
@@ -1605,7 +1734,8 @@ int ledmngr(void) {
     led_cfg  = get_led_config();
     butt_cfg = get_button_config();
 
-    
+    init_i2c_sfp();
+
     /* initialize ubus */
     DEBUG_PRINT("initialize ubus\n");
 
