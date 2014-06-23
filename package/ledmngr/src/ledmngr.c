@@ -1682,6 +1682,54 @@ static int sfp_rom_get_connector_method(struct ubus_context *ubus_ctx, struct ub
     return 0;
 }
 
+static int sfp_rom_get_ethernet(struct blob_buf *b)
+{
+    int byte = sfp_rom_byte (6);
+    int i;
+    char value[11];
+    if (byte < 0)
+	return 0;
+
+    i = 0;
+    if (byte & 8)
+	value[i++] = 'T';
+    if (byte & 4) {
+	if (i)
+	    value[i++] = ',';
+	strcpy(value+i, "CX");
+	i += 2;
+    }
+    if (byte & 2) {
+	if (i)
+	    value[i++] = ',';
+	strcpy(value+i, "LX");
+	i += 2;
+    }
+    if (byte & 1) {
+	if (i)
+	    value[i++] = ',';
+	strcpy(value+i, "SX");
+	i += 2;
+    }
+    if (!i)
+	return 0;
+
+    value[i] = '\0';
+    blobmsg_add_string(b, "ethernet", value);
+    return 1;
+}
+
+static int sfp_rom_get_ethernet_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
+				       struct ubus_request_data *req, const char *method,
+				       struct blob_attr *msg)
+{
+    blob_buf_init (&b, 0);
+    if (!sfp_rom_get_ethernet(&b))
+	return UBUS_STATUS_NO_DATA;
+    ubus_send_reply(ubus_ctx, req, b.head);
+    return 0;
+}
+
 static int sfp_rom_get_encoding(struct blob_buf *b)
 {
     int byte = sfp_rom_byte (11);
@@ -1978,6 +2026,7 @@ static int sfp_rom_get_all_method(struct ubus_context *ubus_ctx, struct ubus_obj
     if (!sfp_rom_get_type(&b))
 	return UBUS_STATUS_NO_DATA;
     sfp_rom_get_connector(&b);
+    sfp_rom_get_ethernet(&b);
     sfp_rom_get_encoding(&b);
     sfp_rom_get_rate(&b);
     sfp_rom_get_length(&b);
@@ -1994,7 +2043,7 @@ static int sfp_rom_get_all_method(struct ubus_context *ubus_ctx, struct ubus_obj
 static const struct ubus_method sfp_rom_methods[] = {
     { .name = "get-type", .handler = sfp_rom_get_type_method },
     { .name = "get-connector", .handler = sfp_rom_get_connector_method },
-    /* FIXME: Tranciever bits, addresses 3-10 */
+    { .name = "get-ethernet", .handler = sfp_rom_get_ethernet_method },
     { .name = "get-encoding", .handler = sfp_rom_get_encoding_method },
     { .name = "get-rate", .handler = sfp_rom_get_rate_method },
     { .name = "get-length", .handler = sfp_rom_get_length_method },
