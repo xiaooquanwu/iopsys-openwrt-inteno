@@ -1248,13 +1248,6 @@ static const struct blobmsg_policy led_policy[] = {
 	[LED_STATE] = { .name = "state", .type = BLOBMSG_TYPE_STRING },
 };
 
-struct hello_request {
-	struct ubus_request_data req;
-	struct uloop_timeout timeout;
-	char data[];
-};
-
-
 
 static int led_set_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
 		      struct ubus_request_data *req, const char *method,
@@ -1277,24 +1270,10 @@ static int led_set_method(struct ubus_context *ubus_ctx, struct ubus_object *obj
     return 0;
 }
 
-
-static void led_status_reply(struct uloop_timeout *t)
-{
-    struct hello_request *req = container_of(t, struct hello_request, timeout);
-    DEBUG_PRINT("\n");
-
-    blob_buf_init(&b, 0);
-    blobmsg_add_string(&b, "state", req->data);
-    ubus_send_reply(ubus_ctx, &req->req, b.head);
-    ubus_complete_deferred_request(ubus_ctx, &req->req, 0);
-    free(req);
-}
-
 static int led_status_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
 		      struct ubus_request_data *req, const char *method,
 		      struct blob_attr *msg)
 {
-    struct hello_request *hreq;
     int action, i, led_fn_idx=0;
     char *fn_name = strchr(obj->name, '.') + 1;
 
@@ -1308,11 +1287,9 @@ static int led_status_method(struct ubus_context *ubus_ctx, struct ubus_object *
 
     DEBUG_PRINT( "Led %s method: %s action %d\n", fn_name, method, action);
 
-    hreq = calloc(1, sizeof(*hreq) +  100);
-    sprintf(hreq->data, "%s", fn_actions[action]);
-    ubus_defer_request(ubus_ctx, req, &hreq->req);
-    hreq->timeout.cb = led_status_reply;
-    uloop_timeout_set(&hreq->timeout, 1000);
+    blob_buf_init (&b, 0);
+    blobmsg_add_string(&b, "state", fn_actions[action]);
+    ubus_send_reply(ubus_ctx, req, b.head);
 
     return 0;
 }
@@ -1435,14 +1412,11 @@ static int leds_status_method(struct ubus_context *ubus_ctx, struct ubus_object 
 		      struct ubus_request_data *req, const char *method,
 		      struct blob_attr *msg)
 {
-	struct hello_request *hreq;
 	DEBUG_PRINT("\n");
-	hreq = calloc(1, sizeof(*hreq) +  100);
-	sprintf(hreq->data, "%s", leds_states[led_cfg->leds_state]);
-	ubus_defer_request(ubus_ctx, req, &hreq->req);
-	hreq->timeout.cb = led_status_reply;
-	uloop_timeout_set(&hreq->timeout, 1000);
 
+	blob_buf_init (&b, 0);
+	blobmsg_add_string(&b, "state", leds_states[led_cfg->leds_state]);
+	ubus_send_reply(ubus_ctx, req, b.head);
 	return 0;
 }
 
