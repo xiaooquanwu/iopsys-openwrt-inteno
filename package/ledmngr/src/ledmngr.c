@@ -349,8 +349,8 @@ struct i2c_touch i2c_touch_list[] = {
     }
 };
 
-static void i2c_reset_handler(struct uloop_timeout *timeout);
-static struct uloop_timeout i2c_reset_timer = { .cb = i2c_reset_handler };
+static void i2c_touch_reset_handler(struct uloop_timeout *timeout);
+static struct uloop_timeout i2c_touch_reset_timer = { .cb = i2c_touch_reset_handler };
 
 void dump_i2c(int fd,int start,int stop)
 {
@@ -364,7 +364,7 @@ void dump_i2c(int fd,int start,int stop)
     }
 }
 
-static int init_i2c()
+static int init_i2c_touch()
 {
     const char *p;
     unsigned long funcs;
@@ -439,7 +439,7 @@ error1:
     return 0;
 }
 
-static void i2c_reset_handler(struct uloop_timeout *timeout)
+static void i2c_touch_reset_handler(struct uloop_timeout *timeout)
 {
     int i;
 
@@ -448,13 +448,13 @@ static void i2c_reset_handler(struct uloop_timeout *timeout)
     if (i2c_touch->dev)
         close(i2c_touch->dev);
 
-    init_i2c();
+    init_i2c_touch();
 
     for (i=0 ; i<led_cfg->leds_nr ; i++)
 	if (led_cfg->leds[i]->type == I2C)
 	    led_set(led_cfg, i, -1);
 
-    uloop_timeout_set(&i2c_reset_timer, I2C_RESET_TIME);
+    uloop_timeout_set(&i2c_touch_reset_timer, I2C_RESET_TIME);
 
 }
 
@@ -1502,7 +1502,7 @@ static void server_main(struct leds_configuration* led_cfg)
     uloop_timeout_set(&blink_inform_timer, 100);
 
     if (i2c_touch)
-	uloop_timeout_set(&i2c_reset_timer, I2C_RESET_TIME);
+	uloop_timeout_set(&i2c_touch_reset_timer, I2C_RESET_TIME);
 
     uloop_run();
 }
@@ -1614,7 +1614,7 @@ int ledmngr(void) {
     }
 //    if (led_need_type (led_cfg, I2C) || button_need_type (butt_cfg, I2C))
 	i2c_touch = NULL;
-	init_i2c();
+	init_i2c_touch();
 //    else
 //	i2c_touch = NULL;
 
