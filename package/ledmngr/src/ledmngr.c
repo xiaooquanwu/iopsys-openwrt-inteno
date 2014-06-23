@@ -330,7 +330,7 @@ struct i2c_touch{
     int irq_button;
     const struct i2c_reg_tab *init_tab;
     int init_tab_len;
-    char *name;
+    const char *name;
 } *i2c_touch;
 
 struct i2c_touch i2c_touch_list[] = {
