@@ -364,17 +364,45 @@ void dump_i2c(int fd,int start,int stop)
     }
 }
 
+static int i2c_open_dev (const char *bus, int addr, unsigned long needed)
+{
+    int fd = open(bus, O_RDWR);
+    if (fd < 0) {
+	syslog(LOG_INFO,"%s: could not open /dev/i2c-0\n",__func__);
+	return -1;
+    }
+    if (ioctl(fd, I2C_SLAVE, addr) < 0) {
+        syslog(LOG_INFO,"%s: could not set address %x for i2c chip\n",
+	       __func__, addr);
+    error:
+	close (fd);
+	return -1;
+    }
+    if (needed) {
+	unsigned long funcs;
+	if (ioctl(fd, I2C_FUNCS, &funcs) < 0) {
+	    syslog(LOG_INFO,"%s: could not get I2C_FUNCS\n",__func__);
+	    goto error;
+	}
+	if ( (funcs & needed) != needed) {
+	    syslog(LOG_INFO,"%s: lacking I2C capabilities, have %lx, need %lx\n",
+		   __func__, funcs, needed);
+	    goto error;
+	}
+    }
+    return fd;
+}
+
 static int init_i2c_touch()
 {
     const char *p;
-    unsigned long funcs;
     int i;
     const struct i2c_reg_tab *tab;
 
     p = ucix_get_option(uci_ctx, "hw", "board", "hardware");
     if (p == 0){
         syslog(LOG_INFO, "%s: Missing Hardware identifier in configuration. I2C is not started\n",__func__);
-        goto error;
+        return 0;
     }
 
     /* Here we match the hardware name to a init table, and get the
@@ -391,27 +419,14 @@ static int init_i2c_touch()
 	return 0;
     }
 
+    i2c_touch->dev = i2c_open_dev("/dev/i2c-0", i2c_touch->addr,
+				  I2C_FUNC_SMBUS_READ_BYTE | I2C_FUNC_SMBUS_WRITE_BYTE);
+
     i2c_touch->dev = open("/dev/i2c-0", O_RDWR);
     if (i2c_touch->dev < 0) {
-        syslog(LOG_INFO,"%s: could not open /dev/i2c-0\n",__func__);
-        goto error1;
-    }
-
-    if (ioctl(i2c_touch->dev, I2C_SLAVE, i2c_touch->addr) < 0) {
-        syslog(LOG_INFO,"%s: could not set address for i2c chip\n",__func__);
-        goto error;
-    }
-    if (ioctl(i2c_touch->dev, I2C_FUNCS, &funcs) < 0) {
-        syslog(LOG_INFO,"%s: could not get I2C?FUNCS\n",__func__);
-        goto error;
-    }
-    if (!(funcs & I2C_FUNC_SMBUS_READ_BYTE)) {
-        syslog(LOG_INFO,"%s: no I2C_FUNC_SMBUS_READ_BYTE\n",__func__);
-        goto error;
-    }
-    if (!(funcs & I2C_FUNC_SMBUS_WRITE_BYTE)) {
-        syslog(LOG_INFO,"%s: no I2C_FUNC_SMBUS_WRITE_BYTE\n",__func__);
-        goto error;
+        syslog(LOG_INFO,"%s: could not open i2c touch device\n",__func__);
+	i2c_touch->dev = 0;
+        return 0;
     }
 
     DEBUG_PRINT("Opened device and selected address %x \n", i2c_touch->addr);
@@ -432,11 +447,6 @@ static int init_i2c_touch()
 //  dump_i2c(i2c_touch->dev,0,13);
 
     return 1;
-error:
-    close(i2c_touch->dev);
-error1:
-    i2c_touch->dev = 0;
-    return 0;
 }
 
 static void i2c_touch_reset_handler(struct uloop_timeout *timeout)
