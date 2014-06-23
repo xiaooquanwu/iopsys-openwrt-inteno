@@ -1548,15 +1548,14 @@ static int sfp_rom_get_type_method(struct ubus_context *ubus_ctx, struct ubus_ob
 				   struct ubus_request_data *req, const char *method,
 				   struct blob_attr *msg)
 {
-    int type = sfp_rom_byte (0);
+    int byte = sfp_rom_byte (0);
     char buf[20];
     const char *value;
 
-    DEBUG_PRINT("%s: type = %d\n", __func__, type);
-    if (type < 0)
+    if (byte < 0)
 	return UBUS_STATUS_NO_DATA;
 
-    switch (type) {
+    switch (byte) {
     case 0:
 	value = "unspecified";
 	break;
@@ -1571,8 +1570,116 @@ static int sfp_rom_get_type_method(struct ubus_context *ubus_ctx, struct ubus_ob
 	break;
     default:
 	snprintf(buf, sizeof(buf), "%s %d",
-		 type < 0x80 ? "reserved" : "vendor specific",
-		 type);
+		 byte < 0x80 ? "reserved" : "vendor specific",
+		 byte);
+	value = buf;
+	break;
+    }
+
+    blob_buf_init (&b, 0);
+    blobmsg_add_string(&b, "type", value);
+    ubus_send_reply(ubus_ctx, req, b.head);
+    return 0;
+}
+
+static int sfp_rom_get_connector_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
+				   struct ubus_request_data *req, const char *method,
+				   struct blob_attr *msg)
+{
+    int byte = sfp_rom_byte (2);
+    char buf[20];
+    const char *value;
+
+    if (byte < 0)
+	return UBUS_STATUS_NO_DATA;
+
+    switch (byte) {
+    case 0:
+	value = "Unspecified";
+	break;
+    case 1:
+	value = "SC";
+	break;
+    case 2:
+	value = "Fiber Channel style 1";
+	break;
+    case 3:
+	value = "Fiber Channel style 2";
+	break;
+    case 4:
+	value = "TNC/BNC";
+	break;
+    case 5:
+	value = "Fiber Channel coaxial";
+	break;
+    case 6:
+	value = "FiberJack";
+	break;
+    case 7:
+	value = "LC";
+	break;
+    case 8:
+	value = "MT-RJ";
+	break;
+    case 9:
+	value = "MU";
+	break;
+    case 10:
+	value = "SG";
+	break;
+    case 11:
+	value = "Optical pigtail";
+	break;
+    case 32:
+	value = "HSSDC II";
+	break;
+    case 33:
+	value = "Copper pigtail";
+	break;
+    default:
+	snprintf(buf, sizeof(buf), "%s %d",
+		 byte < 0x80 ? "reserved" : "vendor specific",
+		 byte);
+	value = buf;
+	break;
+    }
+
+    blob_buf_init (&b, 0);
+    blobmsg_add_string(&b, "type", value);
+    ubus_send_reply(ubus_ctx, req, b.head);
+    return 0;
+}
+
+static int sfp_rom_get_encoding_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
+				   struct ubus_request_data *req, const char *method,
+				   struct blob_attr *msg)
+{
+    int byte = sfp_rom_byte (11);
+    char buf[20];
+    const char *value;
+
+    if (byte < 0)
+	return UBUS_STATUS_NO_DATA;
+
+    switch (byte) {
+    case 0:
+	value = "Unspecified";
+	break;
+    case 1:
+	value = "8B10B";
+	break;
+    case 2:
+	value = "4B5B";
+	break;
+    case 3:
+	value = "NRZ";
+	break;
+    case 4:
+	value = "Manchester";
+	break;
+    default:
+	snprintf(buf, sizeof(buf), "%s %d",
+		 "reserved", byte);
 	value = buf;
 	break;
     }
@@ -1585,6 +1692,8 @@ static int sfp_rom_get_type_method(struct ubus_context *ubus_ctx, struct ubus_ob
 
 static const struct ubus_method sfp_rom_methods[] = {
     { .name = "get-type", .handler = sfp_rom_get_type_method },
+    { .name = "get-connector", .handler = sfp_rom_get_connector_method },
+    { .name = "get-encoding", .handler = sfp_rom_get_encoding_method },
 };
 
 static struct ubus_object_type sfp_rom_type =
