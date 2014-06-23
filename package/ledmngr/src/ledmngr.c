@@ -321,7 +321,7 @@ static const struct i2c_reg_tab i2c_init_tab_eg300[]={
                                           {0x00, 0x04, 0x00 },      /* Trigger compensation */
 };
 
-struct i2c_dev{
+struct i2c_touch{
     int dev;
     int shadow_irq;
     int shadow_touch;
@@ -331,9 +331,9 @@ struct i2c_dev{
     const struct i2c_reg_tab *init_tab;
     int init_tab_len;
     char *name;
-} *i2c_dev;
+} *i2c_touch;
 
-struct i2c_dev i2c_dev_list[] = {
+struct i2c_touch i2c_touch_list[] = {
     {.addr = 0x2b,
      .name = "CG300",
      .irq_button = 1,
@@ -379,29 +379,29 @@ static int init_i2c()
 
     /* Here we match the hardware name to a init table, and get the
        i2c chip address */
-    i2c_dev = NULL;
-    for (i = 0; i < sizeof(i2c_dev_list) / sizeof(i2c_dev_list[0]); i++)
-	if (!strcmp(i2c_dev_list[i].name, p)) {
+    i2c_touch = NULL;
+    for (i = 0; i < sizeof(i2c_touch_list) / sizeof(i2c_touch_list[0]); i++)
+	if (!strcmp(i2c_touch_list[i].name, p)) {
 	    DEBUG_PRINT("I2C hardware platform %s found.\n", p);
-	    i2c_dev = &i2c_dev_list[i];
+	    i2c_touch = &i2c_touch_list[i];
 	    break;
 	}
-    if (!i2c_dev) {
+    if (!i2c_touch) {
 	DEBUG_PRINT("No I2C hardware found: %s.\n", p);
 	return 0;
     }
 
-    i2c_dev->dev = open("/dev/i2c-0", O_RDWR);
-    if (i2c_dev->dev < 0) {
+    i2c_touch->dev = open("/dev/i2c-0", O_RDWR);
+    if (i2c_touch->dev < 0) {
         syslog(LOG_INFO,"%s: could not open /dev/i2c-0\n",__func__);
         goto error1;
     }
 
-    if (ioctl(i2c_dev->dev, I2C_SLAVE, i2c_dev->addr) < 0) {
+    if (ioctl(i2c_touch->dev, I2C_SLAVE, i2c_touch->addr) < 0) {
         syslog(LOG_INFO,"%s: could not set address for i2c chip\n",__func__);
         goto error;
     }
-    if (ioctl(i2c_dev->dev, I2C_FUNCS, &funcs) < 0) {
+    if (ioctl(i2c_touch->dev, I2C_FUNCS, &funcs) < 0) {
         syslog(LOG_INFO,"%s: could not get I2C?FUNCS\n",__func__);
         goto error;
     }
@@ -414,28 +414,28 @@ static int init_i2c()
         goto error;
     }
 
-    DEBUG_PRINT("Opened device and selected address %x \n", i2c_dev->addr);
+    DEBUG_PRINT("Opened device and selected address %x \n", i2c_touch->addr);
 
-    tab = i2c_dev->init_tab;
+    tab = i2c_touch->init_tab;
 
-    for (i = 0 ; i < i2c_dev->init_tab_len ; i++){
+    for (i = 0 ; i < i2c_touch->init_tab_len ; i++){
         int y;
         int ret;
         for ( y = 0 ; y <= tab[i].range; y++ ){
 //          DEBUG_PRINT("%s: addr %02X = %02X \n",__func__,(unsigned char)tab[i].addr+y, (unsigned char)tab[i].value);
-            ret = i2c_smbus_write_byte_data(i2c_dev->dev, tab[i].addr+y, tab[i].value);
+            ret = i2c_smbus_write_byte_data(i2c_touch->dev, tab[i].addr+y, tab[i].value);
             if (ret < 0){
                 perror("write to i2c dev\n");
             }
         }
     }
-//  dump_i2c(i2c_dev->dev,0,13);
+//  dump_i2c(i2c_touch->dev,0,13);
 
     return 1;
 error:
-    close(i2c_dev->dev);
+    close(i2c_touch->dev);
 error1:
-    i2c_dev->dev = 0;
+    i2c_touch->dev = 0;
     return 0;
 }
 
@@ -445,8 +445,8 @@ static void i2c_reset_handler(struct uloop_timeout *timeout)
 
     DEBUG_PRINT("\n");
 
-    if (i2c_dev->dev)
-        close(i2c_dev->dev);
+    if (i2c_touch->dev)
+        close(i2c_touch->dev);
 
     init_i2c();
 
@@ -459,58 +459,58 @@ static void i2c_reset_handler(struct uloop_timeout *timeout)
 }
 
 
-int check_i2c(struct i2c_dev *i2c_dev)
+int check_i2c(struct i2c_touch *i2c_touch)
 {
     int ret;
     int got_irq = 0;
 
-    if (!i2c_dev || !i2c_dev->dev)
+    if (!i2c_touch || !i2c_touch->dev)
         return -1;
 
-    if (i2c_dev->irq_button) {
+    if (i2c_touch->irq_button) {
         int button;
-        button = board_ioctl(fd, BOARD_IOCTL_GET_GPIO, 0, 0, NULL, i2c_dev->irq_button, 0);
+        button = board_ioctl(fd, BOARD_IOCTL_GET_GPIO, 0, 0, NULL, i2c_touch->irq_button, 0);
         if (button == 0)
             got_irq = 1;
     }
 
     if ( got_irq ) {
 
-        ret = i2c_smbus_read_byte_data(i2c_dev->dev, SX9512_IRQSRC);
+        ret = i2c_smbus_read_byte_data(i2c_touch->dev, SX9512_IRQSRC);
         if (ret < 0 )
             syslog(LOG_ERR, "Could not read from i2c device, irq status register\n");
-        i2c_dev->shadow_irq = ret;
+        i2c_touch->shadow_irq = ret;
 
-        ret = i2c_smbus_read_byte_data(i2c_dev->dev, SX9512_TOUCHSTATUS);
+        ret = i2c_smbus_read_byte_data(i2c_touch->dev, SX9512_TOUCHSTATUS);
         if (ret < 0 )
             syslog(LOG_ERR, "Could not read from i2c device, touch register\n");
-        i2c_dev->shadow_touch = ret;
+        i2c_touch->shadow_touch = ret;
 
 
-        ret = i2c_smbus_read_byte_data(i2c_dev->dev, SX9512_PROXSTATUS);
+        ret = i2c_smbus_read_byte_data(i2c_touch->dev, SX9512_PROXSTATUS);
         if (ret < 0 )
             syslog(LOG_ERR, "Could not read from i2c device, proximity register\n");
-        i2c_dev->shadow_proximity = ret;
+        i2c_touch->shadow_proximity = ret;
 
 #if 0
         DEBUG_PRINT("%02x %02x %02x: irq ->",
-                    i2c_dev->shadow_irq ,
-                    i2c_dev->shadow_touch,
-                    i2c_dev->shadow_proximity);
+                    i2c_touch->shadow_irq ,
+                    i2c_touch->shadow_touch,
+                    i2c_touch->shadow_proximity);
 
-        if (i2c_dev->shadow_irq & SX9512_IRQ_RESET )
+        if (i2c_touch->shadow_irq & SX9512_IRQ_RESET )
             DEBUG_PRINT_RAW(" Reset ");
-        if (i2c_dev->shadow_irq & SX9512_IRQ_TOUCH )
+        if (i2c_touch->shadow_irq & SX9512_IRQ_TOUCH )
             DEBUG_PRINT_RAW(" Touch ");
-        if (i2c_dev->shadow_irq & SX9512_IRQ_RELEASE )
+        if (i2c_touch->shadow_irq & SX9512_IRQ_RELEASE )
             DEBUG_PRINT_RAW(" Release ");
-        if (i2c_dev->shadow_irq & SX9512_IRQ_NEAR )
+        if (i2c_touch->shadow_irq & SX9512_IRQ_NEAR )
             DEBUG_PRINT_RAW(" Near ");
-        if (i2c_dev->shadow_irq & SX9512_IRQ_FAR )
+        if (i2c_touch->shadow_irq & SX9512_IRQ_FAR )
             DEBUG_PRINT_RAW(" Far ");
-        if (i2c_dev->shadow_irq & SX9512_IRQ_COM )
+        if (i2c_touch->shadow_irq & SX9512_IRQ_COM )
             DEBUG_PRINT_RAW(" Com ");
-        if (i2c_dev->shadow_irq & SX9512_IRQ_CONV )
+        if (i2c_touch->shadow_irq & SX9512_IRQ_CONV )
             DEBUG_PRINT_RAW(" Conv ");
 
         DEBUG_PRINT_RAW("\n");
@@ -524,32 +524,32 @@ int check_i2c(struct i2c_dev *i2c_dev)
    button address 8 proximity BL0 NEAR
    button address 9 proximity BL0 FAR
 */
-int check_i2c_button(struct button_config *bc, struct i2c_dev *i2c_dev) {
+int check_i2c_button(struct button_config *bc, struct i2c_touch *i2c_touch) {
 
     int bit = 1 << bc->address;
 
-    if (!i2c_dev || !i2c_dev->dev)
+    if (!i2c_touch || !i2c_touch->dev)
         return -1;
 
     if (bc->address < 8) {
-        if ( bit & i2c_dev->shadow_touch ) {
-            i2c_dev->shadow_touch = i2c_dev->shadow_touch & ~bit;
+        if ( bit & i2c_touch->shadow_touch ) {
+            i2c_touch->shadow_touch = i2c_touch->shadow_touch & ~bit;
             return 1;
         }
         return 0;
     }else if (bc->address == 8 ) {
         bit = 1<<7;
-        if( i2c_dev->shadow_irq & SX9512_IRQ_NEAR ) {
-            i2c_dev->shadow_irq &=  ~SX9512_IRQ_NEAR;
-            if ( bit & i2c_dev->shadow_proximity ) {
-                i2c_dev->shadow_proximity = i2c_dev->shadow_proximity & ~bit;
+        if( i2c_touch->shadow_irq & SX9512_IRQ_NEAR ) {
+            i2c_touch->shadow_irq &=  ~SX9512_IRQ_NEAR;
+            if ( bit & i2c_touch->shadow_proximity ) {
+                i2c_touch->shadow_proximity = i2c_touch->shadow_proximity & ~bit;
                 return 1;
             }
         }
         return 0;
     }else if (bc->address == 9) {
-        if( i2c_dev->shadow_irq & SX9512_IRQ_FAR ) {
-            i2c_dev->shadow_irq &=  ~SX9512_IRQ_FAR;
+        if( i2c_touch->shadow_irq & SX9512_IRQ_FAR ) {
+            i2c_touch->shadow_irq &=  ~SX9512_IRQ_FAR;
             return 1;
         }
         return 0;
@@ -563,7 +563,7 @@ void i2c_led_set( struct led_config* lc, int state){
     int ret;
     int bit = 1 << lc->address;
 
-    if (!i2c_dev || !i2c_dev->dev)
+    if (!i2c_touch || !i2c_touch->dev)
         return;
 
     if (lc->address > 7){
@@ -571,7 +571,7 @@ void i2c_led_set( struct led_config* lc, int state){
         return;
     }
 
-    ret = i2c_smbus_read_byte_data(i2c_dev->dev, SX9512_LEDMAP2);
+    ret = i2c_smbus_read_byte_data(i2c_touch->dev, SX9512_LEDMAP2);
     if (ret < 0 )
         syslog(LOG_ERR, "Could not read from i2c device, LedMap2 register\n");
 
@@ -584,7 +584,7 @@ void i2c_led_set( struct led_config* lc, int state){
         return;
     }
 
-    ret = i2c_smbus_write_byte_data(i2c_dev->dev, SX9512_LEDMAP2, ret);
+    ret = i2c_smbus_write_byte_data(i2c_touch->dev, SX9512_LEDMAP2, ret);
     if (ret < 0 )
         syslog(LOG_ERR, "Could not read from i2c device, LedMap2 register\n");
 
@@ -1043,7 +1043,7 @@ static void check_buttons(int initialize) {
     int button, i;
     struct button_config* bc;
     button = 0;
-    check_i2c(i2c_dev);
+    check_i2c(i2c_touch);
 
     for (i=0 ; i<butt_cfg->button_nr ; i++) {
         bc = butt_cfg->buttons[i];
@@ -1051,7 +1051,7 @@ static void check_buttons(int initialize) {
         if (bc->type == GPIO ){
             button = board_ioctl(fd, BOARD_IOCTL_GET_GPIO, 0, 0, NULL, bc->address, 0);
         }else if (bc->type == I2C){
-            button = check_i2c_button(bc,i2c_dev);
+            button = check_i2c_button(bc,i2c_touch);
             if (button < 0)
                 continue;
         }
@@ -1501,7 +1501,7 @@ static void server_main(struct leds_configuration* led_cfg)
 
     uloop_timeout_set(&blink_inform_timer, 100);
 
-    if (i2c_dev)
+    if (i2c_touch)
 	uloop_timeout_set(&i2c_reset_timer, I2C_RESET_TIME);
 
     uloop_run();
@@ -1613,10 +1613,10 @@ int ledmngr(void) {
         exit(1);
     }
 //    if (led_need_type (led_cfg, I2C) || button_need_type (butt_cfg, I2C))
-	i2c_dev = NULL;
+	i2c_touch = NULL;
 	init_i2c();
 //    else
-//	i2c_dev = NULL;
+//	i2c_touch = NULL;
 
     led_cfg  = get_led_config();
     butt_cfg = get_button_config();
