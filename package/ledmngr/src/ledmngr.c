@@ -1690,10 +1690,62 @@ static int sfp_rom_get_encoding_method(struct ubus_context *ubus_ctx, struct ubu
     return 0;
 }
 
+static int sfp_rom_get_rate_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
+				   struct ubus_request_data *req, const char *method,
+				   struct blob_attr *msg)
+{
+    int byte = sfp_rom_byte (12);
+
+    if (byte < 0)
+	return UBUS_STATUS_NO_DATA;
+
+    blob_buf_init (&b, 0);
+    /* Read byte is in units of 100 Mbit/s, scale to Mbit/s. */
+    blobmsg_add_u32(&b, "rate", 100*byte);
+    ubus_send_reply(ubus_ctx, req, b.head);
+    return 0;
+}
+
+static int sfp_rom_get_length_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
+				     struct ubus_request_data *req, const char *method,
+				     struct blob_attr *msg)
+{
+    int sm_1000;
+    int sm_100;
+    int mm50;
+    int mm62;
+    int cu;
+
+    if ( (sm_1000 = sfp_rom_byte (14)) < 0
+	 || (sm_100 = sfp_rom_byte (15)) < 0
+	 || (mm50 = sfp_rom_byte (16)) < 0
+	 || (mm62 = sfp_rom_byte (17)) < 0
+	 || (cu = sfp_rom_byte (18)) < 0)
+	return UBUS_STATUS_NO_DATA;
+
+    blob_buf_init (&b, 0);
+    if (sm_1000 > 0)
+	blobmsg_add_u32(&b, "single-mode", sm_1000 * 1000);
+    else if (sm_100 > 0)
+	blobmsg_add_u32(&b, "single-mode", sm_100 * 100);
+    if (mm50 > 0)
+	blobmsg_add_u32(&b, "multi-mode-50", mm50 * 10);
+    if (mm62 > 0)
+	blobmsg_add_u32(&b, "multi-mode-62.5", mm62 * 10);
+    if (cu > 0)
+	blobmsg_add_u32(&b, "copper", cu);
+
+    ubus_send_reply(ubus_ctx, req, b.head);
+    return 0;
+}
+
 static const struct ubus_method sfp_rom_methods[] = {
     { .name = "get-type", .handler = sfp_rom_get_type_method },
     { .name = "get-connector", .handler = sfp_rom_get_connector_method },
+    /* FIXME: Tranciever bits, addresses 3-10 */
     { .name = "get-encoding", .handler = sfp_rom_get_encoding_method },
+    { .name = "get-rate", .handler = sfp_rom_get_rate_method },
+    { .name = "get-length", .handler = sfp_rom_get_length_method },
 };
 
 static struct ubus_object_type sfp_rom_type =
