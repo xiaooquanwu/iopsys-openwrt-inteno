@@ -2199,6 +2199,7 @@ static int ddm_prepare(void)
 {
     int byte;
     int reread;
+    time_t now = time(NULL);
 
     byte = sfp_rom_byte(92);
     if (byte < 0) {
@@ -2228,14 +2229,13 @@ static int ddm_prepare(void)
 
 	reread = 1;
     }
-    else if (sfp_ddm.type & 0x10) {
+    else if (sfp_ddm.type & 0x10)
 	/* External calibration */
-	time_t now = time(NULL);
+
 	/* We could check vendor, sn, etc, to try to figure out if the
 	   SFP has been replaced, but it's less work to just reread
 	   the calibration data. */
-	reread = (now > sfp_ddm.timestamp + 300 || sfp_ddm.timestamp > now);
-    }
+	reread = (now > sfp_ddm.timestamp + 120 || sfp_ddm.timestamp > now);
     else
 	reread = 0;
 
@@ -2256,6 +2256,20 @@ static int ddm_prepare(void)
 		syslog(LOG_INFO, "sfp: Reading ddm calibration data failed.\n");
 		goto fail;
 	    }
+	    DEBUG_PRINT("Read ddm calibration data:\n"
+			"rx_pwr: %g %g %g %g %g\n"
+			"tx_i: %g %g\n"
+			"tx_pwr: %g %g\n"
+			"T: %g %g\n"
+			"V: %g %g\n",
+			sfp_ddm.rx_pwr[0], sfp_ddm.rx_pwr[1],
+			sfp_ddm.rx_pwr[2], sfp_ddm.rx_pwr[3],
+			sfp_ddm.rx_pwr[4],
+			sfp_ddm.tx_i_slope, sfp_ddm.tx_i_offset,
+			sfp_ddm.tx_pwr_slope, sfp_ddm.tx_pwr_offset,
+			sfp_ddm.t_slope, sfp_ddm.t_offset,
+			sfp_ddm.v_slope, sfp_ddm.v_offset);
+
 	}
 	else {
 	    sfp_ddm.rx_pwr[0] = sfp_ddm.rx_pwr[2]
@@ -2267,22 +2281,115 @@ static int ddm_prepare(void)
 	    sfp_ddm.tx_i_offset = sfp_ddm.tx_pwr_offset
 		= sfp_ddm.t_offset = sfp_ddm.v_offset = 0.0;
 	}
-	DEBUG_PRINT("Read ddm calibration data:\n"
-		    "rx_pwr: %g %g %g %g %g\n"
-		    "tx_i: %g %g\n"
-		    "tx_pwr: %g %g\n"
-		    "T: %g %g\n"
-		    "V: %g %g\n",
-		    sfp_ddm.rx_pwr[0], sfp_ddm.rx_pwr[1],
-		    sfp_ddm.rx_pwr[2], sfp_ddm.rx_pwr[3],
-		    sfp_ddm.rx_pwr[4],
-		    sfp_ddm.tx_i_slope, sfp_ddm.tx_i_offset,
-		    sfp_ddm.tx_pwr_slope, sfp_ddm.tx_pwr_offset,
-		    sfp_ddm.t_slope, sfp_ddm.t_offset,
-		    sfp_ddm.v_slope, sfp_ddm.v_offset);
+	sfp_ddm.timestamp = now;
     }
     return 1;
 };
+
+static int sfp_ddm_get_temperature(struct blob_buf *b)
+{
+    float x;
+    if (!ddm_prepare())
+	return 0;
+
+    if (!sfp_ddm_read_si(&x, 96))
+      return 0;
+
+    x = sfp_ddm.t_slope * x + sfp_ddm.t_offset;
+    blobmsg_add_u32(b, "temperature", (uint32_t) (x+0.5));    
+    return 1;
+}
+
+static int sfp_ddm_get_temperature_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
+					  struct ubus_request_data *req, const char *method,
+					  struct blob_attr *msg)
+{
+    blob_buf_init (&b, 0);
+    if (!sfp_ddm_get_temperature(&b))
+	return UBUS_STATUS_NO_DATA;
+    blobmsg_add_string(&b, "unit", "1/256 °C");
+    ubus_send_reply(ubus_ctx, req, b.head);
+    return 0;
+}
+
+static int sfp_ddm_get_voltage(struct blob_buf *b)
+{
+    float x;
+    if (!ddm_prepare())
+	return 0;
+
+    if (!sfp_ddm_read_ui(&x, 98))
+      return 0;
+
+    x = sfp_ddm.v_slope * x + sfp_ddm.v_offset;
+    blobmsg_add_u32(b, "voltage", (uint32_t) (x+0.5));    
+    return 1;
+}
+
+static int sfp_ddm_get_voltage_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
+					  struct ubus_request_data *req, const char *method,
+					  struct blob_attr *msg)
+{
+    blob_buf_init (&b, 0);
+    if (!sfp_ddm_get_voltage(&b))
+	return UBUS_STATUS_NO_DATA;
+    blobmsg_add_string(&b, "unit", "100uV");
+    ubus_send_reply(ubus_ctx, req, b.head);
+    return 0;
+}
+
+static int sfp_ddm_get_current(struct blob_buf *b)
+{
+    float x;
+    if (!ddm_prepare())
+	return 0;
+
+    if (!sfp_ddm_read_ui(&x, 100))
+	return 0;
+
+    x = sfp_ddm.tx_i_slope * x + sfp_ddm.tx_i_offset;
+    blobmsg_add_u32(b, "current", (uint32_t) (x+0.5));    
+    return 1;
+}
+
+static int sfp_ddm_get_current_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
+				      struct ubus_request_data *req, const char *method,
+				      struct blob_attr *msg)
+{
+    blob_buf_init (&b, 0);
+    if (!sfp_ddm_get_current(&b))
+	return UBUS_STATUS_NO_DATA;
+    blobmsg_add_string(&b, "unit", "2 uA");
+    ubus_send_reply(ubus_ctx, req, b.head);
+    return 0;
+}
+
+static int sfp_ddm_get_tx_pwr(struct blob_buf *b)
+{
+    float x;
+    if (!ddm_prepare())
+	return 0;
+
+    if (!sfp_ddm_read_ui(&x, 102))
+      return 0;
+
+    x = sfp_ddm.tx_pwr_slope * x + sfp_ddm.tx_pwr_offset;
+    blobmsg_add_u32(b, "tx-pwr", (uint32_t) (x+0.5));    
+    return 1;
+}
+
+static int sfp_ddm_get_tx_pwr_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
+				     struct ubus_request_data *req, const char *method,
+				     struct blob_attr *msg)
+{
+    blob_buf_init (&b, 0);
+    if (!sfp_ddm_get_tx_pwr(&b))
+	return UBUS_STATUS_NO_DATA;
+    blobmsg_add_string(&b, "unit", "0.1uW");
+    ubus_send_reply(ubus_ctx, req, b.head);
+    return 0;
+}
+
 
 static int sfp_ddm_get_rx_pwr(struct blob_buf *b)
 {
@@ -2304,6 +2411,8 @@ static int sfp_ddm_get_rx_pwr(struct blob_buf *b)
 	}
     }
     blobmsg_add_u32(b, "rx-pwr", (uint32_t) (x+0.5));
+    blobmsg_add_string(b, "rx-pwr-type",
+		       (sfp_ddm.type & 8) ? "average" : "OMA");
     return 1;
 }
 
@@ -2318,14 +2427,17 @@ static int sfp_ddm_get_rx_pwr_method(struct ubus_context *ubus_ctx, struct ubus_
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
 }
-
 static int sfp_ddm_get_all_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
-				     struct ubus_request_data *req, const char *method,
-				     struct blob_attr *msg)
+				  struct ubus_request_data *req, const char *method,
+				  struct blob_attr *msg)
 {
     blob_buf_init (&b, 0);
-    if (!sfp_ddm_get_rx_pwr(&b))
+    if (!sfp_ddm_get_temperature(&b))
 	return UBUS_STATUS_NO_DATA;
+    sfp_ddm_get_voltage(&b);
+    sfp_ddm_get_current(&b);
+    sfp_ddm_get_tx_pwr(&b);
+    sfp_ddm_get_rx_pwr(&b);
 
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
@@ -2353,6 +2465,10 @@ static struct ubus_object_type sfp_rom_type =
 
 static const struct ubus_method sfp_ddm_methods[] = {
     { .name = "get-rx-pwr", .handler = sfp_ddm_get_rx_pwr_method },
+    { .name = "get-tx-pwr", .handler = sfp_ddm_get_tx_pwr_method },
+    { .name = "get-temperature", .handler = sfp_ddm_get_temperature_method },
+    { .name = "get-current", .handler = sfp_ddm_get_current_method },
+    { .name = "get-voltage", .handler = sfp_ddm_get_voltage_method },
     { .name = "get-all", .handler = sfp_ddm_get_all_method },
 };
 
