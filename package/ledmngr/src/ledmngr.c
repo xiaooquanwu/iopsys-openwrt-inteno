@@ -2440,7 +2440,7 @@ static int sfp_ddm_get_rx_pwr(struct blob_buf *b, int raw)
     }
 
     snprintf(buf, sizeof(buf), "%.4f mW", x * (1.0/10000));
-    blobmsg_add_string(b, "tx-pwr", buf);
+    blobmsg_add_string(b, "rx-pwr", buf);
     blobmsg_add_string(b, "rx-pwr-type",
 		       (sfp_ddm.type & 8) ? "average" : "OMA");
     return 1;
