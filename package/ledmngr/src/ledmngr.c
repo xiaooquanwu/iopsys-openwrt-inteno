@@ -2018,6 +2018,57 @@ static int sfp_rom_get_date_method(struct ubus_context *ubus_ctx, struct ubus_ob
     return 0;
 }
 
+static int sfp_rom_get_ddm(struct blob_buf *b)
+{
+    int byte = sfp_rom_byte(94);
+    char buf[20];
+    const char *value;
+
+    if (byte < 0)
+	return 0;
+
+    switch (byte) {
+    case 0:
+	value = "none";
+	break;
+    case 1:
+	value = "9.3";
+	break;
+    case 2:
+	value = "9.5";
+	break;
+    case 3:
+	value = "10.2";
+	break;
+    case 4:
+	value = "10.4";
+	break;
+    case 5:
+	value = "11.0";
+	break;
+    case 6:
+	value = "11.3";
+	break;
+    default:
+	snprintf(buf, sizeof(buf), "%s %d",
+		 "reserved", byte);
+	value = buf;
+    }
+    blobmsg_add_string(b, "ddm", value);
+    return 1;
+};
+
+static int sfp_rom_get_ddm_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
+				  struct ubus_request_data *req, const char *method,
+				  struct blob_attr *msg)
+{
+    blob_buf_init (&b, 0);
+    if (!sfp_rom_get_ddm(&b))
+	return UBUS_STATUS_NO_DATA;
+    ubus_send_reply(ubus_ctx, req, b.head);
+    return 0;
+}
+
 static int sfp_rom_get_all_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
 				  struct ubus_request_data *req, const char *method,
 				  struct blob_attr *msg)
@@ -2036,6 +2087,7 @@ static int sfp_rom_get_all_method(struct ubus_context *ubus_ctx, struct ubus_obj
     sfp_rom_get_rev(&b);
     sfp_rom_get_sn(&b);
     sfp_rom_get_date(&b);
+    sfp_rom_get_ddm(&b);
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
 }
@@ -2053,6 +2105,7 @@ static const struct ubus_method sfp_rom_methods[] = {
     { .name = "get-rev", .handler = sfp_rom_get_rev_method },
     { .name = "get-sn", .handler = sfp_rom_get_sn_method },
     { .name = "get-date", .handler = sfp_rom_get_date_method },
+    { .name = "get-ddm", .handler = sfp_rom_get_ddm_method },
     { .name = "get-all", .handler = sfp_rom_get_all_method },
 };
 
