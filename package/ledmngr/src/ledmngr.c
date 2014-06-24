@@ -1928,7 +1928,7 @@ static int sfp_rom_get_rev(struct blob_buf *b)
 {
     char buf[5];
     int i;
-    if (!sfp_rom_bytes(68, buf, 4))
+    if (!sfp_rom_bytes(56, buf, 4))
 	return 0;
 
     for (i = 4; i > 0 && buf[i-1] == ' '; i--)
