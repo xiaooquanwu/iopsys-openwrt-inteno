@@ -7,7 +7,7 @@ CFLAGS += -I$(STAGING_DIR)/usr/include/bcm963xx/bcmdrivers/opensource/include/bc
 OBJS = ucix.o brcmdaemon.o ledmngr.o smbus.o
 
 ledmngr: $(OBJS)
-	$(CC) $(LDFLAGS) -o ledmngr $(OBJS) -luci -lubus -lubox -lblobmsg_json
+	$(CC) $(LDFLAGS) -o ledmngr $(OBJS) -luci -lubus -lubox -lblobmsg_json -lm
 
 clean:
 	rm -f *.o

@@ -23,6 +23,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include <sys/ioctl.h>
 #include <fcntl.h>
 #include <syslog.h>
@@ -2092,6 +2093,244 @@ static int sfp_rom_get_all_method(struct ubus_context *ubus_ctx, struct ubus_obj
     return 0;
 }
 
+struct sfp_ddm {
+    /* For checking when to reread calibration data. */
+    time_t timestamp;
+    unsigned type; /* From address 92 */
+    unsigned version; /* From address 94 */
+    /* Calibration constants, read from addresses 56-91 if bit 4 is
+       set in ddm_type */
+    float rx_pwr[5];
+    float tx_i_slope;
+    float tx_i_offset;
+    float tx_pwr_slope;
+    float tx_pwr_offset;
+    float t_slope;
+    float t_offset;
+    float v_slope;
+    float v_offset;
+};
+static struct sfp_ddm sfp_ddm;
+
+static int sfp_ddm_read_float(float *x, unsigned addr)
+{
+    uint8_t buf[4];
+    int32_t m;
+    int e;
+    unsigned i;
+
+    if (!i2c_sfp || sfp_ddm_fd < 0)
+	return 0;
+    /* Used only for constant data, so byte accesses should be ok. And
+       there should only be regular normalized numbers (or zero).
+    */
+    for (i = 0; i < 4; i++) {
+	int byte = i2c_smbus_read_byte_data(sfp_ddm_fd, addr + i);
+	if (byte < 0)
+	    return 0;
+	buf[i] = byte;
+    }
+    e = (buf[0] & 0x7f) << 1 | buf[1] >> 7;
+    m = (((int32_t) buf[1] & 0x7f) << 16) | ((int32_t) buf[2] << 8) | buf[3];
+    if (e == 0 && m == 0) {
+	*x = 0.0;
+	return 1;
+    }
+    if (e == 0 || e == 0xff)
+	/* NaN or infinity */
+	return 0;
+    m |= (1U << 23);
+    if (buf[0] & 0x80)
+	m = -m;
+    *x = ldexpf ((float) m, e - (127 + 23));
+
+    return 1;
+}
+
+/* Plain i2c_smbus_read_word_data use little-endian byteorder. We have
+   msb first, so swap it. The swap should be a nop for the failure
+   case w == -1. */
+static int i2c_smbus_read_word_swapped(int fd, unsigned addr)
+{
+    int w = i2c_smbus_read_word_data(fd, addr);
+    return (w >> 8) | ((w & 0xff) << 8);
+
+}
+static int sfp_ddm_read_fp(float *x, unsigned addr)
+{
+    int w;
+
+    if (!i2c_sfp || sfp_ddm_fd < 0)
+	return 0;
+    w = i2c_smbus_read_word_swapped(sfp_ddm_fd, addr);
+    if (w < 0)
+	return 0;
+    *x = (float) w / 0x100;
+    return 1;
+}
+
+static int sfp_ddm_read_si(float *x, unsigned addr)
+{
+    int w;
+
+    if (!i2c_sfp || sfp_ddm_fd < 0)
+	return 0;
+    w = i2c_smbus_read_word_swapped(sfp_ddm_fd, addr);
+    if (w < 0)
+	return 0;
+    *x = (float) (int16_t) w;
+    return 1;
+}
+
+static int sfp_ddm_read_ui(float *x, unsigned addr)
+{
+    int w;
+
+    if (!i2c_sfp || sfp_ddm_fd < 0)
+	return 0;
+    w = i2c_smbus_read_word_swapped(sfp_ddm_fd, addr);
+    if (w < 0)
+	return 0;
+    *x = (float) w;
+    return 1;
+}
+
+static int ddm_prepare(void)
+{
+    int byte;
+    int reread;
+
+    byte = sfp_rom_byte(92);
+    if (byte < 0) {
+    fail:
+	if (sfp_ddm_fd >= 0)
+	    close(sfp_ddm_fd);
+	sfp_ddm_fd = -1;
+	return 0;
+    }
+    if ( (byte & 0xc0) != 0x40)
+	goto fail;
+
+    if (byte & 4) {
+	syslog(LOG_INFO, "sfp: ddm requires address change, not implemented.\n");
+	goto fail;
+    }
+    sfp_ddm.type = byte;
+    byte = sfp_rom_byte(94);
+    if (byte <= 0)
+	goto fail;
+    sfp_ddm.version = byte;
+    if (sfp_ddm_fd < 0) {
+	sfp_ddm_fd = i2c_open_dev(i2c_sfp->bus, i2c_sfp->ddm_addr,
+				  I2C_FUNC_SMBUS_READ_BYTE | I2C_FUNC_SMBUS_READ_WORD_DATA);
+	if (sfp_ddm_fd < 0)
+	    return 0;
+
+	reread = 1;
+    }
+    else if (sfp_ddm.type & 0x10) {
+	/* External calibration */
+	time_t now = time(NULL);
+	/* We could check vendor, sn, etc, to try to figure out if the
+	   SFP has been replaced, but it's less work to just reread
+	   the calibration data. */
+	reread = (now > sfp_ddm.timestamp + 300 || sfp_ddm.timestamp > now);
+    }
+    else
+	reread = 0;
+
+    if (reread) {
+	if (sfp_ddm.type & 0x10) {
+	    unsigned i;
+	    for (i = 0; i < 5; i++)
+		if (!sfp_ddm_read_float(&sfp_ddm.rx_pwr[4-i], 56+4*i))
+		    goto fail;
+	    if (! (sfp_ddm_read_fp(&sfp_ddm.tx_i_slope, 76)
+		   && sfp_ddm_read_si(&sfp_ddm.tx_i_offset, 78)
+		   && sfp_ddm_read_fp(&sfp_ddm.tx_pwr_slope, 80)
+		   && sfp_ddm_read_si(&sfp_ddm.tx_pwr_offset, 82)
+		   && sfp_ddm_read_fp(&sfp_ddm.t_slope, 84)
+		   && sfp_ddm_read_si(&sfp_ddm.t_offset, 86)
+		   && sfp_ddm_read_fp(&sfp_ddm.v_slope, 88)
+		   && sfp_ddm_read_si(&sfp_ddm.v_offset, 89))) {
+		syslog(LOG_INFO, "sfp: Reading ddm calibration data failed.\n");
+		goto fail;
+	    }
+	}
+	else {
+	    sfp_ddm.rx_pwr[0] = sfp_ddm.rx_pwr[2]
+		= sfp_ddm.rx_pwr[3] = sfp_ddm.rx_pwr[4] = 0.0;
+	    sfp_ddm.rx_pwr[1] = 1.0;
+
+	    sfp_ddm.tx_i_slope = sfp_ddm.tx_pwr_slope
+		= sfp_ddm.t_slope = sfp_ddm.v_slope = 1.0;
+	    sfp_ddm.tx_i_offset = sfp_ddm.tx_pwr_offset
+		= sfp_ddm.t_offset = sfp_ddm.v_offset = 0.0;
+	}
+	DEBUG_PRINT("Read ddm calibration data:\n"
+		    "rx_pwr: %g %g %g %g %g\n"
+		    "tx_i: %g %g\n"
+		    "tx_pwr: %g %g\n"
+		    "T: %g %g\n"
+		    "V: %g %g\n",
+		    sfp_ddm.rx_pwr[0], sfp_ddm.rx_pwr[1],
+		    sfp_ddm.rx_pwr[2], sfp_ddm.rx_pwr[3],
+		    sfp_ddm.rx_pwr[4],
+		    sfp_ddm.tx_i_slope, sfp_ddm.tx_i_offset,
+		    sfp_ddm.tx_pwr_slope, sfp_ddm.tx_pwr_offset,
+		    sfp_ddm.t_slope, sfp_ddm.t_offset,
+		    sfp_ddm.v_slope, sfp_ddm.v_offset);
+    }
+    return 1;
+};
+
+static int sfp_ddm_get_rx_pwr(struct blob_buf *b)
+{
+    unsigned i;
+    float x;
+
+    if (!ddm_prepare())
+	return 0;
+
+    for (x = sfp_ddm.rx_pwr[0], i = 1; i < 5; i++) {
+	float v;
+	/* NOTE: There's only a single word to read. It's unclear how
+	   to get several values. However, typically, rx_pwr[2,3,4]
+	   are zero. */
+	if (sfp_ddm.rx_pwr[i] != 0.0) {
+	    if (!sfp_ddm_read_ui(&v, 104))
+		return 0;
+	    x += v*sfp_ddm.rx_pwr[i];
+	}
+    }
+    blobmsg_add_u32(b, "rx-pwr", (uint32_t) (x+0.5));
+    return 1;
+}
+
+static int sfp_ddm_get_rx_pwr_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
+				     struct ubus_request_data *req, const char *method,
+				     struct blob_attr *msg)
+{
+    blob_buf_init (&b, 0);
+    if (!sfp_ddm_get_rx_pwr(&b))
+	return UBUS_STATUS_NO_DATA;
+    blobmsg_add_string(&b, "unit", "0.1uW");
+    ubus_send_reply(ubus_ctx, req, b.head);
+    return 0;
+}
+
+static int sfp_ddm_get_all_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
+				     struct ubus_request_data *req, const char *method,
+				     struct blob_attr *msg)
+{
+    blob_buf_init (&b, 0);
+    if (!sfp_ddm_get_rx_pwr(&b))
+	return UBUS_STATUS_NO_DATA;
+
+    ubus_send_reply(ubus_ctx, req, b.head);
+    return 0;
+}
+
 static const struct ubus_method sfp_rom_methods[] = {
     { .name = "get-type", .handler = sfp_rom_get_type_method },
     { .name = "get-connector", .handler = sfp_rom_get_connector_method },
@@ -2110,11 +2349,21 @@ static const struct ubus_method sfp_rom_methods[] = {
 };
 
 static struct ubus_object_type sfp_rom_type =
-    UBUS_OBJECT_TYPE("sfp", sfp_rom_methods);
+    UBUS_OBJECT_TYPE("sfp.rom", sfp_rom_methods);
+
+static const struct ubus_method sfp_ddm_methods[] = {
+    { .name = "get-rx-pwr", .handler = sfp_ddm_get_rx_pwr_method },
+    { .name = "get-all", .handler = sfp_ddm_get_all_method },
+};
+
+static struct ubus_object_type sfp_ddm_type =
+    UBUS_OBJECT_TYPE("sfp.ddm", sfp_ddm_methods);
 
 static struct ubus_object sfp_objects[] = {
     { .name = "sfp.rom", .type = &sfp_rom_type,
-      .methods = sfp_rom_methods, ARRAY_SIZE(sfp_rom_methods) }
+      .methods = sfp_rom_methods, ARRAY_SIZE(sfp_rom_methods) },
+    { .name = "sfp.ddm", .type = &sfp_ddm_type,
+      .methods = sfp_ddm_methods, ARRAY_SIZE(sfp_ddm_methods) },
 };
 
 static void server_main(struct leds_configuration* led_cfg)
