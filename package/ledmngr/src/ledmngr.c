@@ -2286,9 +2286,11 @@ static int ddm_prepare(void)
     return 1;
 };
 
-static int sfp_ddm_get_temperature(struct blob_buf *b)
+static int sfp_ddm_get_temperature(struct blob_buf *b, int raw)
 {
     float x;
+    char buf[15];
+
     if (!ddm_prepare())
 	return 0;
 
@@ -2296,7 +2298,13 @@ static int sfp_ddm_get_temperature(struct blob_buf *b)
       return 0;
 
     x = sfp_ddm.t_slope * x + sfp_ddm.t_offset;
-    blobmsg_add_u32(b, "temperature", (uint32_t) (x+0.5));    
+    if (raw) {
+	blobmsg_add_u32(b, "raw", (uint32_t) (x+0.5));
+	blobmsg_add_string(b, "unit", "1/256 °C");
+    }
+
+    snprintf(buf, sizeof(buf), "%.2f °C", x * (1.0/256));
+    blobmsg_add_string(b, "temperature", buf);
     return 1;
 }
 
@@ -2305,16 +2313,16 @@ static int sfp_ddm_get_temperature_method(struct ubus_context *ubus_ctx, struct 
 					  struct blob_attr *msg)
 {
     blob_buf_init (&b, 0);
-    if (!sfp_ddm_get_temperature(&b))
+    if (!sfp_ddm_get_temperature(&b, 1))
 	return UBUS_STATUS_NO_DATA;
-    blobmsg_add_string(&b, "unit", "1/256 °C");
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
 }
 
-static int sfp_ddm_get_voltage(struct blob_buf *b)
+static int sfp_ddm_get_voltage(struct blob_buf *b, int raw)
 {
     float x;
+    char buf[10];
     if (!ddm_prepare())
 	return 0;
 
@@ -2322,7 +2330,12 @@ static int sfp_ddm_get_voltage(struct blob_buf *b)
       return 0;
 
     x = sfp_ddm.v_slope * x + sfp_ddm.v_offset;
-    blobmsg_add_u32(b, "voltage", (uint32_t) (x+0.5));    
+    if (raw) {
+	blobmsg_add_u32(b, "raw", (uint32_t) (x+0.5));
+	blobmsg_add_string(b, "unit", "100uV");
+    }
+    snprintf(buf, sizeof(buf), "%.4f V", x * (1.0/10000));
+    blobmsg_add_string(b, "voltage", buf);
     return 1;
 }
 
@@ -2331,16 +2344,16 @@ static int sfp_ddm_get_voltage_method(struct ubus_context *ubus_ctx, struct ubus
 					  struct blob_attr *msg)
 {
     blob_buf_init (&b, 0);
-    if (!sfp_ddm_get_voltage(&b))
+    if (!sfp_ddm_get_voltage(&b, 1))
 	return UBUS_STATUS_NO_DATA;
-    blobmsg_add_string(&b, "unit", "100uV");
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
 }
 
-static int sfp_ddm_get_current(struct blob_buf *b)
+static int sfp_ddm_get_current(struct blob_buf *b, int raw)
 {
     float x;
+    char buf[10];
     if (!ddm_prepare())
 	return 0;
 
@@ -2348,7 +2361,12 @@ static int sfp_ddm_get_current(struct blob_buf *b)
 	return 0;
 
     x = sfp_ddm.tx_i_slope * x + sfp_ddm.tx_i_offset;
-    blobmsg_add_u32(b, "current", (uint32_t) (x+0.5));    
+    if (raw) {
+	blobmsg_add_u32(b, "raw", (uint32_t) (x+0.5));
+	blobmsg_add_string(b, "unit", "2 uA");
+    }
+    snprintf(buf, sizeof(buf), "%.3f mA", x * (1.0/500));
+    blobmsg_add_string(b, "current", buf);
     return 1;
 }
 
@@ -2357,16 +2375,16 @@ static int sfp_ddm_get_current_method(struct ubus_context *ubus_ctx, struct ubus
 				      struct blob_attr *msg)
 {
     blob_buf_init (&b, 0);
-    if (!sfp_ddm_get_current(&b))
+    if (!sfp_ddm_get_current(&b, 1))
 	return UBUS_STATUS_NO_DATA;
-    blobmsg_add_string(&b, "unit", "2 uA");
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
 }
 
-static int sfp_ddm_get_tx_pwr(struct blob_buf *b)
+static int sfp_ddm_get_tx_pwr(struct blob_buf *b, int raw)
 {
     float x;
+    char buf[10];
     if (!ddm_prepare())
 	return 0;
 
@@ -2374,7 +2392,13 @@ static int sfp_ddm_get_tx_pwr(struct blob_buf *b)
       return 0;
 
     x = sfp_ddm.tx_pwr_slope * x + sfp_ddm.tx_pwr_offset;
-    blobmsg_add_u32(b, "tx-pwr", (uint32_t) (x+0.5));    
+    if (raw) {
+	blobmsg_add_u32(b, "raw", (uint32_t) (x+0.5));
+	blobmsg_add_string(b, "unit", "0.1uW");
+    }
+    snprintf(buf, sizeof(buf), "%.4f mW", x * (1.0/10000));
+    blobmsg_add_string(b, "tx-pwr", buf);
+
     return 1;
 }
 
@@ -2383,18 +2407,18 @@ static int sfp_ddm_get_tx_pwr_method(struct ubus_context *ubus_ctx, struct ubus_
 				     struct blob_attr *msg)
 {
     blob_buf_init (&b, 0);
-    if (!sfp_ddm_get_tx_pwr(&b))
+    if (!sfp_ddm_get_tx_pwr(&b, 1))
 	return UBUS_STATUS_NO_DATA;
-    blobmsg_add_string(&b, "unit", "0.1uW");
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
 }
 
 
-static int sfp_ddm_get_rx_pwr(struct blob_buf *b)
+static int sfp_ddm_get_rx_pwr(struct blob_buf *b, int raw)
 {
     unsigned i;
     float x;
+    char buf[10];
 
     if (!ddm_prepare())
 	return 0;
@@ -2410,7 +2434,13 @@ static int sfp_ddm_get_rx_pwr(struct blob_buf *b)
 	    x += v*sfp_ddm.rx_pwr[i];
 	}
     }
-    blobmsg_add_u32(b, "rx-pwr", (uint32_t) (x+0.5));
+    if (raw) {
+	blobmsg_add_u32(b, "raw", (uint32_t) (x+0.5));
+	blobmsg_add_string(b, "unit", "0.1uW");
+    }
+
+    snprintf(buf, sizeof(buf), "%.4f mW", x * (1.0/10000));
+    blobmsg_add_string(b, "tx-pwr", buf);
     blobmsg_add_string(b, "rx-pwr-type",
 		       (sfp_ddm.type & 8) ? "average" : "OMA");
     return 1;
@@ -2421,9 +2451,8 @@ static int sfp_ddm_get_rx_pwr_method(struct ubus_context *ubus_ctx, struct ubus_
 				     struct blob_attr *msg)
 {
     blob_buf_init (&b, 0);
-    if (!sfp_ddm_get_rx_pwr(&b))
+    if (!sfp_ddm_get_rx_pwr(&b, 1))
 	return UBUS_STATUS_NO_DATA;
-    blobmsg_add_string(&b, "unit", "0.1uW");
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
 }
@@ -2432,12 +2461,12 @@ static int sfp_ddm_get_all_method(struct ubus_context *ubus_ctx, struct ubus_obj
 				  struct blob_attr *msg)
 {
     blob_buf_init (&b, 0);
-    if (!sfp_ddm_get_temperature(&b))
+    if (!sfp_ddm_get_temperature(&b, 0))
 	return UBUS_STATUS_NO_DATA;
-    sfp_ddm_get_voltage(&b);
-    sfp_ddm_get_current(&b);
-    sfp_ddm_get_tx_pwr(&b);
-    sfp_ddm_get_rx_pwr(&b);
+    sfp_ddm_get_voltage(&b, 0);
+    sfp_ddm_get_current(&b, 0);
+    sfp_ddm_get_tx_pwr(&b, 0);
+    sfp_ddm_get_rx_pwr(&b, 0);
 
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
