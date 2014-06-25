@@ -45,6 +45,18 @@ platform_check_image() {
 		return 1
 	}
 
+	[ -f /lib/db/version/iop_customer ] \
+	    && [ "$(get_image_customer "$from")" != "$(cat /lib/db/version/iop_customer)" ] && {
+	    echo "Image customer doesn't match" > /dev/console
+	    return 1
+	}
+	# NOTE: expr interprets $(db get hw.board.hardware) as a
+	# regexp which could give unexpected results if the harware
+	# name contains any magic characters.
+	expr "$(get_image_model_name "$from")" : "$(db get hw.board.hardware)" || {
+	    echo "Image model name doesn't match board hardware" > /dev/console
+	    return 1
+	}
 	echo "Image platform check completed" > /dev/console
 
 	return 0
