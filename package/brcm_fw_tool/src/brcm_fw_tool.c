@@ -91,6 +91,8 @@ typedef struct _WFI_TAG
 #define TAGVER_LEN 4                   /* Length of Tag Version */
 #define TAGLAYOUT_LEN 4                /* Length of FlashLayoutVer */
 
+#define OFFSET_OEM_CUSTOMER (sizeof(WFI_TAG) + 126*1024)
+#define OFFSET_MODEL_NAME (sizeof(WFI_TAG) + 127*1024)
 
 typedef struct _bcm_tag_bccfe {
 	unsigned char tagVersion[TAGVER_LEN];           // 0-3: Version of the image tag
@@ -447,7 +449,7 @@ error:
 }
 
 static int
-signature_check(const char *in_file, const char *mtd_device, int return_block_size, int return_flash_type, int return_chip_id, int return_version_nr, int return_image_type, int return_size_check, int return_iboard_id) {
+signature_check(const char *in_file, const char *mtd_device, int return_block_size, int return_flash_type, int return_chip_id, int return_version_nr, int return_image_type, int return_size_check, int return_iboard_id, int return_model_name, int return_oem) {
 	int in_fp = 0;
 	WFI_TAG brcm_tag = {0};
 	uint8_t readbuf[READ_BUF];
@@ -588,6 +590,35 @@ signature_check(const char *in_file, const char *mtd_device, int return_block_si
 		}
 	}
 
+	if (return_oem) {
+		char buf[100];
+		if (lseek(in_fp, -OFFSET_OEM_CUSTOMER, SEEK_END) < 0) {
+			fprintf(stderr, "seeking to end of file %s failed\n", in_file);
+			exit(1);
+		}
+		if (read(in_fp, buf, sizeof(buf)) != sizeof(buf)) {
+			fprintf(stderr, "reading customer name from file %s failed\n", in_file);
+			exit(1);
+		}
+		buf[sizeof(buf)-1] = 0;
+		fprintf(stdout, "%s\n", buf);
+		exit(0);
+	}
+	if (return_model_name) {
+		char buf[100];
+		if (lseek(in_fp, -OFFSET_MODEL_NAME, SEEK_END) < 0) {
+			fprintf(stderr, "seeking to end of file %s failed\n", in_file);
+			exit(1);
+		}
+		if (read(in_fp, buf, sizeof(buf)) != sizeof(buf)) {
+			fprintf(stderr, "reading model name from file %s failed\n", in_file);
+			exit(1);
+		}
+		buf[sizeof(buf)-1] = 0;
+		fprintf(stdout, "%s\n", buf);
+		exit(0);
+	}
+		
 	/* No header found look for trailer */
 	
 	if (lseek(in_fp, -sizeof(WFI_TAG), SEEK_END) < 0) {
@@ -762,6 +793,8 @@ static void usage(void)
 	"        -t                          return flash type from signature check\n"
 	"        -c                          return chipid from signature check\n"
 	"        -v                          return version from signature check\n"
+	"        -m                          return model name from signature check\n"
+	"        -o                          return oem customer from signature check\n"
 	"        -i                          return image type\n"
 	"        -r                          return iboard id\n"
 	"        -y                          return size check (determines if image size is appropriate)\n"
@@ -805,15 +838,15 @@ int main (int argc, char **argv)
 	int ch;
 	int  eof_marker        = 1;
 	int  erasesize         = 128*1024;
-	int  split_marker      = 0;
 	int  return_block_size = 0;
 	int  return_flash_type = 0;
 	int  return_chip_id    = 0;
 	int  return_version_nr = 0;
-	int  oob_block_size    = 0;
 	int  return_image_type = 0;
 	int  return_size_check = 0;
 	int  return_iboard_id  = 0;
+	int  return_model_name = 0;
+	int  return_oem        = 0;
     int  kernel_chip_id    = 0;
     int  kernel_flash_size = 0;
     int  kernel_chip_rev   = 0;
@@ -842,7 +875,7 @@ int main (int argc, char **argv)
 
 	while ((ch = getopt(argc, argv,
 
-			"g:SIMlefriyqjbtkvwVzmac:d:s:n:o:h:x:u:p:")) != -1)
+			"g:SIMlefriyqjbtkvwVzmoac:d:s:n:h:x:u:p:")) != -1)
 		switch (ch) {
             case 'I':
                 boot_mode = 1;
@@ -874,9 +907,6 @@ int main (int argc, char **argv)
 			case 'j':
 				eof_marker = 0;
 				break;
-			case 'm':
-				split_marker = 1;
-				break;
 			case 'b':
 				return_block_size = 1;
 				break;
@@ -892,6 +922,12 @@ int main (int argc, char **argv)
 			case 'r':
 				return_iboard_id = 1;
 				break;
+			case 'm':
+				return_model_name = 1;
+				break;
+			case 'o':
+				return_oem = 1;
+				break;
 			case 'w':
 				start_offset = 1;
                 wan_interfaces = 1;
@@ -901,9 +937,6 @@ int main (int argc, char **argv)
 				break;			
 			case 'z':
 				erasesize = 16*1024;
-				break;
-			case 'o':
-				oob_block_size = atoi(optarg);
 				break;
 			case 'a':
 				write_fs = 1;
@@ -968,7 +1001,7 @@ int main (int argc, char **argv)
 	switch (cmd) {
 		case CMD_SIGNATURE_CHECK:
 			if (verbose) fprintf(stderr, "Checking signature.\n");
-			signature_check(in_file, mtd_device, return_block_size, return_flash_type, return_chip_id, return_version_nr, return_image_type, return_size_check, return_iboard_id);
+			signature_check(in_file, mtd_device, return_block_size, return_flash_type, return_chip_id, return_version_nr, return_image_type, return_size_check, return_iboard_id, return_model_name, return_oem);
 			break;
 		case CMD_GENERATE_UPDATE_IMAGE:
 			if (verbose) fprintf(stderr, "Generating firmware image.\n");
