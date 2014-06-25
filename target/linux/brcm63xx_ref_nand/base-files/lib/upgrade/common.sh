@@ -176,6 +176,15 @@ get_image_board_id() {
 	brcm_fw_tool -r check $1
 }
 
+get_image_model_name() {
+	brcm_fw_tool -m check $1
+}
+
+get_image_customer() {
+	brcm_fw_tool -o check $1
+}
+
+
 check_image_size() {
 	brcm_fw_tool -y check $1
 }
