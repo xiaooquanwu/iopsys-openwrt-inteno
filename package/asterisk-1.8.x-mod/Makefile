@@ -9,18 +9,19 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=asterisk18-mod
 PKG_VERSION:=1.8.10.1
-PKG_RELEASE:=2
+
+PKG_SOURCE_VERSION:=d676524374293cde2d8daf9d53ec931f8be1cf0e
 PKG_SOURCE_PROTO:=git
 ifeq ($(CONFIG_PACKAGE_bcmkernel),y)
 PKG_SOURCE_URL:=git@ihgsp.inteno.se:asterisk-aa
 else
 PKG_SOURCE_URL:=http://ihgsp.inteno.se/git/asterisk-aa
 endif
-PKG_SOURCE_VERSION:=d676524374293cde2d8daf9d53ec931f8be1cf0e
-PKG_SOURCE_SUBDIR:=asterisk-$(PKG_VERSION)
-PKG_SOURCE:=asterisk-$(PKG_VERSION)-mod.tar.gz
 
-PKG_BUILD_DIR=$(BUILD_DIR)/asterisk-$(PKG_VERSION)
+PKG_RELEASE:=$(PKG_SOURCE_VERSION)
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_RELEASE).tar.gz
+PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
+PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
 
 include $(INCLUDE_DIR)/ltqtapi.mk
 include $(INCLUDE_DIR)/package.mk
