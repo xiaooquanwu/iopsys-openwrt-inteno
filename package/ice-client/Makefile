@@ -15,14 +15,14 @@ export PLATFORM_INCLUDE:=platforms/iopsys/build.mk
 
 export DATE:=$(shell date +%Y-%m-%d-%H-%M-%S)
 export LOGIN:=$(shell whoami)
-BASE_PKG_VERSION:=2.9.7
-PKG_RELEASE:=RC6
+BASE_PKG_VERSION:=2.9.8
+PKG_RELEASE:=RC1
 PKG_VERSION:=$(BASE_PKG_VERSION)-$(PKG_RELEASE)_$(DATE)_$(LOGIN)
 
 ###########################--RELEASE--################################
 
 PKG_SOURCE_URL:=ssh://git@iopsys.inteno.se/ice-client.git
-PKG_SOURCE_VERSION:=8ad1e180a8857b0c85d0c52116db3332aadd49d9
+PKG_SOURCE_VERSION:=3b63c75fd7286943ce93aacf6ac5296c716a0394
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(BASE_PKG_VERSION)
 PKG_SOURCE:=$(PKG_NAME)-$(BASE_PKG_VERSION)-$(PKG_RELEASE).tar.gz
 
@@ -69,7 +69,6 @@ endef
 #define Build/Prepare
 #	rm -rf $(PKG_BUILD_DIR)
 #	ln -s /home/erik/Desktop/cloned_inteno_cfmod/iopsys-client $(PKG_BUILD_DIR)
-#	$(MAKE) -C $(PKG_BUILD_DIR) config
 #endef
 
 ###########################--DEVELOPMENT--################################
@@ -92,6 +91,7 @@ define Build/Configure
 endef
 
 define Build/Compile	
+	$(MAKE) -C $(PKG_BUILD_DIR) config
 	$(MAKE) -C $(PKG_BUILD_DIR) 
 endef
 
@@ -109,7 +109,7 @@ define Package/ice-client/install
 	$(INSTALL_DIR) $(1)/bin
 	$(CP) $(PKG_BUILD_DIR)/core/ice $(1)/bin
 	$(INSTALL_DIR) $(1)/usr/lib
-	$(CP) $(PKG_BUILD_DIR)/core/lib/{libcli.so.1.0.1,systemService.so.1.0.1,libconfStore.so.1,libjsoncpp.so.1,networkService.so.1.0.1,packageService.so.1.0.1} $(1)/usr/lib
+	$(CP) $(PKG_BUILD_DIR)/core/lib/{systemService.so.1.0.1,libconfStore.so.1,libjsoncpp.so.1,networkService.so.1.0.1,packageService.so.1.0.1} $(1)/usr/lib
 	$(INSTALL_DIR) $(1)/etc/config
 	$(CP) $(PKG_BUILD_DIR)/scripts/etc/config/ice $(1)/etc/config
 	$(INSTALL_DIR) $(1)/etc/cloudfriends
@@ -190,13 +190,11 @@ define Package/ice-client-camerawatch/install
 	$(INSTALL_DIR) $(1)/usr/lib
 	$(INSTALL_DIR) $(1)/etc/cloudfriends
 	$(CP) $(PKG_BUILD_DIR)/core/lib/camerawatch.so.1.0.1 $(1)/usr/lib
-	$(CP) $(PKG_BUILD_DIR)/scripts/reg_camera $(1)/etc/cloudfriends
 endef
 
 define Package/ice-client-camerawatch/postinst
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
-    grep "dhcp-script=" /etc/dnsmasq.conf || /bin/echo dhcp-script=/etc/cloudfriends/reg_camera >> /etc/dnsmasq.conf
     read -t 1 <>/tmp/cfout
 	if [ -f /tmp/ice.pid  ]; then
 		/bin/echo "system moduleAdd file=camerawatch.so.1.0.1" > /tmp/cfin
@@ -505,6 +503,7 @@ endef
 define Package/ice-client-fileme/prerm
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
+	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
 	if [  $$PROC_EXISTS ]; then
@@ -519,6 +518,7 @@ endef
 define Package/ice-client-fileme/preinst
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
+	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
 	if [  $$PROC_EXISTS ]; then
@@ -543,11 +543,9 @@ endef
 define Package/ice-client-fileme/postinst
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
-	PROC_ID=$$(cat /tmp/ice.pid)
-	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
-	  read -t 1 <>/tmp/cfout
-	  echo "system moduleAdd file=filemeService.so.1.0.1" > /tmp/cfin
+    read -t 1 <>/tmp/cfout
+	if [ -f /tmp/ice.pid  ]; then
+		echo "system moduleAdd file=filemeService.so.1.0.1" > /tmp/cfin
 	fi
 fi
 exit 0
@@ -567,6 +565,7 @@ endef
 define Package/ice-client-example/prerm
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
+	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
 	if [  $$PROC_EXISTS ]; then
@@ -580,6 +579,7 @@ endef
 define Package/ice-client-example/preinst
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
+	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
 	if [  $$PROC_EXISTS ]; then
@@ -598,11 +598,119 @@ endef
 define Package/ice-client-example/postinst
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
+    read -t 1 <>/tmp/cfout
+	if [ -f /tmp/ice.pid  ]; then
+		echo "system moduleAdd file=exampleService.so.1.0.1" > /tmp/cfin
+	fi
+fi
+exit 0
+endef
+
+# iperf
+define Package/ice-client-iperf
+  $(call Package/ice-client/Default)
+  TITLE:=iperf
+  DEPENDS+= 
+endef
+
+define Package/ice-client-iperf/description
+iperf module for ice-client
+endef
+
+define Package/ice-client-iperf/prerm
+#!/bin/sh
+if [ -z "$${IPKG_INSTROOT}" ]; then
+	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
 	if [  $$PROC_EXISTS ]; then
 	  read -t 1 <>/tmp/cfout
-	  echo "system moduleAdd file=exampleService.so.1.0.1" > /tmp/cfin
+	  echo "system moduleRemove topic=iperfMgr" > /tmp/cfin
+	fi
+fi
+exit 0
+endef
+
+define Package/ice-client-iperf/preinst
+#!/bin/sh
+if [ -z "$${IPKG_INSTROOT}" ]; then
+	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
+	PROC_ID=$$(cat /tmp/ice.pid)
+	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
+	if [  $$PROC_EXISTS ]; then
+	  read -t 1 <>/tmp/cfout
+	  echo "system moduleRemove topic=iperfMgr" > /tmp/cfin
+	fi
+fi
+exit 0
+endef
+
+define Package/ice-client-iperf/install
+	$(INSTALL_DIR) $(1)/usr/lib
+	$(CP) $(PKG_BUILD_DIR)/core/lib/iperfService.so.1.0.1 $(1)/usr/lib
+endef
+
+define Package/ice-client-iperf/postinst
+#!/bin/sh
+if [ -z "$${IPKG_INSTROOT}" ]; then
+    read -t 1 <>/tmp/cfout
+	if [ -f /tmp/ice.pid  ]; then
+		echo "system moduleAdd file=iperfService.so.1.0.1" > /tmp/cfin
+	fi
+fi
+exit 0
+endef
+
+# rshell
+define Package/ice-client-rshell
+  $(call Package/ice-client/Default)
+  TITLE:=rshell
+  DEPENDS+= 
+endef
+
+define Package/ice-client-rshell/description
+rshell module for ice-client
+endef
+
+define Package/ice-client-rshell/prerm
+#!/bin/sh
+if [ -z "$${IPKG_INSTROOT}" ]; then
+	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
+	PROC_ID=$$(cat /tmp/ice.pid)
+	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
+	if [  $$PROC_EXISTS ]; then
+	  read -t 1 <>/tmp/cfout
+	  echo "system moduleRemove topic=rshellMgr" > /tmp/cfin
+	fi
+fi
+exit 0
+endef
+
+define Package/ice-client-rshell/preinst
+#!/bin/sh
+if [ -z "$${IPKG_INSTROOT}" ]; then
+	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
+	PROC_ID=$$(cat /tmp/ice.pid)
+	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
+	if [  $$PROC_EXISTS ]; then
+	  read -t 1 <>/tmp/cfout
+	  echo "system moduleRemove topic=rshellMgr" > /tmp/cfin
+	fi
+fi
+exit 0
+endef
+
+define Package/ice-client-rshell/install
+	$(INSTALL_DIR) $(1)/usr/lib
+	$(CP) $(PKG_BUILD_DIR)/core/lib/rshellService.so.1.0.1 $(1)/usr/lib
+endef
+
+define Package/ice-client-rshell/postinst
+#!/bin/sh
+if [ -z "$${IPKG_INSTROOT}" ]; then
+    read -t 1 <>/tmp/cfout
+	if [ -f /tmp/ice.pid  ]; then
+		echo "system moduleAdd file=rshellService.so.1.0.1" > /tmp/cfin
 	fi
 fi
 exit 0
@@ -622,3 +730,5 @@ $(eval $(call BuildPackage,ice-client-netrounds))
 $(eval $(call BuildPackage,ice-client-logreader))
 $(eval $(call BuildPackage,ice-client-fileme))
 $(eval $(call BuildPackage,ice-client-example))
+$(eval $(call BuildPackage,ice-client-iperf))
+$(eval $(call BuildPackage,ice-client-rshell))
