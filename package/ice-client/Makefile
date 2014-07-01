@@ -22,7 +22,7 @@ PKG_VERSION:=$(BASE_PKG_VERSION)-$(PKG_RELEASE)_$(DATE)_$(LOGIN)
 ###########################--RELEASE--################################
 
 PKG_SOURCE_URL:=ssh://git@iopsys.inteno.se/ice-client.git
-PKG_SOURCE_VERSION:=2be03cfb48575dda3fe44b751b290225b295ab08
+PKG_SOURCE_VERSION:=894447bbf5c6f2a143fbd0c02a7e741e810f4f40
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(BASE_PKG_VERSION)
 PKG_SOURCE:=$(PKG_NAME)-$(BASE_PKG_VERSION)-$(PKG_RELEASE).tar.gz
 
