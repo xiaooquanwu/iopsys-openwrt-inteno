@@ -26,6 +26,7 @@ local cmd = {
     'cat /etc/config/network',
     'ifconfig',
     'iptables-save',
+    'opkg list',
     'db show | grep has[A-Z]',
     'freecwmp --json get InternetGatewayDevice.',
 }
