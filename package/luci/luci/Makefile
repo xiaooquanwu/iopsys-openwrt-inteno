@@ -3,8 +3,8 @@ include $(TOPDIR)/rules.mk
 PKG_BRANCH:=svn-0.11
 PKG_NAME:=luci
 PKG_VERSION:=inteno-1.0.99
-
 PKG_SOURCE_VERSION:=e15ea7c2ee828077fb15384ff68dd9d2015097d3
+
 PKG_SOURCE_PROTO:=git
 ifeq ($(CONFIG_PACKAGE_bcmkernel),y)
 PKG_SOURCE_URL:=git@iopsys.inteno.se:luci-inteno-private.git
@@ -425,57 +425,145 @@ $(eval $(call application,ahcp,LuCI Support for AHCPd,\
 $(eval $(call application,wshaper,LuCI Support for wshaper,\
 	+PACKAGE_luci-app-wshaper:wshaper))
 
-$(eval $(call application,voice-client,LuCI Voice Client Interface,\
-	+luci-lib-json \
-	+asterisk18-mod \
-	+asterisk18-mod-func-channel \
-	+asterisk18-mod-func-db \
-	+asterisk18-mod-app-transfer \
-	+asterisk18-mod-app-read \
-	+asterisk18-mod-func-shell \
-	+asterisk18-mod-pbx-spool \
-	+asterisk18-mod-app-playtones \
-	+asterisk18-mod-sounds \
-	+asterisk18-mod-res-stun \
-	+brcminfo))
-
-define Package/luci-app-voice-client/preinst
-	#!/bin/sh
-	if [ -f /etc/init.d/voice_pbx ]; then
-		echo "luci-app-voice-pbx is already installed, remove it with"
-		echo " opkg remove luci-app-voice-pbx"
-		echo "before installing luci-app-voice-client"
-		exit 1
-	fi
+### VOICE APPLICATION ###
+define Package/luci-app-voice
+  SECTION:=luci
+  CATEGORY:=LuCI
+  TITLE:=LuCI - Lua Configuration Interface
+  URL:=http://luci.subsignal.org/
+  MAINTAINER:=LuCI Development Team <luci@lists.subsignal.org>
+  SUBMENU:=3. Applications
+  TITLE:=LuCI voice application
+  DEPENDS:=+asterisk18-mod
+  MENU:=1
 endef
 
-$(eval $(call application,voice-pbx,LuCI Voice PBX Interface,\
-	+luci-lib-json \
-	+asterisk18-mod \
-	+asterisk18-mod-func-channel \
-	+asterisk18-mod-func-db \
-	+asterisk18-mod-app-transfer \
-	+asterisk18-mod-app-read \
-	+asterisk18-mod-func-shell \
-	+asterisk18-mod-pbx-spool \
-	+asterisk18-mod-app-playtones \
-	+asterisk18-mod-sounds \
-	+asterisk18-mod-res-stun \
+LUCI_VOICE_DIR=$(PKG_BUILD_DIR)/applications/luci-voice
+define Package/luci-app-voice/install
+	$(CP) -a $(LUCI_VOICE_DIR)/ipkg/* $(1)/CONTROL/ 2>/dev/null || true
+	
+	$(INSTALL_DIR) $(1)/etc/config
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/etc/config/voice $(1)/etc/config/
+
+	echo $(PKG_VERSION) > $(1)/etc/iop_luci_version.log
+	echo $(PKG_SOURCE_VERSION) >> $(1)/etc/iop_luci_version.log
+
+	$(INSTALL_DIR) $(1)/etc/uci-defaults
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/etc/uci-defaults/voice $(1)/etc/uci-defaults/
+
+	$(INSTALL_DIR) $(1)/etc/init.d
+	$(INSTALL_BIN) $(LUCI_VOICE_DIR)/dist/etc/init.d/voice $(1)/etc/init.d
+
+	$(INSTALL_DIR) $(1)/etc/asterisk_templates
+	$(CP) -a $(LUCI_VOICE_DIR)/dist/etc/asterisk_templates/* $(1)/etc/asterisk_templates/
+
+	$(INSTALL_DIR) $(1)/usr/lib/asterisk
+	$(INSTALL_BIN) $(LUCI_VOICE_DIR)/dist/usr/lib/asterisk/cbbs.sh $(1)/usr/lib/asterisk/
+	$(INSTALL_BIN) $(LUCI_VOICE_DIR)/dist/usr/lib/asterisk/log_call.sh $(1)/usr/lib/asterisk/
+
+	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/model/cbi/voice
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/advanced.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/brcm.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/country.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/dialplan.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/log.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/sip_details.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/sip.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/status.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/voice.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/common.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
+
+	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/view/voice
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/view/voice/rtblsection.htm $(1)/usr/lib/lua/luci/view/voice/
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/view/voice/tblsection_refresh.htm $(1)/usr/lib/lua/luci/view/voice/
+
+	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/controller/voice
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/controller/voice/brcm.lua $(1)/usr/lib/lua/luci/controller/voice/
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/controller/voice/core.lua $(1)/usr/lib/lua/luci/controller/voice/
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/controller/voice/dialplan.lua $(1)/usr/lib/lua/luci/controller/voice/
+endef
+
+ifneq ($(CONFIG_PACKAGE_luci-app-voice),)
+  LUCI_SELECTED_MODULES+=applications/luci-voice
+endif
+
+LUCI_BUILD_PACKAGES+=luci-app-voice
+
+### VOICE SUBMODULES ###
+define voice_module
+  define Package/luci-app-voice-$(1)
+    SECTION:=luci
+    CATEGORY:=LuCI
+    TITLE:=LuCI - Lua Configuration Interface
+    URL:=http://luci.subsignal.org/
+    MAINTAINER:=Inteno
+    SUBMENU:=3. Applications
+    TITLE:=$(if $(2),$(2),LuCI voice $(1) module)
+    DEPENDS:=luci-app-voice,$(3)
+  endef
+
+  LUCI_BUILD_PACKAGES+=luci-app-voice-$(1)
+endef
+
+$(eval $(call voice_module,client,Voice Client))
+define Package/luci-app-voice-client/install
+	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/model/cbi/voice
+	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/controller/voice
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/ssl.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/controller/voice/ssl.lua $(1)/usr/lib/lua/luci/controller/voice/
+endef
+
+$(eval $(call voice_module,pbx,Voice PBX,\
 	+asterisk18-mod-app-queue \
 	+asterisk18-mod-voicemail \
-	+asterisk18-mod-res-musiconhold \
 	+asterisk18-mod-app-record \
-	+brcminfo))
-
-define Package/luci-app-voice-pbx/preinst
-	#!/bin/sh
-	if [ -f /etc/init.d/voice_client ]; then
-		echo "luci-app-voice-client is installed, remove it with"
-		echo " opkg remove luci-app-voice-client"
-		echo "before installing luci-app-voice-pbx"
-		exit 1
-	fi
+	+asterisk18-mod-res-musiconhold))
+define Package/luci-app-voice-pbx/install
+	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/model/cbi/voice
+	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/controller/voice
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/call_filters.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/call_filter_details.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/conference.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/conference_details.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/ivr.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/ivr_details.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/tone_selection.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/queues.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/queue_details.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/voicemail.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/mailbox_details.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/sip_users.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/sip_user_details.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/opening_hours.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/opening_hours_profile.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/sounds.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/moh.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
+	
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/controller/voice/call_filters.lua $(1)/usr/lib/lua/luci/controller/voice/
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/controller/voice/conference.lua $(1)/usr/lib/lua/luci/controller/voice/
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/controller/voice/ivr.lua $(1)/usr/lib/lua/luci/controller/voice/
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/controller/voice/queues.lua $(1)/usr/lib/lua/luci/controller/voice/
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/controller/voice/voicemail.lua $(1)/usr/lib/lua/luci/controller/voice/
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/controller/voice/sip_users.lua $(1)/usr/lib/lua/luci/controller/voice/
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/controller/voice/opening_hours.lua $(1)/usr/lib/lua/luci/controller/voice/
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/controller/voice/sounds.lua $(1)/usr/lib/lua/luci/controller/voice/
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/controller/voice/moh.lua $(1)/usr/lib/lua/luci/controller/voice/
 endef
+
+define Package/luci-app-voice-pbx/postinst
+#!/bin/sh
+# add required config sections if missing
+for section in "voicemail" "moh" "custom_sounds" "language"
+do
+	type=$$(uci get voice.$$section 2>/dev/null)
+	if [ -z type -o "x$$type" == "x" ] ; then
+		uci set voice.$$section=$$section
+	fi
+done
+uci commit voice
+exit 0
+endef
+### END VOICE APPLICATION ###
 
 $(eval $(call application,ltqtapi,Lantiq voip))
 
