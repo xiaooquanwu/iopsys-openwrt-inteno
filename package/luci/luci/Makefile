@@ -549,20 +549,6 @@ define Package/luci-app-voice-pbx/install
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/controller/voice/sounds.lua $(1)/usr/lib/lua/luci/controller/voice/
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/controller/voice/moh.lua $(1)/usr/lib/lua/luci/controller/voice/
 endef
-
-define Package/luci-app-voice-pbx/postinst
-#!/bin/sh
-# add required config sections if missing
-for section in "voicemail" "moh" "custom_sounds" "language"
-do
-	type=$$(uci get voice.$$section 2>/dev/null)
-	if [ -z type -o "x$$type" == "x" ] ; then
-		uci set voice.$$section=$$section
-	fi
-done
-uci commit voice
-exit 0
-endef
 ### END VOICE APPLICATION ###
 
 $(eval $(call application,ltqtapi,Lantiq voip))
