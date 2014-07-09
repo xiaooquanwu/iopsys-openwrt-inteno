@@ -1,12 +1,11 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=libqmi
-PKG_VERSION:=1.0
+PKG_VERSION:=1.10.0
 PKG_RELEASE:=1
 
-PKG_SOURCE:=libqmi-$(PKG_VERSION).tar.xz
-PKG_SOURCE_URL:=@GNOME/libqmi/1.0/
-PKG_MD5SUM:=1e00d300616efc1bf8d3e8e541a69f73
+PKG_SOURCE:=libqmi-$(PKG_VERSION).tar.gz
+PKG_SOURCE_URL:=http://cgit.freedesktop.org/libqmi/snapshot/
 
 PKG_FIXUP:=autoreconf
 PKG_INSTALL:=1
@@ -25,6 +24,11 @@ define Package/libqmi/description
   Helper library and utils to talk to QMI enabled modems
 endef
 
+define Build/Configure
+	$(SH) $(PKG_BUILD_DIR)/autogen.sh
+	$(Build/Configure/Default)
+endef
+
 define Build/InstallDev
 	$(INSTALL_DIR) $(1)/usr/include
 	$(CP) \
@@ -35,11 +39,6 @@ define Build/InstallDev
 	$(CP) \
 		$(PKG_INSTALL_DIR)/usr/lib/*.{so*,a,la} \
 		$(1)/usr/lib/
-
-	$(INSTALL_DIR) $(1)/usr/lib/pkgconfig
-	$(CP) \
-		$(PKG_INSTALL_DIR)/usr/lib/pkgconfig/qmi-glib.pc \
-		$(1)/usr/lib/pkgconfig
 endef
 
 define Package/libqmi/install
@@ -48,9 +47,12 @@ define Package/libqmi/install
 		$(PKG_INSTALL_DIR)/usr/lib/*.so* \
 		$(1)/usr/lib/
 
+	$(CP) \
+		$(PKG_INSTALL_DIR)/usr/lib/qmi-proxy \
+		$(1)/usr/lib/
+
 	$(INSTALL_DIR) $(1)/usr/bin
-	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/qmicli $(1)/usr/bin/
-	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/qmi-network $(1)/usr/bin/
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/* $(1)/usr/bin/
 endef
 
 $(eval $(call BuildPackage,libqmi))
