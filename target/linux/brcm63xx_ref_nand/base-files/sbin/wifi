@@ -443,6 +443,8 @@ set_wifi_iface() {
 			nvram set wps_button_gpio=`db get -q hw.board.wpsButtonGpio`
 			nvram set wps_config="DONE"
 			_enWps=$(($_enWps + 1))
+		else
+			nvram set "$nif"_wps_mode="disabled"
 		fi
 
 		# bring up the VIF and add to network
