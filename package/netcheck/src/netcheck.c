@@ -357,7 +357,28 @@ stats:
 }
 
 static void
-handle_network(char *interface, int qaddr, int qmask, int qclnt, int qport)
+arpscan(char *netname, char *ipaddr, char *netmask, char *device)
+{
+	struct in_addr ip, nmask, fmask, rmask, last, host;
+	char str[INET_ADDRSTRLEN];
+
+	inet_pton(AF_INET, ipaddr, &(ip.s_addr));
+	inet_pton(AF_INET, netmask, &(nmask.s_addr));
+	inet_pton(AF_INET, "255.255.255.255", &(fmask.s_addr));
+
+	rmask.s_addr = (nmask.s_addr ^ fmask.s_addr);
+	last.s_addr = (ip.s_addr | rmask.s_addr);
+
+        fprintf(stdout, "Scanning network '%s'\n", netname);
+	for(host.s_addr = ip.s_addr; host.s_addr <= last.s_addr; host.s_addr++) {
+		inet_ntop(AF_INET, &(host.s_addr), str, INET_ADDRSTRLEN);
+		if(arping(str, device, 10000))
+			fprintf(stdout, "Host found: %s\n", str);
+	}
+}
+
+static void
+handle_network(char *interface, int qaddr, int qmask, int qclnt, int qport, int qscan)
 {
 	struct uci_element *e;
 	uci_network = init_package("network");
@@ -366,6 +387,7 @@ handle_network(char *interface, int qaddr, int qmask, int qclnt, int qport)
 	const char *ifname = NULL;
 	const char *type = NULL;
 	const char *islan = NULL;
+	char device[32];
 	bool bridge = false;
 
 	uci_foreach_element(&uci_network->sections, e) {
@@ -383,8 +405,13 @@ handle_network(char *interface, int qaddr, int qmask, int qclnt, int qport)
 			exit(1);
 		    }
 
-		    if (type && !strcmp(type, "bridge"))
+		    if (type && !strcmp(type, "bridge")) {
 			bridge = true;
+			sprintf(device, "br-%s", s->e.name);
+		    }
+		    else {
+			strcpy(device, ifname);
+		    }
 
 		    if (qaddr == 1)
 			fprintf(stdout, "%s\n", ipaddr);
@@ -394,6 +421,8 @@ handle_network(char *interface, int qaddr, int qmask, int qclnt, int qport)
 			    find_clients(ipaddr, netmask, false);
 		    if (qport == 1)
 			    find_ports(interface, ifname, ipaddr, netmask, bridge);
+		    if (qscan == 1)
+			    arpscan(s->e.name, ipaddr, netmask, device);
 
 		    exit(0);
 		}
@@ -445,6 +474,7 @@ static void usage(void)
 	fprintf(stderr, "\t\t-c\t\treturn DHCP leases of the network interface\n");
 	fprintf(stderr, "\t\t-m\t\treturn netmask of the network interface\n");
 	fprintf(stderr, "\t\t-p\t\treturn ports information of the network interface\n");
+	fprintf(stderr, "\t\t-q\t\tarpscan the network\n");
 	fprintf(stderr, "\tnetcheck -h <hostaddr> <option>\n");
 	fprintf(stderr, "\t\t-d\t\treturn the device the host connects to\n");
 	fprintf(stderr, "\t\t-l\t\treturn 1 if the host address is local otherwise return 0\n");
@@ -463,6 +493,7 @@ int main(int argc, char **argv)
 	int qmask = 0;
 	int qclnt = 0;
 	int qport = 0;
+	int qscan = 0;
 	int qnet = 0;
 	int qlocal = 0;
 	int qdev = 0;
@@ -473,7 +504,7 @@ int main(int argc, char **argv)
 	if (argc < 2)
 		usage();
 
-	while ((opt = getopt(argc, argv, "i:h:amcpnlds")) != -1) {
+	while ((opt = getopt(argc, argv, "i:h:amcpqnlds")) != -1) {
 
 		switch (opt) {
 			case 'i':
@@ -496,6 +527,9 @@ int main(int argc, char **argv)
 			case 'p':
 				qport = 1;
 				break;
+			case 'q':
+				qscan = 1;
+				break;
 			case 'n':
 				qnet = 1;
 				break;
@@ -517,8 +551,8 @@ int main(int argc, char **argv)
 
 	if (qinf == 1 && qhost == 1)
 		usage();
-	else if (qinf == 1 & (qaddr + qmask + qclnt + qport) == 1)
-		handle_network(interface, qaddr, qmask, qclnt, qport);
+	else if (qinf == 1 & (qaddr + qmask + qclnt + qport + qscan) == 1)
+		handle_network(interface, qaddr, qmask, qclnt, qport, qscan);
 	else if (qhost == 1 & (qnet + qlocal + qdev + qstat) == 1)
 		handle_ip(host, qnet, qlocal, qdev, qstat);
 	else
