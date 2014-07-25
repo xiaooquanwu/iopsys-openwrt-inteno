@@ -21,6 +21,9 @@ config board 'board'
 	option hasBrcmAvs '1'
 	option i2cGpioCustom 'bus0=0,10,9'
 
+config wifi-chip '435f'
+        option bands 'a'
+
 config buttons 'buttons'
 	option RESET 'gpio 32 al resetbutton'
 	option WPS 'gpio 33 al wpsbutton'

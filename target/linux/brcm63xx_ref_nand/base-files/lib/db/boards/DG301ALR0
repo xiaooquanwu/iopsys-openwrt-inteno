@@ -32,6 +32,10 @@ config wifi-chip '43a2'
 	option bands 'a'
 	option is_ac '1'
 
+config wifi-chip '43bc'
+        option bands 'a'
+        option is_ac '1'
+
 config buttons 'buttons'
 	option RESET '32 al resetbutton Ethernet_green'
 	option WPS '22 al wpsbutton Wireless_green'

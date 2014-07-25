@@ -32,6 +32,10 @@ config wifi-chip '43a2'
 	option bands 'a'
 	option is_ac '1'
 
+config wifi-chip '43bc'
+        option bands 'a'
+        option is_ac '1'
+
 config buttons 'buttons'
 	option RESET 'gpio 32 al resetbutton Ethernet_green'
 	option DECT 'gpio 20 al dectbutton Wireless_green'
