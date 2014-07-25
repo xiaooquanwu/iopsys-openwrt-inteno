@@ -8,14 +8,15 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=bcmkernel-3.4
-PKG_VERSION:=4.14
+PKG_VERSION:=4.16
 PKG_RELEASE:=4
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=git@iopsys.inteno.se:bcmkernel-4.14L.04
+PKG_SOURCE_URL:=git@iopsys.inteno.se:bcmkernel-4.16L.02A
 PKG_SOURCE_PROTO:=git
 
-PKG_SOURCE_VERSION:=f65ed3751e356cb517f500ef742c59b97cac9be7
+PKG_SOURCE_VERSION:=6104f3cc2d25bb9da3d9b0845cb2016f953bde46
+
 
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
 
@@ -62,6 +63,19 @@ define Package/bcmkernel/removevoice
 endef
 endif
 
+define Package/bcmkernel/removesound
+	touch $(1)/lib/modules/$(BCM_KERNEL_VERSION)/snd
+	touch $(1)/lib/modules/$(BCM_KERNEL_VERSION)/soundcore.ko
+	rm $(1)/lib/modules/$(BCM_KERNEL_VERSION)/snd*
+	rm $(1)/lib/modules/$(BCM_KERNEL_VERSION)/soundcore.ko
+endef
+
+ifeq ($(BCM_USBSOUND_MODULES),y)
+define Package/bcmkernel/removesound
+	echo not removing $(1)/lib/modules/$(BCM_KERNEL_VERSION)/snd*
+endef
+endif
+
 
 define Package/bcmkernel/removei2c
 	rm $(1)/lib/modules/$(BCM_KERNEL_VERSION)/i2c*
@@ -97,6 +111,7 @@ define Package/bcmkernel/install
 	$(INSTALL_DIR) $(STAGING_DIR)/usr/include/bcm963xx/xChange/dslx_common/xchg_drivers/inc
 	$(INSTALL_DIR) $(STAGING_DIR)/usr/include/bcm963xx/bcmdrivers/opensource/include/bcm963xx
 	$(INSTALL_DIR) $(STAGING_DIR)/usr/include/bcm963xx/shared/opensource/include/bcm963xx
+	$(INSTALL_DIR) $(STAGING_DIR)/usr/include/bcm963xx/userspace/private/apps/vodsl/voip/inc
 
 
 	$(CP) -r $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/shared/opensource/include/bcm963xx/* $(STAGING_DIR)/usr/include/bcm963xx/shared/opensource/include/bcm963xx
@@ -146,6 +161,7 @@ define Package/bcmkernel/install
 
 	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/bcmdrivers/broadcom/include/bcm963xx/endptvoicestats.h $(STAGING_DIR)/usr/include/bcm963xx/bcmdrivers/broadcom/include/bcm963xx/endptvoicestats.h
 	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/bcmdrivers/broadcom/include/bcm963xx/endpointdrv.h $(STAGING_DIR)/usr/include/bcm963xx/bcmdrivers/broadcom/include/bcm963xx/endpointdrv.h
+	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/userspace/private/apps/vodsl/voip/inc/tpProfiles.h $(STAGING_DIR)/usr/include/bcm963xx/userspace/private/apps/vodsl/voip/inc
 
 
 
@@ -190,14 +206,14 @@ define Package/bcmkernel/install
 	mv $(1)/usr/lib/libgcc_s.so.1		$(1)/lib/bcm/
 	mv $(1)/usr/lib/libpthread.so.0		$(1)/lib/bcm/
 
-	rm -f $(1)/usr/lib/libcrypt.so.0
+#	rm -f $(1)/usr/lib/libcrypt.so.0
 	rm -f $(1)/usr/lib/libm.so.0
 	rm -f $(1)/usr/lib/libutil.so.0
 	rm -f $(1)/usr/lib/libcms_boardctl.so
 	rm -f $(1)/usr/lib/libcms_msg.so
 	rm -f $(1)/usr/lib/libcms_util.so
-	rm -f $(1)/usr/lib/libcrypto.so.0.9.7
-	rm -f $(1)/usr/lib/libssl.so.0.9.7
+#	rm -f $(1)/usr/lib/libcrypto.so.0.9.7
+#	rm -f $(1)/usr/lib/libssl.so.0.9.7
 	rm -f $(1)/usr/lib/libnvram.so
 
 
@@ -217,27 +233,28 @@ define Package/bcmkernel/install
 
 
 	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/extra/*			$(1)/lib/modules/$(BCM_KERNEL_VERSION)/extra/
-	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/crypto/*		$(1)/lib/modules/$(BCM_KERNEL_VERSION)/
-	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/drivers/scsi/*		$(1)/lib/modules/$(BCM_KERNEL_VERSION)/
-	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/drivers/usb/serial/*	$(1)/lib/modules/$(BCM_KERNEL_VERSION)/
-	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/drivers/usb/storage/*	$(1)/lib/modules/$(BCM_KERNEL_VERSION)/
-	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/fs/cifs/*		$(1)/lib/modules/$(BCM_KERNEL_VERSION)/
-	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/net/ipv4/*.ko		$(1)/lib/modules/$(BCM_KERNEL_VERSION)/
-	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/net/dns_resolver/*	$(1)/lib/modules/$(BCM_KERNEL_VERSION)/
-	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/net/ipv4/netfilter/*	$(1)/lib/modules/$(BCM_KERNEL_VERSION)/
-	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/net/ipv6/netfilter/*	$(1)/lib/modules/$(BCM_KERNEL_VERSION)/
-	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/net/netfilter/*		$(1)/lib/modules/$(BCM_KERNEL_VERSION)/
-	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/drivers/char/hw_random/*	$(1)/lib/modules/$(BCM_KERNEL_VERSION)/
-	cp    $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/drivers/i2c/i2c-core.ko		$(1)/lib/modules/$(BCM_KERNEL_VERSION)/
-	cp    $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/drivers/i2c/i2c-dev.ko		$(1)/lib/modules/$(BCM_KERNEL_VERSION)/
-	cp    $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/drivers/i2c/algos/i2c-algo-bit.ko	$(1)/lib/modules/$(BCM_KERNEL_VERSION)/
-	cp    $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/drivers/i2c/busses/i2c-gpio.ko		$(1)/lib/modules/$(BCM_KERNEL_VERSION)/
-	cp    $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/drivers/i2c/busses/i2c-gpio-custom.ko	$(1)/lib/modules/$(BCM_KERNEL_VERSION)/
+	find $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/ -name *.ko -exec cp {} $(1)/lib/modules/$(BCM_KERNEL_VERSION)/ \;
+#	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/crypto/*		$(1)/lib/modules/$(BCM_KERNEL_VERSION)/
+#	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/drivers/scsi/*		$(1)/lib/modules/$(BCM_KERNEL_VERSION)/
+#	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/drivers/usb/serial/*	$(1)/lib/modules/$(BCM_KERNEL_VERSION)/
+#	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/drivers/usb/storage/*	$(1)/lib/modules/$(BCM_KERNEL_VERSION)/
+#	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/fs/cifs/*		$(1)/lib/modules/$(BCM_KERNEL_VERSION)/
+#	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/net/ipv4/*.ko		$(1)/lib/modules/$(BCM_KERNEL_VERSION)/
+#	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/net/dns_resolver/*	$(1)/lib/modules/$(BCM_KERNEL_VERSION)/
+#	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/net/ipv4/netfilter/*	$(1)/lib/modules/$(BCM_KERNEL_VERSION)/
+#	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/net/ipv6/netfilter/*	$(1)/lib/modules/$(BCM_KERNEL_VERSION)/
+#	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/net/netfilter/*		$(1)/lib/modules/$(BCM_KERNEL_VERSION)/
+#	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/drivers/char/hw_random/*	$(1)/lib/modules/$(BCM_KERNEL_VERSION)/
+#	cp    $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/drivers/i2c/i2c-core.ko		$(1)/lib/modules/$(BCM_KERNEL_VERSION)/
+#	cp    $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/drivers/i2c/i2c-dev.ko		$(1)/lib/modules/$(BCM_KERNEL_VERSION)/
+#	cp    $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/drivers/i2c/algos/i2c-algo-bit.ko	$(1)/lib/modules/$(BCM_KERNEL_VERSION)/
+#	cp    $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/drivers/i2c/busses/i2c-gpio.ko		$(1)/lib/modules/$(BCM_KERNEL_VERSION)/
+#	cp    $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/drivers/i2c/busses/i2c-gpio-custom.ko	$(1)/lib/modules/$(BCM_KERNEL_VERSION)/
 
 	touch $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/bcmdrivers/broadcom/char/adsl/impl1/adsl_phy.bin
 #	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/bcmdrivers/broadcom/char/adsl/impl1/adsl_phy.bin		$(1)/etc/adsl/adsl_phy.bin
 
-	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/etc/wlan/*_map.bin		$(1)/etc/wlan
+	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/etc/wlan/*			$(1)/etc/wlan
 	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/etc/telephonyProfiles.d		$(1)/etc/
 
 #	rm -rf $(1)/lib/modules/$(BCM_KERNEL_VERSION)/bcm_usb.ko
@@ -256,7 +273,8 @@ define Package/bcmkernel/install
 #	$(KERNEL_CROSS)objcopy $(OBJCOPY_STRIP) -S $(LINUX_DIR)/vmlinux $(KERNEL_BUILD_DIR)/vmlinux.elf
 
 	$(call Package/bcmkernel/removevoice,$(1))
-	$(call Package/bcmkernel/removei2c,$(1))
+	$(call Package/bcmkernel/removesound,$(1))
+#	$(call Package/bcmkernel/removei2c,$(1))
 endef
 
 $(eval $(call BuildPackage,bcmkernel))

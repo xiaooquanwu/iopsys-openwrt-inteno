@@ -24,7 +24,8 @@ bcm_dsl_annex() {
 brcm_insmod() {
 	echo Loading brcm modules
         test -e /lib/modules/3.4.11-rt19/extra/chipinfo.ko     && insmod /lib/modules/3.4.11-rt19/extra/chipinfo.ko
-	test -e /lib/modules/3.4.11-rt19/extra/bcm_ingqos.ko   && insmod /lib/modules/3.4.11-rt19/extra/bcm_ingqos.ko
+	test -e /lib/modules/3.4.11-rt19/extra/bcmxtmrtdrv.ko  && insmod /lib/modules/3.4.11-rt19/extra/bcmxtmrtdrv.ko
+        test -e /lib/modules/3.4.11-rt19/extra/bcm_ingqos.ko   && insmod /lib/modules/3.4.11-rt19/extra/bcm_ingqos.ko
 	test -e /lib/modules/3.4.11-rt19/extra/bcm_bpm.ko      && insmod /lib/modules/3.4.11-rt19/extra/bcm_bpm.ko
 	test -e /lib/modules/3.4.11-rt19/extra/pktflow.ko      && insmod /lib/modules/3.4.11-rt19/extra/pktflow.ko
 	test -e /lib/modules/3.4.11-rt19/extra/pktcmf.ko       && insmod /lib/modules/3.4.11-rt19/extra/pktcmf.ko
@@ -38,6 +39,10 @@ brcm_insmod() {
 #	test -e /lib/modules/3.4.11-rt19/extra/bcm_usb.ko      && insmod /lib/modules/3.4.11-rt19/extra/bcm_usb.ko
 	test -e /lib/modules/3.4.11-rt19/extra/bcmarl.ko       && insmod /lib/modules/3.4.11-rt19/extra/bcmarl.ko
 #	/usr/bin/taskset 2>/dev/null
+	test -e /lib/modules/3.4.11-rt19/extra/wfd.ko          && insmod /lib/modules/3.4.11-rt19/extra/wfd.ko
+	test -e /lib/modules/3.4.11-rt19/extra/wlcsm.ko        && insmod /lib/modules/3.4.11-rt19/extra/wlcsm.ko
+	test -e /lib/modules/3.4.11-rt19/extra/wlemf.ko        && insmod /lib/modules/3.4.11-rt19/extra/wlemf.ko
+	test -e /lib/modules/3.4.11-rt19/extra/dhd.ko          && insmod /lib/modules/3.4.11-rt19/extra/dhd.ko  firmware_path=/etc/wlan/dhd mfg_firmware_path=/etc/wlan/dhd/mfg
 	test -e /lib/modules/3.4.11-rt19/extra/wl.ko           && insmod /lib/modules/3.4.11-rt19/extra/wl.ko
 	test -e /lib/modules/3.4.11-rt19/extra/dect.ko         && insmod /lib/modules/3.4.11-rt19/extra/dect.ko
 	test -e /lib/modules/3.4.11-rt19/extra/dectshim.ko     && insmod /lib/modules/3.4.11-rt19/extra/dectshim.ko
