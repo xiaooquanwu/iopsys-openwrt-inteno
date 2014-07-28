@@ -20,16 +20,16 @@ LDFLAGS+= \
         -Wl,-rpath-link=$(STAGING_DIR)/usr/lib \
 		-Wl,-rpath-link=$(STAGING_DIR)/lib
 
-TARGET_LDFLAGS += $(BUILD_DIR)/bcmkernel-3.4-4.14/bcm963xx/userspace/private/apps/vodsl/telephonyProfiles/telephonyProfiles.o \
-			$(BUILD_DIR)/bcmkernel-3.4-4.14/bcm963xx/userspace/private/apps/vodsl/voip/util/log/vodslLog.o \
-			$(BUILD_DIR)/bcmkernel-3.4-4.14/bcm963xx/userspace/private/apps/vodsl/endpoint/endpoint_user.o \
-			$(BUILD_DIR)/bcmkernel-3.4-4.14/bcm963xx/userspace/private/apps/vodsl/bos/bos.o \
+TARGET_LDFLAGS += $(BUILD_DIR)/bcmkernel-3.4-4.16/bcm963xx/userspace/private/apps/vodsl/telephonyProfiles/telephonyProfiles.o \
+			$(BUILD_DIR)/bcmkernel-3.4-4.16/bcm963xx/userspace/private/apps/vodsl/voip/util/log/vodslLog.o \
+			$(BUILD_DIR)/bcmkernel-3.4-4.16/bcm963xx/userspace/private/apps/vodsl/endpoint/endpoint_user.o \
+			$(BUILD_DIR)/bcmkernel-3.4-4.16/bcm963xx/userspace/private/apps/vodsl/bos/bos.o \
 			-lpthread
 
 RSTRIP:=true
 export BUILD_DIR
 
-BCMKERNEL_DIR:=$(BUILD_DIR)/bcmkernel-3.4-4.14/bcm963xx
+BCMKERNEL_DIR:=$(BUILD_DIR)/bcmkernel-3.4-4.16/bcm963xx
 export BCMKERNEL_DIR
 
 
