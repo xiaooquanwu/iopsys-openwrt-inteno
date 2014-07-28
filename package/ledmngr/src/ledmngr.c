@@ -423,7 +423,6 @@ static int init_i2c_touch()
     i2c_touch->dev = i2c_open_dev("/dev/i2c-0", i2c_touch->addr,
 				  I2C_FUNC_SMBUS_READ_BYTE | I2C_FUNC_SMBUS_WRITE_BYTE);
 
-    i2c_touch->dev = open("/dev/i2c-0", O_RDWR);
     if (i2c_touch->dev < 0) {
         syslog(LOG_INFO,"%s: could not open i2c touch device\n",__func__);
 	i2c_touch->dev = 0;
