@@ -105,6 +105,8 @@ typedef enum {
     LEDS_TEST,
     LEDS_PROD,
     LEDS_RESET,    
+    LEDS_ALLON,
+    LEDS_ALLOFF,
     LEDS_MAX,
 } leds_state_t;
 
@@ -145,7 +147,7 @@ static const char* const led_states[LED_STATES_MAX] =
     { "off", "on", "blink_slow", "blink_fast" };
 /* Names for leds_state_t */
 static const char* const leds_states[LEDS_MAX] =
-    { "normal", "proximity", "silent", "info", "test", "production", "reset" };
+    { "normal", "proximity", "silent", "info", "test", "production", "reset", "allon" , "alloff"};
 
 struct leds_configuration {
     int             leds_nr;
@@ -1136,12 +1138,19 @@ static void check_buttons(int initialize) {
 			led_set(led_cfg, led_cfg->button_feedback_led, -1);
 		}
 
-                if (!(led_cfg->leds_state == LEDS_PROD)) {
+                if ((led_cfg->leds_state == LEDS_NORMAL)    ||
+		    (led_cfg->leds_state == LEDS_PROXIMITY) ||
+		    (led_cfg->leds_state == LEDS_SILENT)    ||
+		    (led_cfg->leds_state == LEDS_INFO)) {
                     DEBUG_PRINT("Button %s released, executing hotplug button command: %s\n",bc->name, bc->command);
                     snprintf(str, 512, "ACTION=register INTERFACE=%s /sbin/hotplug-call button &",bc->command);
                     system(str);
                     syslog(LOG_INFO, "ACTION=register INTERFACE=%s /sbin/hotplug-call button", bc->command);
-                }
+                } else {
+		    DEBUG_PRINT("Button %s released, sending console log output: %s\n",bc->name, bc->command);
+                    snprintf(str, 512, "echo %s %s >/dev/console &",bc->name, bc->command);
+                    system(str);
+		}
                 bc->pressed_state = 0;
             }
         }
@@ -1439,6 +1448,12 @@ static int leds_set_method(struct ubus_context *ubus_ctx, struct ubus_object *ob
         if (i == LEDS_TEST) {
             all_leds_off(led_cfg);
         }
+        if (i == LEDS_ALLON) {
+	    all_leds_on(led_cfg);
+	}
+        if (i == LEDS_ALLOFF) {
+	    all_leds_off(led_cfg);
+	}
 
         if (i <= LEDS_SILENT) {
 	    if (i == LEDS_SILENT || old >= LEDS_SILENT) {
