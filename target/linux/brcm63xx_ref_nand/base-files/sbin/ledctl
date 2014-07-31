@@ -8,7 +8,11 @@ name=$(echo $name | tr '[A-Z]' '[a-z]')
 status=$(echo $status | tr '[A-Z]' '[a-z]')
 
 case $name in
+	normal) ubus call leds set  '{"state":"normal"}' ;;
+	proximity) ubus call leds set  '{"state":"proximity"}' ;;
 	test) ubus call leds set  '{"state":"test"}' ;;
+	allon) ubus call leds set  '{"state":"allon"}' ;;
+	alloff) ubus call leds set  '{"state":"alloff"}' ;;
 	broadband) db get hw.board.lednames | grep -iq broadband && name="dsl" || exit ;;
 	ethernet) name="lan" ;;
 	wireless) name="wifi" ;;
