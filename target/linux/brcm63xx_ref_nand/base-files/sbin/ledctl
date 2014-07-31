@@ -13,6 +13,7 @@ case $name in
 	test) ubus call leds set  '{"state":"test"}' ;;
 	allon) ubus call leds set  '{"state":"allon"}' ;;
 	alloff) ubus call leds set  '{"state":"alloff"}' ;;
+	production) ubus call leds set  '{"state":"production"}' ;;
 	broadband) db get hw.board.lednames | grep -iq broadband && name="dsl" || exit ;;
 	ethernet) name="lan" ;;
 	wireless) name="wifi" ;;
