@@ -280,6 +280,7 @@ CONFIG_TARGET_brcm63xx_ref_nand_NoWiFi=y
 # CONFIG_TARGET_goldfish_Default is not set
 # CONFIG_TARGET_mcs814x_Generic is not set
 # CONFIG_TARGET_mcs814x_dLAN_USB_Extender is not set
+CONFIG_PACKAGE_endptcfg=y
 # CONFIG_TARGET_omap4_Default is not set
 # CONFIG_TARGET_avr32_Default is not set
 # CONFIG_TARGET_realview_Default is not set
@@ -399,7 +400,7 @@ CONFIG_TARGET_ROOTFS_JFFS2=y
 # Image naming
 #
 CONFIG_TARGET_MODEL_NAME="DG301-W7P2U"
-CONFIG_TARGET_VERSION="3.0.0RC4"
+CONFIG_TARGET_VERSION="3.0.0RC5"
 CONFIG_TARGET_CUSTOMER="INT"
 CONFIG_TARGET_IBOARDID="D301"
 

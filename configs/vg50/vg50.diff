@@ -7,3 +7,5 @@ s/^CONFIG_PACKAGE_natalie-dect=y/# CONFIG_PACKAGE_natalie-dect is not set/g
 s/^CONFIG_PACKAGE_ami=y/# CONFIG_PACKAGE_ami is not set/g
 s/^CONFIG_PACKAGE_dectmngr=y/# CONFIG_PACKAGE_dectmngr is not set/g
 s/^CONFIG_PACKAGE_luci-app-dect=y/# CONFIG_PACKAGE_luci-app-dect is not set/g
+s/^CONFIG_PACKAGE_endptcfg=y/# CONFIG_PACKAGE_endptcfg is not set/g
+
