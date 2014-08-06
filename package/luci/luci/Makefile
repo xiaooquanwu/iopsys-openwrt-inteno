@@ -2,9 +2,9 @@ include $(TOPDIR)/rules.mk
 
 PKG_BRANCH:=svn-0.11
 PKG_NAME:=luci
-PKG_VERSION:=inteno-1.0.97
+PKG_VERSION:=inteno-1.0.98
 
-PKG_SOURCE_VERSION:=76b6b2355117604423f89a06862d4c73aa688db9
+PKG_SOURCE_VERSION:=d3d93d63fc86df92251e853067386d888354665c
 PKG_SOURCE_PROTO:=git
 ifeq ($(CONFIG_PACKAGE_bcmkernel),y)
 PKG_SOURCE_URL:=git@iopsys.inteno.se:luci-inteno-private.git
