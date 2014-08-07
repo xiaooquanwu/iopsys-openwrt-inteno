@@ -20,8 +20,8 @@ delif() {
 gigatest() {
 	local speed=$(ethctl $INTERFACE media-type 2>&1 | awk '{if (NR == 2) print $6}')
 	case "$speed" in
-		1000*) return 1 ;;
-		*) return 0 ;;
+		1000*) return 0 ;;
+		*) return 1 ;;
 	esac
 }
 
