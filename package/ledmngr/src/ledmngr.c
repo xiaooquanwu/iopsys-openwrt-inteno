@@ -615,6 +615,11 @@ const struct i2c_sfp i2c_sfp_list[] = {
       .ddm_addr = 0x51,
       .name = "EG200"
     },
+    { .bus = "/dev/i2c-1",
+      .rom_addr = 0x50,
+      .ddm_addr = 0x51,
+      .name = "EG300"
+    },
 };
 
 const struct i2c_sfp *i2c_sfp;
@@ -643,7 +648,7 @@ static int init_i2c_sfp(void)
 	    break;
 	}
     if (!i2c_sfp) {
-	DEBUG_PRINT("No I2C hardware found: %s.\n", p);
+	DEBUG_PRINT("No sfp I2C hardware found: %s.\n", p);
 	return 0;
     }
     return 1;
