@@ -20,8 +20,8 @@ delif() {
 gigatest() {
 	local speed=$(ethctl $INTERFACE media-type 2>&1 | awk '{if (NR == 2) print $6}')
 	case "$speed" in
-		1000*) return 0 ;;
-		*) return 1 ;;
+		1000*) return 1 ;;
+		*) return 0 ;;
 	esac
 }
 
@@ -57,7 +57,8 @@ case "$ACTION" in
 			case "$interfname" in
 				GbE*)
 					ledctl gbe off
-					$(gigatest) && ledctl gbe alert || ledctl gbe notice
+					$(gigatest) || ledctl gbe alert 
+					ledctl gbe notice
 					ledctl lan on
 				;;
 				LAN*)
@@ -65,7 +66,8 @@ case "$ACTION" in
 				;;
 				WAN*)
 					ledctl wan off
-					$(gigatest) && ledctl wan alert || ledctl wan notice
+					$(gigatest) || ledctl wan alert
+					ledctl wan notice
 					ledctl broadband on
 				;;
 			esac
