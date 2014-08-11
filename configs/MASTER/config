@@ -1837,6 +1837,7 @@ CONFIG_PACKAGE_luci-app-speedtest=y
 CONFIG_PACKAGE_luci-app-upnp=y
 # CONFIG_PACKAGE_luci-app-ushare is not set
 # CONFIG_PACKAGE_luci-app-vnstat is not set
+CONFIG_PACKAGE_luci-app-voice=y
 CONFIG_PACKAGE_luci-app-voice-client=y
 # CONFIG_PACKAGE_luci-app-voice-pbx is not set
 # CONFIG_PACKAGE_luci-app-watchcat is not set
