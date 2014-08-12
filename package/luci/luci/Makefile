@@ -499,7 +499,7 @@ define voice_module
     MAINTAINER:=Inteno
     SUBMENU:=3. Applications
     TITLE:=$(if $(2),$(2),LuCI voice $(1) module)
-    DEPENDS:=luci-app-voice,$(3)
+    DEPENDS:=luci-app-voice $(3)
   endef
 
   LUCI_BUILD_PACKAGES+=luci-app-voice-$(1)
