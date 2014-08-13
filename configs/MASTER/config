@@ -1577,6 +1577,7 @@ CONFIG_PACKAGE_asterisk18-mod-app-read=y
 # CONFIG_PACKAGE_asterisk18-mod-app-system is not set
 # CONFIG_PACKAGE_asterisk18-mod-app-talkdetect is not set
 CONFIG_PACKAGE_asterisk18-mod-app-transfer=y
+# CONFIG_PACKAGE_asterisk18-mod-app-queue is not set
 # CONFIG_PACKAGE_asterisk18-mod-app-verbose is not set
 # CONFIG_PACKAGE_asterisk18-mod-app-waituntil is not set
 # CONFIG_PACKAGE_asterisk18-mod-app-while is not set
