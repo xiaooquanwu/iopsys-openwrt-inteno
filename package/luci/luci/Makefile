@@ -2,8 +2,8 @@ include $(TOPDIR)/rules.mk
 
 PKG_BRANCH:=svn-0.11
 PKG_NAME:=luci
-PKG_VERSION:=inteno-1.0.104
-PKG_SOURCE_VERSION:=1a84f0d6044afec6cb7dc52b797845575af736a9
+PKG_VERSION:=inteno-1.0.105
+PKG_SOURCE_VERSION:=f1dc4ddab9fec7c53650a0c309b4c8acb1d45f86
 
 PKG_SOURCE_PROTO:=git
 ifeq ($(CONFIG_PACKAGE_bcmkernel),y)
@@ -521,6 +521,7 @@ $(eval $(call voice_module,pbx,Voice PBX,\
 define Package/luci-app-voice-pbx/install
 	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/model/cbi/voice
 	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/controller/voice
+	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/view/voice
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/call_filters.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/call_filter_details.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/conference.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
@@ -548,6 +549,8 @@ define Package/luci-app-voice-pbx/install
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/controller/voice/opening_hours.lua $(1)/usr/lib/lua/luci/controller/voice/
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/controller/voice/sounds.lua $(1)/usr/lib/lua/luci/controller/voice/
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/controller/voice/moh.lua $(1)/usr/lib/lua/luci/controller/voice/
+	
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/view/voice/moh.htm $(1)/usr/lib/lua/luci/view/voice/
 endef
 ### END VOICE APPLICATION ###
 
