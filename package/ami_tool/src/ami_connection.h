@@ -10,7 +10,7 @@
 
 #define MESSAGE_FRAME "\r\n\r\n"
 #define MESSAGE_FRAME_LOGIN "\r\n"
- #define MESSAGE_FRAME_LEN 5
+#define MESSAGE_FRAME_LEN 5
 
 #define AMI_BUFLEN 512
 

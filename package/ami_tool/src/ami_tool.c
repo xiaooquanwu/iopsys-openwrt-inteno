@@ -329,6 +329,7 @@ void write_firewall(int family)
 	    rtpstart_current == rtpstart &&
 	    rtpend_current == rtpend) {
 		printf("No changes in IP or RTP port range\n");
+		free(ip_list);
 		return;	
 	}
 
@@ -1352,12 +1353,16 @@ int main(int argc, char **argv)
 			ctx = NULL;
 		}
 	}
-
+	
 	/* Main application loop */
 	while(1) {
 		FD_ZERO(&fset);
 		timeout.tv_sec = 1;
 		timeout.tv_usec = 0;
+
+		if (!ctx) {
+			ubus_connected = false;
+		}
 
 		if (ubus_connected) {
 			FD_SET(ctx->sock.fd, &fset);

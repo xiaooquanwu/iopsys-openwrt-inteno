@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <errno.h>
 #include <stdio.h>
 #include <ctype.h>
@@ -6,6 +7,7 @@
 #include <netdb.h>
 #include <sys/socket.h>
 #include <unistd.h>
+
 #include "ami_connection.h"
 
 typedef enum ami_message {
@@ -40,10 +42,7 @@ static ami_message parse_buffer(char *message_frame, char *buffer, char **framed
 
 	//Found a message boundry
 	int message_length = message_end - buffer;
-	*framed_message = calloc(message_length +1, sizeof(char));
-	//*framed_message = (char *) malloc(message_length + 1);
-	strncpy(*framed_message, buffer, message_length);
-	(*framed_message)[message_length] = '\0';
+
 	//printf("Framed message:\n[%s]\n\n", *framed_message);
 
 	//Update byte counter
@@ -51,19 +50,24 @@ static ami_message parse_buffer(char *message_frame, char *buffer, char **framed
 
 	//Find out what type of message this is
 	ami_message message_type;
-	if (!memcmp(*framed_message, "Asterisk Call Manager", 21)) {
+
+	if (!strncmp(buffer, "Asterisk Call Manager", 21)) {
 		//printf("Login prompt detected\n");
 		message_type = LOGIN_MESSAGE;
-	} else if(!memcmp(*framed_message, "Event", 5)) {
+	} else if(!strncmp(buffer, "Event", 5)) {
 		//printf("Event detected: ");
 		message_type = EVENT_MESSAGE;
-	} else if(!memcmp(*framed_message, "Response", 8)) {
+	} else if(!strncmp(buffer, "Response", 8)) {
 		//printf("Response detected: ");
 		message_type = RESPONSE_MESSAGE;
 	} else {
 		//printf("Unknown event: ");
-		message_type = UNKNOWN_MESSAGE;
+		return UNKNOWN_MESSAGE;
 	}
+
+	*framed_message = malloc(message_length +1);
+	strncpy(*framed_message, buffer, message_length);
+	(*framed_message)[message_length] = '\0';
 
 	return message_type;
 }
@@ -199,6 +203,8 @@ ami_event parse_registry_event(char* buf)
 ami_event parse_registry_entry_event(char* buf)
 {
 	ami_event event;
+	memset(&event, 0, sizeof(event));
+	
 	event.type = REGISTRY_ENTRY;
 	event.registry_entry_event = (registry_entry_event*)malloc(sizeof(registry_entry_event));
 	event.registry_entry_event->host = 0;
@@ -295,10 +301,11 @@ ami_event parse_registry_entry_event(char* buf)
 ami_event parse_brcm_event(char* buf)
 {
 	ami_event event;
+	memset(&event, 0, sizeof(event));
+
 	event.type = BRCM;
 	event.brcm_event = malloc(sizeof(brcm_event));
 	event.brcm_event->type = BRCM_UNKNOWN_EVENT;
-
 
 	char* event_type = NULL;
 	char parse_buffer[AMI_BUFLEN];
@@ -307,7 +314,9 @@ ami_event parse_brcm_event(char* buf)
 
 	if ((event_type = strstr(buf, "Status: "))) {
 		event.brcm_event->type = BRCM_STATUS_EVENT;
-		strcpy(parse_buffer, event_type + 8);
+		strncpy(parse_buffer, event_type + 8, AMI_BUFLEN);
+		parse_buffer[AMI_BUFLEN -1] = '\0';
+		//strcpy(parse_buffer, event_type + 8);
 
 		value = strtok(parse_buffer, &delimiter);
 		if (value && !strcmp(value, "OFF")) {
@@ -331,7 +340,9 @@ ami_event parse_brcm_event(char* buf)
 	}
 	else if ((event_type = strstr(buf, "State: "))) {
 		event.brcm_event->type = BRCM_STATE_EVENT;
-		strcpy(parse_buffer, event_type + 7);
+		strncpy(parse_buffer, event_type + 7, AMI_BUFLEN);
+		parse_buffer[AMI_BUFLEN -1] = '\0';
+		//strcpy(parse_buffer, event_type + 7);
 
 		value = strtok(parse_buffer, &delimiter);
 		if (value) {
@@ -378,6 +389,7 @@ ami_event parse_varset_event(char* buf)
 {
 	int len;
 	ami_event event;
+	memset(&event, 0, sizeof(event));
 	event.type = VARSET;
 	event.varset_event = malloc(sizeof(varset_event));
 
@@ -430,6 +442,7 @@ ami_event parse_varset_event(char* buf)
 
 ami_event parse_channel_reload_event(char* buf) {
 	ami_event event;
+	memset(&event, 0, sizeof(event));
 	event.type = CHANNELRELOAD;
 	event.channel_reload_event = malloc(sizeof(channel_reload_event));
 
@@ -446,6 +459,7 @@ ami_event parse_channel_reload_event(char* buf) {
 
 ami_event parse_fully_booted_event(char* buf) {
 	ami_event event;
+	memset(&event, 0, sizeof(event));
 	event.type = FULLYBOOTED;
 	return event;
 }
@@ -486,6 +500,7 @@ static void ami_handle_event(ami_connection* con, char* message)
 	int idx = 0;
 	ami_event_type type = get_event_type(message, &idx);
 	ami_event event;
+	memset(&event, 0, sizeof(event));
 
 	switch(type) {
 		case BRCM:
@@ -542,6 +557,8 @@ static void ami_send_action(ami_connection* con, ami_action* action) {
 static void ami_handle_response(ami_connection* con, char* message)
 {
 	ami_action* current = con->current_action;
+	assert(current);
+
 	ami_action* next = current->next_action;
 	con->current_action = NULL;
 
@@ -627,6 +644,7 @@ void ami_disconnect(ami_connection* con)
 
 		//Let client know about disconnect
 		ami_event event;
+		memset(&event, 0, sizeof(event));
 		event.type = DISCONNECT;
 		con->event_callback(con, event);
 	}
@@ -665,6 +683,8 @@ void ami_handle_data(ami_connection* con)
 
 	ami_message message_type = UNKNOWN_MESSAGE;
 	ami_event event;
+	memset(&event, 0, sizeof(event));
+
 	while(idx < strlen(buf)) {
 		message_type = parse_buffer(con->message_frame, buf, &message, &idx);
 		if (message_type == UNKNOWN_MESSAGE) {
