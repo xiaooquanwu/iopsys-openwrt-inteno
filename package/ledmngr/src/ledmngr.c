@@ -641,12 +641,14 @@ static int init_i2c_sfp(void)
     /* Here we match the hardware name to a init table, and get the
        i2c chip address */
     i2c_sfp = NULL;
-    for (i = 0; i < sizeof(i2c_sfp_list) / sizeof(i2c_sfp_list[0]); i++)
+    for (i = 0; i < sizeof(i2c_sfp_list) / sizeof(i2c_sfp_list[0]); i++) {
+	DEBUG_PRINT("I2C hardware platform %s tested.\n", i2c_sfp_list[i].name);
 	if (!strcmp(i2c_sfp_list[i].name, p)) {
 	    DEBUG_PRINT("I2C hardware platform %s found.\n", p);
 	    i2c_sfp = &i2c_sfp_list[i];
 	    break;
 	}
+    }
     if (!i2c_sfp) {
 	DEBUG_PRINT("No sfp I2C hardware found: %s.\n", p);
 	return 0;
