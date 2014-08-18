@@ -19,14 +19,16 @@
  */
 
 #include "ami_tool.h"
+#include <signal.h>
 #include <libubox/blobmsg.h>
 #include <libubox/uloop.h>
 #include <libubox/ustream.h>
 #include <libubox/utils.h>
-
 #include <libubus.h>
 #include "ami_connection.h"
 #include "ucix.h"
+
+static bool running = false;
 
 //TODO: all uci things here
 void ucix_reload();
@@ -1318,8 +1320,17 @@ static void ubus_connection_lost_cb(struct ubus_context *ctx)
 	ubus_connected = false;
 }
 
+static void sighandler(int signo)
+{
+	if (signo == SIGINT) {
+		running = false;
+	}
+}
+
 int main(int argc, char **argv)
 {
+	signal(SIGINT, sighandler);
+
 	state = DISCONNECTED;
 
 	fd_set fset;				/* FD set */
@@ -1354,8 +1365,10 @@ int main(int argc, char **argv)
 		}
 	}
 	
+	running = true;
+
 	/* Main application loop */
-	while(1) {
+	while(running) {
 		FD_ZERO(&fset);
 		timeout.tv_sec = 1;
 		timeout.tv_usec = 0;
@@ -1375,10 +1388,10 @@ int main(int argc, char **argv)
 		/* Wait for events from ubus or ami */
 		int err = select(FD_SETSIZE, &fset, NULL, NULL, &timeout);
 		if(err < 0) {
-			fprintf(stderr, "Error: %s\n", strerror(errno));
 			if (errno == EINTR) {
 				break;
 			}
+			fprintf(stderr, "Error: %s\n", strerror(errno));
 			continue;
 		}
 
@@ -1430,6 +1443,7 @@ int main(int argc, char **argv)
 	printf("UBUS connection closed\n");
 	ami_free(con); //Shut down AMI connection
 	printf("AMI connection closed\n");
+	free_led_config();
 	return 0;
 }
 

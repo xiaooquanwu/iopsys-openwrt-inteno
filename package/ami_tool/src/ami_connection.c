@@ -7,7 +7,6 @@
 #include <netdb.h>
 #include <sys/socket.h>
 #include <unistd.h>
-
 #include "ami_connection.h"
 
 typedef enum ami_message {
@@ -485,12 +484,23 @@ void ami_free_event(ami_event event) {
 			free(event.varset_event->variable);
 			free(event.varset_event);
 			break;
+		case REGISTRY_ENTRY:
+			free(event.registry_entry_event->host);
+			free(event.registry_entry_event->domain);
+			free(event.registry_entry_event->state);
+			free(event.registry_entry_event->username);
+			free(event.registry_entry_event);
+			break;
 		case FULLYBOOTED:
 		case LOGIN:
 		case DISCONNECT:
-		case UNKNOWN_EVENT:
-		default:
+		case REGISTRATIONS_COMPLETE:
 			/* no event data to free */
+			break;
+		case UNKNOWN_EVENT:
+			break;
+		default:
+			printf("WARNING: Unhandled event type, can't free (may leak)\n");
 			break;
 	}
 }
