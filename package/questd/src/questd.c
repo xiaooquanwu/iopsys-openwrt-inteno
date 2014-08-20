@@ -258,35 +258,6 @@ handle_client(Client *clnt)
 }
 
 static void
-inform_ice()
-{
-	pid_t chpid;
-	int status;
-	FILE *icepid;
-	char pid[8];
-	char commpath[24];
-
-	chpid = fork();
-	if (chpid == 0)
-	{
-		if ((icepid = fopen("/tmp/ice.pid", "r"))) {
-			fgets(pid, sizeof(pid), icepid);
-			remove_newline(pid);
-			fclose(icepid);
-			sprintf(commpath, "/proc/%s/comm", pid);
-			if (access(commpath, F_OK) == 0) {
-				system("read -t 1 <>/tmp/cfout");
-				system("echo \"system ubusEvent topic=clients\" > /tmp/cfin");
-			}
-		}
-		_exit(1);
-	}
-	else if (chpid > 0) {
-		wait(&status);
-	}
-}
-
-static void
 populate_clients()
 {
 	FILE *leases, *arpt;
@@ -352,7 +323,7 @@ populate_clients()
 
 	memcpy(&clients_new, &clients, sizeof(clients));
 	if(memcmp(&clients_new, &clients_old, sizeof(clients)))
-		inform_ice();
+		system("ubus send client");
 	memcpy(&clients_old, &clients_new, sizeof(clients));
 }
 
