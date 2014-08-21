@@ -134,7 +134,12 @@ handle_etc() {
 	local MAC=$(printf "%X\n" $((0x$BMAC)))
 	local BSSID=$(printf "%X\n" $((0x$BMAC + 2)))
 	local WPAKEY=$(cat /proc/nvram/WpaKey)
+	local SERIALNR=$(cat /proc/nvram/SerialNumber)
+	local HWVER=$(db get hw.board.hardwareVersion)
+	local RMODEL=$(db get hw.board.routerModel)
+	local DESKEY=$(db get hw.board.desKey)
 
+	local oid=${BMAC:0:6}
 	local mac=$BMAC
 	local mac2=${MAC:8:2}
 	local mac4=${MAC:6:4}
@@ -144,15 +149,15 @@ handle_etc() {
 	local bssid4=${BSSID:6:4}
 	local bssid6=${BSSID:4:6}
 	local wpakey=$WPAKEY
+	local hardwareid=$HWVER-$(echo $RMODEL | sed -r 's;.+-(.+);\1;')
 
-	local configs="passwords network wireless system"
+	local configs="passwords network wireless system cwmp provisioning"
 
 	if [ "$1" == "1" ]; then
 		mv /etc/config/broadcom /tmp/etc_broadcom 2>/dev/null
 		for config in $configs; do
 			if [ -f /etc/config/$config ]; then
 				cp /etc/config/$config /tmp/etc_$config
-				sed -i "s/$wpakey/\$WPAKEY/g" /etc/config/$config
 				sed -i "s/$mac6/\$MAC6/g" /etc/config/$config
 				sed -i "s/$mac4/\$MAC4/g" /etc/config/$config
 				#sed -i "s/$mac2/\$MAC2/g" /etc/config/$config
@@ -161,6 +166,11 @@ handle_etc() {
 				sed -i "s/$bssid4/\$BSSID4/g" /etc/config/$config
 				#sed -i "s/$bssid2/\$BSSID2/g" /etc/config/$config
 				sed -i "s/$bssid/\$BSSID/g" /etc/config/$config
+				sed -i "s/$wpakey/\$WPAKEY/g" /etc/config/$config
+				sed -i "s/$DESKEY/\$DESKEY/g" /etc/config/$config
+				sed -i "s/$SERIALNR/\$SER/g" /etc/config/$config
+				[ "$config" == "cwmp" ] && sed -i "s/$oid/\$OUI/g" /etc/config/$config
+				#sed -i "s/$hardwareid/\$HARDWAREID/g" /etc/config/$config
 			fi
 		done
 	else
