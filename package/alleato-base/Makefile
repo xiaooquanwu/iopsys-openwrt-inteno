@@ -112,6 +112,7 @@ endef
 define Package/social-alarm/install
 	$(INSTALL_DIR) $(1)/usr/mqttrules $(1)/etc/init.d
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/init.d/social-alarm $(1)/etc/init.d/social-alarm
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/etc/social-alarm.conf.example $(1)/etc/social-alarm.conf.example
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/social-alarm $(1)/usr/mqttrules/social-alarm
 endef
 
