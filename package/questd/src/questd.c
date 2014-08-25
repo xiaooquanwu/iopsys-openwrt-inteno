@@ -295,7 +295,7 @@ populate_clients()
 	int lno = 0;
 	int hw;
 	int flag;
-	char mask[32];
+	char mask[64];
 	int i;
 	bool nothere;
 
@@ -991,7 +991,7 @@ over_memory_cons(void)
 		{
 			remove_newline(line);
 			if (sscanf(line, "VmPeak:    %ld kB", &consumed_mem)) {
-				if (consumed_mem > 12000) {
+				if (consumed_mem > 14000) {
 					restart = true;
 					break;
 				}

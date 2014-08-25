@@ -58,7 +58,7 @@ get_port_name(Port *port)
 {
 	FILE *in;
 	char buf[32];
-	char cmnd[64];
+	char cmnd[80];
 
 	sprintf(cmnd, ". /lib/network/config.sh && interfacename %s 2>/dev/null", port->device);
 	if (!(in = popen(cmnd, "r")))
