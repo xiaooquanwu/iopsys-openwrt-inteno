@@ -2,7 +2,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=alleato-base
 
-PKG_VERSION:=14.27.0
+PKG_VERSION:=14.10.25
 PKG_RELEASE=$(PKG_SOURCE_VERSION)
 ifeq ($(CONFIG_PACKAGE_bcmkernel),y)
 PKG_SOURCE_URL:=git@iopsys.inteno.se:alleato_base.git
@@ -10,7 +10,7 @@ else
 PKG_SOURCE_URL:=http://ihgsp.inteno.se/git/alleato_base.git
 endif
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=HEAD
+PKG_SOURCE_VERSION:=4e980761ead123ab0ad3b0f95b523ea29e8c5742
 
 PKG_MAINTAINER:=Martin Assarsson, ALLEATO
 
@@ -130,6 +130,12 @@ define Package/alleato-boxconfig/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/check_client_id $(1)/usr/sbin/check_client_id
 endef
 
+define Package/all-omc/install
+	$(INSTALL_DIR) $(1)/root $(1)/etc/init.d
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/init.d/omc $(1)/etc/init.d/omc
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/root/ssh_key $(1)/root/ssh_key
+endef
+
 ######################################################
 
 $(eval $(call BuildPackage,alleato3))
@@ -140,4 +146,5 @@ $(eval $(call BuildPackage,alleato-house))
 $(eval $(call BuildPackage,social-alarm))
 $(eval $(call BuildPackage,alleato-scheduler))
 $(eval $(call BuildPackage,alleato-boxconfig))
+$(eval $(call BuildPackage,all-omc))
 

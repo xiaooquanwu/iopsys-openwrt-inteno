@@ -2381,6 +2381,7 @@ CONFIG_PACKAGE_minidlna=y
 # CONFIG_PACKAGE_zwave-mgr is not set
 # CONFIG_PACKAGE_zwave-profiler is not set
 # CONFIG_PACKAGE_zwaved is not set
+# CONFIG_PACKAGE_all-omc is not set
 
 #
 # Boot Loaders
