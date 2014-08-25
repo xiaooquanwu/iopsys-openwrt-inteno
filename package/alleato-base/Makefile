@@ -78,6 +78,13 @@ define Package/alleato-boxconfig
   TITLE:=Alleato boxconfig
 endef
 
+define Package/all-omc
+  SECTION:=utils
+  CATEGORY:=Utilities
+  DEPENDS:=alleato3
+  TITLE:=Alleato remote tunnel
+endef
+
 ######################################################
 
 define Package/alleato3/install
