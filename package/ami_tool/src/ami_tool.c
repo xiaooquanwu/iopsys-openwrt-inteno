@@ -389,7 +389,7 @@ void write_firewall(int family)
 	rtpstart_current = rtpstart;
 	rtpend_current = rtpend;
 
-	snprintf((char *)&buf, BUFLEN, "/etc/init.d/firewall restart");
+	snprintf((char *)&buf, BUFLEN, "/etc/init.d/firewall reload");
 	printf("%s\n", buf);
 	system(buf);
 }
