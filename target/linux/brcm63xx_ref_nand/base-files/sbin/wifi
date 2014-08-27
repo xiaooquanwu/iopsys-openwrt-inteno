@@ -803,7 +803,10 @@ handle_wep() {
 
 # restart dnsmasq if necessary
 restart_dnsmasq() {
-	[ $_rstDnsMsq -gt 0 ] && ps | pgrep dnsmasq >/dev/null && /etc/init.d/dnsmasq restart &
+	if [ $_rstDnsMsq -gt 0 ]; then
+		kill -9 $(ps | grep dnsmasq | grep /etc/init.d | awk '{print$1}') 2>/dev/null
+		/etc/init.d/dnsmasq restart &
+	fi
 }
 
 # Run all hook functions $2...$N for each config entry $1
