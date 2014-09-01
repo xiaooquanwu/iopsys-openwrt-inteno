@@ -15,14 +15,14 @@ export PLATFORM_INCLUDE:=platforms/iopsys/build.mk
 
 export DATE:=$(shell date +%Y-%m-%d-%H-%M-%S)
 export LOGIN:=$(shell whoami)
-BASE_PKG_VERSION:=2.9.8
-PKG_RELEASE:=RC3
+BASE_PKG_VERSION:=3.0.0
+PKG_RELEASE:=RC2
 PKG_VERSION:=$(BASE_PKG_VERSION)-$(PKG_RELEASE)_$(DATE)_$(LOGIN)
 
 ###########################--RELEASE--################################
 
 PKG_SOURCE_URL:=ssh://git@iopsys.inteno.se/ice-client.git
-PKG_SOURCE_VERSION:=7c5d9014ffba6ee2441bafbe877091a17a746d88
+PKG_SOURCE_VERSION:=f8e0a3548d4f994b010bb4abe213ba04ea91baf8
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(BASE_PKG_VERSION)
 PKG_SOURCE:=$(PKG_NAME)-$(BASE_PKG_VERSION)-$(PKG_RELEASE).tar.gz
 
@@ -136,7 +136,6 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
     rm -f /tmp/cloudfriendsserver.ini 
     cp /tmp/ice.back /etc/config/ice 
     rm -f /tmp/ice.back
-    ice -a /etc/cloudfriends/modify.ini -c /etc/cloudfriends/server.ini
     if [ -f "/etc/rc.d/S99ice-client" ]; then
         /etc/init.d/ice-client start
     fi
@@ -717,6 +716,172 @@ fi
 exit 0
 endef
 
+# rework
+define Package/ice-client-rework
+  $(call Package/ice-client/Default)
+  TITLE:=rework
+  DEPENDS+= 
+endef
+
+define Package/ice-client-rework/description
+rework module for ice-client
+endef
+
+define Package/ice-client-rework/prerm
+#!/bin/sh
+if [ -z "$${IPKG_INSTROOT}" ]; then
+	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
+	PROC_ID=$$(cat /tmp/ice.pid)
+	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
+	if [  $$PROC_EXISTS ]; then
+	  read -t 1 <>/tmp/cfout
+	  echo "system moduleRemove topic=rework" > /tmp/cfin
+	fi
+fi
+exit 0
+endef
+
+define Package/ice-client-rework/preinst
+#!/bin/sh
+if [ -z "$${IPKG_INSTROOT}" ]; then
+	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
+	PROC_ID=$$(cat /tmp/ice.pid)
+	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
+	if [  $$PROC_EXISTS ]; then
+	  read -t 1 <>/tmp/cfout
+	  echo "system moduleRemove topic=rework" > /tmp/cfin
+	fi
+fi
+exit 0
+endef
+
+define Package/ice-client-rework/install
+	$(INSTALL_DIR) $(1)/usr/lib
+	$(CP) $(PKG_BUILD_DIR)/core/lib/reworkService.so.1.0.1 $(1)/usr/lib
+	$(INSTALL_DIR) $(1)/bin
+	$(CP) $(PKG_BUILD_DIR)/modules/rework/sshpass-1.05/obj/iopsys/sshpass $(1)/bin
+endef
+
+define Package/ice-client-rework/postinst
+#!/bin/sh
+if [ -z "$${IPKG_INSTROOT}" ]; then
+    read -t 1 <>/tmp/cfout
+	if [ -f /tmp/ice.pid  ]; then
+		echo "system moduleAdd file=reworkService.so.1.0.1" > /tmp/cfin
+	fi
+fi
+exit 0
+endef
+
+# sip
+define Package/ice-client-sip
+  $(call Package/ice-client/Default)
+  TITLE:=sip
+  DEPENDS+= 
+endef
+
+define Package/ice-client-sip/description
+sip module for ice-client
+endef
+
+define Package/ice-client-sip/prerm
+#!/bin/sh
+if [ -z "$${IPKG_INSTROOT}" ]; then
+	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
+	PROC_ID=$$(cat /tmp/ice.pid)
+	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
+	if [  $$PROC_EXISTS ]; then
+	  read -t 1 <>/tmp/cfout
+	  echo "system moduleRemove topic=sip" > /tmp/cfin
+	fi
+fi
+exit 0
+endef
+
+define Package/ice-client-sip/preinst
+#!/bin/sh
+if [ -z "$${IPKG_INSTROOT}" ]; then
+	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
+	PROC_ID=$$(cat /tmp/ice.pid)
+	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
+	if [  $$PROC_EXISTS ]; then
+	  read -t 1 <>/tmp/cfout
+	  echo "system moduleRemove topic=sip" > /tmp/cfin
+	fi
+fi
+exit 0
+endef
+
+define Package/ice-client-sip/install
+	$(INSTALL_DIR) $(1)/usr/lib
+	$(CP) $(PKG_BUILD_DIR)/core/lib/sipService.so.1.0.1 $(1)/usr/lib
+endef
+
+define Package/ice-client-sip/postinst
+#!/bin/sh
+if [ -z "$${IPKG_INSTROOT}" ]; then
+    read -t 1 <>/tmp/cfout
+	if [ -f /tmp/ice.pid  ]; then
+		echo "system moduleAdd file=sipService.so.1.0.1" > /tmp/cfin
+	fi
+fi
+exit 0
+endef
+
+# monitor
+define Package/ice-client-monitor
+  $(call Package/ice-client/Default)
+  TITLE:=monitor
+  DEPENDS+= 
+endef
+
+define Package/ice-client-monitor/description
+monitor module for ice-client
+endef
+
+define Package/ice-client-monitor/prerm
+#!/bin/sh
+if [ -z "$${IPKG_INSTROOT}" ]; then
+	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
+	PROC_ID=$$(cat /tmp/ice.pid)
+	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
+	if [  $$PROC_EXISTS ]; then
+	  read -t 1 <>/tmp/cfout
+	  echo "system moduleRemove topic=monitor" > /tmp/cfin
+	fi
+fi
+exit 0
+endef
+
+define Package/ice-client-monitor/preinst
+#!/bin/sh
+if [ -z "$${IPKG_INSTROOT}" ]; then
+	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
+	PROC_ID=$$(cat /tmp/ice.pid)
+	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
+	if [  $$PROC_EXISTS ]; then
+	  read -t 1 <>/tmp/cfout
+	  echo "system moduleRemove topic=monitor" > /tmp/cfin
+	fi
+fi
+exit 0
+endef
+
+define Package/ice-client-monitor/install
+	$(INSTALL_DIR) $(1)/usr/lib
+	$(CP) $(PKG_BUILD_DIR)/core/lib/monitorService.so.1.0.1 $(1)/usr/lib
+endef
+
+define Package/ice-client-monitor/postinst
+#!/bin/sh
+if [ -z "$${IPKG_INSTROOT}" ]; then
+    read -t 1 <>/tmp/cfout
+	if [ -f /tmp/ice.pid  ]; then
+		echo "system moduleAdd file=monitorService.so.1.0.1" > /tmp/cfin
+	fi
+fi
+exit 0
+endef
 
 # This line executes the necessary commands to compile our program.
 # The above define directives specify all the information needed, but this
@@ -733,3 +898,6 @@ $(eval $(call BuildPackage,ice-client-fileme))
 $(eval $(call BuildPackage,ice-client-example))
 $(eval $(call BuildPackage,ice-client-iperf))
 $(eval $(call BuildPackage,ice-client-rshell))
+$(eval $(call BuildPackage,ice-client-rework))
+$(eval $(call BuildPackage,ice-client-sip))
+$(eval $(call BuildPackage,ice-client-monitor))
