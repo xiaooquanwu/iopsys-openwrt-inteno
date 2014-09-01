@@ -17,6 +17,8 @@ local _rstDnsMsq=0
 local _vno=0
 local _cno=0
 local acsifs=""
+local staifs=""
+local wetifs=""
 
 set_bridge() {
 	local br=$1
@@ -223,10 +225,26 @@ dnsmasq_bind_check() {
 	fi
 }
 
+wireless_mode() {
+	local mode="$1"
+	local network="$2"
+	local bridged="0"
+	local wmode=""
+
+	[ "$(uci get network.$network.type)" == "bridge" ] && bridged="1"
+
+	case "$mode" in
+		ap) wmode="ap" ;;
+		sta) [ "$bridged" == "1" ] && wmode="wet" || wmode="sta" ;;
+	esac
+	echo $wmode
+}
+
 set_wifi_iface() {
 	local vif="$1"
 	local device
 	local vifs
+	local wmode
 
 	config_get device "$vif" device
 
@@ -278,8 +296,13 @@ set_wifi_iface() {
 		nvram set "$nif"_ifname="$iface"
 		nvram set "$nif"_ssid="$ssid"
 
-		# set Mode Radio Infra
-		nvram set "$nif"_mode=ap
+		# set Mode
+		wmode="$(wireless_mode $mode $network)"
+		nvram set "$nif"_mode="${wmode:-ap}"
+		[ "$wmode" == "sta" ] && staifs="$staifs $iface"
+		[ "$wmode" == "wet" ] && wetifs="$wetifs $iface"
+
+		# set Radio Infra
 		nvram set "$nif"_radio=1
 		nvram set "$nif"_infra=1
 
@@ -415,6 +438,9 @@ set_wifi_iface() {
 				qr_key="$key"
 			;;
 		esac
+		case "$wmode" in
+			sta|wet) nvram set "$nif"_auth_mode="none" ;;
+		esac
 		wlctl -i $iface wsec $wsec
 		wlctl -i $iface wpa_auth $auth
 		wlctl -i $iface wsec_restrict $wsec_r
@@ -424,6 +450,19 @@ set_wifi_iface() {
 		# create QR code of the Wi-Fi network
 		create_qr_code "$ssid" "$qr_enc" "$qr_key" "$qr_hidden"
 
+		# tag apsta interfaces
+		if [ "$mode" == "sta" ]; then
+			# tag sta interface
+			nvram set wl_apsta_sta_ifname="$iface"
+			nvram set wl_apsta_sta_cfg="$vif"
+			nvram set wl_apsta_sta_net="$network"
+		else
+			# tag ap interface
+			nvram set wl_apsta_ap_ifname="$iface"
+			nvram set wl_apsta_ap_cfg="$vif"
+			nvram set wl_apsta_ap_net="$network"
+		fi
+
 		# set WPS
 		config_get wps_mode "$vif" wps_pbc
 		if [ "$wps_mode" == "1" ]; then
@@ -431,7 +470,6 @@ set_wifi_iface() {
 			nvram set router_disable="0"
 			nvram set wps_modelnum="123456"
 			nvram set boardnum="1234"
-			nvram set wps_config_method="0x80"
 			nvram set wps_modelname="Broadcom"
 			nvram set wps_mfstring="Broadcom"
 			nvram set wps_device_name="$(uci -q get wireless.@wifi-iface[0].ssid)"
@@ -441,6 +479,12 @@ set_wifi_iface() {
 			nvram set lan"$lno"_wps_oob="disabled"
 			nvram set wps_proc_status="0"
 			nvram set wps_button_gpio=`db get -q hw.board.wpsButtonGpio`
+			if [ "$(uci -q get wireless.$device.apsta)" == "1" ]; then
+				nvram set "$device"_ure_mode="wre"
+				nvram set wps_pbc_apsta="enabled"
+				nvram set wps_pbc_method="2"
+				[ "$mode" == "sta" ] && nvram set wps_pbc_sta_ifname="$iface" || nvram set wps_pbc_ap_ifname="$iface"
+			fi
 			nvram set wps_config="DONE"
 			_enWps=$(($_enWps + 1))
 		else
@@ -511,6 +555,7 @@ set_wifi_device() {
 	config_get wmm_apsd "$device" wmm_apsd
 	config_get doth "$device" doth
 	config_get radio "$device" radio
+	config_get apsta "$device" apsta
 
 	if [ "$radio" == "off" ]; then
 		config_foreach create_vif wifi-iface "$device"
@@ -540,7 +585,10 @@ set_wifi_device() {
 	# mode settings
 	wlctl -i $device up
 	wlctl -i $device down
+	wlctl -i $device apsta "${apsta:-0}"
+	nvram set "$device"_apsta="${apsta:-0}"
 	wlctl -i $device ap 1
+	wlctl -i $device wet 0
 	wlctl -i $device mpc 0
 	wlctl -i $device infra 1
 	wlctl -i $device closed 0
@@ -899,6 +947,19 @@ case "$1" in
 		eapd
 		nas
 		[ $_enWps -gt 0 ] && wps_monitor &
+
+		for staif in $staifs; do
+			dhprc="$(ps | grep udhcpc | grep -w $staif | awk '{print$1}')"
+			if [ -n "$dhprc" ]; then
+				wlctl -i $staif bss up
+				kill -9 $dhprc
+			fi
+		done
+
+		for wetif in $wetifs; do
+			wlctl -i $wetif wet 1
+			wlctl -i $wetif bss up
+		done
 	;;
 esac
 
