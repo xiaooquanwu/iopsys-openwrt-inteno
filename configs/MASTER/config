@@ -2473,6 +2473,7 @@ CONFIG_PACKAGE_ice-client=y
 # CONFIG_PACKAGE_ice-client-logreader is not set
 # CONFIG_PACKAGE_ice-client-netrounds is not set
 # CONFIG_PACKAGE_ice-client-openvpn is not set
+# CONFIG_PACKAGE_ice-client-sip is not set
 # CONFIG_PACKAGE_iconv is not set
 # CONFIG_PACKAGE_iwcap is not set
 # CONFIG_PACKAGE_iwinfo is not set
