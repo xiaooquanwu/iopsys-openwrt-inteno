@@ -2,8 +2,8 @@ include $(TOPDIR)/rules.mk
 
 PKG_BRANCH:=svn-0.11
 PKG_NAME:=luci
-PKG_VERSION:=inteno-1.0.108
-PKG_SOURCE_VERSION:=ae29d56a5826fd9df0ce2fa1266a5deccfe0a41f
+PKG_VERSION:=inteno-1.0.109
+PKG_SOURCE_VERSION:=e179ca00232cea5fee798320664db29e1b1fef13
 
 PKG_SOURCE_PROTO:=git
 ifeq ($(CONFIG_PACKAGE_bcmkernel),y)
@@ -443,7 +443,7 @@ define Package/luci-app-voice/install
 	$(CP) -a $(LUCI_VOICE_DIR)/ipkg/* $(1)/CONTROL/ 2>/dev/null || true
 	
 	$(INSTALL_DIR) $(1)/etc/config
-	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/etc/config/voice $(1)/etc/config/
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/etc/config/voice_client $(1)/etc/config/
 
 	echo $(PKG_VERSION) > $(1)/etc/iop_luci_version.log
 	echo $(PKG_SOURCE_VERSION) >> $(1)/etc/iop_luci_version.log
