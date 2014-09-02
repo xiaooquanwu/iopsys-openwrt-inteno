@@ -87,18 +87,14 @@ EOF
     [ "$iffrom" = "$INTERFACE" ] && {
 	local speed=$(getspeed $INTERFACE)
 	if [ $? = 0 ] ; then
-	    if expr "$speed" : 1000 > /dev/null ; then
-		speed=auto
-	    fi
 	    logger -t DEBUG "iface-chain: Setting $ifto to $speed"
 	    # It would make sense to set *both* interfaces to fixed speed,
 	    # but apparently the builtin EG300 GMAC (eth0) doesn't get link
 	    # if we set it to anything but auto.
 	    #
-	    # A better approach may be always keep auto negotiation
-	    # enabled, but advertise only the desired speed and
-	    # duplex.
-	    ethctl "$ifto" media-type "$speed" 2>/dev/null
+	    # Instead, always keep auto negotiation enabled, but
+	    # advertise only the desired speed and duplex.
+	    ethctl "$ifto" media-type advertise "$speed" auto 2>/dev/null
 	fi
     }
 }
