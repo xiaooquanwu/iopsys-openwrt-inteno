@@ -851,7 +851,7 @@ handle_wep() {
 
 # restart dnsmasq if necessary
 restart_dnsmasq() {
-	if [ $_rstDnsMsq -gt 0 ]; then
+	if [ $_rstDnsMsq -gt 0 ] && [ -f /var/run/dnsmasq.pid ]; then
 		kill -9 $(ps | grep dnsmasq | grep /etc/init.d | awk '{print$1}') 2>/dev/null
 		/etc/init.d/dnsmasq restart
 	fi
