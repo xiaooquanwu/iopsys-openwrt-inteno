@@ -16,13 +16,13 @@ export PLATFORM_INCLUDE:=platforms/iopsys/build.mk
 export DATE:=$(shell date +%Y-%m-%d-%H-%M-%S)
 export LOGIN:=$(shell whoami)
 BASE_PKG_VERSION:=3.0.0
-PKG_RELEASE:=RC2
+PKG_RELEASE:=RC3
 PKG_VERSION:=$(BASE_PKG_VERSION)-$(PKG_RELEASE)_$(DATE)_$(LOGIN)
 
 ###########################--RELEASE--################################
 
 PKG_SOURCE_URL:=ssh://git@iopsys.inteno.se/ice-client.git
-PKG_SOURCE_VERSION:=f8e0a3548d4f994b010bb4abe213ba04ea91baf8
+PKG_SOURCE_VERSION:=5f0689126c501095eb62ce225dfda33d04274670
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(BASE_PKG_VERSION)
 PKG_SOURCE:=$(PKG_NAME)-$(BASE_PKG_VERSION)-$(PKG_RELEASE).tar.gz
 
@@ -68,7 +68,7 @@ endef
 #
 #define Build/Prepare
 #	rm -rf $(PKG_BUILD_DIR)
-#	ln -s /home/erik/Desktop/cloned_inteno_cfmod/iopsys-client $(PKG_BUILD_DIR)
+#	ln -s /home/erik/Desktop/ice-client $(PKG_BUILD_DIR)
 #endef
 
 ###########################--DEVELOPMENT--################################
@@ -90,6 +90,10 @@ define Build/Configure
 	$(MAKE) -C $(PKG_BUILD_DIR) config
 endef
 
+define Build/Clean
+	$(MAKE) -C $(PKG_BUILD_DIR) clean
+endef
+
 define Build/Compile	
 	$(MAKE) -C $(PKG_BUILD_DIR) config
 	$(MAKE) -C $(PKG_BUILD_DIR) 
@@ -108,6 +112,7 @@ endef
 define Package/ice-client/install
 	$(INSTALL_DIR) $(1)/bin
 	$(CP) $(PKG_BUILD_DIR)/core/ice $(1)/bin
+	$(CP) $(PKG_BUILD_DIR)/modules/system/ubusevent/obj/iopsys/ubusevent $(1)/bin
 	$(INSTALL_DIR) $(1)/usr/lib
 	$(CP) $(PKG_BUILD_DIR)/core/lib/{systemService.so.1.0.1,libconfStore.so.1,libjsoncpp.so.1,networkService.so.1.0.1,packageService.so.1.0.1} $(1)/usr/lib
 	$(INSTALL_DIR) $(1)/etc/config
@@ -120,12 +125,6 @@ define Package/ice-client/install
 	$(CP) $(PKG_BUILD_DIR)/scripts/*.pem $(1)/etc/cloudfriends
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(CP) $(PKG_BUILD_DIR)/scripts/ice-client $(1)/etc/init.d/ice-client
-	$(INSTALL_DIR) $(1)/etc/uci-defaults
-	$(CP) $(PKG_BUILD_DIR)/scripts/etc/uci-defaults/luci-ice-client $(1)/etc/uci-defaults/luci-ice-client
-	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/controller/
-	$(CP) $(PKG_BUILD_DIR)/scripts/luci/controller/*.lua $(1)/usr/lib/lua/luci/controller
-	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/model/cbi/ice
-	$(CP) $(PKG_BUILD_DIR)/scripts/luci/model/cbi/ice/*.lua $(1)/usr/lib/lua/luci/model/cbi/ice
 endef
 
 define Package/ice-client/postinst
@@ -164,7 +163,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
 	if [  $$PROC_EXISTS ]; then
 	  read -t 1 <>/tmp/cfout
-	  echo "system moduleRemove topic=cameramanager" > /tmp/cfin
+	  /bin/echo "system moduleRemove topic=cameramanager" > /tmp/cfin
 	  /bin/sleep 3
 	fi
 fi
@@ -179,7 +178,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
 	if [  $$PROC_EXISTS ]; then
 	  read -t 1 <>/tmp/cfout
-	  echo "system moduleRemove topic=cameramanager" > /tmp/cfin
+	  /bin/echo "system moduleRemove topic=cameramanager" > /tmp/cfin
 	  /bin/sleep 3
 	fi
 fi
