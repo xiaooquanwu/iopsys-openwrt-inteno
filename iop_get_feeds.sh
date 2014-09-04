@@ -52,5 +52,7 @@
 ./scripts/feeds install wget
 ./scripts/feeds install xxd
 ./scripts/feeds install xl2tpd
+./scripts/feeds install screen
+
 
 
