@@ -10,7 +10,7 @@ include $(TOPDIR)/rules.mk
 PKG_NAME:=asterisk18-mod
 PKG_VERSION:=1.8.10.1
 
-PKG_SOURCE_VERSION:=d15bb6aaa5cb3fbee18fd2d6e94efa788e2a3ccb
+PKG_SOURCE_VERSION:=aad4dffa813c036b5cd7885160d02512a6f38bd7
 PKG_SOURCE_PROTO:=git
 ifeq ($(CONFIG_PACKAGE_bcmkernel),y)
 PKG_SOURCE_URL:=git@ihgsp.inteno.se:asterisk-aa
