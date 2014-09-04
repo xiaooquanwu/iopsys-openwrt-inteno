@@ -1333,6 +1333,7 @@ CONFIG_PACKAGE_ubusd=y
 CONFIG_PACKAGE_uci=y
 # CONFIG_PACKAGE_udev is not set
 # CONFIG_PACKAGE_wireless-tools is not set
+# CONFIG_PACKAGE_screen is not set
 
 #
 # Libraries
