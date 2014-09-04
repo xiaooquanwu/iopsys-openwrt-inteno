@@ -168,9 +168,8 @@ create_vif() {
 		[ $_cno -eq 0 ] && iface="$device" || iface="$device"."$_cno"
 		# tag guestMgr interface
 		[ "$network" == "guestMgr" ] && {
-			mkdir -p /var/guestmgr/
-			echo $iface > /var/guestmgr/wliface
-			echo $vif > /var/guestmgr/wlcfgno
+			nvram set wl_guestmgr_ifname="$iface"
+			nvram set wl_guestmgr_cfgno="$vif"
 		}
 		# check if dnsmasq restart needed
 		for ifc in $(uci get dhcp.@dnsmasq[0].interface); do
@@ -278,9 +277,8 @@ set_wifi_iface() {
 
 		# tag guestMgr interface
 		[ "$network" == "guestMgr" ] && {
-			mkdir -p /var/guestmgr/
-			echo $iface > /var/guestmgr/wliface
-			echo $vif > /var/guestmgr/wlcfgno
+			nvram set wl_guestmgr_ifname="$iface"
+			nvram set wl_guestmgr_cfgno="$vif"
 		}
 
 		# set wireless VIFs in broadcom nvram
@@ -451,16 +449,18 @@ set_wifi_iface() {
 		create_qr_code "$ssid" "$qr_enc" "$qr_key" "$qr_hidden"
 
 		# tag apsta interfaces
-		if [ "$mode" == "sta" ]; then
-			# tag sta interface
-			nvram set wl_apsta_sta_ifname="$iface"
-			nvram set wl_apsta_sta_cfg="$vif"
-			nvram set wl_apsta_sta_net="$network"
-		else
-			# tag ap interface
-			nvram set wl_apsta_ap_ifname="$iface"
-			nvram set wl_apsta_ap_cfg="$vif"
-			nvram set wl_apsta_ap_net="$network"
+		if [ "$(uci -q get wireless.$device.apsta)" == "1" ]; then
+			if [ "$mode" == "sta" ]; then
+				# tag sta interface
+				nvram set wl_apsta_sta_ifname="$iface"
+				nvram set wl_apsta_sta_cfg="$vif"
+				nvram set wl_apsta_sta_net="$network"
+			else
+				# tag ap interface
+				nvram set wl_apsta_ap_ifname="$iface"
+				nvram set wl_apsta_ap_cfg="$vif"
+				nvram set wl_apsta_ap_net="$network"
+			fi
 		fi
 
 		# set WPS
@@ -865,6 +865,21 @@ run_hooks() {
 	done
 }
 
+bringup_sta() {
+	for staif in $staifs; do
+		dhprc="$(ps | grep udhcpc | grep -w $staif | awk '{print$1}')"
+		if [ -n "$dhprc" ]; then
+			wlctl -i $staif bss up
+			kill -9 $dhprc
+		fi
+	done
+
+	for wetif in $wetifs; do
+		wlctl -i $wetif wet 1
+		wlctl -i $wetif bss up
+	done
+}
+
 case "$1" in
 	disable|enable)
 		[ -z "$2" ] && exit
@@ -899,7 +914,8 @@ rm -f /tmp/wps_monitor.pid
 rm -f /www/luci-static/resources/icons/wqr_*
 
 # remove guestMgr interface tag
-rm -f /var/guestmgr/wliface
+nvram set wl_guestmgr_ifname=""
+nvram set wl_guestmgr_cfgno=""
 
 # remove wireless interfaces from dnsmasq bind interface list
 remove_wlifs_from_dnsmasq_bind_list
@@ -948,18 +964,7 @@ case "$1" in
 		nas
 		[ $_enWps -gt 0 ] && wps_monitor &
 
-		for staif in $staifs; do
-			dhprc="$(ps | grep udhcpc | grep -w $staif | awk '{print$1}')"
-			if [ -n "$dhprc" ]; then
-				wlctl -i $staif bss up
-				kill -9 $dhprc
-			fi
-		done
-
-		for wetif in $wetifs; do
-			wlctl -i $wetif wet 1
-			wlctl -i $wetif bss up
-		done
+		bringup_sta
 	;;
 esac
 
