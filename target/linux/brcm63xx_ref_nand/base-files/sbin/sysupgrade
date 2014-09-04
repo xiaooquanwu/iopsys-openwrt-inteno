@@ -11,6 +11,7 @@ export SAVE_OVERLAY=0
 export DELAY=
 export CONF_IMAGE=
 export CONF_BACKUP=
+export CONF_SELECTED_BACKUP=
 export CONF_UCI_BACKUP=
 export CONF_RESTORE=
 export NEED_IMAGE=
@@ -29,6 +30,7 @@ while [ -n "$1" ]; do
 		-n) export SAVE_CONFIG=0;;
 		-c) export SAVE_OVERLAY=1;;
 		-b|--create-backup) export CONF_BACKUP="$2" NEED_IMAGE=1; shift;;
+		-s|--create-backup-selected) export CONF_SELECTED_BACKUP="$2" NEED_IMAGE=1; shift;;
 		-u|--create-backup-uci) export CONF_UCI_BACKUP="$2" NEED_IMAGE=1; shift;;
 		-r|--restore-backup) export CONF_RESTORE="$2" NEED_IMAGE=1; shift;;
 		-f) export CONF_IMAGE="$2"; shift;;
@@ -77,6 +79,10 @@ backup-command:
 	             create .tar.gz of files specified in sysupgrade.conf
 	             then exit. Does not flash an image. If file is '-',
 	             i.e. stdout, verbosity is set to 0 (i.e. quiet).
+	-s | --create-backup-selected <file>
+	             create .tar.gz of selected services/settings in /etc/config/backup
+	             then exit. Does not flash an image. If file is '-',
+	             i.e. stdout, verbosity is set to 0 (i.e. quiet).
 	-r | --restore-backup <file>
 	             restore a .tar.gz created with sysupgrade -b
 	             then exit. Does not flash an image. If file is '-',
@@ -99,6 +105,7 @@ EOF
 
 # prevent messages from clobbering the tarball when using stdout
 [ "$CONF_BACKUP" = "-" ] && export VERBOSE=0
+[ "$CONF_SELECTED_BACKUP" = "-" ] && export VERBOSE=0
 
 add_uci_conffiles() {
 	local file="$1"
@@ -120,6 +127,24 @@ add_overlayfiles() {
 	return 0
 }
 
+save_selected() {
+	local config="$1"
+	config_get service services $config
+	if [ "$service" == "1" ]; then
+		config_get file "$config" file
+		for f in $file; do
+			echo $f >> /tmp/selected_backup_files
+		done
+	fi
+}
+
+add_selected_conffiles() {
+	local file="$1"
+	config_load backup
+	config_foreach save_selected service
+	return 0
+}
+
 # hooks
 sysupgrade_image_check="platform_check_image"
 [ $SAVE_OVERLAY = 0 -o ! -d /overlay/etc ] && \
@@ -134,10 +159,10 @@ handle_etc() {
 	local MAC=$(printf "%X\n" $((0x$BMAC)))
 	local BSSID=$(printf "%X\n" $((0x$BMAC + 2)))
 	local WPAKEY=$(cat /proc/nvram/WpaKey)
-	local SERIALNR=$(cat /proc/nvram/SerialNumber)
-	local HWVER=$(db get hw.board.hardwareVersion)
-	local RMODEL=$(db get hw.board.routerModel)
-	local DESKEY=$(db get hw.board.desKey)
+        local SERIALNR=$(cat /proc/nvram/SerialNumber)
+        local HWVER=$(db get hw.board.hardwareVersion)
+        local RMODEL=$(db get hw.board.routerModel)
+        local DESKEY=$(db get hw.board.desKey)
 
 	local oid=${BMAC:0:6}
 	local mac=$BMAC
@@ -201,6 +226,31 @@ do_save_conffiles() {
 	handle_etc 0
 }
 
+do_save_selected_conffiles() {
+	local conf_tar="${1:-$CONF_TAR}"
+
+	handle_etc 1
+
+	add_selected_conffiles
+
+	v "Saving config files ..."
+	[ "$VERBOSE" -gt 1 ] && TAR_V="v" || TAR_V=""
+
+	if [ -f /tmp/backup_target_mntdir ]; then
+		local mntdir="$(cat /tmp/backup_target_mntdir)"
+		local btgz="backup-$(cat /proc/sys/kernel/hostname)-$(date +%Y-%m-%d).tar.gz"
+		if [ -n "$mntdir" ] && [ "$mntdir" != "/mnt/" ] && [ -d $mntdir ]; then
+			tar c${TAR_V}z "$conf_tar" -T /tmp/selected_backup_files -f $mntdir$btgz 2>/dev/null
+		fi
+		rm -f /tmp/backup_target_mntdir
+	else
+		tar c${TAR_V}zf "$conf_tar" -T /tmp/selected_backup_files 2>/dev/null
+	fi
+	rm -f /tmp/selected_backup_files
+
+	handle_etc 0
+}
+
 do_save_conffiles_uci() {
 	local conf_tar="${1:-$CONF_TAR}"
 
@@ -225,6 +275,11 @@ do_save_conffiles_uci() {
 
 if [ -n "$CONF_BACKUP" ]; then
 	do_save_conffiles "$CONF_BACKUP"
+	exit $?
+fi
+
+if [ -n "$CONF_SELECTED_BACKUP" ]; then
+	do_save_selected_conffiles "$CONF_SELECTED_BACKUP"
 	exit $?
 fi
 
