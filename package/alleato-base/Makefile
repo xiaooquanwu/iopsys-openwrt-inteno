@@ -2,7 +2,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=alleato-base
 
-PKG_VERSION:=14.10.25
+PKG_VERSION:=14.11.04
 PKG_RELEASE=$(PKG_SOURCE_VERSION)
 ifeq ($(CONFIG_PACKAGE_bcmkernel),y)
 PKG_SOURCE_URL:=git@iopsys.inteno.se:alleato_base.git
@@ -10,7 +10,7 @@ else
 PKG_SOURCE_URL:=http://ihgsp.inteno.se/git/alleato_base.git
 endif
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=61411ae63e2a8a3819d32073318516e7fd215bfe
+PKG_SOURCE_VERSION:=3ef6a58f8c70bb8966c0e0fe5d74e30ebe1b5e62
 
 PKG_MAINTAINER:=Martin Assarsson, ALLEATO
 
@@ -81,7 +81,7 @@ endef
 define Package/all-omc
   SECTION:=utils
   CATEGORY:=Utilities
-  DEPENDS:=alleato3
+  DEPENDS:=+alleato3 +screen
   TITLE:=Alleato remote tunnel
 endef
 
