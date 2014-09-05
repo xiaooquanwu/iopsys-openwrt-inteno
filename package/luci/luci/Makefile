@@ -449,7 +449,7 @@ define Package/luci-app-voice/install
 	echo $(PKG_SOURCE_VERSION) >> $(1)/etc/iop_luci_version.log
 
 	$(INSTALL_DIR) $(1)/etc/uci-defaults
-	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/etc/uci-defaults/voice $(1)/etc/uci-defaults/
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/etc/uci-defaults/voice_client $(1)/etc/uci-defaults/
 
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_BIN) $(LUCI_VOICE_DIR)/dist/etc/init.d/voice_client $(1)/etc/init.d
