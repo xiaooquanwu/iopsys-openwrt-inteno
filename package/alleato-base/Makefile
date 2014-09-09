@@ -2,7 +2,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=alleato-base
 
-PKG_VERSION:=14.11.04
+PKG_VERSION:=14.09.09
 PKG_RELEASE=$(PKG_SOURCE_VERSION)
 ifeq ($(CONFIG_PACKAGE_bcmkernel),y)
 PKG_SOURCE_URL:=git@iopsys.inteno.se:alleato_base.git
@@ -10,7 +10,7 @@ else
 PKG_SOURCE_URL:=http://ihgsp.inteno.se/git/alleato_base.git
 endif
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=3ef6a58f8c70bb8966c0e0fe5d74e30ebe1b5e62
+PKG_SOURCE_VERSION:=f911ccea874761d591c2be5b0f4d1167b5674f35
 
 PKG_MAINTAINER:=Martin Assarsson, ALLEATO
 
@@ -85,6 +85,14 @@ define Package/all-omc
   TITLE:=Alleato remote tunnel
 endef
 
+define Package/bik
+  SECTION:=utils
+  CATEGORY:=Utilities
+  DEPENDS:=+alleato3
+  TITLE:=BIC generator
+endef
+
+
 ######################################################
 
 define Package/alleato3/install
@@ -143,6 +151,12 @@ define Package/all-omc/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/root/ssh_key $(1)/root/ssh_key
 endef
 
+define Package/bik/install
+	$(INSTALL_DIR) $(1)/etc/init.d
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/init.d/bik $(1)/etc/init.d/bik
+endef
+
+
 ######################################################
 
 $(eval $(call BuildPackage,alleato3))
@@ -154,4 +168,5 @@ $(eval $(call BuildPackage,social-alarm))
 $(eval $(call BuildPackage,alleato-scheduler))
 $(eval $(call BuildPackage,alleato-boxconfig))
 $(eval $(call BuildPackage,all-omc))
+$(eval $(call BuildPackage,bik))
 
