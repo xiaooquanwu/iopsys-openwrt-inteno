@@ -117,6 +117,7 @@ define Package/ice-client/install
 	$(CP) $(PKG_BUILD_DIR)/scripts/modify.ini $(1)/etc/cloudfriends
 	$(CP) $(PKG_BUILD_DIR)/scripts/*.crt $(1)/etc/cloudfriends
 	$(CP) $(PKG_BUILD_DIR)/scripts/*.cer $(1)/etc/cloudfriends
+	$(CP) $(PKG_BUILD_DIR)/scripts/*.pem $(1)/etc/cloudfriends
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(CP) $(PKG_BUILD_DIR)/scripts/ice-client $(1)/etc/init.d/ice-client
 	$(INSTALL_DIR) $(1)/etc/uci-defaults
