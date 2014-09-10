@@ -2580,3 +2580,10 @@ CONFIG_PACKAGE_lua=y
 # CONFIG_PACKAGE_python-openssl is not set
 # CONFIG_PACKAGE_python-shutil is not set
 # CONFIG_PACKAGE_python-sqlite3 is not set
+
+
+#
+# Sound
+#
+# CONFIG_PACKAGE_madplay is not set
+# CONFIG_PACKAGE_alsa-utils is not set
