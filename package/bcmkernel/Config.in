@@ -29,6 +29,14 @@ config BCM_ENDPOINT_MODULE
        help
 		Set this to include the endpoint module in image
 
+config BCM_USBSOUND_MODULES
+       bool
+       prompt "Broadcom USB audio support"
+       default n
+       help
+		Set this to include sound support modules in image
+
+
 config BCM_I2C
        bool
        prompt "Broadcom I2C support"
