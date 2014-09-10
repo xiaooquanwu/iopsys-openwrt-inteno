@@ -53,6 +53,7 @@
 ./scripts/feeds install xxd
 ./scripts/feeds install xl2tpd
 ./scripts/feeds install screen
-
+./scripts/feeds install madplay
+./scripts/feeds install alsa-utils
 
 
