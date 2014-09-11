@@ -18,7 +18,7 @@
 #endif
 #define ECHO_BIN "echo"
 #define UCI_BIN "uci"
-#define UCI_VOICE_PACKAGE "voice"
+#define UCI_VOICE_PACKAGE "voice_client"
 
 #ifndef   NI_MAXHOST
 #define   NI_MAXHOST 65
