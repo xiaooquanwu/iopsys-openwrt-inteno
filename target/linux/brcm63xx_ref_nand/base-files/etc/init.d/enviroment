@@ -5,19 +5,15 @@ START=11
 
 handle_threads()
 {
-	local pid threads
-
-	threads="wl0-kthrd wl0-tmr-kthrd"
-	if wlctl -i wl1 ap >/dev/null 2>&1; then
-		threads="$threads wl1-kthrd wl1-tmr-kthrd"
-	fi
+	local pid
+	local threads="wl0-kthrd wl0-tmr-kthrd wl1-kthrd wl1-tmr-kthrd"
 
 	# initialize kernel schedule priorities
 	smd -s
 
 	# set priority for given threads
         for thread in $threads; do
-                pid=$(ps | grep $thread | head -1 | awk '{print$1}')
+                pid=$(ps | pgrep $thread)
 		[ -n "$pid" ] && chrt -rp 5 $pid
         done
 }
