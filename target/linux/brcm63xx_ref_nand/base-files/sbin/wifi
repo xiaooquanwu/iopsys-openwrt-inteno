@@ -314,7 +314,7 @@ set_wifi_iface() {
 		}
 
 		# set WMF
-		wlctl -i $iface wmf_bss_enable "${wmf_bss_enable:-0}"
+		wlctl -i $iface wmf_bss_enable "${wmf_bss_enable:-1}" || dhdctl -i $iface wfd "${wmf_bss_enable:-1}"
 
 		# set WME
 		wlctl -i $iface wme_bss_disable "${wmm_bss_disable:-0}"
@@ -574,7 +574,7 @@ set_wifi_device() {
 	# wlctl -i $device phy_watchdog 0
 	wlctl -i $device stbc_rx 0
 	wlctl -i $device stbc_tx -1
-	wlctl -i $device fcache 1
+	wlctl -i $device fcache 1 || dhdctl -i $device fcache 1
 	wlctl -i $device wnm 0x103
 
 	# WDS Settings
@@ -760,7 +760,7 @@ set_wifi_device() {
 
 generate_wireless_config() {
 	local wls="wl0 wl1"
-	local bands band freq
+	local bands band country
 	local BMAC=$(cat /proc/nvram/BaseMacAddr | tr '[a-z]' '[A-Z]')
 	BMAC=${BMAC// /}
 	local BSSID=$(printf "%X\n" $((0x$BMAC + 2)))
@@ -769,10 +769,7 @@ generate_wireless_config() {
 	WPAKEY="${WPAKEY:-1234567890}"
 
 	is_5g() {
-		local wldev="$1"
-		local idx="${wldev:2:1}"
-		local fpcid=$(cat /proc/bus/pci/devices | grep wl | sed -n $(($idx+1))'p' | awk '{print$2}')
-		local pcid="${fpcid:4:4}"
+		local pcid=$(wlctl -i $1 revinfo | awk 'FNR == 2 {print}' | cut -d'x' -f2)
 		[ "$(db get hw.$pcid.bands)" == "a" ] && return 0 || return 1
 	}
 
@@ -781,10 +778,10 @@ generate_wireless_config() {
 			if ! uci get wireless.$wl >/dev/null 2>&1; then
 				if $(is_5g $wl); then
 					band="a"
-					freq="-5G"
+					country="US"
 				else
 					band="b"
-					freq=""
+					country="EU/13"
 				fi
 				cat >> /etc/config/wireless <<EOF
 config 'wifi-device' '$wl'
@@ -792,7 +789,7 @@ config 'wifi-device' '$wl'
         option 'channel' 'auto'
         option 'scantimer' '10'
         option 'hwmode' 'auto'
-        option 'country' 'EU/13'
+        option 'country' '$country'
         option 'wmm' '1'
         option 'wmm_noack' '0'
         option 'wmm_apsd' '0'
@@ -814,8 +811,8 @@ config 'wifi-iface'
         option 'device' '$wl'
         option 'network' 'lan'
         option 'mode' 'ap'
-        option 'ssid' 'Inteno-$BSSID4$freq'
-        option 'encryption' 'psk2'
+        option 'ssid' 'Inteno-$BSSID4'
+        option 'encryption' 'pskmixedpsk2'
         option 'key' '$WPAKEY'
         option 'gtk_rekey' '3600'
         option 'macfilter' '0'
