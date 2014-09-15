@@ -2,8 +2,8 @@ include $(TOPDIR)/rules.mk
 
 PKG_BRANCH:=svn-0.11
 PKG_NAME:=luci
-PKG_VERSION:=inteno-1.0.117
-PKG_SOURCE_VERSION:=7c3a4b3631e6c9f4b08458f890531de0bc52a8ed
+PKG_VERSION:=inteno-1.0.118
+PKG_SOURCE_VERSION:=f44ff31f883fc23420a114e409abafcfbc1fa8a7
 
 PKG_SOURCE_PROTO:=git
 ifeq ($(CONFIG_PACKAGE_bcmkernel),y)
