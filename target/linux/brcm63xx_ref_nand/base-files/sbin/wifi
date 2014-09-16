@@ -989,3 +989,6 @@ esac
 
 nvram set wlmngr=done
 
+# disable fcache to fix poor performance issue on wl1
+# when AC card with offloading is also on board
+dhdctl -i wl0 version && wlctl -i wl1 fcache 0
