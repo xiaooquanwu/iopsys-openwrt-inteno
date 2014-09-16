@@ -55,5 +55,4 @@
 ./scripts/feeds install screen
 ./scripts/feeds install madplay
 ./scripts/feeds install alsa-utils
-
-
+./scripts/feeds install i2c-tools
