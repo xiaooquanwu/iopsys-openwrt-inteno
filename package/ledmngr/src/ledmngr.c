@@ -23,6 +23,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include <math.h>
 #include <sys/ioctl.h>
 #include <fcntl.h>
@@ -173,6 +174,7 @@ struct button_config {
     int     active;
     char*   command;
     int     pressed_state;
+    struct timespec pressed_time;
     led_type_t type;
     char*   feedback_led;
 };
@@ -503,6 +505,7 @@ int check_i2c(struct i2c_touch *i2c_touch)
         if (ret < 0 )
             syslog(LOG_ERR, "Could not read from i2c device, proximity register\n");
         i2c_touch->shadow_proximity = ret;
+    }
 
 #if 0
         DEBUG_PRINT("%02x %02x %02x: irq ->",
@@ -527,7 +530,6 @@ int check_i2c(struct i2c_touch *i2c_touch)
 
         DEBUG_PRINT_RAW("\n");
 #endif
-    }
     return 0;
 }
 
@@ -535,6 +537,10 @@ int check_i2c(struct i2c_touch *i2c_touch)
    button address  0- 7 maps to touch event 0-7
    button address 8 proximity BL0 NEAR
    button address 9 proximity BL0 FAR
+
+   return 0 = no action on this button
+   return 1 = button pressed
+   return -1 = error
 */
 int check_i2c_button(struct button_config *bc, struct i2c_touch *i2c_touch) {
 
@@ -548,6 +554,14 @@ int check_i2c_button(struct button_config *bc, struct i2c_touch *i2c_touch) {
             i2c_touch->shadow_touch = i2c_touch->shadow_touch & ~bit;
             return 1;
         }
+
+        /* if the button was already pressed and we don't have a release irq report it as still pressed */
+        if( bc->pressed_state ){
+            if (! (i2c_touch->shadow_irq & SX9512_IRQ_RELEASE) ) {
+                return 1;
+            }
+        }
+
         return 0;
     }else if (bc->address == 8 ) {
         bit = 1<<7;
@@ -1105,6 +1119,43 @@ static int button_use_feedback(const struct leds_configuration *led_cfg,
 	&& bc->type == I2C && bc->address < 8;
 }
 
+/* For i2c buttons but not the near & far we save the time of press event
+   so that we can see at release it was pressed long enough.
+*/
+static void touch_button_press_timer_start(struct button_config* bc)
+{
+    if (bc->type == I2C && bc->address < 8) {
+        if ( bc->pressed_time.tv_sec == 0 )
+            clock_gettime(CLOCK_MONOTONIC, &bc->pressed_time);
+    }
+}
+
+/* For i2c buttons but not the near & far we check that is was
+   pressed long enough.
+*/
+static int  button_press_time_valid(struct button_config* bc, int msec)
+{
+    struct timespec now;
+    int sec;
+    int nsec;
+
+    if (bc->type == I2C && bc->address < 8) {
+        if ( bc->pressed_time.tv_sec != 0 ) {
+            clock_gettime(CLOCK_MONOTONIC, &now);
+            sec = now.tv_sec - bc->pressed_time.tv_sec;
+            nsec = now.tv_nsec - bc->pressed_time.tv_nsec;
+
+            if ( msec < (sec*1000 + nsec/1000000)) {
+                return 1;
+            }
+        }
+    } else {
+        return 1;
+    }
+
+    return 0;
+}
+
 static void check_buttons(int initialize) {
     int button, i;
     struct button_config* bc;
@@ -1130,6 +1181,8 @@ static void check_buttons(int initialize) {
 			    !led_cfg->leds[led_cfg->button_feedback_led]->blink_state);
 		//syslog(LOG_INFO, "Button %s pressed\n",bc->name);
                 bc->pressed_state = 1;
+                touch_button_press_timer_start(bc);
+
                 if(led_cfg->leds_state == LEDS_PROD) {
                     DEBUG_PRINT("Setting %s on\n", bc->feedback_led);
                     if (bc->feedback_led) led_set(led_cfg, get_led_index_by_name(led_cfg, bc->feedback_led), ON);
@@ -1144,6 +1197,7 @@ static void check_buttons(int initialize) {
 		    else
 			led_set(led_cfg, led_cfg->button_feedback_led, -1);
 		}
+        if (button_press_time_valid(bc, 2000)){
 
                 if ((led_cfg->leds_state == LEDS_NORMAL)    ||
 		    (led_cfg->leds_state == LEDS_PROXIMITY) ||
@@ -1158,8 +1212,12 @@ static void check_buttons(int initialize) {
                     snprintf(str, 512, "echo %s %s >/dev/console &",bc->name, bc->command);
                     system(str);
 		}
+                }
                 bc->pressed_state = 0;
+                bc->pressed_time.tv_sec = 0;
             }
+        } else {
+            bc->pressed_time.tv_sec = 0;
         }
     }
 
