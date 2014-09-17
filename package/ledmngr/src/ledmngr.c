@@ -50,10 +50,10 @@ int fd;
 extern int daemonize;
 
 #define DEBUG_PRINT_RAW(...) if (!daemonize) fprintf( stderr, __VA_ARGS__ );
-#define DEBUG_PRINT(fmt, args...) \
-    do { \
-        if (!daemonize) \
-            fprintf( stderr,"%-20s: " fmt , __func__, ##args); \
+#define DEBUG_PRINT(fmt, args...)                               \
+    do {                                                        \
+        if (!daemonize)                                         \
+            fprintf( stderr,"%-20s: " fmt , __func__, ##args);  \
     } while(0)
 
 #define LED_FUNCTIONS 14
@@ -105,7 +105,7 @@ typedef enum {
     LEDS_INFO,
     LEDS_TEST,
     LEDS_PROD,
-    LEDS_RESET,    
+    LEDS_RESET,
     LEDS_ALLON,
     LEDS_ALLOFF,
     LEDS_MAX,
@@ -139,16 +139,16 @@ struct led_map {
 
 /* Names for led_action_t */
 static const char * const fn_actions[LED_ACTION_MAX] =
-    { "off", "ok", "notice", "alert", "error",};
+{ "off", "ok", "notice", "alert", "error",};
 static const char* const led_functions[LED_FUNCTIONS] =
-    { "dsl", "wifi", "wps", "lan", "status", "dect", "tv", "usb",
-      "wan", "internet", "voice1", "voice2", "eco", "gbe"};
+{ "dsl", "wifi", "wps", "lan", "status", "dect", "tv", "usb",
+  "wan", "internet", "voice1", "voice2", "eco", "gbe"};
 /* Names for led_state_t */
 static const char* const led_states[LED_STATES_MAX] =
-    { "off", "on", "blink_slow", "blink_fast" };
+{ "off", "on", "blink_slow", "blink_fast" };
 /* Names for leds_state_t */
 static const char* const leds_states[LEDS_MAX] =
-    { "normal", "proximity", "silent", "info", "test", "production", "reset", "allon" , "alloff"};
+{ "normal", "proximity", "silent", "info", "test", "production", "reset", "allon" , "alloff"};
 
 struct leds_configuration {
     int             leds_nr;
@@ -160,7 +160,7 @@ struct leds_configuration {
 
     /* If >= 0, index for the led used for button and proximity
        feedback. */
-    int button_feedback_led;    
+    int button_feedback_led;
     leds_state_t leds_state;
     int test_state;
     /* Number of blink_handler ticks the buttons should stay lit up */
@@ -215,115 +215,115 @@ struct i2c_reg_tab {
 
 /* CG300 config:
 
-     BL0: Proximity
-     BL1: Wireless button
-     BL2: WPS button, WPS LED
-     BL3: Dect button, Dect LED
-     BL4: Internet green LED
-     BL5: Internet red LED
-     BL6, BL7: Unused.
+   BL0: Proximity
+   BL1: Wireless button
+   BL2: WPS button, WPS LED
+   BL3: Dect button, Dect LED
+   BL4: Internet green LED
+   BL5: Internet red LED
+   BL6, BL7: Unused.
 */
-                                         /*addr,value,range*/
+/*addr,value,range*/
 static const struct i2c_reg_tab i2c_init_tab_cg300[]={
-                                          {0xFF, 0xDE, 0x00 },      /* Reset chip */
-                                          {0xFF, 0x00, 0x00 },      /* Reset chip */
+    {0xFF, 0xDE, 0x00 },      /* Reset chip */
+    {0xFF, 0x00, 0x00 },      /* Reset chip */
 
-                                          {0x04, 0x00, 0x00 },      /* NVM Control */
-                                          {0x07, 0x00, 0x00 },      /* SPO2, set as interrupt  */
-                                          {0x08, 0x00, 0x00 },      /* Power key ctrl */
-                                          {0x09, 0x78, 0x00 },      /* Irq MASK */
-                                          {0x0C, 0x01, 0x00 },      /* LED map 1, BL0 (why?) */
-                                          {0x0D, 0x3c, 0x00 },      /* LED map 2 BL2 -> BL5*/
-                                          {0x0E, 0x10, 0x00 },      /* LED Pwm Frq */
-                                          {0x0F, 0x00, 0x00 },      /* LED Mode */
-                                          {0x10, 0xFF, 0x00 },      /* Led Idle LED on */
-                                          {0x11, 0x00, 0x00 },      /* Led 1 off delay */
-                                          {0x12, 0xFF, 0x00 },      /* Led 1 on */
-                                          {0x13, 0x00, 0x00 },      /* Led 1 fade */
-                                          {0x14, 0xFF, 0x00 },      /* Led 2 on   */
-                                          {0x15, 0x00, 0x00 },      /* Led 2 fade */
-                                          {0x16, 0xFF, 0x00 },      /* Led Pwr Idle */
-                                          {0x17, 0xFF, 0x00 },      /* Led Pwr On */
-                                          {0x18, 0x00, 0x00 },      /* Led Pwr Off */
-                                          {0x19, 0x00, 0x00 },      /* Led Pwr fade */
-                                          {0x1A, 0x00, 0x00 },      /* Led Pwr On Pw */
-                                          {0x1B, 0x00, 0x00 },      /* Disable BL7 as power button */
-                                          {0x1E, 0x0F, 0x00 },      /* Cap sens enabled, bl0-bl3 */
-                                          {0x1F, 0x43, 0x00 },      /* Cap sens BL0 */
-                                          {0x20, 0x43, 0x07 },      /* Cap sens range  20-27 BL1->BL7 */
-                                          {0x28, 0x02, 0x00 },      /* Cap sens thresh BL 0  */
-                                          {0x29, 0x04, 0x07 },      /* Cap sens thresh 28-30 */
-                                          {0x31, 0x54, 0x00 },      /* Cap sens Op */
-                                          {0x32, 0x70, 0x00 },      /* Cap Sens Mode, filter 1-1/8, report all */
-                                          {0x33, 0x01, 0x00 },      /* Cap Sens Debounce */
-                                          {0x34, 0x80, 0x00 },      /* Cap Sens Neg Comp Thresh */
-                                          {0x35, 0x80, 0x00 },      /* Cap Sens Pos Comp Thresh */
-                                          {0x36, 0x17, 0x00 },      /* Cap Sens Pos Filt, hyst 2, debounce 4, 1-1/128 */
-                                          {0x37, 0x15, 0x00 },      /* Cap Sens Neg Filt, hyst 2, debounce 4, 1-1/32 */
-                                          {0x38, 0x00, 0x00 },      /* Cap Sens */
-                                          {0x39, 0x00, 0x00 },      /* Cap Sens Frame Skip  */
-                                          {0x3A, 0x00, 0x00 },      /* Cap Sens Misc  */
-                                          {0x3B, 0x00, 0x00 },      /* Prox Comb Chan Mask */
-                                          {0x3E, 0xFF, 0x00 },      /* SPO Chan Map */
-                                          {0x00, 0x04, 0x00 },      /* Trigger compensation */
+    {0x04, 0x00, 0x00 },      /* NVM Control */
+    {0x07, 0x00, 0x00 },      /* SPO2, set as interrupt  */
+    {0x08, 0x00, 0x00 },      /* Power key ctrl */
+    {0x09, 0x78, 0x00 },      /* Irq MASK */
+    {0x0C, 0x01, 0x00 },      /* LED map 1, BL0 (why?) */
+    {0x0D, 0x3c, 0x00 },      /* LED map 2 BL2 -> BL5*/
+    {0x0E, 0x10, 0x00 },      /* LED Pwm Frq */
+    {0x0F, 0x00, 0x00 },      /* LED Mode */
+    {0x10, 0xFF, 0x00 },      /* Led Idle LED on */
+    {0x11, 0x00, 0x00 },      /* Led 1 off delay */
+    {0x12, 0xFF, 0x00 },      /* Led 1 on */
+    {0x13, 0x00, 0x00 },      /* Led 1 fade */
+    {0x14, 0xFF, 0x00 },      /* Led 2 on   */
+    {0x15, 0x00, 0x00 },      /* Led 2 fade */
+    {0x16, 0xFF, 0x00 },      /* Led Pwr Idle */
+    {0x17, 0xFF, 0x00 },      /* Led Pwr On */
+    {0x18, 0x00, 0x00 },      /* Led Pwr Off */
+    {0x19, 0x00, 0x00 },      /* Led Pwr fade */
+    {0x1A, 0x00, 0x00 },      /* Led Pwr On Pw */
+    {0x1B, 0x00, 0x00 },      /* Disable BL7 as power button */
+    {0x1E, 0x0F, 0x00 },      /* Cap sens enabled, bl0-bl3 */
+    {0x1F, 0x43, 0x00 },      /* Cap sens BL0 */
+    {0x20, 0x43, 0x07 },      /* Cap sens range  20-27 BL1->BL7 */
+    {0x28, 0x02, 0x00 },      /* Cap sens thresh BL 0  */
+    {0x29, 0x04, 0x07 },      /* Cap sens thresh 28-30 */
+    {0x31, 0x54, 0x00 },      /* Cap sens Op */
+    {0x32, 0x70, 0x00 },      /* Cap Sens Mode, filter 1-1/8, report all */
+    {0x33, 0x01, 0x00 },      /* Cap Sens Debounce */
+    {0x34, 0x80, 0x00 },      /* Cap Sens Neg Comp Thresh */
+    {0x35, 0x80, 0x00 },      /* Cap Sens Pos Comp Thresh */
+    {0x36, 0x17, 0x00 },      /* Cap Sens Pos Filt, hyst 2, debounce 4, 1-1/128 */
+    {0x37, 0x15, 0x00 },      /* Cap Sens Neg Filt, hyst 2, debounce 4, 1-1/32 */
+    {0x38, 0x00, 0x00 },      /* Cap Sens */
+    {0x39, 0x00, 0x00 },      /* Cap Sens Frame Skip  */
+    {0x3A, 0x00, 0x00 },      /* Cap Sens Misc  */
+    {0x3B, 0x00, 0x00 },      /* Prox Comb Chan Mask */
+    {0x3E, 0xFF, 0x00 },      /* SPO Chan Map */
+    {0x00, 0x04, 0x00 },      /* Trigger compensation */
 };
 
 /* EG300 config:
 
-     BL0: Proximity, WAN green LED
-     BL1: Wireless button, WAN yellow LED
-     BL2: WPS button, WPS LED
-     BL3: Dect button, Dect LED
-     BL4: Internet green LED
-     BL5: Internet red LED
-     BL6: Ethernet LED
-     BL7: Voice LED
+   BL0: Proximity, WAN green LED
+   BL1: Wireless button, WAN yellow LED
+   BL2: WPS button, WPS LED
+   BL3: Dect button, Dect LED
+   BL4: Internet green LED
+   BL5: Internet red LED
+   BL6: Ethernet LED
+   BL7: Voice LED
 
-     Only the led 1 and led2 maps differ from CG300.
+   Only the led 1 and led2 maps differ from CG300.
 */
 
 static const struct i2c_reg_tab i2c_init_tab_eg300[]={
-                                          {0xFF, 0xDE, 0x00 },      /* Reset chip */
-                                          {0xFF, 0x00, 0x00 },      /* Reset chip */
+    {0xFF, 0xDE, 0x00 },      /* Reset chip */
+    {0xFF, 0x00, 0x00 },      /* Reset chip */
 
-                                          {0x04, 0x00, 0x00 },      /* NVM Control */
-                                          {0x07, 0x00, 0x00 },      /* SPO2, set as interrupt  */
-                                          {0x08, 0x00, 0x00 },      /* Power key ctrl */
-                                          {0x09, 0x78, 0x00 },      /* Irq MASK */
-                                          {0x0C, 0x00, 0x00 },      /* LED map 1, none */
-                                          {0x0D, 0xff, 0x00 },      /* LED map 2, all */
-                                          {0x0E, 0x10, 0x00 },      /* LED Pwm Frq */
-                                          {0x0F, 0x00, 0x00 },      /* LED Mode */
-                                          {0x10, 0xFF, 0x00 },      /* Led Idle LED on */
-                                          {0x11, 0x00, 0x00 },      /* Led 1 off delay */
-                                          {0x12, 0xFF, 0x00 },      /* Led 1 on */
-                                          {0x13, 0x00, 0x00 },      /* Led 1 fade */
-                                          {0x14, 0xFF, 0x00 },      /* Led 2 on   */
-                                          {0x15, 0x00, 0x00 },      /* Led 2 fade */
-                                          {0x16, 0xFF, 0x00 },      /* Led Pwr Idle */
-                                          {0x17, 0xFF, 0x00 },      /* Led Pwr On */
-                                          {0x18, 0x00, 0x00 },      /* Led Pwr Off */
-                                          {0x19, 0x00, 0x00 },      /* Led Pwr fade */
-                                          {0x1A, 0x00, 0x00 },      /* Led Pwr On Pw */
-                                          {0x1B, 0x00, 0x00 },      /* Disable BL7 as power button */
-                                          {0x1E, 0x0F, 0x00 },      /* Cap sens enabled, bl0-bl3 */
-                                          {0x1F, 0x43, 0x00 },      /* Cap sens BL0 */
-                                          {0x20, 0x43, 0x07 },      /* Cap sens range  20-27 BL1->BL7 */
-                                          {0x28, 0x02, 0x00 },      /* Cap sens thresh BL 0  */
-                                          {0x29, 0x04, 0x07 },      /* Cap sens thresh 28-30 */
-                                          {0x31, 0x54, 0x00 },      /* Cap sens Op */
-                                          {0x32, 0x70, 0x00 },      /* Cap Sens Mode, filter 1-1/8, report all */
-                                          {0x33, 0x01, 0x00 },      /* Cap Sens Debounce */
-                                          {0x34, 0x80, 0x00 },      /* Cap Sens Neg Comp Thresh */
-                                          {0x35, 0x80, 0x00 },      /* Cap Sens Pos Comp Thresh */
-                                          {0x36, 0x17, 0x00 },      /* Cap Sens Pos Filt, hyst 2, debounce 4, 1-1/128 */
-                                          {0x37, 0x15, 0x00 },      /* Cap Sens Neg Filt, hyst 2, debounce 4, 1-1/32 */
-                                          {0x38, 0x00, 0x00 },      /* Cap Sens */
-                                          {0x39, 0x00, 0x00 },      /* Cap Sens Frame Skip  */
-                                          {0x3A, 0x00, 0x00 },      /* Cap Sens Misc  */
-                                          {0x3B, 0x00, 0x00 },      /* Prox Comb Chan Mask */
-                                          {0x3E, 0xFF, 0x00 },      /* SPO Chan Map */
-                                          {0x00, 0x04, 0x00 },      /* Trigger compensation */
+    {0x04, 0x00, 0x00 },      /* NVM Control */
+    {0x07, 0x00, 0x00 },      /* SPO2, set as interrupt  */
+    {0x08, 0x00, 0x00 },      /* Power key ctrl */
+    {0x09, 0x78, 0x00 },      /* Irq MASK */
+    {0x0C, 0x00, 0x00 },      /* LED map 1, none */
+    {0x0D, 0xff, 0x00 },      /* LED map 2, all */
+    {0x0E, 0x10, 0x00 },      /* LED Pwm Frq */
+    {0x0F, 0x00, 0x00 },      /* LED Mode */
+    {0x10, 0xFF, 0x00 },      /* Led Idle LED on */
+    {0x11, 0x00, 0x00 },      /* Led 1 off delay */
+    {0x12, 0xFF, 0x00 },      /* Led 1 on */
+    {0x13, 0x00, 0x00 },      /* Led 1 fade */
+    {0x14, 0xFF, 0x00 },      /* Led 2 on   */
+    {0x15, 0x00, 0x00 },      /* Led 2 fade */
+    {0x16, 0xFF, 0x00 },      /* Led Pwr Idle */
+    {0x17, 0xFF, 0x00 },      /* Led Pwr On */
+    {0x18, 0x00, 0x00 },      /* Led Pwr Off */
+    {0x19, 0x00, 0x00 },      /* Led Pwr fade */
+    {0x1A, 0x00, 0x00 },      /* Led Pwr On Pw */
+    {0x1B, 0x00, 0x00 },      /* Disable BL7 as power button */
+    {0x1E, 0x0F, 0x00 },      /* Cap sens enabled, bl0-bl3 */
+    {0x1F, 0x43, 0x00 },      /* Cap sens BL0 */
+    {0x20, 0x43, 0x07 },      /* Cap sens range  20-27 BL1->BL7 */
+    {0x28, 0x02, 0x00 },      /* Cap sens thresh BL 0  */
+    {0x29, 0x04, 0x07 },      /* Cap sens thresh 28-30 */
+    {0x31, 0x54, 0x00 },      /* Cap sens Op */
+    {0x32, 0x70, 0x00 },      /* Cap Sens Mode, filter 1-1/8, report all */
+    {0x33, 0x01, 0x00 },      /* Cap Sens Debounce */
+    {0x34, 0x80, 0x00 },      /* Cap Sens Neg Comp Thresh */
+    {0x35, 0x80, 0x00 },      /* Cap Sens Pos Comp Thresh */
+    {0x36, 0x17, 0x00 },      /* Cap Sens Pos Filt, hyst 2, debounce 4, 1-1/128 */
+    {0x37, 0x15, 0x00 },      /* Cap Sens Neg Filt, hyst 2, debounce 4, 1-1/32 */
+    {0x38, 0x00, 0x00 },      /* Cap Sens */
+    {0x39, 0x00, 0x00 },      /* Cap Sens Frame Skip  */
+    {0x3A, 0x00, 0x00 },      /* Cap Sens Misc  */
+    {0x3B, 0x00, 0x00 },      /* Prox Comb Chan Mask */
+    {0x3E, 0xFF, 0x00 },      /* SPO Chan Map */
+    {0x00, 0x04, 0x00 },      /* Trigger compensation */
 };
 
 struct i2c_touch{
@@ -373,27 +373,27 @@ static int i2c_open_dev (const char *bus, int addr, unsigned long needed)
 {
     int fd = open(bus, O_RDWR);
     if (fd < 0) {
-	syslog(LOG_INFO,"%s: could not open /dev/i2c-0\n",__func__);
-	return -1;
+        syslog(LOG_INFO,"%s: could not open /dev/i2c-0\n",__func__);
+        return -1;
     }
     if (ioctl(fd, I2C_SLAVE, addr) < 0) {
         syslog(LOG_INFO,"%s: could not set address %x for i2c chip\n",
-	       __func__, addr);
+               __func__, addr);
     error:
-	close (fd);
-	return -1;
+        close (fd);
+        return -1;
     }
     if (needed) {
-	unsigned long funcs;
-	if (ioctl(fd, I2C_FUNCS, &funcs) < 0) {
-	    syslog(LOG_INFO,"%s: could not get I2C_FUNCS\n",__func__);
-	    goto error;
-	}
-	if ( (funcs & needed) != needed) {
-	    syslog(LOG_INFO,"%s: lacking I2C capabilities, have %lx, need %lx\n",
-		   __func__, funcs, needed);
-	    goto error;
-	}
+        unsigned long funcs;
+        if (ioctl(fd, I2C_FUNCS, &funcs) < 0) {
+            syslog(LOG_INFO,"%s: could not get I2C_FUNCS\n",__func__);
+            goto error;
+        }
+        if ( (funcs & needed) != needed) {
+            syslog(LOG_INFO,"%s: lacking I2C capabilities, have %lx, need %lx\n",
+                   __func__, funcs, needed);
+            goto error;
+        }
     }
     return fd;
 }
@@ -414,22 +414,22 @@ static int init_i2c_touch()
        i2c chip address */
     i2c_touch = NULL;
     for (i = 0; i < sizeof(i2c_touch_list) / sizeof(i2c_touch_list[0]); i++)
-	if (!strcmp(i2c_touch_list[i].name, p)) {
-	    DEBUG_PRINT("I2C hardware platform %s found.\n", p);
-	    i2c_touch = &i2c_touch_list[i];
-	    break;
-	}
+        if (!strcmp(i2c_touch_list[i].name, p)) {
+            DEBUG_PRINT("I2C hardware platform %s found.\n", p);
+            i2c_touch = &i2c_touch_list[i];
+            break;
+        }
     if (!i2c_touch) {
-	DEBUG_PRINT("No I2C hardware found: %s.\n", p);
-	return 0;
+        DEBUG_PRINT("No I2C hardware found: %s.\n", p);
+        return 0;
     }
 
     i2c_touch->dev = i2c_open_dev("/dev/i2c-0", i2c_touch->addr,
-				  I2C_FUNC_SMBUS_READ_BYTE | I2C_FUNC_SMBUS_WRITE_BYTE);
+                                  I2C_FUNC_SMBUS_READ_BYTE | I2C_FUNC_SMBUS_WRITE_BYTE);
 
     if (i2c_touch->dev < 0) {
         syslog(LOG_INFO,"%s: could not open i2c touch device\n",__func__);
-	i2c_touch->dev = 0;
+        i2c_touch->dev = 0;
         return 0;
     }
 
@@ -465,8 +465,8 @@ static void i2c_touch_reset_handler(struct uloop_timeout *timeout)
     init_i2c_touch();
 
     for (i=0 ; i<led_cfg->leds_nr ; i++)
-	if (led_cfg->leds[i]->type == I2C)
-	    led_set(led_cfg, i, -1);
+        if (led_cfg->leds[i]->type == I2C)
+            led_set(led_cfg, i, -1);
 
     uloop_timeout_set(&i2c_touch_reset_timer, I2C_RESET_TIME);
 
@@ -508,39 +508,39 @@ int check_i2c(struct i2c_touch *i2c_touch)
     }
 
 #if 0
-        DEBUG_PRINT("%02x %02x %02x: irq ->",
-                    i2c_touch->shadow_irq ,
-                    i2c_touch->shadow_touch,
-                    i2c_touch->shadow_proximity);
+    DEBUG_PRINT("%02x %02x %02x: irq ->",
+                i2c_touch->shadow_irq ,
+                i2c_touch->shadow_touch,
+                i2c_touch->shadow_proximity);
 
-        if (i2c_touch->shadow_irq & SX9512_IRQ_RESET )
-            DEBUG_PRINT_RAW(" Reset ");
-        if (i2c_touch->shadow_irq & SX9512_IRQ_TOUCH )
-            DEBUG_PRINT_RAW(" Touch ");
-        if (i2c_touch->shadow_irq & SX9512_IRQ_RELEASE )
-            DEBUG_PRINT_RAW(" Release ");
-        if (i2c_touch->shadow_irq & SX9512_IRQ_NEAR )
-            DEBUG_PRINT_RAW(" Near ");
-        if (i2c_touch->shadow_irq & SX9512_IRQ_FAR )
-            DEBUG_PRINT_RAW(" Far ");
-        if (i2c_touch->shadow_irq & SX9512_IRQ_COM )
-            DEBUG_PRINT_RAW(" Com ");
-        if (i2c_touch->shadow_irq & SX9512_IRQ_CONV )
-            DEBUG_PRINT_RAW(" Conv ");
+    if (i2c_touch->shadow_irq & SX9512_IRQ_RESET )
+        DEBUG_PRINT_RAW(" Reset ");
+    if (i2c_touch->shadow_irq & SX9512_IRQ_TOUCH )
+        DEBUG_PRINT_RAW(" Touch ");
+    if (i2c_touch->shadow_irq & SX9512_IRQ_RELEASE )
+        DEBUG_PRINT_RAW(" Release ");
+    if (i2c_touch->shadow_irq & SX9512_IRQ_NEAR )
+        DEBUG_PRINT_RAW(" Near ");
+    if (i2c_touch->shadow_irq & SX9512_IRQ_FAR )
+        DEBUG_PRINT_RAW(" Far ");
+    if (i2c_touch->shadow_irq & SX9512_IRQ_COM )
+        DEBUG_PRINT_RAW(" Com ");
+    if (i2c_touch->shadow_irq & SX9512_IRQ_CONV )
+        DEBUG_PRINT_RAW(" Conv ");
 
-        DEBUG_PRINT_RAW("\n");
+    DEBUG_PRINT_RAW("\n");
 #endif
     return 0;
 }
 
 /*
-   button address  0- 7 maps to touch event 0-7
-   button address 8 proximity BL0 NEAR
-   button address 9 proximity BL0 FAR
+  button address  0- 7 maps to touch event 0-7
+  button address 8 proximity BL0 NEAR
+  button address 9 proximity BL0 FAR
 
-   return 0 = no action on this button
-   return 1 = button pressed
-   return -1 = error
+  return 0 = no action on this button
+  return 1 = button pressed
+  return -1 = error
 */
 int check_i2c_button(struct button_config *bc, struct i2c_touch *i2c_touch) {
 
@@ -656,16 +656,16 @@ static int init_i2c_sfp(void)
        i2c chip address */
     i2c_sfp = NULL;
     for (i = 0; i < sizeof(i2c_sfp_list) / sizeof(i2c_sfp_list[0]); i++) {
-	DEBUG_PRINT("I2C hardware platform %s tested.\n", i2c_sfp_list[i].name);
-	if (!strcmp(i2c_sfp_list[i].name, p)) {
-	    DEBUG_PRINT("I2C hardware platform %s found.\n", p);
-	    i2c_sfp = &i2c_sfp_list[i];
-	    break;
-	}
+        DEBUG_PRINT("I2C hardware platform %s tested.\n", i2c_sfp_list[i].name);
+        if (!strcmp(i2c_sfp_list[i].name, p)) {
+            DEBUG_PRINT("I2C hardware platform %s found.\n", p);
+            i2c_sfp = &i2c_sfp_list[i];
+            break;
+        }
     }
     if (!i2c_sfp) {
-	DEBUG_PRINT("No sfp I2C hardware found: %s.\n", p);
-	return 0;
+        DEBUG_PRINT("No sfp I2C hardware found: %s.\n", p);
+        return 0;
     }
     return 1;
 }
@@ -704,14 +704,14 @@ static int add_led(struct leds_configuration* led_cfg, char* led_name, const cha
             return -1;
         }
         /* FIXME: Add to configuration file? Maybe we also want to
-	   exclude WAN_ leds on CG300. */
+           exclude WAN_ leds on CG300. */
         if (!strncmp(lc->name, "Status_", 7) || !strncmp(lc->name, "WAN_", 4))
             lc->use_proximity = 0;
         else
             lc->use_proximity = 1;
 
-	if (!strcmp(lc->name, "Status_red"))
-	    led_cfg->button_feedback_led = led_cfg->leds_nr;
+        if (!strcmp(lc->name, "Status_red"))
+            led_cfg->button_feedback_led = led_cfg->leds_nr;
 
         led_cfg->leds[led_cfg->leds_nr] = lc;
         led_cfg->leds_nr++;
@@ -852,9 +852,9 @@ static struct leds_configuration* get_led_config(void) {
 
     p = ucix_get_option(uci_ctx, "hw", "board", "hardware");
     if (p && !strcmp(p, "CG300"))
-	led_cfg->leds_state = LEDS_PROXIMITY;
+        led_cfg->leds_state = LEDS_PROXIMITY;
     else
-	led_cfg->leds_state = LEDS_NORMAL;
+        led_cfg->leds_state = LEDS_NORMAL;
     led_cfg->test_state = 0;
     led_cfg->proximity_timer = 0;
     led_cfg->proximity_all_timer = 0;
@@ -877,7 +877,7 @@ static int led_need_type(const struct leds_configuration* led_cfg, led_type_t ty
     int i;
     for (i=0 ; i<led_cfg->leds_nr ; i++)
         if (led_cfg->leds[i]->type == type)
-	    return 1;
+            return 1;
     return 0;
 }
 
@@ -972,7 +972,7 @@ static int led_set(struct leds_configuration* led_cfg, int led_idx, int state) {
     lc = led_cfg->leds[led_idx];
 
     if (state < 0)
-	state = (lc->state != OFF);
+        state = (lc->state != OFF);
 
     //printf("Led index: %d\n", led_idx);
     // DEBUG_PRINT("Led index: %d\n", led_idx);
@@ -1033,7 +1033,7 @@ static void all_leds_test(struct leds_configuration* led_cfg) {
 
 
 void blink_led(struct leds_configuration* led_cfg, led_state_t state,
-	       int dimmed) {
+               int dimmed) {
     int i;
     for (i=0 ; i<led_cfg->leds_nr ; i++) {
         struct led_config* lc = led_cfg->leds[i];
@@ -1111,12 +1111,12 @@ static struct uloop_timeout blink_inform_timer = { .cb = blink_handler };
 static unsigned int cnt = 0;
 
 static int button_use_feedback(const struct leds_configuration *led_cfg,
-			       const struct button_config* bc)
+                               const struct button_config* bc)
 {
     return (led_cfg->leds_state == LEDS_NORMAL || led_cfg->leds_state == LEDS_PROXIMITY)
-	&& led_cfg->button_feedback_led >= 0
-	/* Touch buttons, excluding proximity. */
-	&& bc->type == I2C && bc->address < 8;
+        && led_cfg->button_feedback_led >= 0
+        /* Touch buttons, excluding proximity. */
+        && bc->type == I2C && bc->address < 8;
 }
 
 /* For i2c buttons but not the near & far we save the time of press event
@@ -1176,10 +1176,10 @@ static void check_buttons(int initialize) {
         if (!initialize) {
             if (button^bc->active) {
                 DEBUG_PRINT("Button %s pressed\n",bc->name);
-		if (button_use_feedback(led_cfg, bc))
-		    led_set(led_cfg, led_cfg->button_feedback_led,
-			    !led_cfg->leds[led_cfg->button_feedback_led]->blink_state);
-		//syslog(LOG_INFO, "Button %s pressed\n",bc->name);
+                if (button_use_feedback(led_cfg, bc))
+                    led_set(led_cfg, led_cfg->button_feedback_led,
+                            !led_cfg->leds[led_cfg->button_feedback_led]->blink_state);
+                //syslog(LOG_INFO, "Button %s pressed\n",bc->name);
                 bc->pressed_state = 1;
                 touch_button_press_timer_start(bc);
 
@@ -1190,28 +1190,28 @@ static void check_buttons(int initialize) {
             }
             if ((!(button^bc->active)) && (bc->pressed_state)) {
                 char str[512] = {0};
-		if (button_use_feedback(led_cfg, bc)) {
-		    if (led_cfg->leds_state == LEDS_PROXIMITY
-			&& led_cfg->proximity_timer)
-			led_set(led_cfg, led_cfg->button_feedback_led, 1);
-		    else
-			led_set(led_cfg, led_cfg->button_feedback_led, -1);
-		}
-        if (button_press_time_valid(bc, 2000)){
+                if (button_use_feedback(led_cfg, bc)) {
+                    if (led_cfg->leds_state == LEDS_PROXIMITY
+                        && led_cfg->proximity_timer)
+                        led_set(led_cfg, led_cfg->button_feedback_led, 1);
+                    else
+                        led_set(led_cfg, led_cfg->button_feedback_led, -1);
+                }
+                if (button_press_time_valid(bc, 2000)){
 
-                if ((led_cfg->leds_state == LEDS_NORMAL)    ||
-		    (led_cfg->leds_state == LEDS_PROXIMITY) ||
-		    (led_cfg->leds_state == LEDS_SILENT)    ||
-		    (led_cfg->leds_state == LEDS_INFO)) {
-                    DEBUG_PRINT("Button %s released, executing hotplug button command: %s\n",bc->name, bc->command);
-                    snprintf(str, 512, "ACTION=register INTERFACE=%s /sbin/hotplug-call button &",bc->command);
-                    system(str);
-                    syslog(LOG_INFO, "ACTION=register INTERFACE=%s /sbin/hotplug-call button", bc->command);
-                } else {
-		    DEBUG_PRINT("Button %s released, sending console log output: %s\n",bc->name, bc->command);
-                    snprintf(str, 512, "echo %s %s >/dev/console &",bc->name, bc->command);
-                    system(str);
-		}
+                    if ((led_cfg->leds_state == LEDS_NORMAL)    ||
+                        (led_cfg->leds_state == LEDS_PROXIMITY) ||
+                        (led_cfg->leds_state == LEDS_SILENT)    ||
+                        (led_cfg->leds_state == LEDS_INFO)) {
+                        DEBUG_PRINT("Button %s released, executing hotplug button command: %s\n",bc->name, bc->command);
+                        snprintf(str, 512, "ACTION=register INTERFACE=%s /sbin/hotplug-call button &",bc->command);
+                        system(str);
+                        syslog(LOG_INFO, "ACTION=register INTERFACE=%s /sbin/hotplug-call button", bc->command);
+                    } else {
+                        DEBUG_PRINT("Button %s released, sending console log output: %s\n",bc->name, bc->command);
+                        snprintf(str, 512, "echo %s %s >/dev/console &",bc->name, bc->command);
+                        system(str);
+                    }
                 }
                 bc->pressed_state = 0;
                 bc->pressed_time.tv_sec = 0;
@@ -1229,15 +1229,15 @@ static void blink_handler(struct uloop_timeout *timeout)
 
     if (led_cfg->proximity_timer) {
         led_cfg->proximity_timer--;
-	if (led_cfg->leds_state == LEDS_PROXIMITY
-	    && !led_cfg->proximity_timer)
-	    proximity_dim(led_cfg, 1);
+        if (led_cfg->leds_state == LEDS_PROXIMITY
+            && !led_cfg->proximity_timer)
+            proximity_dim(led_cfg, 1);
     }
     if (led_cfg->proximity_all_timer) {
-	led_cfg->proximity_all_timer--;
-	if (led_cfg->leds_state == LEDS_PROXIMITY
-	    && !led_cfg->proximity_all_timer)
-	    proximity_dim(led_cfg, !led_cfg->proximity_timer);
+        led_cfg->proximity_all_timer--;
+        if (led_cfg->leds_state == LEDS_PROXIMITY
+            && !led_cfg->proximity_all_timer)
+            proximity_dim(led_cfg, !led_cfg->proximity_timer);
     }
     if (led_cfg->leds_state == LEDS_TEST) {
         if (!(cnt%3))
@@ -1246,16 +1246,16 @@ static void blink_handler(struct uloop_timeout *timeout)
         if (!(cnt%16))
             leds_production(led_cfg);
     } else if (led_cfg->leds_state == LEDS_RESET) {
-			leds_reset(led_cfg);
+        leds_reset(led_cfg);
     } else if (led_cfg->leds_state != LEDS_INFO) {
-	/* LEDS_NORMAL or LEDS_PROXIMITY */
-	int dimmed = (led_cfg->leds_state == LEDS_PROXIMITY
-		      && !led_cfg->proximity_timer);
-	if (!(cnt%4))
-	    blink_led(led_cfg, BLINK_FAST, dimmed);
+        /* LEDS_NORMAL or LEDS_PROXIMITY */
+        int dimmed = (led_cfg->leds_state == LEDS_PROXIMITY
+                      && !led_cfg->proximity_timer);
+        if (!(cnt%4))
+            blink_led(led_cfg, BLINK_FAST, dimmed);
 
-	if (!(cnt%8))
-	    blink_led(led_cfg, BLINK_SLOW, dimmed);
+        if (!(cnt%8))
+            blink_led(led_cfg, BLINK_SLOW, dimmed);
     }
     if (!(cnt%4))
         check_buttons(0);
@@ -1306,35 +1306,35 @@ static void set_function_led(struct leds_configuration* led_cfg, const char* fn_
 
     map = &led_cfg->led_map_config[led_fn_idx][action_idx];
     for (i=0 ; i<map->led_actions_nr ; i++) {
-	int led_idx = map->led_actions[i].led_index;
+        int led_idx = map->led_actions[i].led_index;
         DEBUG_PRINT("[%d] %d %d\n", map->led_actions_nr, led_idx, map->led_actions[i].led_state);
 
-	/* In silent mode, we set lc->state to off. It might make more
-	   sense to maintain the desired state, and omit blinking it
-	   in the blink_handler, but then we would need some
-	   additional flag per led. In all cases,
-	   led_cfg->led_fn_action records the desired state, so it
-	   isn't lost when switching back to non-silent mode. */
-	if (led_cfg->leds_state == LEDS_SILENT
-	    && led_cfg->leds[led_idx]->use_proximity
-	    && action_idx < LED_ALERT)
-	    led_set_state(led_cfg, led_idx, OFF);
-	else
-	    led_set_state(led_cfg, led_idx,
-			  map->led_actions[i].led_state);
+        /* In silent mode, we set lc->state to off. It might make more
+           sense to maintain the desired state, and omit blinking it
+           in the blink_handler, but then we would need some
+           additional flag per led. In all cases,
+           led_cfg->led_fn_action records the desired state, so it
+           isn't lost when switching back to non-silent mode. */
+        if (led_cfg->leds_state == LEDS_SILENT
+            && led_cfg->leds[led_idx]->use_proximity
+            && action_idx < LED_ALERT)
+            led_set_state(led_cfg, led_idx, OFF);
+        else
+            led_set_state(led_cfg, led_idx,
+                          map->led_actions[i].led_state);
 
         if (led_cfg->leds_state != LEDS_INFO) {
             led_set(led_cfg, map->led_actions[i].led_index, -1);
 
-	    if (led_cfg->leds_state == LEDS_PROXIMITY &&
-		led_cfg->leds[led_idx]->use_proximity) {
-		/* Changing led status of any dimmed led should also
-		   light up the display. */
-		if (!led_cfg->proximity_timer)
-		    proximity_light(led_cfg, 0);
-		if (led_cfg->proximity_timer < 5*10)
-		    led_cfg->proximity_timer = 5*10;
-	    }
+            if (led_cfg->leds_state == LEDS_PROXIMITY &&
+                led_cfg->leds[led_idx]->use_proximity) {
+                /* Changing led status of any dimmed led should also
+                   light up the display. */
+                if (!led_cfg->proximity_timer)
+                    proximity_light(led_cfg, 0);
+                if (led_cfg->proximity_timer < 5*10)
+                    led_cfg->proximity_timer = 5*10;
+            }
         }
     }
     DEBUG_PRINT("end\n");
@@ -1346,27 +1346,27 @@ static void proximity_light(struct leds_configuration* led_cfg, int all)
 {
     int i;
     for (i=0 ; i<led_cfg->leds_nr ; i++) {
-	struct led_config* lc = led_cfg->leds[i];
-	if (lc->use_proximity && (lc->state || all))
-	    led_set(led_cfg, i, 1);
+        struct led_config* lc = led_cfg->leds[i];
+        if (lc->use_proximity && (lc->state || all))
+            led_set(led_cfg, i, 1);
     }
     if (led_cfg->button_feedback_led >= 0)
-	led_set(led_cfg, led_cfg->button_feedback_led,
-		led_cfg->leds_state == LEDS_PROXIMITY ? 1 : -1);
+        led_set(led_cfg, led_cfg->button_feedback_led,
+                led_cfg->leds_state == LEDS_PROXIMITY ? 1 : -1);
 }
 
 static void proximity_dim(struct leds_configuration* led_cfg, int all)
 {
     int i;
     for (i=0 ; i<led_cfg->leds_nr ; i++) {
-	struct led_config* lc = led_cfg->leds[i];
-	if (lc->use_proximity && (!lc->state || all)
-	    && lc->blink_state)
-	    led_set(led_cfg, i, 0);
+        struct led_config* lc = led_cfg->leds[i];
+        if (lc->use_proximity && (!lc->state || all)
+            && lc->blink_state)
+            led_set(led_cfg, i, 0);
     }
     if (all && led_cfg->leds_state == LEDS_PROXIMITY
-	&& led_cfg->button_feedback_led >= 0) {
-	led_set(led_cfg, led_cfg->button_feedback_led, -1);
+        && led_cfg->button_feedback_led >= 0) {
+        led_set(led_cfg, led_cfg->button_feedback_led, -1);
     }
 }
 
@@ -1381,8 +1381,8 @@ static const struct blobmsg_policy led_policy[] = {
 
 
 static int led_set_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
-		      struct ubus_request_data *req, const char *method,
-		      struct blob_attr *msg)
+                          struct ubus_request_data *req, const char *method,
+                          struct blob_attr *msg)
 {
     struct blob_attr *tb[__LED_MAX];
     char* state;
@@ -1402,8 +1402,8 @@ static int led_set_method(struct ubus_context *ubus_ctx, struct ubus_object *obj
 }
 
 static int led_status_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
-		      struct ubus_request_data *req, const char *method,
-		      struct blob_attr *msg)
+                             struct ubus_request_data *req, const char *method,
+                             struct blob_attr *msg)
 {
     int action, i, led_fn_idx=0;
     char *fn_name = strchr(obj->name, '.') + 1;
@@ -1426,59 +1426,59 @@ static int led_status_method(struct ubus_context *ubus_ctx, struct ubus_object *
 }
 
 static int leds_proximity_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
-				 struct ubus_request_data *req, const char *method,
-				 struct blob_attr *msg)
+                                 struct ubus_request_data *req, const char *method,
+                                 struct blob_attr *msg)
 {
     const struct blobmsg_policy proximity_policy[] = {
-	/* FIXME: Can we use an integer type here? */
-	{ .name = "timeout", .type = BLOBMSG_TYPE_STRING, },
-	{ .name = "light-all", .type = BLOBMSG_TYPE_STRING, },
+        /* FIXME: Can we use an integer type here? */
+        { .name = "timeout", .type = BLOBMSG_TYPE_STRING, },
+        { .name = "light-all", .type = BLOBMSG_TYPE_STRING, },
     };
     unsigned long timeout = 0;
     unsigned long light_all = 0;
     struct blob_attr *tb[ARRAY_SIZE(proximity_policy)];
     blobmsg_parse(proximity_policy, ARRAY_SIZE(proximity_policy),
-		  tb, blob_data(msg), blob_len(msg));
+                  tb, blob_data(msg), blob_len(msg));
     if (tb[0]) {
-	const char *digits = blobmsg_data(tb[0]);
-	char *end;
-	timeout = strtoul(digits, &end, 10);
-	if (!*digits || *end) {
-	    syslog(LOG_INFO, "Leds proximity method: Invalid timeout %s\n", digits);
-	    return 1;
-	}
+        const char *digits = blobmsg_data(tb[0]);
+        char *end;
+        timeout = strtoul(digits, &end, 10);
+        if (!*digits || *end) {
+            syslog(LOG_INFO, "Leds proximity method: Invalid timeout %s\n", digits);
+            return 1;
+        }
     }
     if (tb[1]) {
-	const char *digits = blobmsg_data(tb[1]);
-	char *end;
-	light_all = strtoul(digits, &end, 10);
+        const char *digits = blobmsg_data(tb[1]);
+        char *end;
+        light_all = strtoul(digits, &end, 10);
     }
     DEBUG_PRINT ("proximity method: timeout %lu, light-all %lu\n", timeout, light_all);
     timeout *= 10;
     light_all *= 10;
     if (led_cfg->leds_state == LEDS_PROXIMITY) {
-	if (light_all) {
-	    if (!led_cfg->proximity_all_timer && !led_cfg->proximity_timer) {
-		proximity_light(led_cfg, 1);
-		led_cfg->proximity_all_timer = light_all;
-	    }
-	}
-	else if (timeout && !led_cfg->proximity_timer)
-	    proximity_light(led_cfg, 0);
-    }    
+        if (light_all) {
+            if (!led_cfg->proximity_all_timer && !led_cfg->proximity_timer) {
+                proximity_light(led_cfg, 1);
+                led_cfg->proximity_all_timer = light_all;
+            }
+        }
+        else if (timeout && !led_cfg->proximity_timer)
+            proximity_light(led_cfg, 0);
+    }
     else
-	/* Skip setup of this timer when not in proximity mode. */
-	led_cfg->proximity_all_timer = 0;
+        /* Skip setup of this timer when not in proximity mode. */
+        led_cfg->proximity_all_timer = 0;
 
     if (timeout > led_cfg->proximity_all_timer)
-	led_cfg->proximity_timer = timeout;
+        led_cfg->proximity_timer = timeout;
 
     return 0;
 }
 
 static int leds_set_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
-		      struct ubus_request_data *req, const char *method,
-		      struct blob_attr *msg)
+                           struct ubus_request_data *req, const char *method,
+                           struct blob_attr *msg)
 {
     struct blob_attr *tb[__LED_MAX];
     char* state;
@@ -1488,22 +1488,22 @@ static int leds_set_method(struct ubus_context *ubus_ctx, struct ubus_object *ob
     blobmsg_parse(led_policy, ARRAY_SIZE(led_policy), tb, blob_data(msg), blob_len(msg));
 
     if (tb[LED_STATE]) {
-	leds_state_t old;
-	state = blobmsg_data(tb[LED_STATE]);
+        leds_state_t old;
+        state = blobmsg_data(tb[LED_STATE]);
 
         for (i=0 ; i<LEDS_MAX ; i++) {
             if (!strcasecmp(state, leds_states[i]))
                 break;
         }
 
-	if (i == LEDS_MAX) {
-	    syslog(LOG_INFO, "leds_set_method: Unknown state %s.\n", state);
-	    return 0;
-	}
+        if (i == LEDS_MAX) {
+            syslog(LOG_INFO, "leds_set_method: Unknown state %s.\n", state);
+            return 0;
+        }
 
-	old = led_cfg->leds_state;
-	led_cfg->leds_state = i;
-	
+        old = led_cfg->leds_state;
+        led_cfg->leds_state = i;
+
         if (i == LEDS_INFO) {
             all_leds_off(led_cfg);
             set_function_led(led_cfg, "eco", "off");
@@ -1514,40 +1514,40 @@ static int leds_set_method(struct ubus_context *ubus_ctx, struct ubus_object *ob
             all_leds_off(led_cfg);
         }
         if (i == LEDS_ALLON) {
-	    all_leds_on(led_cfg);
-	}
+            all_leds_on(led_cfg);
+        }
         if (i == LEDS_ALLOFF) {
-	    all_leds_off(led_cfg);
-	}
+            all_leds_off(led_cfg);
+        }
 
         if (i <= LEDS_SILENT) {
-	    if (i == LEDS_SILENT || old >= LEDS_SILENT) {
-		all_leds_off(led_cfg);
-		set_function_led(led_cfg, "eco", "off");
-		for (j=0 ; j<LED_FUNCTIONS ; j++) {
-		    set_function_led(led_cfg, led_functions[j], fn_actions[led_cfg->led_fn_action[j]]);
-		}
-	    }
-	    if (i == LEDS_NORMAL)
-		proximity_light(led_cfg, 0);
-	    else if (i == LEDS_PROXIMITY) {
-		if (led_cfg->proximity_timer)
-		    proximity_light(led_cfg, 0);
-		else
-		    proximity_dim(led_cfg, 1);
-	    }
+            if (i == LEDS_SILENT || old >= LEDS_SILENT) {
+                all_leds_off(led_cfg);
+                set_function_led(led_cfg, "eco", "off");
+                for (j=0 ; j<LED_FUNCTIONS ; j++) {
+                    set_function_led(led_cfg, led_functions[j], fn_actions[led_cfg->led_fn_action[j]]);
+                }
+            }
+            if (i == LEDS_NORMAL)
+                proximity_light(led_cfg, 0);
+            else if (i == LEDS_PROXIMITY) {
+                if (led_cfg->proximity_timer)
+                    proximity_light(led_cfg, 0);
+                else
+                    proximity_dim(led_cfg, 1);
+            }
         }
     }
     else
-	syslog(LOG_INFO, "leds_set_method: Unknown attribute.\n");
+        syslog(LOG_INFO, "leds_set_method: Unknown attribute.\n");
 
     return 0;
 }
 
 
 static int leds_status_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
-		      struct ubus_request_data *req, const char *method,
-		      struct blob_attr *msg)
+                              struct ubus_request_data *req, const char *method,
+                              struct blob_attr *msg)
 {
 	DEBUG_PRINT("\n");
 
@@ -1601,25 +1601,25 @@ static int sfp_rom_byte(unsigned addr)
 {
     int ret;
     if (!i2c_sfp)
-	return -1;
+        return -1;
 
     if (sfp_rom_fd >= 0) {
-	ret = i2c_smbus_read_byte_data(sfp_rom_fd, addr);
-	if (ret >= 0)
-	    return ret;
-	/* Close and retry */
-	close (sfp_rom_fd);
-	goto open;
+        ret = i2c_smbus_read_byte_data(sfp_rom_fd, addr);
+        if (ret >= 0)
+            return ret;
+        /* Close and retry */
+        close (sfp_rom_fd);
+        goto open;
     }
     if (sfp_rom_fd < 0) {
     open:
-	sfp_rom_fd = i2c_open_dev(i2c_sfp->bus, i2c_sfp->rom_addr, I2C_FUNC_SMBUS_READ_BYTE);
-	if (sfp_rom_fd < 0)
-	    return -1;
+        sfp_rom_fd = i2c_open_dev(i2c_sfp->bus, i2c_sfp->rom_addr, I2C_FUNC_SMBUS_READ_BYTE);
+        if (sfp_rom_fd < 0)
+            return -1;
     }
     ret = i2c_smbus_read_byte_data(sfp_rom_fd, addr);
     if (ret < 0) {
-	DEBUG_PRINT ("%s: i2c_smbus_read_byte_data failed: addr %d\n", __func__, addr);
+        DEBUG_PRINT ("%s: i2c_smbus_read_byte_data failed: addr %d\n", __func__, addr);
     }
     return ret;
 };
@@ -1629,14 +1629,14 @@ static int sfp_rom_bytes(unsigned addr, char *p, size_t length)
     int byte = sfp_rom_byte(addr);
     int i;
     if (byte < 0)
-	return 0;
+        return 0;
     p[0] = byte;
 
     for (i = 1; i < length; i++) {
-	byte = i2c_smbus_read_byte_data(sfp_rom_fd, addr + i);
-	if (byte < 0)
-	    return 0;
-	p[i] = byte;
+        byte = i2c_smbus_read_byte_data(sfp_rom_fd, addr + i);
+        if (byte < 0)
+            return 0;
+        p[i] = byte;
     }
     return 1;
 }
@@ -1648,27 +1648,27 @@ static int sfp_rom_get_type(struct blob_buf *b)
     const char *value;
 
     if (byte < 0)
-	return 0;
+        return 0;
 
     switch (byte) {
     case 0:
-	value = "unspecified";
-	break;
+        value = "unspecified";
+        break;
     case 1:
-	value = "GBIC";
-	break;
+        value = "GBIC";
+        break;
     case 2:
-	value = "soldered module/connector";
-	break;
+        value = "soldered module/connector";
+        break;
     case 3:
-	value = "SFP";
-	break;
+        value = "SFP";
+        break;
     default:
-	snprintf(buf, sizeof(buf), "%s %d",
-		 byte < 0x80 ? "reserved" : "vendor specific",
-		 byte);
-	value = buf;
-	break;
+        snprintf(buf, sizeof(buf), "%s %d",
+                 byte < 0x80 ? "reserved" : "vendor specific",
+                 byte);
+        value = buf;
+        break;
     }
 
     blobmsg_add_string(b, "type", value);
@@ -1676,12 +1676,12 @@ static int sfp_rom_get_type(struct blob_buf *b)
 }
 
 static int sfp_rom_get_type_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
-				   struct ubus_request_data *req, const char *method,
-				   struct blob_attr *msg)
+                                   struct ubus_request_data *req, const char *method,
+                                   struct blob_attr *msg)
 {
     blob_buf_init (&b, 0);
     if (!sfp_rom_get_type(&b))
-	return UBUS_STATUS_NO_DATA;
+        return UBUS_STATUS_NO_DATA;
 
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
@@ -1694,57 +1694,57 @@ static int sfp_rom_get_connector(struct blob_buf *b)
     const char *value;
 
     if (byte < 0)
-	return 0;
+        return 0;
 
     switch (byte) {
     case 0:
-	value = "Unspecified";
-	break;
+        value = "Unspecified";
+        break;
     case 1:
-	value = "SC";
-	break;
+        value = "SC";
+        break;
     case 2:
-	value = "Fiber Channel style 1";
-	break;
+        value = "Fiber Channel style 1";
+        break;
     case 3:
-	value = "Fiber Channel style 2";
-	break;
+        value = "Fiber Channel style 2";
+        break;
     case 4:
-	value = "TNC/BNC";
-	break;
+        value = "TNC/BNC";
+        break;
     case 5:
-	value = "Fiber Channel coaxial";
-	break;
+        value = "Fiber Channel coaxial";
+        break;
     case 6:
-	value = "FiberJack";
-	break;
+        value = "FiberJack";
+        break;
     case 7:
-	value = "LC";
-	break;
+        value = "LC";
+        break;
     case 8:
-	value = "MT-RJ";
-	break;
+        value = "MT-RJ";
+        break;
     case 9:
-	value = "MU";
-	break;
+        value = "MU";
+        break;
     case 10:
-	value = "SG";
-	break;
+        value = "SG";
+        break;
     case 11:
-	value = "Optical pigtail";
-	break;
+        value = "Optical pigtail";
+        break;
     case 32:
-	value = "HSSDC II";
-	break;
+        value = "HSSDC II";
+        break;
     case 33:
-	value = "Copper pigtail";
-	break;
+        value = "Copper pigtail";
+        break;
     default:
-	snprintf(buf, sizeof(buf), "%s %d",
-		 byte < 0x80 ? "reserved" : "vendor specific",
-		 byte);
-	value = buf;
-	break;
+        snprintf(buf, sizeof(buf), "%s %d",
+                 byte < 0x80 ? "reserved" : "vendor specific",
+                 byte);
+        value = buf;
+        break;
     }
 
     blobmsg_add_string(b, "connector", value);
@@ -1752,12 +1752,12 @@ static int sfp_rom_get_connector(struct blob_buf *b)
 }
 
 static int sfp_rom_get_connector_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
-					struct ubus_request_data *req, const char *method,
-					struct blob_attr *msg)
+                                        struct ubus_request_data *req, const char *method,
+                                        struct blob_attr *msg)
 {
     blob_buf_init (&b, 0);
     if (!sfp_rom_get_connector (&b))
-	return UBUS_STATUS_NO_DATA;
+        return UBUS_STATUS_NO_DATA;
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
 }
@@ -1768,31 +1768,31 @@ static int sfp_rom_get_ethernet(struct blob_buf *b)
     int i;
     char value[11];
     if (byte < 0)
-	return 0;
+        return 0;
 
     i = 0;
     if (byte & 8)
-	value[i++] = 'T';
+        value[i++] = 'T';
     if (byte & 4) {
-	if (i)
-	    value[i++] = ',';
-	strcpy(value+i, "CX");
-	i += 2;
+        if (i)
+            value[i++] = ',';
+        strcpy(value+i, "CX");
+        i += 2;
     }
     if (byte & 2) {
-	if (i)
-	    value[i++] = ',';
-	strcpy(value+i, "LX");
-	i += 2;
+        if (i)
+            value[i++] = ',';
+        strcpy(value+i, "LX");
+        i += 2;
     }
     if (byte & 1) {
-	if (i)
-	    value[i++] = ',';
-	strcpy(value+i, "SX");
-	i += 2;
+        if (i)
+            value[i++] = ',';
+        strcpy(value+i, "SX");
+        i += 2;
     }
     if (!i)
-	return 0;
+        return 0;
 
     value[i] = '\0';
     blobmsg_add_string(b, "ethernet", value);
@@ -1800,12 +1800,12 @@ static int sfp_rom_get_ethernet(struct blob_buf *b)
 }
 
 static int sfp_rom_get_ethernet_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
-				       struct ubus_request_data *req, const char *method,
-				       struct blob_attr *msg)
+                                       struct ubus_request_data *req, const char *method,
+                                       struct blob_attr *msg)
 {
     blob_buf_init (&b, 0);
     if (!sfp_rom_get_ethernet(&b))
-	return UBUS_STATUS_NO_DATA;
+        return UBUS_STATUS_NO_DATA;
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
 }
@@ -1817,29 +1817,29 @@ static int sfp_rom_get_encoding(struct blob_buf *b)
     const char *value;
 
     if (byte < 0)
-	return 0;
+        return 0;
 
     switch (byte) {
     case 0:
-	value = "Unspecified";
-	break;
+        value = "Unspecified";
+        break;
     case 1:
-	value = "8B10B";
-	break;
+        value = "8B10B";
+        break;
     case 2:
-	value = "4B5B";
-	break;
+        value = "4B5B";
+        break;
     case 3:
-	value = "NRZ";
-	break;
+        value = "NRZ";
+        break;
     case 4:
-	value = "Manchester";
-	break;
+        value = "Manchester";
+        break;
     default:
-	snprintf(buf, sizeof(buf), "%s %d",
-		 "reserved", byte);
-	value = buf;
-	break;
+        snprintf(buf, sizeof(buf), "%s %d",
+                 "reserved", byte);
+        value = buf;
+        break;
     }
 
     blobmsg_add_string(b, "encoding", value);
@@ -1847,12 +1847,12 @@ static int sfp_rom_get_encoding(struct blob_buf *b)
 }
 
 static int sfp_rom_get_encoding_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
-				       struct ubus_request_data *req, const char *method,
-				       struct blob_attr *msg)
+                                       struct ubus_request_data *req, const char *method,
+                                       struct blob_attr *msg)
 {
     blob_buf_init (&b, 0);
     if (!sfp_rom_get_encoding(&b))
-	return UBUS_STATUS_NO_DATA;
+        return UBUS_STATUS_NO_DATA;
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
 }
@@ -1862,28 +1862,28 @@ static int sfp_rom_get_rate(struct blob_buf *b)
     int byte = sfp_rom_byte (12);
     int tol;
     if (byte < 0)
-	return 0;
+        return 0;
 
     /* Read byte is in units of 100 Mbit/s, scale to Mbit/s. */
     blobmsg_add_u32(b, "rate", 100*byte);
     tol = sfp_rom_byte (66);
     if (tol > 0)
-	blobmsg_add_u32(b, "rate-max", (100 + tol)*byte);
+        blobmsg_add_u32(b, "rate-max", (100 + tol)*byte);
 
     tol = sfp_rom_byte (67);
     if (tol > 0 && tol <= 100)
-	blobmsg_add_u32(b, "rate-min", (100 - tol)*byte);
+        blobmsg_add_u32(b, "rate-min", (100 - tol)*byte);
 
     return 1;
 }
 
 static int sfp_rom_get_rate_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
-				   struct ubus_request_data *req, const char *method,
-				   struct blob_attr *msg)
+                                   struct ubus_request_data *req, const char *method,
+                                   struct blob_attr *msg)
 {
     blob_buf_init (&b, 0);
     if (!sfp_rom_get_rate(&b))
-	return UBUS_STATUS_NO_DATA;
+        return UBUS_STATUS_NO_DATA;
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
 }
@@ -1897,32 +1897,32 @@ static int sfp_rom_get_length(struct blob_buf *b)
     int cu;
 
     if ( (sm_1000 = sfp_rom_byte (14)) < 0
-	 || (sm_100 = sfp_rom_byte (15)) < 0
-	 || (mm50 = sfp_rom_byte (16)) < 0
-	 || (mm62 = sfp_rom_byte (17)) < 0
-	 || (cu = sfp_rom_byte (18)) < 0)
-	return 0;
+         || (sm_100 = sfp_rom_byte (15)) < 0
+         || (mm50 = sfp_rom_byte (16)) < 0
+         || (mm62 = sfp_rom_byte (17)) < 0
+         || (cu = sfp_rom_byte (18)) < 0)
+        return 0;
 
     if (sm_1000 > 0)
-	blobmsg_add_u32(b, "single-mode", sm_1000 * 1000);
+        blobmsg_add_u32(b, "single-mode", sm_1000 * 1000);
     else if (sm_100 > 0)
-	blobmsg_add_u32(b, "single-mode", sm_100 * 100);
+        blobmsg_add_u32(b, "single-mode", sm_100 * 100);
     if (mm50 > 0)
-	blobmsg_add_u32(b, "multi-mode-50", mm50 * 10);
+        blobmsg_add_u32(b, "multi-mode-50", mm50 * 10);
     if (mm62 > 0)
-	blobmsg_add_u32(b, "multi-mode-62.5", mm62 * 10);
+        blobmsg_add_u32(b, "multi-mode-62.5", mm62 * 10);
     if (cu > 0)
-	blobmsg_add_u32(b, "copper", cu);
+        blobmsg_add_u32(b, "copper", cu);
     return 1;
 }
 
 static int sfp_rom_get_length_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
-				     struct ubus_request_data *req, const char *method,
-				     struct blob_attr *msg)
+                                     struct ubus_request_data *req, const char *method,
+                                     struct blob_attr *msg)
 {
     blob_buf_init (&b, 0);
     if (!sfp_rom_get_length(&b))
-	return UBUS_STATUS_NO_DATA;
+        return UBUS_STATUS_NO_DATA;
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
 }
@@ -1932,10 +1932,10 @@ static int sfp_rom_get_vendor(struct blob_buf *b)
     char buf[17];
     int i;
     if (!sfp_rom_bytes(20, buf, 16))
-	return 0;
+        return 0;
 
     for (i = 16; i > 0 && buf[i-1] == ' '; i--)
-	;
+        ;
     buf[i] = '\0';
 
     blobmsg_add_string(b, "vendor", buf);
@@ -1943,12 +1943,12 @@ static int sfp_rom_get_vendor(struct blob_buf *b)
 }
 
 static int sfp_rom_get_vendor_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
-				     struct ubus_request_data *req, const char *method,
-				     struct blob_attr *msg)
+                                     struct ubus_request_data *req, const char *method,
+                                     struct blob_attr *msg)
 {
     blob_buf_init (&b, 0);
     if (!sfp_rom_get_vendor(&b))
-	return UBUS_STATUS_NO_DATA;
+        return UBUS_STATUS_NO_DATA;
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
 }
@@ -1959,21 +1959,21 @@ static int sfp_rom_get_oui(struct blob_buf *b)
     char value[9];
 
     if (!sfp_rom_bytes(37, buf, 3))
-	return 0;
+        return 0;
 
     snprintf(value, sizeof(value), "%02x:%02x:%02x",
-	     (unsigned char) buf[0], (unsigned char) buf[1], (unsigned char) buf[2]);
+             (unsigned char) buf[0], (unsigned char) buf[1], (unsigned char) buf[2]);
     blobmsg_add_string(b, "oui", value);
     return 1;
 }
 
 static int sfp_rom_get_oui_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
-				  struct ubus_request_data *req, const char *method,
-				  struct blob_attr *msg)
+                                  struct ubus_request_data *req, const char *method,
+                                  struct blob_attr *msg)
 {
     blob_buf_init (&b, 0);
     if (!sfp_rom_get_oui(&b))
-	return UBUS_STATUS_NO_DATA;
+        return UBUS_STATUS_NO_DATA;
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
 }
@@ -1983,10 +1983,10 @@ static int sfp_rom_get_pn(struct blob_buf *b)
     char buf[17];
     int i;
     if (!sfp_rom_bytes(40, buf, 16))
-	return 0;
+        return 0;
 
     for (i = 16; i > 0 && buf[i-1] == ' '; i--)
-	;
+        ;
     buf[i] = '\0';
 
     blobmsg_add_string(b, "pn", buf);
@@ -1994,12 +1994,12 @@ static int sfp_rom_get_pn(struct blob_buf *b)
 }
 
 static int sfp_rom_get_pn_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
-				 struct ubus_request_data *req, const char *method,
-				 struct blob_attr *msg)
+                                 struct ubus_request_data *req, const char *method,
+                                 struct blob_attr *msg)
 {
     blob_buf_init (&b, 0);
     if (!sfp_rom_get_pn(&b))
-	return UBUS_STATUS_NO_DATA;
+        return UBUS_STATUS_NO_DATA;
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
 }
@@ -2009,10 +2009,10 @@ static int sfp_rom_get_rev(struct blob_buf *b)
     char buf[5];
     int i;
     if (!sfp_rom_bytes(56, buf, 4))
-	return 0;
+        return 0;
 
     for (i = 4; i > 0 && buf[i-1] == ' '; i--)
-	;
+        ;
     buf[i] = '\0';
 
     blobmsg_add_string(b, "rev", buf);
@@ -2020,12 +2020,12 @@ static int sfp_rom_get_rev(struct blob_buf *b)
 }
 
 static int sfp_rom_get_rev_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
-				  struct ubus_request_data *req, const char *method,
-				  struct blob_attr *msg)
+                                  struct ubus_request_data *req, const char *method,
+                                  struct blob_attr *msg)
 {
     blob_buf_init (&b, 0);
     if (!sfp_rom_get_rev(&b))
-	return UBUS_STATUS_NO_DATA;
+        return UBUS_STATUS_NO_DATA;
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
 }
@@ -2035,22 +2035,22 @@ static int sfp_rom_get_sn(struct blob_buf *b)
     char buf[17];
     int i;
     if (!sfp_rom_bytes(68, buf, 16))
-	return 0;
+        return 0;
 
     for (i = 16; i > 0 && buf[i-1] == ' '; i--)
-	;
+        ;
     buf[i] = '\0';
 
     blobmsg_add_string(b, "sn", buf);
     return 1;
 }
 static int sfp_rom_get_sn_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
-				 struct ubus_request_data *req, const char *method,
-				 struct blob_attr *msg)
+                                 struct ubus_request_data *req, const char *method,
+                                 struct blob_attr *msg)
 {
     blob_buf_init (&b, 0);
     if (!sfp_rom_get_sn(&b))
-	return UBUS_STATUS_NO_DATA;
+        return UBUS_STATUS_NO_DATA;
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
 }
@@ -2061,7 +2061,7 @@ static int sfp_rom_get_date(struct blob_buf *b)
     char value[14];
     int i;
     if (!sfp_rom_bytes(84, buf, 8))
-	return 0;
+        return 0;
 
     value[0] = '2';
     value[1] = '0';
@@ -2074,13 +2074,13 @@ static int sfp_rom_get_date(struct blob_buf *b)
     value[8] = buf[4];
     value[9] = buf[5];
     for (i = 8; i > 6 && buf[i-1] == ' '; i--)
-	;
+        ;
     memset(value+10, 0, 4);
     if (i > 6) {
-	value[10] = ' ';
-	value[11] = buf[6];
-	if (i > 7)
-	    value[12] = buf[7];
+        value[10] = ' ';
+        value[11] = buf[6];
+        if (i > 7)
+            value[12] = buf[7];
     }
 
     blobmsg_add_string(b, "date", value);
@@ -2088,12 +2088,12 @@ static int sfp_rom_get_date(struct blob_buf *b)
 }
 
 static int sfp_rom_get_date_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
-				   struct ubus_request_data *req, const char *method,
-				   struct blob_attr *msg)
+                                   struct ubus_request_data *req, const char *method,
+                                   struct blob_attr *msg)
 {
     blob_buf_init (&b, 0);
     if (sfp_rom_get_date(&b))
-	return UBUS_STATUS_NO_DATA;
+        return UBUS_STATUS_NO_DATA;
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
 }
@@ -2105,57 +2105,57 @@ static int sfp_rom_get_ddm(struct blob_buf *b)
     const char *value;
 
     if (byte < 0)
-	return 0;
+        return 0;
 
     switch (byte) {
     case 0:
-	value = "none";
-	break;
+        value = "none";
+        break;
     case 1:
-	value = "9.3";
-	break;
+        value = "9.3";
+        break;
     case 2:
-	value = "9.5";
-	break;
+        value = "9.5";
+        break;
     case 3:
-	value = "10.2";
-	break;
+        value = "10.2";
+        break;
     case 4:
-	value = "10.4";
-	break;
+        value = "10.4";
+        break;
     case 5:
-	value = "11.0";
-	break;
+        value = "11.0";
+        break;
     case 6:
-	value = "11.3";
-	break;
+        value = "11.3";
+        break;
     default:
-	snprintf(buf, sizeof(buf), "%s %d",
-		 "reserved", byte);
-	value = buf;
+        snprintf(buf, sizeof(buf), "%s %d",
+                 "reserved", byte);
+        value = buf;
     }
     blobmsg_add_string(b, "ddm", value);
     return 1;
 };
 
 static int sfp_rom_get_ddm_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
-				  struct ubus_request_data *req, const char *method,
-				  struct blob_attr *msg)
+                                  struct ubus_request_data *req, const char *method,
+                                  struct blob_attr *msg)
 {
     blob_buf_init (&b, 0);
     if (!sfp_rom_get_ddm(&b))
-	return UBUS_STATUS_NO_DATA;
+        return UBUS_STATUS_NO_DATA;
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
 }
 
 static int sfp_rom_get_all_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
-				  struct ubus_request_data *req, const char *method,
-				  struct blob_attr *msg)
+                                  struct ubus_request_data *req, const char *method,
+                                  struct blob_attr *msg)
 {
     blob_buf_init (&b, 0);
     if (!sfp_rom_get_type(&b))
-	return UBUS_STATUS_NO_DATA;
+        return UBUS_STATUS_NO_DATA;
     sfp_rom_get_connector(&b);
     sfp_rom_get_ethernet(&b);
     sfp_rom_get_encoding(&b);
@@ -2199,28 +2199,28 @@ static int sfp_ddm_read_float(float *x, unsigned addr)
     unsigned i;
 
     if (!i2c_sfp || sfp_ddm_fd < 0)
-	return 0;
+        return 0;
     /* Used only for constant data, so byte accesses should be ok. And
        there should only be regular normalized numbers (or zero).
     */
     for (i = 0; i < 4; i++) {
-	int byte = i2c_smbus_read_byte_data(sfp_ddm_fd, addr + i);
-	if (byte < 0)
-	    return 0;
-	buf[i] = byte;
+        int byte = i2c_smbus_read_byte_data(sfp_ddm_fd, addr + i);
+        if (byte < 0)
+            return 0;
+        buf[i] = byte;
     }
     e = (buf[0] & 0x7f) << 1 | buf[1] >> 7;
     m = (((int32_t) buf[1] & 0x7f) << 16) | ((int32_t) buf[2] << 8) | buf[3];
     if (e == 0 && m == 0) {
-	*x = 0.0;
-	return 1;
+        *x = 0.0;
+        return 1;
     }
     if (e == 0 || e == 0xff)
-	/* NaN or infinity */
-	return 0;
+        /* NaN or infinity */
+        return 0;
     m |= (1U << 23);
     if (buf[0] & 0x80)
-	m = -m;
+        m = -m;
     *x = ldexpf ((float) m, e - (127 + 23));
 
     return 1;
@@ -2240,10 +2240,10 @@ static int sfp_ddm_read_fp(float *x, unsigned addr)
     int w;
 
     if (!i2c_sfp || sfp_ddm_fd < 0)
-	return 0;
+        return 0;
     w = i2c_smbus_read_word_swapped(sfp_ddm_fd, addr);
     if (w < 0)
-	return 0;
+        return 0;
     *x = (float) w / 0x100;
     return 1;
 }
@@ -2253,10 +2253,10 @@ static int sfp_ddm_read_si(float *x, unsigned addr)
     int w;
 
     if (!i2c_sfp || sfp_ddm_fd < 0)
-	return 0;
+        return 0;
     w = i2c_smbus_read_word_swapped(sfp_ddm_fd, addr);
     if (w < 0)
-	return 0;
+        return 0;
     *x = (float) (int16_t) w;
     return 1;
 }
@@ -2266,10 +2266,10 @@ static int sfp_ddm_read_ui(float *x, unsigned addr)
     int w;
 
     if (!i2c_sfp || sfp_ddm_fd < 0)
-	return 0;
+        return 0;
     w = i2c_smbus_read_word_swapped(sfp_ddm_fd, addr);
     if (w < 0)
-	return 0;
+        return 0;
     *x = (float) w;
     return 1;
 }
@@ -2283,84 +2283,84 @@ static int ddm_prepare(void)
     byte = sfp_rom_byte(92);
     if (byte < 0) {
     fail:
-	if (sfp_ddm_fd >= 0)
-	    close(sfp_ddm_fd);
-	sfp_ddm_fd = -1;
-	return 0;
+        if (sfp_ddm_fd >= 0)
+            close(sfp_ddm_fd);
+        sfp_ddm_fd = -1;
+        return 0;
     }
     if ( (byte & 0xc0) != 0x40)
-	goto fail;
+        goto fail;
 
     if (byte & 4) {
-	syslog(LOG_INFO, "sfp: ddm requires address change, not implemented.\n");
-	goto fail;
+        syslog(LOG_INFO, "sfp: ddm requires address change, not implemented.\n");
+        goto fail;
     }
     sfp_ddm.type = byte;
     byte = sfp_rom_byte(94);
     if (byte <= 0)
-	goto fail;
+        goto fail;
     sfp_ddm.version = byte;
     if (sfp_ddm_fd < 0) {
-	sfp_ddm_fd = i2c_open_dev(i2c_sfp->bus, i2c_sfp->ddm_addr,
-				  I2C_FUNC_SMBUS_READ_BYTE | I2C_FUNC_SMBUS_READ_WORD_DATA);
-	if (sfp_ddm_fd < 0)
-	    return 0;
+        sfp_ddm_fd = i2c_open_dev(i2c_sfp->bus, i2c_sfp->ddm_addr,
+                                  I2C_FUNC_SMBUS_READ_BYTE | I2C_FUNC_SMBUS_READ_WORD_DATA);
+        if (sfp_ddm_fd < 0)
+            return 0;
 
-	reread = 1;
+        reread = 1;
     }
     else if (sfp_ddm.type & 0x10)
-	/* External calibration */
+        /* External calibration */
 
-	/* We could check vendor, sn, etc, to try to figure out if the
-	   SFP has been replaced, but it's less work to just reread
-	   the calibration data. */
-	reread = (now > sfp_ddm.timestamp + 120 || sfp_ddm.timestamp > now);
+        /* We could check vendor, sn, etc, to try to figure out if the
+           SFP has been replaced, but it's less work to just reread
+           the calibration data. */
+        reread = (now > sfp_ddm.timestamp + 120 || sfp_ddm.timestamp > now);
     else
-	reread = 0;
+        reread = 0;
 
     if (reread) {
-	if (sfp_ddm.type & 0x10) {
-	    unsigned i;
-	    for (i = 0; i < 5; i++)
-		if (!sfp_ddm_read_float(&sfp_ddm.rx_pwr[4-i], 56+4*i))
-		    goto fail;
-	    if (! (sfp_ddm_read_fp(&sfp_ddm.tx_i_slope, 76)
-		   && sfp_ddm_read_si(&sfp_ddm.tx_i_offset, 78)
-		   && sfp_ddm_read_fp(&sfp_ddm.tx_pwr_slope, 80)
-		   && sfp_ddm_read_si(&sfp_ddm.tx_pwr_offset, 82)
-		   && sfp_ddm_read_fp(&sfp_ddm.t_slope, 84)
-		   && sfp_ddm_read_si(&sfp_ddm.t_offset, 86)
-		   && sfp_ddm_read_fp(&sfp_ddm.v_slope, 88)
-		   && sfp_ddm_read_si(&sfp_ddm.v_offset, 89))) {
-		syslog(LOG_INFO, "sfp: Reading ddm calibration data failed.\n");
-		goto fail;
-	    }
-	    DEBUG_PRINT("Read ddm calibration data:\n"
-			"rx_pwr: %g %g %g %g %g\n"
-			"tx_i: %g %g\n"
-			"tx_pwr: %g %g\n"
-			"T: %g %g\n"
-			"V: %g %g\n",
-			sfp_ddm.rx_pwr[0], sfp_ddm.rx_pwr[1],
-			sfp_ddm.rx_pwr[2], sfp_ddm.rx_pwr[3],
-			sfp_ddm.rx_pwr[4],
-			sfp_ddm.tx_i_slope, sfp_ddm.tx_i_offset,
-			sfp_ddm.tx_pwr_slope, sfp_ddm.tx_pwr_offset,
-			sfp_ddm.t_slope, sfp_ddm.t_offset,
-			sfp_ddm.v_slope, sfp_ddm.v_offset);
+        if (sfp_ddm.type & 0x10) {
+            unsigned i;
+            for (i = 0; i < 5; i++)
+                if (!sfp_ddm_read_float(&sfp_ddm.rx_pwr[4-i], 56+4*i))
+                    goto fail;
+            if (! (sfp_ddm_read_fp(&sfp_ddm.tx_i_slope, 76)
+                   && sfp_ddm_read_si(&sfp_ddm.tx_i_offset, 78)
+                   && sfp_ddm_read_fp(&sfp_ddm.tx_pwr_slope, 80)
+                   && sfp_ddm_read_si(&sfp_ddm.tx_pwr_offset, 82)
+                   && sfp_ddm_read_fp(&sfp_ddm.t_slope, 84)
+                   && sfp_ddm_read_si(&sfp_ddm.t_offset, 86)
+                   && sfp_ddm_read_fp(&sfp_ddm.v_slope, 88)
+                   && sfp_ddm_read_si(&sfp_ddm.v_offset, 89))) {
+                syslog(LOG_INFO, "sfp: Reading ddm calibration data failed.\n");
+                goto fail;
+            }
+            DEBUG_PRINT("Read ddm calibration data:\n"
+                        "rx_pwr: %g %g %g %g %g\n"
+                        "tx_i: %g %g\n"
+                        "tx_pwr: %g %g\n"
+                        "T: %g %g\n"
+                        "V: %g %g\n",
+                        sfp_ddm.rx_pwr[0], sfp_ddm.rx_pwr[1],
+                        sfp_ddm.rx_pwr[2], sfp_ddm.rx_pwr[3],
+                        sfp_ddm.rx_pwr[4],
+                        sfp_ddm.tx_i_slope, sfp_ddm.tx_i_offset,
+                        sfp_ddm.tx_pwr_slope, sfp_ddm.tx_pwr_offset,
+                        sfp_ddm.t_slope, sfp_ddm.t_offset,
+                        sfp_ddm.v_slope, sfp_ddm.v_offset);
 
-	}
-	else {
-	    sfp_ddm.rx_pwr[0] = sfp_ddm.rx_pwr[2]
-		= sfp_ddm.rx_pwr[3] = sfp_ddm.rx_pwr[4] = 0.0;
-	    sfp_ddm.rx_pwr[1] = 1.0;
+        }
+        else {
+            sfp_ddm.rx_pwr[0] = sfp_ddm.rx_pwr[2]
+                = sfp_ddm.rx_pwr[3] = sfp_ddm.rx_pwr[4] = 0.0;
+            sfp_ddm.rx_pwr[1] = 1.0;
 
-	    sfp_ddm.tx_i_slope = sfp_ddm.tx_pwr_slope
-		= sfp_ddm.t_slope = sfp_ddm.v_slope = 1.0;
-	    sfp_ddm.tx_i_offset = sfp_ddm.tx_pwr_offset
-		= sfp_ddm.t_offset = sfp_ddm.v_offset = 0.0;
-	}
-	sfp_ddm.timestamp = now;
+            sfp_ddm.tx_i_slope = sfp_ddm.tx_pwr_slope
+                = sfp_ddm.t_slope = sfp_ddm.v_slope = 1.0;
+            sfp_ddm.tx_i_offset = sfp_ddm.tx_pwr_offset
+                = sfp_ddm.t_offset = sfp_ddm.v_offset = 0.0;
+        }
+        sfp_ddm.timestamp = now;
     }
     return 1;
 };
@@ -2371,15 +2371,15 @@ static int sfp_ddm_get_temperature(struct blob_buf *b, int raw)
     char buf[15];
 
     if (!ddm_prepare())
-	return 0;
+        return 0;
 
     if (!sfp_ddm_read_si(&x, 96))
-      return 0;
+        return 0;
 
     x = sfp_ddm.t_slope * x + sfp_ddm.t_offset;
     if (raw) {
-	blobmsg_add_u32(b, "raw", (uint32_t) (x+0.5));
-	blobmsg_add_string(b, "unit", "1/256 °C");
+        blobmsg_add_u32(b, "raw", (uint32_t) (x+0.5));
+        blobmsg_add_string(b, "unit", "1/256 °C");
     }
 
     snprintf(buf, sizeof(buf), "%.2f °C", x * (1.0/256));
@@ -2388,12 +2388,12 @@ static int sfp_ddm_get_temperature(struct blob_buf *b, int raw)
 }
 
 static int sfp_ddm_get_temperature_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
-					  struct ubus_request_data *req, const char *method,
-					  struct blob_attr *msg)
+                                          struct ubus_request_data *req, const char *method,
+                                          struct blob_attr *msg)
 {
     blob_buf_init (&b, 0);
     if (!sfp_ddm_get_temperature(&b, 1))
-	return UBUS_STATUS_NO_DATA;
+        return UBUS_STATUS_NO_DATA;
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
 }
@@ -2403,15 +2403,15 @@ static int sfp_ddm_get_voltage(struct blob_buf *b, int raw)
     float x;
     char buf[10];
     if (!ddm_prepare())
-	return 0;
+        return 0;
 
     if (!sfp_ddm_read_ui(&x, 98))
-      return 0;
+        return 0;
 
     x = sfp_ddm.v_slope * x + sfp_ddm.v_offset;
     if (raw) {
-	blobmsg_add_u32(b, "raw", (uint32_t) (x+0.5));
-	blobmsg_add_string(b, "unit", "100uV");
+        blobmsg_add_u32(b, "raw", (uint32_t) (x+0.5));
+        blobmsg_add_string(b, "unit", "100uV");
     }
     snprintf(buf, sizeof(buf), "%.4f V", x * (1.0/10000));
     blobmsg_add_string(b, "voltage", buf);
@@ -2419,12 +2419,12 @@ static int sfp_ddm_get_voltage(struct blob_buf *b, int raw)
 }
 
 static int sfp_ddm_get_voltage_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
-					  struct ubus_request_data *req, const char *method,
-					  struct blob_attr *msg)
+                                      struct ubus_request_data *req, const char *method,
+                                      struct blob_attr *msg)
 {
     blob_buf_init (&b, 0);
     if (!sfp_ddm_get_voltage(&b, 1))
-	return UBUS_STATUS_NO_DATA;
+        return UBUS_STATUS_NO_DATA;
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
 }
@@ -2434,15 +2434,15 @@ static int sfp_ddm_get_current(struct blob_buf *b, int raw)
     float x;
     char buf[10];
     if (!ddm_prepare())
-	return 0;
+        return 0;
 
     if (!sfp_ddm_read_ui(&x, 100))
-	return 0;
+        return 0;
 
     x = sfp_ddm.tx_i_slope * x + sfp_ddm.tx_i_offset;
     if (raw) {
-	blobmsg_add_u32(b, "raw", (uint32_t) (x+0.5));
-	blobmsg_add_string(b, "unit", "2 uA");
+        blobmsg_add_u32(b, "raw", (uint32_t) (x+0.5));
+        blobmsg_add_string(b, "unit", "2 uA");
     }
     snprintf(buf, sizeof(buf), "%.3f mA", x * (1.0/500));
     blobmsg_add_string(b, "current", buf);
@@ -2450,12 +2450,12 @@ static int sfp_ddm_get_current(struct blob_buf *b, int raw)
 }
 
 static int sfp_ddm_get_current_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
-				      struct ubus_request_data *req, const char *method,
-				      struct blob_attr *msg)
+                                      struct ubus_request_data *req, const char *method,
+                                      struct blob_attr *msg)
 {
     blob_buf_init (&b, 0);
     if (!sfp_ddm_get_current(&b, 1))
-	return UBUS_STATUS_NO_DATA;
+        return UBUS_STATUS_NO_DATA;
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
 }
@@ -2465,15 +2465,15 @@ static int sfp_ddm_get_tx_pwr(struct blob_buf *b, int raw)
     float x;
     char buf[10];
     if (!ddm_prepare())
-	return 0;
+        return 0;
 
     if (!sfp_ddm_read_ui(&x, 102))
-      return 0;
+        return 0;
 
     x = sfp_ddm.tx_pwr_slope * x + sfp_ddm.tx_pwr_offset;
     if (raw) {
-	blobmsg_add_u32(b, "raw", (uint32_t) (x+0.5));
-	blobmsg_add_string(b, "unit", "0.1uW");
+        blobmsg_add_u32(b, "raw", (uint32_t) (x+0.5));
+        blobmsg_add_string(b, "unit", "0.1uW");
     }
     snprintf(buf, sizeof(buf), "%.4f mW", x * (1.0/10000));
     blobmsg_add_string(b, "tx-pwr", buf);
@@ -2482,12 +2482,12 @@ static int sfp_ddm_get_tx_pwr(struct blob_buf *b, int raw)
 }
 
 static int sfp_ddm_get_tx_pwr_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
-				     struct ubus_request_data *req, const char *method,
-				     struct blob_attr *msg)
+                                     struct ubus_request_data *req, const char *method,
+                                     struct blob_attr *msg)
 {
     blob_buf_init (&b, 0);
     if (!sfp_ddm_get_tx_pwr(&b, 1))
-	return UBUS_STATUS_NO_DATA;
+        return UBUS_STATUS_NO_DATA;
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
 }
@@ -2500,48 +2500,48 @@ static int sfp_ddm_get_rx_pwr(struct blob_buf *b, int raw)
     char buf[10];
 
     if (!ddm_prepare())
-	return 0;
+        return 0;
 
     for (x = sfp_ddm.rx_pwr[0], i = 1; i < 5; i++) {
-	float v;
-	/* NOTE: There's only a single word to read. It's unclear how
-	   to get several values. However, typically, rx_pwr[2,3,4]
-	   are zero. */
-	if (sfp_ddm.rx_pwr[i] != 0.0) {
-	    if (!sfp_ddm_read_ui(&v, 104))
-		return 0;
-	    x += v*sfp_ddm.rx_pwr[i];
-	}
+        float v;
+        /* NOTE: There's only a single word to read. It's unclear how
+           to get several values. However, typically, rx_pwr[2,3,4]
+           are zero. */
+        if (sfp_ddm.rx_pwr[i] != 0.0) {
+            if (!sfp_ddm_read_ui(&v, 104))
+                return 0;
+            x += v*sfp_ddm.rx_pwr[i];
+        }
     }
     if (raw) {
-	blobmsg_add_u32(b, "raw", (uint32_t) (x+0.5));
-	blobmsg_add_string(b, "unit", "0.1uW");
+        blobmsg_add_u32(b, "raw", (uint32_t) (x+0.5));
+        blobmsg_add_string(b, "unit", "0.1uW");
     }
 
     snprintf(buf, sizeof(buf), "%.4f mW", x * (1.0/10000));
     blobmsg_add_string(b, "rx-pwr", buf);
     blobmsg_add_string(b, "rx-pwr-type",
-		       (sfp_ddm.type & 8) ? "average" : "OMA");
+                       (sfp_ddm.type & 8) ? "average" : "OMA");
     return 1;
 }
 
 static int sfp_ddm_get_rx_pwr_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
-				     struct ubus_request_data *req, const char *method,
-				     struct blob_attr *msg)
+                                     struct ubus_request_data *req, const char *method,
+                                     struct blob_attr *msg)
 {
     blob_buf_init (&b, 0);
     if (!sfp_ddm_get_rx_pwr(&b, 1))
-	return UBUS_STATUS_NO_DATA;
+        return UBUS_STATUS_NO_DATA;
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
 }
 static int sfp_ddm_get_all_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
-				  struct ubus_request_data *req, const char *method,
-				  struct blob_attr *msg)
+                                  struct ubus_request_data *req, const char *method,
+                                  struct blob_attr *msg)
 {
     blob_buf_init (&b, 0);
     if (!sfp_ddm_get_temperature(&b, 0))
-	return UBUS_STATUS_NO_DATA;
+        return UBUS_STATUS_NO_DATA;
     sfp_ddm_get_voltage(&b, 0);
     sfp_ddm_get_current(&b, 0);
     sfp_ddm_get_tx_pwr(&b, 0);
@@ -2595,22 +2595,22 @@ static void server_main(struct leds_configuration* led_cfg)
     int ret, i;
 
     for (i=0 ; i<LED_OBJECTS ; i++) {
-	ret = ubus_add_object(ubus_ctx, &led_objects[i]);
-	if (ret)
-	    DEBUG_PRINT("Failed to add object: %s\n", ubus_strerror(ret));
+        ret = ubus_add_object(ubus_ctx, &led_objects[i]);
+        if (ret)
+            DEBUG_PRINT("Failed to add object: %s\n", ubus_strerror(ret));
     }
 
     if (i2c_sfp)
-	for (i = 0; i < ARRAY_SIZE(sfp_objects); i++) {
-	    ret = ubus_add_object (ubus_ctx, &sfp_objects[i]);
-	    if (ret)
-		DEBUG_PRINT("Failed to add sfp object: %s\n", ubus_strerror(ret));
-	}
+        for (i = 0; i < ARRAY_SIZE(sfp_objects); i++) {
+            ret = ubus_add_object (ubus_ctx, &sfp_objects[i]);
+            if (ret)
+                DEBUG_PRINT("Failed to add sfp object: %s\n", ubus_strerror(ret));
+        }
 
     uloop_timeout_set(&blink_inform_timer, 100);
 
     if (i2c_touch)
-	uloop_timeout_set(&i2c_touch_reset_timer, I2C_RESET_TIME);
+        uloop_timeout_set(&i2c_touch_reset_timer, I2C_RESET_TIME);
 
     uloop_run();
 }
@@ -2692,12 +2692,12 @@ static struct button_configuration* get_button_config(void) {
     return butt_cfg;
 }
 
-static int button_need_type(const struct button_configuration* butt_cfg, led_type_t type) 
+static int button_need_type(const struct button_configuration* butt_cfg, led_type_t type)
 {
     int i;
     for (i=0 ; i<butt_cfg->button_nr ; i++)
         if (butt_cfg->buttons[i]->type == type)
-	    return 1;
+            return 1;
     return 0;
 }
 
@@ -2738,8 +2738,8 @@ int ledmngr(void) {
 
     ubus_ctx = ubus_connect(ubus_socket);
     if (!ubus_ctx) {
-	DEBUG_PRINT("Failed to connect to ubus\n");
-	return -1;
+        DEBUG_PRINT("Failed to connect to ubus\n");
+        return -1;
     }
 
     ubus_add_uloop(ubus_ctx);
