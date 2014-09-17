@@ -251,8 +251,8 @@ static const struct i2c_reg_tab i2c_init_tab_cg300[]={
     {0x1A, 0x00, 0x00 },      /* Led Pwr On Pw */
     {0x1B, 0x00, 0x00 },      /* Disable BL7 as power button */
     {0x1E, 0x0F, 0x00 },      /* Cap sens enabled, bl0-bl3 */
-    {0x1F, 0x43, 0x00 },      /* Cap sens BL0 */
-    {0x20, 0x43, 0x07 },      /* Cap sens range  20-27 BL1->BL7 */
+    {0x1F, 0x41, 0x00 },      /* Cap sens BL0 */
+    {0x20, 0x41, 0x07 },      /* Cap sens range  20-27 BL1->BL7 */
     {0x28, 0x02, 0x00 },      /* Cap sens thresh BL 0  */
     {0x29, 0x04, 0x07 },      /* Cap sens thresh 28-30 */
     {0x31, 0x54, 0x00 },      /* Cap sens Op */
