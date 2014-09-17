@@ -61,6 +61,8 @@ extern int daemonize;
 #define SR_MAX 16
 #define MAX_BUTTON 10
 
+#define MIN_MS_TIME_PRESSED 2000
+
 typedef enum {
     OFF,
     ON,
@@ -1176,18 +1178,24 @@ static void check_buttons(int initialize) {
         if (!initialize) {
             if (button^bc->active) {
                 DEBUG_PRINT("Button %s pressed\n",bc->name);
-                if (button_use_feedback(led_cfg, bc))
-                    led_set(led_cfg, led_cfg->button_feedback_led,
-                            !led_cfg->leds[led_cfg->button_feedback_led]->blink_state);
-                //syslog(LOG_INFO, "Button %s pressed\n",bc->name);
+
                 bc->pressed_state = 1;
                 touch_button_press_timer_start(bc);
+
+                if (button_use_feedback(led_cfg, bc)) {
+                    if ( button_press_time_valid(bc, MIN_MS_TIME_PRESSED) ) {
+                        led_set(led_cfg, led_cfg->button_feedback_led,
+                                !led_cfg->leds[led_cfg->button_feedback_led]->blink_state);
+                    }
+                }
+                //syslog(LOG_INFO, "Button %s pressed\n",bc->name);
 
                 if(led_cfg->leds_state == LEDS_PROD) {
                     DEBUG_PRINT("Setting %s on\n", bc->feedback_led);
                     if (bc->feedback_led) led_set(led_cfg, get_led_index_by_name(led_cfg, bc->feedback_led), ON);
                 }
             }
+
             if ((!(button^bc->active)) && (bc->pressed_state)) {
                 char str[512] = {0};
                 if (button_use_feedback(led_cfg, bc)) {
@@ -1197,8 +1205,8 @@ static void check_buttons(int initialize) {
                     else
                         led_set(led_cfg, led_cfg->button_feedback_led, -1);
                 }
-                if (button_press_time_valid(bc, 2000)){
 
+                if (button_press_time_valid(bc, MIN_MS_TIME_PRESSED)){
                     if ((led_cfg->leds_state == LEDS_NORMAL)    ||
                         (led_cfg->leds_state == LEDS_PROXIMITY) ||
                         (led_cfg->leds_state == LEDS_SILENT)    ||
