@@ -25,7 +25,6 @@ asterisk_boot() {
 	[ -d $DEST/var/log/asterisk ] || mkdir -p $DEST/var/log/asterisk
 	[ -d $DEST/var/spool/asterisk ] || mkdir -p $DEST/var/spool/asterisk
         [ -d /var/spool/asterisk ] || mkdir -p /var/spool/asterisk
-        [ -h $DEST/usr/lib/asterisk/astdb ] || ln -sf /var/spool/asterisk/astdb $DEST/usr/lib/asterisk/astdb
 
         # does the board have a fxs relay?
         local fxsRelayGpio=$(uci get -q /lib/db/config/hw.board.fxsRelayGpio)
