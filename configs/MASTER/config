@@ -2379,6 +2379,7 @@ CONFIG_PACKAGE_minidlna=y
 # CONFIG_PACKAGE_alleato-boxconfig is not set
 # CONFIG_PACKAGE_alleato-house is not set
 # CONFIG_PACKAGE_alleato-scheduler is not set
+# CONFIG_PACKAGE_alleato-telia is not set
 # CONFIG_PACKAGE_social-alarm is not set
 # CONFIG_PACKAGE_zwave-mgr is not set
 # CONFIG_PACKAGE_zwave-profiler is not set
