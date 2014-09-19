@@ -10,7 +10,7 @@ else
 PKG_SOURCE_URL:=http://ihgsp.inteno.se/git/alleato_base.git
 endif
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=a7736dc4e6c32057fb138df9dcd9eaf01a271d3c
+PKG_SOURCE_VERSION:=3d98bc72b89b8e4e0a860b185d95160303eccd70
 
 PKG_MAINTAINER:=Martin Assarsson, ALLEATO
 
@@ -69,6 +69,13 @@ define Package/alleato-scheduler
   CATEGORY:=Utilities
   DEPENDS:=alleato3
   TITLE:=Alleato scheduler
+endef
+
+define Package/alleato-telia
+  SECTION:=utils
+  CATEGORY:=Utilities
+  DEPENDS:=alleato3
+  TITLE:=Alleato telia rules
 endef
 
 define Package/alleato-boxconfig
@@ -132,9 +139,16 @@ define Package/social-alarm/install
 endef
 
 define Package/alleato-scheduler/install
-	$(INSTALL_DIR) $(1)/usr/mqttrules $(1)/etc/init.d
+	$(INSTALL_DIR) $(1)/usr/mqttrules $(1)/etc/init.d $(1)/etc/crontabs/sched
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/init.d/scheduler $(1)/etc/init.d/scheduler 
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/scheduler $(1)/usr/mqttrules/scheduler
+endef
+
+define Package/alleato-telia/install
+	$(INSTALL_DIR) $(1)/usr/mqttrules $(1)/etc/init.d $(1)/etc/alleato
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/init.d/telia-rules $(1)/etc/init.d/telia-rules 
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/telia-rules $(1)/usr/mqttrules/telia-rules
+	$(INSTALL_DATA) $(PKG_BUILD_DIR)/etc/alleato/telia.json $(1)/etc/alleato/telia.json
 endef
 
 define Package/alleato-boxconfig/install
@@ -166,6 +180,7 @@ $(eval $(call BuildPackage,zwave-profiler))
 $(eval $(call BuildPackage,alleato-house))
 $(eval $(call BuildPackage,social-alarm))
 $(eval $(call BuildPackage,alleato-scheduler))
+$(eval $(call BuildPackage,alleato-telia))
 $(eval $(call BuildPackage,alleato-boxconfig))
 $(eval $(call BuildPackage,all-omc))
 $(eval $(call BuildPackage,bik))
