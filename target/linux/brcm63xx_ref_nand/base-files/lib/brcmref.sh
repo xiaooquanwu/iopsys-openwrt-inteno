@@ -244,10 +244,13 @@ id_upgrade_reconfig() {
 
 check_num_mac_address() {
     local nummac=$(cat /proc/nvram/NumMacAddrs)
-    if [ "$nummac" != "00 00 00 08 " ]; then
-        echo "Setting NumMacAddrs to 8"
-        echo "00 00 00 08" >/proc/nvram/NumMacAddrs
-        sync
+    local boardid=$(cat /proc/nvram/BoardId)
+    if [ "$boardid" != "CG300R0" ]; then
+        if [ "$nummac" != "00 00 00 08 " ]; then
+            echo "Setting NumMacAddrs to 8"
+            echo "00 00 00 08" >/proc/nvram/NumMacAddrs
+            sync
+        fi
     fi
 }
 
