@@ -2,7 +2,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=alleato-base
 
-PKG_VERSION:=14.09.09
+PKG_VERSION:=14.10.19
 PKG_RELEASE=$(PKG_SOURCE_VERSION)
 ifeq ($(CONFIG_PACKAGE_bcmkernel),y)
 PKG_SOURCE_URL:=git@iopsys.inteno.se:alleato_base.git
@@ -10,7 +10,7 @@ else
 PKG_SOURCE_URL:=http://ihgsp.inteno.se/git/alleato_base.git
 endif
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=f911ccea874761d591c2be5b0f4d1167b5674f35
+PKG_SOURCE_VERSION:=a7736dc4e6c32057fb138df9dcd9eaf01a271d3c
 
 PKG_MAINTAINER:=Martin Assarsson, ALLEATO
 
