@@ -144,17 +144,6 @@ define Package/alleato-scheduler/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/scheduler $(1)/usr/mqttrules/scheduler
 endef
 
-define Package/alleato-scheduler/postinst
-#!/bin/sh
-mkdir -p /home
-adduser scheduler -D
-
-crontab -l | grep -v check_client_id > /tmp/crontab
-echo "*/5 * * * * /usr/sbin/check_client_id" >> /tmp/crontab
-cat /tmp/crontab | crontab -
-rm -f /tmp/crontab
-endef
-
 define Package/alleato-telia/install
 	$(INSTALL_DIR) $(1)/usr/mqttrules $(1)/etc/init.d $(1)/etc/alleato
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/init.d/telia-rules $(1)/etc/init.d/telia-rules 
@@ -169,15 +158,6 @@ define Package/alleato-boxconfig/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/genmosquittoconf $(1)/usr/bin/genmosquittoconf
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/check_client_id $(1)/usr/sbin/check_client_id
 	echo "*/5 * * * * /usr/sbin/check_client_id" >> $(1)/etc/cron.d/root
-endef
-
-define Package/all-omc/postinst
-#!/bin/sh
-chmod 755 /etc/init.d/omc
-
-/etc/init.d/omc enable
-/etc/init.d/omc stop
-/etc/init.d/omc start
 endef
 
 define Package/all-omc/install
