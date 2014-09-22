@@ -2,7 +2,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=alleato-base
 
-PKG_VERSION:=14.10.19
+PKG_VERSION:=14.10.22
 PKG_RELEASE=$(PKG_SOURCE_VERSION)
 ifeq ($(CONFIG_PACKAGE_bcmkernel),y)
 PKG_SOURCE_URL:=git@iopsys.inteno.se:alleato_base.git
@@ -10,7 +10,7 @@ else
 PKG_SOURCE_URL:=http://ihgsp.inteno.se/git/alleato_base.git
 endif
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=3d98bc72b89b8e4e0a860b185d95160303eccd70
+PKG_SOURCE_VERSION:=27fdadbc5342302fb6ce4b0275ccfb44590b3497
 
 PKG_MAINTAINER:=Martin Assarsson, ALLEATO
 
@@ -144,6 +144,17 @@ define Package/alleato-scheduler/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/scheduler $(1)/usr/mqttrules/scheduler
 endef
 
+define Package/alleato-scheduler/postinst
+#!/bin/sh
+mkdir -p /home
+adduser scheduler -D
+
+crontab -l | grep -v check_client_id > /tmp/crontab
+echo "*/5 * * * * /usr/sbin/check_client_id" >> /tmp/crontab
+cat /tmp/crontab | crontab -
+rm -f /tmp/crontab
+endef
+
 define Package/alleato-telia/install
 	$(INSTALL_DIR) $(1)/usr/mqttrules $(1)/etc/init.d $(1)/etc/alleato
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/init.d/telia-rules $(1)/etc/init.d/telia-rules 
@@ -152,11 +163,21 @@ define Package/alleato-telia/install
 endef
 
 define Package/alleato-boxconfig/install
-	$(INSTALL_DIR) $(1)/usr/sbin $(1)/usr/bin $(1)/etc/init.d $(1)/etc/alleato
+	$(INSTALL_DIR) $(1)/usr/sbin $(1)/usr/bin $(1)/etc/init.d $(1)/etc/alleato $(1)/etc/cron.d
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/init.d/boxconfig $(1)/etc/init.d/boxconfig
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/boxconfig $(1)/usr/bin/boxconfig
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/genmosquittoconf $(1)/usr/bin/genmosquittoconf
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/check_client_id $(1)/usr/sbin/check_client_id
+	echo "*/5 * * * * /usr/sbin/check_client_id" >> $(1)/etc/cron.d/root
+endef
+
+define Package/all-omc/postinst
+#!/bin/sh
+chmod 755 /etc/init.d/omc
+
+/etc/init.d/omc enable
+/etc/init.d/omc stop
+/etc/init.d/omc start
 endef
 
 define Package/all-omc/install
@@ -169,7 +190,6 @@ define Package/bik/install
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/init.d/bik $(1)/etc/init.d/bik
 endef
-
 
 ######################################################
 
