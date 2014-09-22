@@ -595,6 +595,9 @@ $(eval $(call application,port-management,LuCI Support for Port Management,\
 $(eval $(call application,power-mgmt,LuCI Support for Power Management,\
 	+PACKAGE_luci-app-power-mgmt))
 
+$(eval $(call application,parental-control,LuCI Support for Parental Control,\
+	+PACKAGE_luci-app-parental-control))
+
 ### Server Gateway Interfaces ###
 define sgi
   define Package/luci-sgi-$(1)
