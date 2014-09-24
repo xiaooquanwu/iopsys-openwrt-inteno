@@ -676,6 +676,7 @@ set_wifi_device() {
 	# set channel
 	case "$channel" in
 		auto)
+			wlctl -i $device bw_cap 2g 0x1
 			if [ -n "$acsifs" ]; then
 				nvram set acs_ifnames="$acsifs $device"
 			else
@@ -688,14 +689,15 @@ set_wifi_device() {
 			nvram set "$device"_acs_ci_scan_timeout="300"
 			nvram set "$device"_acs_ci_scan_timer="4"
 			nvram set "$device"_acs_cs_scan_timer="${cstmr:-900}"
-			nvram set "$device"_acs_dfs="0"
+			nvram set "$device"_acs_dfs="1"
 			nvram set "$device"_acs_dfsr_activity="30 10240"
 			nvram set "$device"_acs_dfsr_deferred="604800 5"
 			nvram set "$device"_acs_dfsr_immediate="300 3"
 			nvram set "$device"_acs_excl_chans=""
-			nvram set "$device"_acs_fcs_mode="0"
+			nvram set "$device"_acs_fcs_mode="1"
 			nvram set "$device"_acs_scan_entry_expire="3600"
 			nvram set "$device"_acs_tx_idle_cnt="5"
+			nvram set "$device"_acs_lowband_least_rssi="-75"
 			wlctl -i $device chanim_mode 2
 		;;
 		*)
@@ -787,7 +789,7 @@ generate_wireless_config() {
 config 'wifi-device' '$wl'
         option 'type' 'broadcom'
         option 'channel' 'auto'
-        option 'scantimer' '10'
+        option 'scantimer' '15'
         option 'hwmode' 'auto'
         option 'country' '$country'
         option 'wmm' '1'
