@@ -259,19 +259,15 @@ default_do_upgrade() {
 		v "Setting bootline parameter to boot from newly flashed image"
 		brcm_fw_tool set -u 0
 		v "Current Software Upgrade Count: $(ls /cferam* | awk -F'.' '{print$NF}')"
-		v "Erasing Overlay ..."
-        echo -e "\xde\xad\xc0\xde" | mtd -x -qq write - rootfs_update_data
-#		mtd erase rootfs_update_data
 		if [ "$SAVE_CONFIG" -eq 1 -a -z "$USE_REFRESH" ]; then
-			v "Mounting Overlay ..."
-			overlay_block="$(grep "\"rootfs_update_data\"" /proc/mtd | awk -F: '{print $1}' | awk -F'mtd' '{print$2}')"
-			mount -t jffs2 /dev/mtdblock$overlay_block /mnt
-			v "Copying configuration files to overlay ..."
-			cp -r /overlay/* /mnt
-			v "Erasing board db"
-			rm -rf /mnt/lib/db/config/hw
-			v "Unmounting Overlay ..."
-			umount /mnt
+			v "Creating save config file marker"
+			touch /SAVE_CONFIG
+			sync
+		else
+			v "Not saving config files"
+			touch /SAVE_CONFIG
+			rm /SAVE_CONFIG
+			sync
 		fi
 		[ $cfe_fs -eq 1 ] && v "Writing CFE + File System ..." || v "Writing File System ..."
         v "-> Display meminfo ..."

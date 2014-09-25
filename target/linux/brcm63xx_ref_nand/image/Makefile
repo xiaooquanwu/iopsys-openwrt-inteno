@@ -62,8 +62,10 @@ define Image/Prepare
 	cat $(KDIR)/jffs2_eof_marker_2048 $(KDIR)/file128k.tmp | head --bytes=131072 > $(KDIR)/jffs2_eof_marker_128k
 
 	#add the files that should not be compressed
-	echo -e "/cferam.000" > $(KDIR)/nocomprlist
+	echo -i "/IOP3"       >> $(KDIR)/nocomprlist
+	echo -e "/cferam.000" >> $(KDIR)/nocomprlist
 	echo -e "/vmlinux.lz" >> $(KDIR)/nocomprlist
+	touch $(TARGET_DIR)/IOP3
 	cp $(KDIR)/vmlinux.lz $(TARGET_DIR)/
 	cp $(KDIR)/cferam.000 $(TARGET_DIR)/
 
