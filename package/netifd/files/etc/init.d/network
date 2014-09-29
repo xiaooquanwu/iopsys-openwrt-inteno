@@ -10,6 +10,7 @@ cwmp_netcache() {
 	[ -f /usr/sbin/freecwmp ] && {
 		ps -w | grep freecwmp | grep LANDevice >/dev/null || freecwmp get cache InternetGatewayDevice.LANDevice. &
 		ps -w | grep freecwmp | grep Layer2Bridging >/dev/null || freecwmp get cache InternetGatewayDevice.Layer2Bridging. &
+		ps -w | grep freecwmp | grep Layer3Forwarding >/dev/null || freecwmp get cache InternetGatewayDevice.Layer3Forwarding. &
 	}
 }
 
