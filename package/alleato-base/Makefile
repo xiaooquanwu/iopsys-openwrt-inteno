@@ -2,7 +2,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=alleato-base
 
-PKG_VERSION:=14.10.22
+PKG_VERSION:=14.40.0
 PKG_RELEASE=$(PKG_SOURCE_VERSION)
 ifeq ($(CONFIG_PACKAGE_bcmkernel),y)
 PKG_SOURCE_URL:=git@iopsys.inteno.se:alleato_base.git
@@ -10,7 +10,7 @@ else
 PKG_SOURCE_URL:=http://ihgsp.inteno.se/git/alleato_base.git
 endif
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=27fdadbc5342302fb6ce4b0275ccfb44590b3497
+PKG_SOURCE_VERSION:=f015ed881c59707131abff38060468c85741db08
 
 PKG_MAINTAINER:=Martin Assarsson, ALLEATO
 
@@ -140,6 +140,8 @@ endef
 
 define Package/alleato-scheduler/install
 	$(INSTALL_DIR) $(1)/usr/mqttrules $(1)/etc/init.d $(1)/etc/crontabs/sched
+	$(INSTALL_DATA) $(PKG_BUILD_DIR)/data/schedule $(1)/etc/crontabs
+	$(INSTALL_DATA) $(PKG_BUILD_DIR)/data/schedule $(1)/etc/crontabs/sched
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/init.d/scheduler $(1)/etc/init.d/scheduler 
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/scheduler $(1)/usr/mqttrules/scheduler
 endef
@@ -152,12 +154,12 @@ define Package/alleato-telia/install
 endef
 
 define Package/alleato-boxconfig/install
-	$(INSTALL_DIR) $(1)/usr/sbin $(1)/usr/bin $(1)/etc/init.d $(1)/etc/alleato $(1)/etc/cron.d
+	$(INSTALL_DIR) $(1)/usr/sbin $(1)/usr/bin $(1)/etc/init.d $(1)/etc/alleato $(1)/etc/crontabs $(1)/home/mosquitto
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/init.d/boxconfig $(1)/etc/init.d/boxconfig
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/boxconfig $(1)/usr/bin/boxconfig
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/genmosquittoconf $(1)/usr/bin/genmosquittoconf
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/check_client_id $(1)/usr/sbin/check_client_id
-	echo "*/5 * * * * /usr/sbin/check_client_id" >> $(1)/etc/cron.d/root
+	echo "*/5 * * * * /usr/sbin/check_client_id" >> $(1)/etc/crontabs/root
 endef
 
 define Package/all-omc/install
