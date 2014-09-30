@@ -15,7 +15,11 @@ PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=git@iopsys.inteno.se:bcmkernel-4.16L.02A
 PKG_SOURCE_PROTO:=git
 
+<<<<<<< HEAD
 PKG_SOURCE_VERSION:=6104f3cc2d25bb9da3d9b0845cb2016f953bde46
+=======
+PKG_SOURCE_VERSION:=d8739abe7bbc89cb00be48333183644a2e3e00b2
+>>>>>>> bcmkernel: update package
 
 
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
