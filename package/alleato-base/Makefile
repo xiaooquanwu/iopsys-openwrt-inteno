@@ -10,7 +10,7 @@ else
 PKG_SOURCE_URL:=http://ihgsp.inteno.se/git/alleato_base.git
 endif
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=2912ac58a42a13583cf9481b39de0fb6e4bdba6c
+PKG_SOURCE_VERSION:=cfe20b0e0e38273491f2dcc52e7b8b85064935de
 
 PKG_MAINTAINER:=Martin Assarsson, ALLEATO
 
@@ -85,6 +85,14 @@ define Package/all-omc
   TITLE:=Alleato remote tunnel
 endef
 
+define Package/telia-rules
+  SECTION:=utils
+  CATEGORY:=Utilities
+  DEPENDS:=+alleato3
+  TITLE:=Alleato telia rules
+endef
+
+
 
 ######################################################
 
@@ -146,6 +154,13 @@ define Package/all-omc/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/omc $(1)/usr/bin/omc
 endef
 
+define Package/telia-rules/install
+	$(INSTALL_DIR) $(1)/etc/init.d $(1)/usr/mqttrules
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/init.d/telia-rules $(1)/etc/init.d/telia-rules
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/telia-rules $(1)/usr/bin/telia-rules
+endef
+
+
 
 ######################################################
 
@@ -158,5 +173,6 @@ $(eval $(call BuildPackage,social-alarm))
 $(eval $(call BuildPackage,alleato-scheduler))
 $(eval $(call BuildPackage,alleato-boxconfig))
 $(eval $(call BuildPackage,all-omc))
+$(eval $(call BuildPackage,telia-rules))
 
 
