@@ -2,7 +2,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=alleato-base
 
-PKG_VERSION:=14.40.0
+PKG_VERSION:=14.10.19
 PKG_RELEASE=$(PKG_SOURCE_VERSION)
 ifeq ($(CONFIG_PACKAGE_bcmkernel),y)
 PKG_SOURCE_URL:=git@iopsys.inteno.se:alleato_base.git
@@ -10,7 +10,7 @@ else
 PKG_SOURCE_URL:=http://ihgsp.inteno.se/git/alleato_base.git
 endif
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=7db9e0b04925f05524edf7bfb2bd8bad19d8bb34
+PKG_SOURCE_VERSION:=df18e86ad20906395d67c14b4f4d3a26eaa58028
 
 PKG_MAINTAINER:=Martin Assarsson, ALLEATO
 
@@ -69,13 +69,6 @@ define Package/alleato-scheduler
   CATEGORY:=Utilities
   DEPENDS:=alleato3
   TITLE:=Alleato scheduler
-endef
-
-define Package/alleato-telia
-  SECTION:=utils
-  CATEGORY:=Utilities
-  DEPENDS:=alleato3
-  TITLE:=Alleato telia rules
 endef
 
 define Package/alleato-boxconfig
@@ -139,39 +132,32 @@ define Package/social-alarm/install
 endef
 
 define Package/alleato-scheduler/install
-	$(INSTALL_DIR) $(1)/usr/mqttrules $(1)/etc/init.d $(1)/etc/crontabs/sched
-	$(INSTALL_DATA) $(PKG_BUILD_DIR)/data/schedule $(1)/etc/crontabs
-	$(INSTALL_DATA) $(PKG_BUILD_DIR)/data/schedule $(1)/etc/crontabs/sched
+	$(INSTALL_DIR) $(1)/usr/mqttrules $(1)/etc/init.d
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/init.d/scheduler $(1)/etc/init.d/scheduler 
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/scheduler $(1)/usr/mqttrules/scheduler
 endef
 
-define Package/alleato-telia/install
-	$(INSTALL_DIR) $(1)/usr/mqttrules $(1)/etc/init.d $(1)/etc/alleato
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/init.d/telia-rules $(1)/etc/init.d/telia-rules 
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/telia-rules $(1)/usr/mqttrules/telia-rules
-	$(INSTALL_DATA) $(PKG_BUILD_DIR)/etc/alleato/telia.json $(1)/etc/alleato/telia.json
-endef
-
 define Package/alleato-boxconfig/install
-	$(INSTALL_DIR) $(1)/usr/sbin $(1)/usr/bin $(1)/etc/init.d $(1)/etc/alleato $(1)/etc/crontabs $(1)/home/mosquitto
+	$(INSTALL_DIR) $(1)/usr/sbin $(1)/usr/bin $(1)/etc/init.d $(1)/etc/alleato
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/init.d/boxconfig $(1)/etc/init.d/boxconfig
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/boxconfig $(1)/usr/bin/boxconfig
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/genmosquittoconf $(1)/usr/bin/genmosquittoconf
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/check_client_id $(1)/usr/sbin/check_client_id
-	echo "*/5 * * * * /usr/sbin/check_client_id" >> $(1)/etc/crontabs/root
 endef
 
 define Package/all-omc/install
-	$(INSTALL_DIR) $(1)/root $(1)/etc/init.d
+	$(INSTALL_DIR) $(1)/root $(1)/etc/init.d $(1)/etc/config
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/init.d/omc $(1)/etc/init.d/omc
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/root/ssh_key $(1)/root/ssh_key
+	$(INSTALL_DATA) $(PKG_BUILD_DIR)/data/alleato.config $(1)/etc/config/alleato
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/omc $(1)/usr/bin/omc
 endef
 
 define Package/bik/install
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/init.d/bik $(1)/etc/init.d/bik
 endef
+
 
 ######################################################
 
@@ -182,7 +168,6 @@ $(eval $(call BuildPackage,zwave-profiler))
 $(eval $(call BuildPackage,alleato-house))
 $(eval $(call BuildPackage,social-alarm))
 $(eval $(call BuildPackage,alleato-scheduler))
-$(eval $(call BuildPackage,alleato-telia))
 $(eval $(call BuildPackage,alleato-boxconfig))
 $(eval $(call BuildPackage,all-omc))
 $(eval $(call BuildPackage,bik))
