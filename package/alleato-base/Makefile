@@ -85,13 +85,6 @@ define Package/all-omc
   TITLE:=Alleato remote tunnel
 endef
 
-define Package/bik
-  SECTION:=utils
-  CATEGORY:=Utilities
-  DEPENDS:=+alleato3
-  TITLE:=BIC generator
-endef
-
 
 ######################################################
 
@@ -153,11 +146,6 @@ define Package/all-omc/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/omc $(1)/usr/bin/omc
 endef
 
-define Package/bik/install
-	$(INSTALL_DIR) $(1)/etc/init.d
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/init.d/bik $(1)/etc/init.d/bik
-endef
-
 
 ######################################################
 
@@ -170,5 +158,5 @@ $(eval $(call BuildPackage,social-alarm))
 $(eval $(call BuildPackage,alleato-scheduler))
 $(eval $(call BuildPackage,alleato-boxconfig))
 $(eval $(call BuildPackage,all-omc))
-$(eval $(call BuildPackage,bik))
+
 
