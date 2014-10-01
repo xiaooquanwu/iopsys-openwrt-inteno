@@ -155,7 +155,7 @@ define Package/all-omc/install
 endef
 
 define Package/telia-rules/install
-	$(INSTALL_DIR) $(1)/etc/init.d $(1)/usr/mqttrules
+	$(INSTALL_DIR) $(1)/etc/init.d $(1)/usr/bin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/init.d/telia-rules $(1)/etc/init.d/telia-rules
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/telia-rules $(1)/usr/bin/telia-rules
 endef
