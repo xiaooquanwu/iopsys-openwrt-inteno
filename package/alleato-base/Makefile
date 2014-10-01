@@ -146,7 +146,7 @@ define Package/alleato-boxconfig/install
 endef
 
 define Package/all-omc/install
-	$(INSTALL_DIR) $(1)/root $(1)/etc/init.d $(1)/etc/config
+	$(INSTALL_DIR) $(1)/root $(1)/etc/init.d $(1)/etc/config $(1)/usr/bin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/init.d/omc $(1)/etc/init.d/omc
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/root/ssh_key $(1)/root/ssh_key
 	$(INSTALL_DATA) $(PKG_BUILD_DIR)/data/alleato.config $(1)/etc/config/alleato
