@@ -10,7 +10,7 @@ else
 PKG_SOURCE_URL:=http://ihgsp.inteno.se/git/alleato_base.git
 endif
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=cfe20b0e0e38273491f2dcc52e7b8b85064935de
+PKG_SOURCE_VERSION:=47a46154571bfb6bc3d38b92a4a7329bcf552432
 
 PKG_MAINTAINER:=Martin Assarsson, ALLEATO
 
@@ -92,8 +92,6 @@ define Package/telia-rules
   TITLE:=Alleato telia rules
 endef
 
-
-
 ######################################################
 
 define Package/alleato3/install
@@ -139,7 +137,7 @@ define Package/alleato-scheduler/install
 endef
 
 define Package/alleato-boxconfig/install
-	$(INSTALL_DIR) $(1)/usr/sbin $(1)/usr/bin $(1)/etc/init.d $(1)/etc/alleato
+	$(INSTALL_DIR) $(1)/usr/sbin $(1)/usr/bin $(1)/etc/init.d $(1)/etc/alleato $(1)/home/mosquitto
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/init.d/boxconfig $(1)/etc/init.d/boxconfig
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/boxconfig $(1)/usr/bin/boxconfig
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/genmosquittoconf $(1)/usr/bin/genmosquittoconf
@@ -160,7 +158,12 @@ define Package/telia-rules/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/telia-rules $(1)/usr/mqttrules/telia-rules
 endef
 
-
+define Package/ubus-kicker/install
+	$(INSTALL_DIR) $(1)/etc/init.d $(1)/usr/sbin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/init.d/ubus-kicker $(1)/etc/init.d/ubus-kicker
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/ubus-kicker $(1)/usr/sbin/ubus-kicker
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/akick $(1)/usr/sbin/akick
+endef
 
 ######################################################
 
@@ -174,5 +177,5 @@ $(eval $(call BuildPackage,alleato-scheduler))
 $(eval $(call BuildPackage,alleato-boxconfig))
 $(eval $(call BuildPackage,all-omc))
 $(eval $(call BuildPackage,telia-rules))
-
+$(eval $(call BuildPackage,ubus-kicker))
 
