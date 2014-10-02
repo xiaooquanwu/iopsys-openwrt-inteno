@@ -10,7 +10,7 @@ else
 PKG_SOURCE_URL:=http://ihgsp.inteno.se/git/alleato_base.git
 endif
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=47a46154571bfb6bc3d38b92a4a7329bcf552432
+PKG_SOURCE_VERSION:=eeff1eb6c8cdbe0dc2f748af4da105af9a3e42db
 
 PKG_MAINTAINER:=Martin Assarsson, ALLEATO
 
@@ -142,6 +142,7 @@ define Package/alleato-boxconfig/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/boxconfig $(1)/usr/bin/boxconfig
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/genmosquittoconf $(1)/usr/bin/genmosquittoconf
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/check_client_id $(1)/usr/sbin/check_client_id
+	$(INSTALL_DATA) $(PKG_BUILD_DIR)/data/boxconfig.conf $(1)/etc/boxconfig.conf
 endef
 
 define Package/all-omc/install
