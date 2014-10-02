@@ -92,6 +92,13 @@ define Package/telia-rules
   TITLE:=Alleato telia rules
 endef
 
+define Package/ubus-kicker
+  SECTION:=utils
+  CATEGORY:=Utilities
+  DEPENDS:=
+  TITLE:=Alleato ubus-kicker
+endef
+
 ######################################################
 
 define Package/alleato3/install
