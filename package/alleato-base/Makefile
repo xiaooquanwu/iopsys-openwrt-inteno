@@ -10,7 +10,7 @@ else
 PKG_SOURCE_URL:=http://ihgsp.inteno.se/git/alleato_base.git
 endif
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=eeff1eb6c8cdbe0dc2f748af4da105af9a3e42db
+PKG_SOURCE_VERSION:=1ede0a33350fbfdb548255f3de7ae6e172356cec
 
 PKG_MAINTAINER:=Martin Assarsson, ALLEATO
 
