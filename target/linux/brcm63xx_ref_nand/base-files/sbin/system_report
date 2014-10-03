@@ -18,7 +18,7 @@ local cmd = {
     'ifstatus lan',
     'ifstatus wan',
     'logread',
-    'dmesg',
+    'dmesgh',
     'lsusb',
     'lspci -k',
     'lsmod',
