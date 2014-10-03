@@ -1,0 +1,11 @@
+--- a/system-linux.c
++++ b/system-linux.c
+@@ -829,7 +829,7 @@
+ 	if (!devname)
+ 		return NULL;
+ 
+-	return device_get(devname, true);
++	return device_get(devname, false);
+ }
+ 
+ static bool
