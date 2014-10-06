@@ -180,7 +180,7 @@ endef
 
 define Package/mqttnagios/install
 	$(INSTALL_DIR) $(1)/etc/nagios.d $(1)/usr/bin $(1)/etc/crontabs $(1)/etc/init.d
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/init.d/mqttnagios $(1)/etc/init.d/mqttnagion
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/init.d/mqttnagios $(1)/etc/init.d/mqttnagios
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/send_mqtt_nag $(1)/usr/bin/send_mqtt_nag
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/nagios.d/dropbear $(1)/etc/nagios.d/dropbear
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/nagios.d/mosquitto $(1)/etc/nagios.d/mosquitto 
