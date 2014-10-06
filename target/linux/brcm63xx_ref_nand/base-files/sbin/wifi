@@ -260,7 +260,7 @@ set_wifi_iface() {
 		config_get_bool hidden "$vif" hidden
 		config_get_bool disabled "$vif" disabled
 		config_get enc "$vif" encryption
-		config_get cipher "$vif" cipher
+		config_get_bool autoconf "$vif" autoconf
 		local qr_enc="nopass"
 		local qr_hidden=false
 		local qr_key="no"
@@ -293,7 +293,7 @@ set_wifi_iface() {
 		wlctl -i $device ssid -C $_vno "$ssid"
 
 		nvram set "$nif"_ifname="$iface"
-		nvram set "$nif"_ssid="$ssid"
+		nvram set "$nif"_ssid="${ssid:-Inteno}"
 
 		# set Mode
 		wmode="$(wireless_mode $mode $network)"
@@ -338,6 +338,7 @@ set_wifi_iface() {
 		local eap=0
 		local eap_r=0
 		local auth=0
+		wlctl -i $device down
 		wlctl -i $iface auth 0
 		nvram set "$nif"_auth=0
 		nvram set "$nif"_preauth=0
@@ -456,12 +457,19 @@ set_wifi_iface() {
 				nvram set wl_apsta_sta_ifname="$iface"
 				nvram set wl_apsta_sta_cfg="$vif"
 				nvram set wl_apsta_sta_net="$network"
-			else
-				# tag ap interface
-				nvram set wl_apsta_ap_ifname="$iface"
-				nvram set wl_apsta_ap_cfg="$vif"
-				nvram set wl_apsta_ap_net="$network"
+#			else
+#				# tag ap interface
+#				nvram set wl_apsta_ap_ifname="$iface"
+#				nvram set wl_apsta_ap_cfg="$vif"
+#				nvram set wl_apsta_ap_net="$network"
 			fi
+		fi
+
+		# tag autoconf interfaces
+		if [ "$autoconf" == "1" ]; then
+			nvram set wl_autoconf_ap_ifnames="$iface $(nvram get wl_autoconf_ap_ifnames)"
+			nvram set wl_autoconf_ap_cfgs="$vif $(nvram get wl_autoconf_ap_cfgs)"
+			nvram set wl_autoconf_ap_net="$network"
 		fi
 
 		# set WPS
@@ -495,8 +503,20 @@ set_wifi_iface() {
 		# bring up the VIF and add to network
 		wlctl -i $device bss -C $_vno down
 		wlctl -i $device bss -C $_vno up
-		ifconfig $iface hw ether $(wlctl -i $iface cur_etheraddr | awk '{print$2}') 2>/dev/null
-		nvram set "$nif"_hwaddr="$(wlctl -i $iface cur_etheraddr | awk '{print$2}')"
+		wlctl -i $device down
+		local permac curmac
+		local perethr=$(wlctl -i $iface perm_etheraddr | awk '{print$2}')
+		local curethr=$(wlctl -i $iface cur_etheraddr | awk '{print$2}')
+		if [ "$curethr" == "00:00:00:00:00:00" ]; then
+#			permac=${perethr//:/}
+#			curmac=$(printf "%X\n" $((0x$curmac + 1)) | sed s/./2/2 | sed 's/[[:xdigit:]]\{2\}/:&/g' | awk -F'^:' '{print$2}')
+#			curethr=$curmac
+			curethr=$perethr
+			wlctl -i $iface cur_etheraddr $curethr
+			wlctl -i $iface bssid $curethr
+		fi
+		ifconfig $iface hw ether $curethr 2>/dev/null
+		nvram set "$nif"_hwaddr="$curethr"
 		ifconfig "$iface" up >/dev/null 2>&1 && {
 			[ -n "$network" ] && ubus call network.interface."$network" add_device "{ \"name\": \"$iface\" }" 2>/dev/null
 		}
