@@ -8,8 +8,7 @@ case "$ACTION" in
         [ "resetbutton" == "$INTERFACE" ] && {
                 ubus call leds set '{ "state": "test"}'
                 printf "\n\n*** Restore to default settings ***\n\n" > /dev/console
-                umount "$(find_mtd_part rootfs_data)"
-                echo -e "\xde\xad\xc0\xde" | mtd -x -qq write - rootfs_data
+		rm -rf /rom/overlay/*
 		reboot
         }
         [ "ecobutton" == "$INTERFACE" ] && {
