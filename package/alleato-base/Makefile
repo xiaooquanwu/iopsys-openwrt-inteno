@@ -2,15 +2,11 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=alleato-base
 
-PKG_VERSION:=14.10.19
+PKG_VERSION:=14.40.1
 PKG_RELEASE=$(PKG_SOURCE_VERSION)
-ifeq ($(CONFIG_PACKAGE_bcmkernel),y)
 PKG_SOURCE_URL:=git@iopsys.inteno.se:alleato_base.git
-else
-PKG_SOURCE_URL:=http://ihgsp.inteno.se/git/alleato_base.git
-endif
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=f55819bc1faf65c73459f072ba9c6a0e9827e63a
+PKG_SOURCE_VERSION:=06fc746af5fd552f471fac1a8f2d769f0c2d8016
 
 PKG_MAINTAINER:=Martin Assarsson, ALLEATO
 
@@ -99,6 +95,13 @@ define Package/ubus-kicker
   TITLE:=Alleato ubus-kicker
 endef
 
+define Package/mqttnagios
+  SECTION:=utils
+  CATEGORY:=Utilities
+  DEPENDS:=
+  TITLE:=Alleato mqttnagios
+endef
+
 ######################################################
 
 define Package/alleato3/install
@@ -113,7 +116,7 @@ define Package/zwaved/install
 endef
 
 define Package/zwave-mgr/install
-	$(INSTALL_DIR) $(1)/usr/mqttrules $(1)/etc/init.d
+	$(INSTALL_DIR) $(1)/usr/mqttrules $(1)/etc/init.d $(1)/etc/alleato/
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/init.d/zwave-mgr $(1)/etc/init.d/zwave-mgr
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/zwave_mgr $(1)/usr/mqttrules/zwave_mgr
 endef
@@ -133,14 +136,16 @@ endef
 define Package/social-alarm/install
 	$(INSTALL_DIR) $(1)/usr/mqttrules $(1)/etc/init.d
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/init.d/social-alarm $(1)/etc/init.d/social-alarm
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/etc/social-alarm.conf.example $(1)/etc/social-alarm.conf.example
+	$(INSTALL_DATA) $(PKG_BUILD_DIR)/etc/social-alarm.conf.example $(1)/etc/social-alarm.conf
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/social-alarm $(1)/usr/mqttrules/social-alarm
 endef
 
 define Package/alleato-scheduler/install
-	$(INSTALL_DIR) $(1)/usr/mqttrules $(1)/etc/init.d
+	$(INSTALL_DIR) $(1)/usr/mqttrules $(1)/etc/init.d $(1)/etc/crontabs/sched
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/init.d/scheduler $(1)/etc/init.d/scheduler 
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/scheduler $(1)/usr/mqttrules/scheduler
+	$(INSTALL_DATA) $(PKG_BUILD_DIR)/data/schedule $(1)/etc/crontabs/sched/schedule
+	$(INSTALL_DATA) $(PKG_BUILD_DIR)/data/schedule $(1)/etc/crontabs/schedule
 endef
 
 define Package/alleato-boxconfig/install
@@ -161,7 +166,7 @@ define Package/all-omc/install
 endef
 
 define Package/telia-rules/install
-	$(INSTALL_DIR) $(1)/etc/init.d $(1)/usr/mqttrules
+	$(INSTALL_DIR) $(1)/etc/init.d $(1)/usr/mqttrules $(1)/etc/alleato
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/init.d/telia-rules $(1)/etc/init.d/telia-rules
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/telia-rules $(1)/usr/mqttrules/telia-rules
 endef
@@ -172,6 +177,19 @@ define Package/ubus-kicker/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/ubus-kicker $(1)/usr/sbin/ubus-kicker
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/akick $(1)/usr/sbin/akick
 endef
+
+define Package/mqttnagios/install
+	$(INSTALL_DIR) $(1)/etc/nagios.d $(1)/usr/bin $(1)/etc/crontabs $(1)/etc/init.d
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/init.d/mqttnagios $(1)/etc/init.d/mqttnagion
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/send_mqtt_nag $(1)/usr/bin/send_mqtt_nag
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/nagios.d/dropbear $(1)/etc/nagios.d/dropbear
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/nagios.d/mosquitto $(1)/etc/nagios.d/mosquitto 
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/nagios.d/ssh $(1)/etc/nagios.d/ssh
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/nagios.d/zwaved $(1)/etc/nagios.d/zwaved
+	$(INSTALL_DATA) $(PKG_BUILD_DIR)/data/mqttnagios $(1)/etc/crontabs/mqttnagios
+	echo '/5 * * * * /usr/sbin/check_client_id' >> $(1)/etc/crontabs/root
+endef
+
 
 ######################################################
 
@@ -186,4 +204,5 @@ $(eval $(call BuildPackage,alleato-boxconfig))
 $(eval $(call BuildPackage,all-omc))
 $(eval $(call BuildPackage,telia-rules))
 $(eval $(call BuildPackage,ubus-kicker))
+$(eval $(call BuildPackage,mqttnagios))
 
