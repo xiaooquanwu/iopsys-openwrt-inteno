@@ -2,11 +2,11 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=alleato-base
 
-PKG_VERSION:=14.40.1
+PKG_VERSION:=14.41.2
 PKG_RELEASE=$(PKG_SOURCE_VERSION)
 PKG_SOURCE_URL:=git@iopsys.inteno.se:alleato_base.git
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=06fc746af5fd552f471fac1a8f2d769f0c2d8016
+PKG_SOURCE_VERSION:=984f3d1e926f525cdfff722df28dc64356a407df
 
 PKG_MAINTAINER:=Martin Assarsson, ALLEATO
 
@@ -182,14 +182,13 @@ define Package/mqttnagios/install
 	$(INSTALL_DIR) $(1)/etc/nagios.d $(1)/usr/bin $(1)/etc/crontabs $(1)/etc/init.d
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/init.d/mqttnagios $(1)/etc/init.d/mqttnagios
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/send_mqtt_nag $(1)/usr/bin/send_mqtt_nag
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/nagios.d/dropbear $(1)/etc/nagios.d/dropbear
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/nagios.d/mosquitto $(1)/etc/nagios.d/mosquitto 
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/nagios.d/ssh $(1)/etc/nagios.d/ssh
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/nagios.d/zwaved $(1)/etc/nagios.d/zwaved
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/nagios.d/dropbear $(1)/etc/nagios.d/dropbear.nag
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/nagios.d/mosquitto $(1)/etc/nagios.d/mosquitto.nag
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/nagios.d/ssh $(1)/etc/nagios.d/ssh.nag
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/nagios.d/zwaved $(1)/etc/nagios.d/zwaved.nag
 	$(INSTALL_DATA) $(PKG_BUILD_DIR)/data/mqttnagios $(1)/etc/crontabs/mqttnagios
 	echo '/5 * * * * /usr/sbin/check_client_id' >> $(1)/etc/crontabs/root
 endef
-
 
 ######################################################
 
