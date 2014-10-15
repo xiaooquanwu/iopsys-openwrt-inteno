@@ -260,6 +260,7 @@ set_wifi_iface() {
 		config_get_bool hidden "$vif" hidden
 		config_get_bool disabled "$vif" disabled
 		config_get enc "$vif" encryption
+		config_get cipher "$vif" cipher
 		local qr_enc="nopass"
 		local qr_hidden=false
 		local qr_key="no"
@@ -390,7 +391,7 @@ set_wifi_iface() {
 				esac
 
 				# cipher override
-				case "$enc" in
+				case "$cipher" in
 					*tkip+aes*|*tkip+ccmp*|*aes+tkip*|*ccmp+tkip*) wsec=6; nvram set "$nif"_crypto=tkip+aes;;
 					*aes*|*ccmp*) wsec=4; nvram set "$nif"_crypto=aes;;
 					*tkip*) wsec=2; nvram set "$nif"_crypto=tkip;;
@@ -422,7 +423,7 @@ set_wifi_iface() {
 				esac
 
 				# cipher override
-				case "$enc" in
+				case "$cipher" in
 					*tkip+aes*|*tkip+ccmp*|*aes+tkip*|*ccmp+tkip*) wsec=6; nvram set "$nif"_crypto=tkip+aes;;
 					*aes*|*ccmp*) wsec=4; nvram set "$nif"_crypto=aes;;
 					*tkip*) wsec=2; nvram set "$nif"_crypto=tkip;;
@@ -521,7 +522,6 @@ set_wifi_device() {
 	local device="$1"
 	config_get band "$device" band
 	config_get bandwidth "$device" bandwidth
-	config_get sideband "$device" sideband
 	config_get channel "$device" channel
 	config_get scantimer "$device" scantimer
 	config_get country "$device" country
@@ -617,12 +617,12 @@ set_wifi_device() {
 		;;
 	esac
 
-	# set HW mode and rate
+	# set HW mode, bandwidth and rate
 	wlctl -i $device nmode -1
-	wlctl -i $device mimo_bw_cap 2
 	wlctl -i $device mimo_preamble 2
-	wlctl -i $device bw_cap 2g 0xff
-	wlctl -i $device bw_cap 5g 0xff
+	wlctl -i $device mimo_bw_cap 0
+	wlctl -i $device bw_cap 2g 0x1
+	wlctl -i $device bw_cap 5g 0x3
 	wlctl -i $device obss_coex 1
 	wlctl -i $device gmode 1
 	wlctl -i $device gmode_protection 1
@@ -636,7 +636,28 @@ set_wifi_device() {
 	wlctl -i $device mrate -1
 	wlctl -i $device bg_mrate -1
 
+	case "$bandwidth" in
+		80)
+			wlctl -i $device mimo_bw_cap 2
+			wlctl -i $device bw_cap 2g 0x1
+			wlctl -i $device bw_cap 5g 0x7
+		;;
+		40)
+			wlctl -i $device mimo_bw_cap 2
+			wlctl -i $device bw_cap 2g 0x3
+			wlctl -i $device bw_cap 5g 0x3
+		;;
+		20)
+			wlctl -i $device bw_cap 2g 0x1
+			wlctl -i $device bw_cap 5g 0x1
+		;;
+	esac
+
 	case "$hwmode" in
+		*a)
+			wlctl -i $device nmode 0
+			wlctl -i $device rate auto
+		;;
 		*b)
 			wlctl -i $device nmode 0
 			wlctl -i $device gmode 0
@@ -676,7 +697,6 @@ set_wifi_device() {
 	# set channel
 	case "$channel" in
 		auto)
-			wlctl -i $device bw_cap 2g 0x1
 			if [ -n "$acsifs" ]; then
 				nvram set acs_ifnames="$acsifs $device"
 			else
@@ -701,14 +721,6 @@ set_wifi_device() {
 			wlctl -i $device chanim_mode 2
 		;;
 		*)
-			local bnd=2
-			local sband=0
-			[ "$band" == "a" ] && bnd=5
-			case "$sideband" in
-				lower) sband=-1 ;;
-				upper) sband=1 ;;
-			esac
-			# wlctl -i $device chanspec -b $bnd -c $channel -w ${bandwidth:-20} -s $sband
 			wlctl -i $device chanspec $channel
 		;;
 	esac
@@ -780,7 +792,7 @@ generate_wireless_config() {
 			if ! uci get wireless.$wl >/dev/null 2>&1; then
 				if $(is_5g $wl); then
 					band="a"
-					country="US"
+					country="EU/13"
 				else
 					band="b"
 					country="EU/13"
