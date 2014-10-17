@@ -260,6 +260,7 @@ set_wifi_iface() {
 		config_get_bool hidden "$vif" hidden
 		config_get_bool disabled "$vif" disabled
 		config_get enc "$vif" encryption
+		config_get cipher "$vif" cipher
 		config_get_bool autoconf "$vif" autoconf
 		local qr_enc="nopass"
 		local qr_hidden=false
@@ -560,9 +561,7 @@ set_wifi_device() {
 	config_get dtim_period "$device" dtim_period
 	config_get beacon_int "$device" beacon_int
 	config_get hwmode "$device" hwmode
-	config_get nrate "$device" nrate
-	config_get grate "$device" grate
-	config_get brate "$device" brate
+	config_get rate "$device" rate
 	config_get rateset "$device" rateset
 	config_get rxchainps "$device" rxchainps
 	config_get rxchainps_qt "$device" rxchainps_qt
@@ -612,10 +611,10 @@ set_wifi_device() {
 	wlctl -i $device mpc 0
 	wlctl -i $device infra 1
 	wlctl -i $device closed 0
-
-	wlctl -i $device country "${country:-SE}"
-	wlctl -i $device band "${band:-b}"
 	wlctl -i $device radar 0
+
+	wlctl -i $device country "${country:-EU/13}"
+	wlctl -i $device band "${band:-b}"
 
 	# regulatory and spectrum management settings
 	case "$doth" in
@@ -637,24 +636,38 @@ set_wifi_device() {
 		;;
 	esac
 
-	# set HW mode, bandwidth and rate
-	wlctl -i $device nmode -1
+	# set HW bandwidth and mode
 	wlctl -i $device mimo_preamble 2
 	wlctl -i $device mimo_bw_cap 0
 	wlctl -i $device bw_cap 2g 0x1
 	wlctl -i $device bw_cap 5g 0x3
 	wlctl -i $device obss_coex 1
+
 	wlctl -i $device gmode 1
 	wlctl -i $device gmode_protection 1
 	wlctl -i $device gmode_protection_override -1
 	wlctl -i $device gmode_protection_control 2
+	wlctl -i $device nmode -1
+	wlctl -i $device nreqd 0
 	wlctl -i $device nmode_protection_override -1
 	wlctl -i $device protection_control 2
-	wlctl -i $device nreqd 0
-	wlctl -i $device rate 0
-	wlctl -i $device bg_rate 0
-	wlctl -i $device mrate -1
-	wlctl -i $device bg_mrate -1
+
+	case "$bandwidth" in
+		80)
+			wlctl -i $device mimo_bw_cap 2
+			wlctl -i $device bw_cap 2g 0x1
+			wlctl -i $device bw_cap 5g 0x7
+		;;
+		40)
+			wlctl -i $device mimo_bw_cap 2
+			wlctl -i $device bw_cap 2g 0x3
+			wlctl -i $device bw_cap 5g 0x3
+		;;
+		20)
+			wlctl -i $device bw_cap 2g 0x1
+			wlctl -i $device bw_cap 5g 0x1
+		;;
+	esac
 
 	case "$bandwidth" in
 		80)
@@ -676,41 +689,41 @@ set_wifi_device() {
 	case "$hwmode" in
 		*a)
 			wlctl -i $device nmode 0
-			wlctl -i $device rate auto
 		;;
 		*b)
 			wlctl -i $device nmode 0
 			wlctl -i $device gmode 0
-			wlctl -i $device rate "${brate:-auto}"
 		;;
 		*bg)
 			wlctl -i $device gmode 1
-			wlctl -i $device rate "${grate:-auto}"
 		;;
 		*g)
 			wlctl -i $device gmode 2
-			wlctl -i $device rate "${grate:-auto}"
 		;;
 		*gst)
 			wlctl -i $device gmode 4
-			wlctl -i $device rate "${grate:-auto}"
 		;;
 		*lrs)
 			wlctl -i $device gmode 5
-			wlctl -i $device rate "${grate:-auto}"
 		;;
 		*n)
 			wlctl -i $device nmode 1
 			wlctl -i $device nreqd 1
-			wlctl -i $device nrate "${nrate:-auto}"
 		;;
 		*ac)
 			wlctl -i $device nmode 3
 			wlctl -i $device nreqd 1
-			wlctl -i $device nrate "${nrate:-auto}"
 		;;
 	esac
+
+	# set rate
 	wlctl -i $device rateset "${rateset:-default}"
+	wlctl -i $device rate "${rate:-0}"
+	wlctl -i $device bg_rate 0
+	wlctl -i $device mrate 0
+	wlctl -i $device bg_mrate 0
+
+	# set rifs
 	wlctl -i $device rifs "${rifs:-0}"
 	wlctl -i $device rifs_advert "${rifs_advert:-0}"
 
@@ -1008,3 +1021,4 @@ case "$1" in
 esac
 
 nvram set wlmngr=done
+
