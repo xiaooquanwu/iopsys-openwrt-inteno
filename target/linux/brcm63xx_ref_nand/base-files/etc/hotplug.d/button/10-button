@@ -9,6 +9,7 @@ case "$ACTION" in
                 ubus call leds set '{ "state": "test"}'
                 printf "\n\n*** Restore to default settings ***\n\n" > /dev/console
 		rm -rf /rom/overlay/*
+		rm -rf /rom/etc/adsl/adsl_phy.bin
 		reboot
         }
         [ "ecobutton" == "$INTERFACE" ] && {
