@@ -641,7 +641,7 @@ set_wifi_device() {
 	wlctl -i $device mimo_bw_cap 0
 	wlctl -i $device bw_cap 2g 0x1
 	wlctl -i $device bw_cap 5g 0x3
-	wlctl -i $device obss_coex 1
+	wlctl -i $device obss_coex "${obss_coex:-1}"
 
 	wlctl -i $device gmode 1
 	wlctl -i $device gmode_protection 1
@@ -651,23 +651,6 @@ set_wifi_device() {
 	wlctl -i $device nreqd 0
 	wlctl -i $device nmode_protection_override -1
 	wlctl -i $device protection_control 2
-
-	case "$bandwidth" in
-		80)
-			wlctl -i $device mimo_bw_cap 2
-			wlctl -i $device bw_cap 2g 0x1
-			wlctl -i $device bw_cap 5g 0x7
-		;;
-		40)
-			wlctl -i $device mimo_bw_cap 2
-			wlctl -i $device bw_cap 2g 0x3
-			wlctl -i $device bw_cap 5g 0x3
-		;;
-		20)
-			wlctl -i $device bw_cap 2g 0x1
-			wlctl -i $device bw_cap 5g 0x1
-		;;
-	esac
 
 	case "$bandwidth" in
 		80)
@@ -814,7 +797,7 @@ set_wifi_device() {
 
 generate_wireless_config() {
 	local wls="wl0 wl1"
-	local bands band country
+	local bands band bwidth country hwmode
 	local BMAC=$(cat /proc/nvram/BaseMacAddr | tr '[a-z]' '[A-Z]')
 	BMAC=${BMAC// /}
 	local BSSID=$(printf "%X\n" $((0x$BMAC + 2)))
@@ -831,47 +814,52 @@ generate_wireless_config() {
 		if wlctl -i $wl ap >/dev/null 2>&1; then
 			if ! uci get wireless.$wl >/dev/null 2>&1; then
 				if $(is_5g $wl); then
+					country="EU/13"
 					band="a"
-					country="EU/13"
+					bwidth="40"
+					hwmode="11ac"
 				else
-					band="b"
 					country="EU/13"
+					band="b"
+					bwidth="20"
+					hwmode="auto"
 				fi
 				cat >> /etc/config/wireless <<EOF
-config 'wifi-device' '$wl'
-        option 'type' 'broadcom'
-        option 'channel' 'auto'
-        option 'scantimer' '15'
-        option 'hwmode' 'auto'
-        option 'country' '$country'
-        option 'wmm' '1'
-        option 'wmm_noack' '0'
-        option 'wmm_apsd' '0'
-        option 'txpower' '100'
-        option 'rateset' 'default'
-        option 'frag' '2346'
-        option 'rts' '2347'
-        option 'dtim_period' '1'
-        option 'beacon_int' '100'
-        option 'rxchainps' '0'
-        option 'rxchainps_qt' '10'
-        option 'rxchainps_pps' '10'
-        option 'band' '$band'
-        option 'rifs' '0'
-        option 'rifs_advert' '0'
-        option 'doth' '0'
+config wifi-device '$wl'
+	option type 'broadcom'
+	option country '$country'
+	option band '$band'
+	option bandwidth '$bwidth'
+	option hwmode '$hwmode'
+	option channel 'auto'
+	option scantimer '15'
+	option wmm '1'
+	option wmm_noack '0'
+	option wmm_apsd '0'
+	option txpower '100'
+	option rateset 'default'
+	option frag '2346'
+	option rts '2347'
+	option dtim_period '1'
+	option beacon_int '100'
+	option rxchainps '0'
+	option rxchainps_qt '10'
+	option rxchainps_pps '10'
+	option rifs '0'
+	option rifs_advert '0'
+	option doth '0'
 
-config 'wifi-iface'
-        option 'device' '$wl'
-        option 'network' 'lan'
-        option 'mode' 'ap'
-        option 'ssid' 'Inteno-$BSSID4'
-        option 'encryption' 'pskmixedpsk2'
-        option 'key' '$WPAKEY'
-        option 'gtk_rekey' '3600'
-        option 'macfilter' '0'
-        option 'wps_pbc' '1'
-        option 'wmf_bss_enable' '1'
+config wifi-iface
+	option device '$wl'
+	option network 'lan'
+	option mode 'ap'
+	option ssid 'Inteno-$BSSID4'
+	option encryption 'pskmixedpsk2'
+	option key '$WPAKEY'
+	option gtk_rekey '3600'
+	option macfilter '0'
+	option wps_pbc '1'
+	option wmf_bss_enable '1'
 
 EOF
 			fi
