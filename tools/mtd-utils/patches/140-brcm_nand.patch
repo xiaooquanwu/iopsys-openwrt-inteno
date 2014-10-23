@@ -110,7 +110,7 @@
 +		un.magic    = cpu_to_je16(JFFS2_MAGIC_BITMASK);
 +		un.nodetype = cpu_to_je16(JFFS2_NODETYPE_PADDING);
 +		un.totlen   = cpu_to_je32(amt_left);
-+		un.hdr_crc  = cpu_to_je32(crc32(0, &un, sizeof(struct jffs2_unknown_node)-4));
++		un.hdr_crc  = cpu_to_je32(mtd_crc32(0, &un, sizeof(struct jffs2_unknown_node)-4));
 +
 +		full_write(out_fd, &un, sizeof(un));
 +	}
