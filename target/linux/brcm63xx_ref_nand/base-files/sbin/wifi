@@ -316,7 +316,7 @@ set_wifi_iface() {
 		}
 
 		# set WMF
-		wlctl -i $iface wmf_bss_enable "${wmf_bss_enable:-1}" || dhdctl -i $iface wfd "${wmf_bss_enable:-1}"
+		wlctl -i $iface wmf_bss_enable "${wmf_bss_enable:-1}" || dhdctl -i $iface wmf_bss_enable "${wmf_bss_enable:-1}"
 
 		# set WME
 		wlctl -i $iface wme_bss_disable "${wmm_bss_disable:-0}"
@@ -595,6 +595,9 @@ set_wifi_device() {
 	wlctl -i $device stbc_tx -1
 	wlctl -i $device fcache 1 || dhdctl -i $device fcache 1
 	wlctl -i $device wnm 0x103
+
+	# Disable DHD PKTC
+	dhdctl -i $device pktc 0
 
 	# WDS Settings
 	wlctl -i $device wds none
