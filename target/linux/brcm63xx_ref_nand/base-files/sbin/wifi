@@ -652,6 +652,7 @@ set_wifi_device() {
 	wlctl -i $device gmode_protection_control 2
 	wlctl -i $device nmode -1
 	wlctl -i $device nreqd 0
+	wlctl -i $device vhtmode 0
 	wlctl -i $device nmode_protection_override -1
 	wlctl -i $device protection_control 2
 
@@ -681,9 +682,11 @@ set_wifi_device() {
 			wlctl -i $device gmode 0
 		;;
 		*bg)
+			wlctl -i $device nmode 0
 			wlctl -i $device gmode 1
 		;;
 		*g)
+			wlctl -i $device nmode 0
 			wlctl -i $device gmode 2
 		;;
 		*gst)
@@ -699,6 +702,7 @@ set_wifi_device() {
 		*ac)
 			wlctl -i $device nmode 3
 			wlctl -i $device nreqd 1
+			wlctl -i $device vhtmode 1
 		;;
 	esac
 
