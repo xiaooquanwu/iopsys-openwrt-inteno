@@ -6,11 +6,6 @@ START=98
 SERVICE_DAEMONIZE=1
 SERVICE_WRITE_PID=1
 SERVICE_PID_FILE=/var/run/sysntpd.pid
-cwmp_ntpcache() {
-        [ -f /usr/sbin/freecwmp ] && {
-                ps -w | grep freecwmp | grep InternetGatewayDevice.Time >/dev/null || freecwmp get cache InternetGatewayDevice.Time. &
-        }
-}
 
 start() {
 	local peers
@@ -35,7 +30,6 @@ start() {
 	if [ "$args" != "-n" ]; then
 		service_start /usr/sbin/ntpd $args
 	fi
-	cwmp_ntpcache
 }
 
 stop() {
