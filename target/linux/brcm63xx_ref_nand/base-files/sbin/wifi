@@ -960,6 +960,7 @@ case "$1" in
 			ledctl eco off
 		else
 			ledctl eco on
+			nvram set wlmngr=done
 			exit
 		fi
 
