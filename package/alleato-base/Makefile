@@ -2,11 +2,11 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=alleato-base
 
-PKG_VERSION:=14.41.2
+PKG_VERSION:=14.46.0
 PKG_RELEASE=$(PKG_SOURCE_VERSION)
 PKG_SOURCE_URL:=git@iopsys.inteno.se:alleato_base.git
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=984f3d1e926f525cdfff722df28dc64356a407df
+PKG_SOURCE_VERSION:=dcc6c901bc2f17a831f8118483f84109bb981bd3
 
 PKG_MAINTAINER:=Martin Assarsson, ALLEATO
 
@@ -86,6 +86,13 @@ define Package/telia-rules
   CATEGORY:=Utilities
   DEPENDS:=+alleato3
   TITLE:=Alleato telia rules
+endef
+
+define Package/nightalarm
+  SECTION:=utils
+  CATEGORY:=Utilities
+  DEPENDS:=+alleato3
+  TITLE:=Alleato night alarm
 endef
 
 define Package/ubus-kicker
@@ -169,6 +176,14 @@ define Package/telia-rules/install
 	$(INSTALL_DIR) $(1)/etc/init.d $(1)/usr/mqttrules $(1)/etc/alleato
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/init.d/telia-rules $(1)/etc/init.d/telia-rules
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/telia-rules $(1)/usr/mqttrules/telia-rules
+	$(INSTALL_DATA) $(PKG_BUILD_DIR)/data/telia.json $(1)/etc/alleato/telia.json
+endef
+
+define Package/nightalarm/install
+	$(INSTALL_DIR) $(1)/etc/init.d $(1)/usr/mqttrules $(1)/etc/alleato
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/init.d/nightalarm $(1)/etc/init.d/nightalarm
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/nightalarm $(1)/usr/mqttrules/nightalarm
+	$(INSTALL_DATA) $(PKG_BUILD_DIR)/data/night_alarm.json $(1)/etc/alleato/night_alarm.json
 endef
 
 define Package/ubus-kicker/install
