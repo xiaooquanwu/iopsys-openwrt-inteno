@@ -2390,6 +2390,7 @@ CONFIG_PACKAGE_minidlna=y
 # CONFIG_PACKAGE_teliasafety-misc is not set
 # CONFIG_PACKAGE_ubus-kicker is not set
 # CONFIG_PACKAGE_mqttnagios is not set
+# CONFIG_PACKAGE_nightalarm is not set
 
 #
 # Boot Loaders
