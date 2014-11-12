@@ -219,4 +219,5 @@ $(eval $(call BuildPackage,all-omc))
 $(eval $(call BuildPackage,telia-rules))
 $(eval $(call BuildPackage,ubus-kicker))
 $(eval $(call BuildPackage,mqttnagios))
+$(eval $(call BuildPackage,nightalarm))
 
