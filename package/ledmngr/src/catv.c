@@ -25,6 +25,47 @@ struct catv_handler
 
 static struct catv_handler *pcatv;
 
+void catv_get_type(struct blob_buf *b)
+{
+    char buf[12],*s;
+    int type;
+    memset(buf, 0, sizeof(buf));
+    type = i2c_smbus_read_byte_data(pcatv->i2c_a0,32);
+
+    switch (type) {
+    case 0:
+        s = "CATV Receiver";
+        break;
+    case 1:
+        s = "RFoG";
+        break;
+    case 2:
+        s = "Satelite Fiber";
+        break;
+    case 3:
+        s = "Fiber Node";
+        break;
+    default:
+        s="Error reading data";
+    }
+
+    blobmsg_add_string(b, "Type", s);
+
+}
+static int catv_get_type_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
+                                   struct ubus_request_data *req, const char *method,
+                                   struct blob_attr *msg)
+{
+    struct blob_buf b;
+
+    memset(&b, 0, sizeof(b));
+    blob_buf_init(&b, 0);
+    catv_get_type(&b);
+    ubus_send_reply(ubus_ctx, req, b.head);
+
+    return 0;
+}
+
 
 void catv_get_partnum(struct blob_buf *b)
 {
@@ -68,6 +109,29 @@ static int catv_get_vendor_method(struct ubus_context *ubus_ctx, struct ubus_obj
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
     catv_get_vendor(&b);
+    ubus_send_reply(ubus_ctx, req, b.head);
+
+    return 0;
+}
+
+void catv_get_vendor_partnum(struct blob_buf *b)
+{
+    char buf[20];
+    memset(buf, 0, sizeof(buf));
+    i2c_smbus_read_i2c_block_data(pcatv->i2c_a0, 33, 20, (__u8*)buf);
+
+    blobmsg_add_string(b, "Vendor part number",buf );
+
+}
+static int catv_get_vendor_partnum_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
+                                   struct ubus_request_data *req, const char *method,
+                                   struct blob_attr *msg)
+{
+    struct blob_buf b;
+
+    memset(&b, 0, sizeof(b));
+    blob_buf_init(&b, 0);
+    catv_get_vendor_partnum(&b);
     ubus_send_reply(ubus_ctx, req, b.head);
 
     return 0;
@@ -156,9 +220,11 @@ static int catv_get_all_method(struct ubus_context *ubus_ctx, struct ubus_object
 
     catv_get_partnum(&b);
     catv_get_vendor(&b);
+    catv_get_vendor_partnum(&b);
     catv_get_revision(&b);
     catv_get_serial(&b);
     catv_get_date(&b);
+    catv_get_type(&b);
 
     ubus_send_reply(ubus_ctx, req, b.head);
 
@@ -166,8 +232,10 @@ static int catv_get_all_method(struct ubus_context *ubus_ctx, struct ubus_object
 }
 
 static const struct ubus_method catv_methods[] = {
+    { .name = "type",   .handler = catv_get_type_method},
     { .name = "partnumber",   .handler = catv_get_partnum_method },
     { .name = "vendor",   .handler = catv_get_vendor_method },
+    { .name = "vendornumber",   .handler = catv_get_vendor_partnum_method },
     { .name = "serial",   .handler = catv_get_serial_method },
     { .name = "revision", .handler = catv_get_revision_method },
     { .name = "date", .handler = catv_get_date_method },
