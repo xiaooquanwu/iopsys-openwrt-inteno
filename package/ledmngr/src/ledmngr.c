@@ -39,6 +39,10 @@
 #include <board.h>
 #include "ucix.h"
 
+#include "i2c.h"
+#include "log.h"
+#include "catv.h"
+
 static struct ubus_context *ubus_ctx = NULL;
 static struct blob_buf b;
 
@@ -47,14 +51,6 @@ static struct button_configuration* butt_cfg;
 static struct uci_context *uci_ctx = NULL;
 
 int fd;
-extern int daemonize;
-
-#define DEBUG_PRINT_RAW(...) if (!daemonize) fprintf( stderr, __VA_ARGS__ );
-#define DEBUG_PRINT(fmt, args...)                               \
-    do {                                                        \
-        if (!daemonize)                                         \
-            fprintf( stderr,"%-20s: " fmt , __func__, ##args);  \
-    } while(0)
 
 #define LED_FUNCTIONS 14
 #define MAX_LEDS 20
@@ -358,47 +354,6 @@ struct i2c_touch i2c_touch_list[] = {
 
 static void i2c_touch_reset_handler(struct uloop_timeout *timeout);
 static struct uloop_timeout i2c_touch_reset_timer = { .cb = i2c_touch_reset_handler };
-
-void dump_i2c(int fd,int start,int stop)
-{
-    int i;
-    int res;
-
-    for (i=start ; i < stop; i++) {
-        res = i2c_smbus_read_byte_data(fd,i);
-        if (res < 0){perror("i2c error\n");}
-        DEBUG_PRINT("/dev/i2c-0 READ %d = 0x%02x\n",i,(unsigned char)res);
-    }
-}
-
-static int i2c_open_dev (const char *bus, int addr, unsigned long needed)
-{
-    int fd = open(bus, O_RDWR);
-    if (fd < 0) {
-        syslog(LOG_INFO,"%s: could not open /dev/i2c-0\n",__func__);
-        return -1;
-    }
-    if (ioctl(fd, I2C_SLAVE, addr) < 0) {
-        syslog(LOG_INFO,"%s: could not set address %x for i2c chip\n",
-               __func__, addr);
-    error:
-        close (fd);
-        return -1;
-    }
-    if (needed) {
-        unsigned long funcs;
-        if (ioctl(fd, I2C_FUNCS, &funcs) < 0) {
-            syslog(LOG_INFO,"%s: could not get I2C_FUNCS\n",__func__);
-            goto error;
-        }
-        if ( (funcs & needed) != needed) {
-            syslog(LOG_INFO,"%s: lacking I2C capabilities, have %lx, need %lx\n",
-                   __func__, funcs, needed);
-            goto error;
-        }
-    }
-    return fd;
-}
 
 static int init_i2c_touch()
 {
@@ -2721,6 +2676,7 @@ static int load_cfg_file()
 
 int ledmngr(void) {
     const char *ubus_socket = NULL;
+    struct catv_handler *catv_h;
 
     open_ioctl();
 
@@ -2738,6 +2694,11 @@ int ledmngr(void) {
     butt_cfg = get_button_config();
 
     init_i2c_sfp();
+
+    catv_h = catv_init("/dev/i2c-0",0x51);
+
+    if(catv_h == 0)
+        DEBUG_PRINT("no catv device found \n");
 
     /* initialize ubus */
     DEBUG_PRINT("initialize ubus\n");
