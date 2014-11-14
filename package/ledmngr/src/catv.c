@@ -25,6 +25,30 @@ struct catv_handler
 
 static struct catv_handler *pcatv;
 
+
+void catv_get_partnum(struct blob_buf *b)
+{
+    char buf[12];
+    memset(buf, 0, sizeof(buf));
+    i2c_smbus_read_i2c_block_data(pcatv->i2c_a0, 53, 12, (__u8*)buf);
+
+    blobmsg_add_string(b, "Part number",buf );
+
+}
+static int catv_get_partnum_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
+                                   struct ubus_request_data *req, const char *method,
+                                   struct blob_attr *msg)
+{
+    struct blob_buf b;
+
+    memset(&b, 0, sizeof(b));
+    blob_buf_init(&b, 0);
+    catv_get_partnum(&b);
+    ubus_send_reply(ubus_ctx, req, b.head);
+
+    return 0;
+}
+
 void catv_get_revision(struct blob_buf *b)
 {
     char buf[4];
@@ -80,6 +104,7 @@ static int catv_get_all_method(struct ubus_context *ubus_ctx, struct ubus_object
     memset(&b, 0, sizeof(b));
     blob_buf_init (&b, 0);
 
+    catv_get_partnum(&b);
     catv_get_revision(&b);
     catv_get_serial(&b);
 
@@ -89,6 +114,7 @@ static int catv_get_all_method(struct ubus_context *ubus_ctx, struct ubus_object
 }
 
 static const struct ubus_method catv_methods[] = {
+    { .name = "partnumber",   .handler = catv_get_partnum_method },
     { .name = "serial",   .handler = catv_get_serial_method },
     { .name = "revision", .handler = catv_get_revision_method },
     { .name = "get-all",  .handler = catv_get_all_method },
