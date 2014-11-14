@@ -50,6 +50,8 @@ static struct leds_configuration* led_cfg;
 static struct button_configuration* butt_cfg;
 static struct uci_context *uci_ctx = NULL;
 
+struct catv_handler *catv_h;
+
 int fd;
 
 #define LED_FUNCTIONS 14
@@ -2570,6 +2572,11 @@ static void server_main(struct leds_configuration* led_cfg)
                 DEBUG_PRINT("Failed to add sfp object: %s\n", ubus_strerror(ret));
         }
 
+    if (catv_h){
+        catv_ubus_populate(catv_h, ubus_ctx);
+    }
+
+
     uloop_timeout_set(&blink_inform_timer, 100);
 
     if (i2c_touch)
@@ -2676,7 +2683,6 @@ static int load_cfg_file()
 
 int ledmngr(void) {
     const char *ubus_socket = NULL;
-    struct catv_handler *catv_h;
 
     open_ioctl();
 

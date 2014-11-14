@@ -15,10 +15,46 @@
 #include "i2c.h"
 #include "catv.h"
 
+#include "libubus.h"
+
 struct catv_handler
 {
     int i2c_fd;
 };
+
+static int catv_get_all_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
+                               struct ubus_request_data *req, const char *method,
+                               struct blob_attr *msg)
+{
+    struct blob_buf b;
+
+    blob_buf_init (&b, 0);
+    blobmsg_add_string(&b, "Everything", "42");
+    ubus_send_reply(ubus_ctx, req, b.head);
+
+    return 0;
+}
+
+static const struct ubus_method catv_methods[] = {
+    { .name = "get-all", .handler = catv_get_all_method },
+};
+
+static struct ubus_object_type catv_type =
+    UBUS_OBJECT_TYPE("catv", catv_methods);
+
+
+static struct ubus_object catv_object = {
+    .name = "catv", .type = &catv_type,
+    .methods = catv_methods, ARRAY_SIZE(catv_methods) };
+
+int catv_ubus_populate(struct catv_handler *h, struct ubus_context *ubus_ctx)
+{
+    int ret;
+
+    ret = ubus_add_object (ubus_ctx, &catv_object);
+
+    return 0;
+}
 
 struct catv_handler * catv_init(char *i2c_bus,int i2c_addr)
 {
@@ -49,3 +85,4 @@ void catv_destroy(struct catv_handler *h)
 {
     free(h);
 }
+
