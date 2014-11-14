@@ -73,6 +73,30 @@ static int catv_get_vendor_method(struct ubus_context *ubus_ctx, struct ubus_obj
     return 0;
 }
 
+void catv_get_date(struct blob_buf *b)
+{
+    char buf[8];
+    memset(buf, 0, sizeof(buf));
+    i2c_smbus_read_i2c_block_data(pcatv->i2c_a0, 73, 8, (__u8*)buf);
+
+    blobmsg_add_string(b, "Date",buf );
+
+}
+
+static int catv_get_date_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
+                                   struct ubus_request_data *req, const char *method,
+                                   struct blob_attr *msg)
+{
+    struct blob_buf b;
+
+    memset(&b, 0, sizeof(b));
+    blob_buf_init(&b, 0);
+    catv_get_date(&b);
+    ubus_send_reply(ubus_ctx, req, b.head);
+
+    return 0;
+}
+
 
 
 void catv_get_revision(struct blob_buf *b)
@@ -134,6 +158,7 @@ static int catv_get_all_method(struct ubus_context *ubus_ctx, struct ubus_object
     catv_get_vendor(&b);
     catv_get_revision(&b);
     catv_get_serial(&b);
+    catv_get_date(&b);
 
     ubus_send_reply(ubus_ctx, req, b.head);
 
@@ -145,6 +170,7 @@ static const struct ubus_method catv_methods[] = {
     { .name = "vendor",   .handler = catv_get_vendor_method },
     { .name = "serial",   .handler = catv_get_serial_method },
     { .name = "revision", .handler = catv_get_revision_method },
+    { .name = "date", .handler = catv_get_date_method },
     { .name = "get-all",  .handler = catv_get_all_method },
 };
 
