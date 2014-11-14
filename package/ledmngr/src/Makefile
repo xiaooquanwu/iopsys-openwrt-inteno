@@ -1,7 +1,7 @@
 # Makefile for ledmngr
 
 CC = gcc
-CFLAGS += -Wall
+CFLAGS += -Wall -g
 CFLAGS += -I$(STAGING_DIR)/usr/include/bcm963xx/shared/opensource/include/bcm963xx/
 CFLAGS += -I$(STAGING_DIR)/usr/include/bcm963xx/bcmdrivers/opensource/include/bcm963xx/
 OBJS = ucix.o brcmdaemon.o ledmngr.o smbus.o catv.o i2c.o

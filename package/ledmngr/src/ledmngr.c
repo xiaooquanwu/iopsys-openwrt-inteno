@@ -2701,7 +2701,7 @@ int ledmngr(void) {
 
     init_i2c_sfp();
 
-    catv_h = catv_init("/dev/i2c-0",0x51);
+    catv_h = catv_init("/dev/i2c-0", 0x50, 0x51);
 
     if(catv_h == 0)
         DEBUG_PRINT("no catv device found \n");

@@ -19,8 +19,57 @@
 
 struct catv_handler
 {
-    int i2c_fd;
+    int i2c_a0;
+    int i2c_a2;
 };
+
+static struct catv_handler *pcatv;
+
+void catv_get_revision(struct blob_buf *b)
+{
+    char buf[4];
+    memset(buf, 0, sizeof(buf));
+    i2c_smbus_read_i2c_block_data(pcatv->i2c_a0, 53, 4, (__u8*)buf);
+
+    blobmsg_add_string(b, "Revision",buf );
+
+}
+static int catv_get_revision_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
+                                  struct ubus_request_data *req, const char *method,
+                                  struct blob_attr *msg)
+{
+    struct blob_buf b;
+
+    memset(&b, 0, sizeof(b));
+    blob_buf_init(&b, 0);
+    catv_get_revision(&b);
+    ubus_send_reply(ubus_ctx, req, b.head);
+
+    return 0;
+}
+
+static void catv_get_serial(struct blob_buf *b)
+{
+    char buf[16];
+    memset(buf, 0, sizeof(buf));
+
+    i2c_smbus_read_i2c_block_data(pcatv->i2c_a0, 57, 16, (__u8*)buf);
+    blobmsg_add_string(b, "Serial",buf );
+}
+
+static int catv_get_serial_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
+                                  struct ubus_request_data *req, const char *method,
+                                  struct blob_attr *msg)
+{
+    struct blob_buf b;
+
+    memset(&b, 0, sizeof(b));
+    blob_buf_init(&b, 0);
+    catv_get_serial(&b);
+    ubus_send_reply(ubus_ctx, req, b.head);
+    return 0;
+}
+
 
 static int catv_get_all_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
                                struct ubus_request_data *req, const char *method,
@@ -28,15 +77,21 @@ static int catv_get_all_method(struct ubus_context *ubus_ctx, struct ubus_object
 {
     struct blob_buf b;
 
+    memset(&b, 0, sizeof(b));
     blob_buf_init (&b, 0);
-    blobmsg_add_string(&b, "Everything", "42");
+
+    catv_get_revision(&b);
+    catv_get_serial(&b);
+
     ubus_send_reply(ubus_ctx, req, b.head);
 
     return 0;
 }
 
 static const struct ubus_method catv_methods[] = {
-    { .name = "get-all", .handler = catv_get_all_method },
+    { .name = "serial",   .handler = catv_get_serial_method },
+    { .name = "revision", .handler = catv_get_revision_method },
+    { .name = "get-all",  .handler = catv_get_all_method },
 };
 
 static struct ubus_object_type catv_type =
@@ -56,7 +111,7 @@ int catv_ubus_populate(struct catv_handler *h, struct ubus_context *ubus_ctx)
     return 0;
 }
 
-struct catv_handler * catv_init(char *i2c_bus,int i2c_addr)
+struct catv_handler * catv_init(char *i2c_bus,int a0_addr,int a2_addr)
 {
     struct catv_handler *h;
 
@@ -67,22 +122,37 @@ struct catv_handler * catv_init(char *i2c_bus,int i2c_addr)
     if (!h)
         return NULL;
 
-    h->i2c_fd = i2c_open_dev(i2c_bus, i2c_addr,
+    h->i2c_a0 = i2c_open_dev(i2c_bus, a0_addr,
                              I2C_FUNC_SMBUS_READ_BYTE | I2C_FUNC_SMBUS_WRITE_BYTE);
 
-    if (h->i2c_fd == -1 ){
-        syslog(LOG_INFO,"Did not find any CATV device at %s address %x \n", i2c_bus, i2c_addr);
+    if (h->i2c_a0 == -1 ){
+        syslog(LOG_INFO,"Did not find any CATV device at %s address %x \n", i2c_bus, a0_addr);
         free(h);
         return 0;
     }
 
-    dump_i2c(h->i2c_fd,0,255);
+    h->i2c_a2 = i2c_open_dev(i2c_bus, a2_addr,
+                             I2C_FUNC_SMBUS_READ_BYTE | I2C_FUNC_SMBUS_WRITE_BYTE);
 
+    if (h->i2c_a2 == -1 ){
+        syslog(LOG_INFO,"Did not find any CATV device at %s address %x \n", i2c_bus, a2_addr);
+        close(h->i2c_a0);
+        free(h);
+        return 0;
+    }
+
+
+    dump_i2c(h->i2c_a0,0,255);
+    dump_i2c(h->i2c_a2,0,255);
+
+    pcatv = h;
     return h;
 }
 
 void catv_destroy(struct catv_handler *h)
 {
+    close(h->i2c_a0);
+    close(h->i2c_a2);
     free(h);
 }
 
