@@ -498,25 +498,25 @@ static void catv_get_vpdlimit(struct blob_buf *b)
     i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 16, 2, (__u8*)buf);
 
     vpd = 2.44/1024 * (short)(buf[0]<<8 | (buf[1] & 0xff)) ;
-    vpd = 10*log(vpd/(0.47*4.9)/resp);
+    vpd = 10*log(vpd/(0.47*4.9)/resp)/log(10);
     snprintf(buf, 15, "%2.1f", vpd);
     blobmsg_add_string(b, "VPD Hi Alarm", buf);
 
     i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 18, 2, (__u8*)buf);
     vpd = 2.44/1024 * (short)(buf[0]<<8 | (buf[1] & 0xff)) ;
-    vpd = 10*log(vpd/(0.47*4.9)/resp);
+    vpd = 10*log(vpd/(0.47*4.9)/resp)/log(10);
     snprintf(buf, 15, "%2.1f", vpd );
     blobmsg_add_string(b, "VPD Lo Alarm", buf);
 
     i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 20, 2, (__u8*)buf);
     vpd = 2.44/1024 * (short)(buf[0]<<8 | (buf[1] & 0xff)) ;
-    vpd = 10*log(vpd/(0.47*4.9)/resp);
+    vpd = 10*log(vpd/(0.47*4.9)/resp)/log(10);
     snprintf(buf, 15, "%2.1f", vpd );
     blobmsg_add_string(b, "VPD Hi Warning", buf);
 
     i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 22, 2, (__u8*)buf);
     vpd = 2.44/1024 * (short)(buf[0]<<8 | (buf[1] & 0xff)) ;
-    vpd = 10*log(vpd/(0.47*4.9)/resp);
+    vpd = 10*log(vpd/(0.47*4.9)/resp)/log(10);
     snprintf(buf, 15, "%2.1f", vpd );
     blobmsg_add_string(b, "VPD Lo Warning", buf);
 
@@ -654,6 +654,34 @@ static int catv_get_vcc_method(struct ubus_context *ubus_ctx, struct ubus_object
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
 }
+static void catv_get_vpd(struct blob_buf *b)
+{
+    char buf[15];
+    float vpd;
+    float resp;
+
+    resp = i2c_smbus_read_byte_data(pcatv->i2c_a0,84);
+    resp = resp * 0.01;
+
+    i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 62, 2, (__u8*)buf);
+    vpd = 2.44/1024 * (short)(buf[0]<<8 | (buf[1] & 0xff)) ;
+    vpd = 10*log(vpd/(0.47*4.9)/resp)/log(10);
+    snprintf(buf, 15, "%2.1f", vpd);
+    blobmsg_add_string(b, "VPD", buf);
+}
+
+static int catv_get_vpd_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
+                                     struct ubus_request_data *req, const char *method,
+                                     struct blob_attr *msg)
+{
+    struct blob_buf b;
+
+    memset(&b, 0, sizeof(b));
+    blob_buf_init(&b, 0);
+    catv_get_vpd(&b);
+    ubus_send_reply(ubus_ctx, req, b.head);
+    return 0;
+}
 
 
 static int catv_get_all_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
@@ -686,6 +714,7 @@ static int catv_get_all_method(struct ubus_context *ubus_ctx, struct ubus_object
     catv_get_firmware(&b);
     catv_get_temp(&b);
     catv_get_vcc(&b);
+    catv_get_vpd(&b);
 
     ubus_send_reply(ubus_ctx, req, b.head);
 
@@ -714,6 +743,7 @@ static const struct ubus_method catv_methods[] = {
     { .name = "firmware", .handler = catv_get_firmware_method },
     { .name = "temp", .handler = catv_get_temp_method },
     { .name = "vcc", .handler = catv_get_vcc_method },
+    { .name = "vpd", .handler = catv_get_vpd_method },
 
     { .name = "get-all",  .handler = catv_get_all_method },
 };
