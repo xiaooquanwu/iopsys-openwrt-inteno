@@ -408,32 +408,28 @@ static int catv_get_minoptical_method(struct ubus_context *ubus_ctx, struct ubus
 
 static void catv_get_templimit(struct blob_buf *b)
 {
-    int num;
     char buf[15];
     float temp;
 
-    i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 0, 2, (__u8*)buf);
-    temp = ((signed short)(buf[0]<<8 | buf[1]))/256.0;
+    i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 0, 1, (__u8*)buf);
+    temp = ((signed short)(buf[0]<<8 | (buf[1] &0xff) ))/256.0;
     snprintf(buf, 15, "%3.4f", temp );
     blobmsg_add_string(b, "Temp Hi Alarm", buf);
 
-    i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 2, 4, (__u8*)buf);
-    temp = ((signed short)(buf[0]<<8 | buf[1]))/256.0;
+    i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 2, 3, (__u8*)buf);
+    temp = ((signed short)(buf[0]<<8 | (buf[1] &0xff) ))/256.0;
     snprintf(buf, 15, "%3.4f", temp );
     blobmsg_add_string(b, "Temp Lo Alarm", buf);
 
-    i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 4, 6, (__u8*)buf);
-    temp = ((signed short)(buf[0]<<8 | buf[1]))/256.0;
+    i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 4, 4, (__u8*)buf);
+    temp = ((signed short)(buf[0]<<8 | (buf[1] &0xff) ))/256.0;
     snprintf(buf, 15, "%3.4f", temp );
     blobmsg_add_string(b, "Temp Hi Warning", buf);
 
-    i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 6, 8, (__u8*)buf);
-    temp = ((signed short)(buf[0]<<8 | buf[1]))/256.0;
+    i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 6, 7, (__u8*)buf);
+    temp = ((signed short)(buf[0]<<8 | (buf[1] &0xff) ))/256.0;
     snprintf(buf, 15, "%3.4f", temp );
     blobmsg_add_string(b, "Temp Lo Warning", buf);
-
-
-
 }
 
 static int catv_get_templimit_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
@@ -445,6 +441,47 @@ static int catv_get_templimit_method(struct ubus_context *ubus_ctx, struct ubus_
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
     catv_get_templimit(&b);
+    ubus_send_reply(ubus_ctx, req, b.head);
+    return 0;
+}
+
+
+static void catv_get_vcclimit(struct blob_buf *b)
+{
+    char buf[15];
+    float vcc;
+
+    i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 8, 9, (__u8*)buf);
+    vcc = 2.44 * (1 + (((unsigned short)(buf[0]<<8 | (buf[1] & 0xff) ))/512.0) );
+
+    snprintf(buf, 15, "%2.1f", vcc);
+    blobmsg_add_string(b, "VCC Hi Alarm", buf);
+
+    i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 10, 11, (__u8*)buf);
+    vcc = 2.44 * (1 + (((unsigned short)(buf[0]<<8 | (buf[1] & 0xff) ))/512.0) );
+    snprintf(buf, 15, "%2.1f", vcc );
+    blobmsg_add_string(b, "VCC Lo Alarm", buf);
+
+    i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 12, 13, (__u8*)buf);
+    vcc = 2.44 * (1 + (((unsigned short)(buf[0]<<8 | (buf[1] & 0xff) ))/512.0) );
+    snprintf(buf, 15, "%2.1f", vcc );
+    blobmsg_add_string(b, "VCC Hi Warning", buf);
+
+    i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 14, 15, (__u8*)buf);
+    vcc = 2.44 * (1 + (((unsigned short)(buf[0]<<8 | (buf[1] & 0xff) ))/512.0) );
+    snprintf(buf, 15, "%2.1f", vcc );
+    blobmsg_add_string(b, "VCC Lo Warning", buf);
+}
+
+static int catv_get_vcclimit_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
+                                     struct ubus_request_data *req, const char *method,
+                                     struct blob_attr *msg)
+{
+    struct blob_buf b;
+
+    memset(&b, 0, sizeof(b));
+    blob_buf_init(&b, 0);
+    catv_get_vcclimit(&b);
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
 }
@@ -474,6 +511,7 @@ static int catv_get_all_method(struct ubus_context *ubus_ctx, struct ubus_object
     catv_get_maxoptical(&b);
     catv_get_minoptical(&b);
     catv_get_templimit(&b);
+    catv_get_vcclimit(&b);
 
     ubus_send_reply(ubus_ctx, req, b.head);
 
@@ -495,8 +533,9 @@ static const struct ubus_method catv_methods[] = {
     { .name = "minoutput", .handler = catv_get_minoutput_method },
     { .name = "maxoptical", .handler = catv_get_maxoptical_method },
     { .name = "minoptical", .handler = catv_get_minoptical_method },
-
     { .name = "templimit", .handler = catv_get_templimit_method },
+
+    { .name = "vcclimit", .handler = catv_get_vcclimit_method },
 
 
     { .name = "get-all",  .handler = catv_get_all_method },
