@@ -765,6 +765,111 @@ static int catv_get_status_method(struct ubus_context *ubus_ctx, struct ubus_obj
     return 0;
 }
 
+static void catv_get_alarm(struct blob_buf *b)
+{
+    int status;
+
+    status = i2c_smbus_read_byte_data(pcatv->i2c_a2,74);
+
+    if (status & 0x01)
+        blobmsg_add_string(b, "Alarm temp HI","ON" );
+    else
+        blobmsg_add_string(b, "Alarm temp HI","OFF" );
+
+    if (status & 0x02)
+        blobmsg_add_string(b, "Alarm temp LO","ON" );
+    else
+        blobmsg_add_string(b, "Alarm temp LO","OFF" );
+
+    if (status & 0x04)
+        blobmsg_add_string(b, "Warning temp HI","ON" );
+    else
+        blobmsg_add_string(b, "Warning temp HI","OFF" );
+
+    if (status & 0x08)
+        blobmsg_add_string(b, "Warning temp LO","ON" );
+    else
+        blobmsg_add_string(b, "Warning temp LO","OFF" );
+
+    if (status & 0x10)
+        blobmsg_add_string(b, "Alarm VCC HI","ON" );
+    else
+        blobmsg_add_string(b, "Alarm VCC HI","OFF" );
+
+    if (status & 0x20)
+        blobmsg_add_string(b, "Alarm VCC LO","ON" );
+    else
+        blobmsg_add_string(b, "Alarm VCC LO","OFF" );
+
+    if (status & 0x40)
+        blobmsg_add_string(b, "Warning VCC HI","ON" );
+    else
+        blobmsg_add_string(b, "Warning VCC HI","OFF" );
+
+    if (status & 0x80)
+        blobmsg_add_string(b, "Warning VCC LO","ON" );
+    else
+        blobmsg_add_string(b, "Warning VCC LO","OFF" );
+
+
+    status = i2c_smbus_read_byte_data(pcatv->i2c_a2,75);
+
+    if (status & 0x01)
+        blobmsg_add_string(b, "Alarm VPD HI","ON" );
+    else
+        blobmsg_add_string(b, "Alarm VPD HI","OFF" );
+
+    if (status & 0x02)
+        blobmsg_add_string(b, "Alarm VPD LO","ON" );
+    else
+        blobmsg_add_string(b, "Alarm VPD LO","OFF" );
+
+    if (status & 0x04)
+        blobmsg_add_string(b, "Warning VPD HI","ON" );
+    else
+        blobmsg_add_string(b, "Warning VPD HI","OFF" );
+
+    if (status & 0x08)
+        blobmsg_add_string(b, "Warning VPD LO","ON" );
+    else
+        blobmsg_add_string(b, "Warning VPD LO","OFF" );
+
+    if (status & 0x10)
+        blobmsg_add_string(b, "Alarm RF HI","ON" );
+    else
+        blobmsg_add_string(b, "Alarm RF HI","OFF" );
+
+    if (status & 0x20)
+        blobmsg_add_string(b, "Alarm RF LO","ON" );
+    else
+        blobmsg_add_string(b, "Alarm RF LO","OFF" );
+
+    if (status & 0x40)
+        blobmsg_add_string(b, "Warning RF HI","ON" );
+    else
+        blobmsg_add_string(b, "Warning RF HI","OFF" );
+
+    if (status & 0x80)
+        blobmsg_add_string(b, "Warning RF LO","ON" );
+    else
+        blobmsg_add_string(b, "Warning RF LO","OFF" );
+
+
+}
+
+static int catv_get_alarm_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
+                                     struct ubus_request_data *req, const char *method,
+                                     struct blob_attr *msg)
+{
+    struct blob_buf b;
+
+    memset(&b, 0, sizeof(b));
+    blob_buf_init(&b, 0);
+    catv_get_alarm(&b);
+    ubus_send_reply(ubus_ctx, req, b.head);
+    return 0;
+}
+
 static int catv_get_all_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
                                struct ubus_request_data *req, const char *method,
                                struct blob_attr *msg)
@@ -798,6 +903,7 @@ static int catv_get_all_method(struct ubus_context *ubus_ctx, struct ubus_object
     catv_get_vpd(&b);
     catv_get_rf(&b);
     catv_get_status(&b);
+    catv_get_alarm(&b);
 
     ubus_send_reply(ubus_ctx, req, b.head);
 
@@ -829,6 +935,7 @@ static const struct ubus_method catv_methods[] = {
     { .name = "vpd", .handler = catv_get_vpd_method },
     { .name = "rf", .handler = catv_get_rf_method },
     { .name = "status", .handler = catv_get_status_method },
+    { .name = "alarm", .handler = catv_get_alarm_method },
 
     { .name = "get-all",  .handler = catv_get_all_method },
 };
