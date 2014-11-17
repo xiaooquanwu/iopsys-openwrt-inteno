@@ -250,7 +250,7 @@ static void catv_get_bandwidth(struct blob_buf *b)
     int type;
     char *s;
 
-    type = i2c_smbus_read_byte_data(pcatv->i2c_a0,81);
+    type = i2c_smbus_read_byte_data(pcatv->i2c_a0,82);
 
     switch (type) {
     case 0:
@@ -285,6 +285,29 @@ static int catv_get_bandwidth_method(struct ubus_context *ubus_ctx, struct ubus_
     return 0;
 }
 
+static void catv_get_wavelength(struct blob_buf *b)
+{
+    int num;
+    char buf[10];
+    num = i2c_smbus_read_byte_data(pcatv->i2c_a0,83);
+
+    snprintf(buf, 10, "%d nm",num*10 );
+    blobmsg_add_string(b, "Receiver wavelength",buf );
+}
+
+static int catv_get_wavelength_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
+                                     struct ubus_request_data *req, const char *method,
+                                     struct blob_attr *msg)
+{
+    struct blob_buf b;
+
+    memset(&b, 0, sizeof(b));
+    blob_buf_init(&b, 0);
+    catv_get_wavelength(&b);
+    ubus_send_reply(ubus_ctx, req, b.head);
+    return 0;
+}
+
 
 static int catv_get_all_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
                                struct ubus_request_data *req, const char *method,
@@ -304,6 +327,7 @@ static int catv_get_all_method(struct ubus_context *ubus_ctx, struct ubus_object
     catv_get_date(&b);
     catv_get_interface(&b);
     catv_get_bandwidth(&b);
+    catv_get_wavelength(&b);
 
     ubus_send_reply(ubus_ctx, req, b.head);
 
@@ -320,6 +344,7 @@ static const struct ubus_method catv_methods[] = {
     { .name = "date", .handler = catv_get_date_method },
     { .name = "interface", .handler = catv_get_interface_method },
     { .name = "bandwidth", .handler = catv_get_bandwidth_method },
+    { .name = "wavelength", .handler = catv_get_wavelength_method },
 
     { .name = "get-all",  .handler = catv_get_all_method },
 };
