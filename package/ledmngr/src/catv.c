@@ -654,6 +654,7 @@ static int catv_get_vcc_method(struct ubus_context *ubus_ctx, struct ubus_object
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
 }
+
 static void catv_get_vpd(struct blob_buf *b)
 {
     char buf[15];
@@ -679,6 +680,31 @@ static int catv_get_vpd_method(struct ubus_context *ubus_ctx, struct ubus_object
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
     catv_get_vpd(&b);
+    ubus_send_reply(ubus_ctx, req, b.head);
+    return 0;
+}
+
+static void catv_get_rf(struct blob_buf *b)
+{
+    char buf[15];
+    float rf;
+
+    i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 64, 2, (__u8*)buf);
+    rf = 2.44/1024.0 * (unsigned short)(buf[0]<<8 | (buf[1] & 0xff)) ;
+    rf = (rf + 0.9148)/ 0.0582;
+    snprintf(buf, 15, "%2.1f", rf);
+    blobmsg_add_string(b, "RF", buf);
+}
+
+static int catv_get_rf_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
+                                     struct ubus_request_data *req, const char *method,
+                                     struct blob_attr *msg)
+{
+    struct blob_buf b;
+
+    memset(&b, 0, sizeof(b));
+    blob_buf_init(&b, 0);
+    catv_get_rf(&b);
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
 }
@@ -715,6 +741,7 @@ static int catv_get_all_method(struct ubus_context *ubus_ctx, struct ubus_object
     catv_get_temp(&b);
     catv_get_vcc(&b);
     catv_get_vpd(&b);
+    catv_get_rf(&b);
 
     ubus_send_reply(ubus_ctx, req, b.head);
 
@@ -744,6 +771,7 @@ static const struct ubus_method catv_methods[] = {
     { .name = "temp", .handler = catv_get_temp_method },
     { .name = "vcc", .handler = catv_get_vcc_method },
     { .name = "vpd", .handler = catv_get_vpd_method },
+    { .name = "rf", .handler = catv_get_rf_method },
 
     { .name = "get-all",  .handler = catv_get_all_method },
 };
