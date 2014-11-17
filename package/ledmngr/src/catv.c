@@ -27,9 +27,9 @@ static struct catv_handler *pcatv;
 
 void catv_get_type(struct blob_buf *b)
 {
-    char buf[12],*s;
     int type;
-    memset(buf, 0, sizeof(buf));
+    char *s;
+
     type = i2c_smbus_read_byte_data(pcatv->i2c_a0,32);
 
     switch (type) {
@@ -69,7 +69,7 @@ static int catv_get_type_method(struct ubus_context *ubus_ctx, struct ubus_objec
 
 void catv_get_partnum(struct blob_buf *b)
 {
-    char buf[12];
+    char buf[12+1];
     memset(buf, 0, sizeof(buf));
     i2c_smbus_read_i2c_block_data(pcatv->i2c_a0, 0, 12, (__u8*)buf);
 
@@ -92,7 +92,7 @@ static int catv_get_partnum_method(struct ubus_context *ubus_ctx, struct ubus_ob
 
 void catv_get_vendor(struct blob_buf *b)
 {
-    char buf[20];
+    char buf[20+1];
     memset(buf, 0, sizeof(buf));
     i2c_smbus_read_i2c_block_data(pcatv->i2c_a0, 12, 20, (__u8*)buf);
 
@@ -116,7 +116,7 @@ static int catv_get_vendor_method(struct ubus_context *ubus_ctx, struct ubus_obj
 
 void catv_get_vendor_partnum(struct blob_buf *b)
 {
-    char buf[20];
+    char buf[20+1];
     memset(buf, 0, sizeof(buf));
     i2c_smbus_read_i2c_block_data(pcatv->i2c_a0, 33, 20, (__u8*)buf);
 
@@ -139,7 +139,7 @@ static int catv_get_vendor_partnum_method(struct ubus_context *ubus_ctx, struct 
 
 void catv_get_date(struct blob_buf *b)
 {
-    char buf[8];
+    char buf[8+1];
     memset(buf, 0, sizeof(buf));
     i2c_smbus_read_i2c_block_data(pcatv->i2c_a0, 73, 8, (__u8*)buf);
 
@@ -165,7 +165,7 @@ static int catv_get_date_method(struct ubus_context *ubus_ctx, struct ubus_objec
 
 void catv_get_revision(struct blob_buf *b)
 {
-    char buf[4];
+    char buf[4+1];
     memset(buf, 0, sizeof(buf));
     i2c_smbus_read_i2c_block_data(pcatv->i2c_a0, 53, 4, (__u8*)buf);
 
@@ -188,7 +188,7 @@ static int catv_get_revision_method(struct ubus_context *ubus_ctx, struct ubus_o
 
 static void catv_get_serial(struct blob_buf *b)
 {
-    char buf[16];
+    char buf[16+1];
     memset(buf, 0, sizeof(buf));
 
     i2c_smbus_read_i2c_block_data(pcatv->i2c_a0, 57, 16, (__u8*)buf);
@@ -208,6 +208,43 @@ static int catv_get_serial_method(struct ubus_context *ubus_ctx, struct ubus_obj
     return 0;
 }
 
+static void catv_get_interface(struct blob_buf *b)
+{
+    int type;
+    char *s;
+
+    type = i2c_smbus_read_byte_data(pcatv->i2c_a0,81);
+
+    switch (type) {
+    case 0:
+        s = "GPIO";
+        break;
+    case 1:
+        s = "I2C";
+        break;
+    case 2:
+        s = "SPI";
+        break;
+    default:
+        s="Error reading data";
+    }
+ 
+    blobmsg_add_string(b, "Interface",s );
+}
+
+static int catv_get_interface_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
+                                     struct ubus_request_data *req, const char *method,
+                                     struct blob_attr *msg)
+{
+    struct blob_buf b;
+
+    memset(&b, 0, sizeof(b));
+    blob_buf_init(&b, 0);
+    catv_get_interface(&b);
+    ubus_send_reply(ubus_ctx, req, b.head);
+    return 0;
+}
+
 
 static int catv_get_all_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
                                struct ubus_request_data *req, const char *method,
@@ -220,11 +257,12 @@ static int catv_get_all_method(struct ubus_context *ubus_ctx, struct ubus_object
 
     catv_get_partnum(&b);
     catv_get_vendor(&b);
+    catv_get_type(&b);
     catv_get_vendor_partnum(&b);
     catv_get_revision(&b);
     catv_get_serial(&b);
     catv_get_date(&b);
-    catv_get_type(&b);
+    catv_get_interface(&b);
 
     ubus_send_reply(ubus_ctx, req, b.head);
 
@@ -232,19 +270,21 @@ static int catv_get_all_method(struct ubus_context *ubus_ctx, struct ubus_object
 }
 
 static const struct ubus_method catv_methods[] = {
-    { .name = "type",   .handler = catv_get_type_method},
     { .name = "partnumber",   .handler = catv_get_partnum_method },
     { .name = "vendor",   .handler = catv_get_vendor_method },
+    { .name = "type",   .handler = catv_get_type_method},
     { .name = "vendornumber",   .handler = catv_get_vendor_partnum_method },
-    { .name = "serial",   .handler = catv_get_serial_method },
     { .name = "revision", .handler = catv_get_revision_method },
+    { .name = "serial",   .handler = catv_get_serial_method },
     { .name = "date", .handler = catv_get_date_method },
+
+    { .name = "interface", .handler = catv_get_interface_method },
+
     { .name = "get-all",  .handler = catv_get_all_method },
 };
 
 static struct ubus_object_type catv_type =
     UBUS_OBJECT_TYPE("catv", catv_methods);
-
 
 static struct ubus_object catv_object = {
     .name = "catv", .type = &catv_type,
@@ -256,7 +296,7 @@ int catv_ubus_populate(struct catv_handler *h, struct ubus_context *ubus_ctx)
 
     ret = ubus_add_object (ubus_ctx, &catv_object);
 
-    return 0;
+    return ret;
 }
 
 struct catv_handler * catv_init(char *i2c_bus,int a0_addr,int a2_addr)
