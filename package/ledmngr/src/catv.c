@@ -709,6 +709,61 @@ static int catv_get_rf_method(struct ubus_context *ubus_ctx, struct ubus_object 
     return 0;
 }
 
+static void catv_get_status(struct blob_buf *b)
+{
+    int status;
+
+    status = i2c_smbus_read_byte_data(pcatv->i2c_a2,73);
+
+    if (status & 0x01)
+        blobmsg_add_string(b, "Signal detect","ON" );
+    else
+        blobmsg_add_string(b, "Signal detect","OFF" );
+
+    if (status & 0x02)
+        blobmsg_add_string(b, "Interrupt","ON" );
+    else
+        blobmsg_add_string(b, "Interrupt","OFF" );
+
+    if (status & 0x04)
+        blobmsg_add_string(b, "RF enable","ON" );
+    else
+        blobmsg_add_string(b, "RF enable","OFF" );
+
+    if (status & 0x08)
+        blobmsg_add_string(b, "hold AGC","ON" );
+    else
+        blobmsg_add_string(b, "hold AGC","OFF" );
+
+    if (status & 0x10)
+        blobmsg_add_string(b, "47MHz ~ 1000MHz","ON" );
+    else
+        blobmsg_add_string(b, "47MHz ~ 1000MHz","OFF" );
+
+    if (status & 0x20)
+        blobmsg_add_string(b, "47MHz ~ 591MHz","ON" );
+    else
+        blobmsg_add_string(b, "47MHz ~ 591MHz","OFF" );
+
+    if (status & 0x40)
+        blobmsg_add_string(b, "47MHz ~ 431MHz","ON" );
+    else
+        blobmsg_add_string(b, "47MHz ~ 431MHz","OFF" );
+
+}
+
+static int catv_get_status_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
+                                     struct ubus_request_data *req, const char *method,
+                                     struct blob_attr *msg)
+{
+    struct blob_buf b;
+
+    memset(&b, 0, sizeof(b));
+    blob_buf_init(&b, 0);
+    catv_get_status(&b);
+    ubus_send_reply(ubus_ctx, req, b.head);
+    return 0;
+}
 
 static int catv_get_all_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
                                struct ubus_request_data *req, const char *method,
@@ -742,6 +797,7 @@ static int catv_get_all_method(struct ubus_context *ubus_ctx, struct ubus_object
     catv_get_vcc(&b);
     catv_get_vpd(&b);
     catv_get_rf(&b);
+    catv_get_status(&b);
 
     ubus_send_reply(ubus_ctx, req, b.head);
 
@@ -772,6 +828,7 @@ static const struct ubus_method catv_methods[] = {
     { .name = "vcc", .handler = catv_get_vcc_method },
     { .name = "vpd", .handler = catv_get_vpd_method },
     { .name = "rf", .handler = catv_get_rf_method },
+    { .name = "status", .handler = catv_get_status_method },
 
     { .name = "get-all",  .handler = catv_get_all_method },
 };
