@@ -18,11 +18,15 @@
 #include "log.h"
 
 #include "libubus.h"
+#include <uci_config.h>
+#include <uci.h>
+#include "ucix.h"
 
 struct catv_handler
 {
     int i2c_a0;
     int i2c_a2;
+    struct uci_context *ctx;
 };
 
 static struct catv_handler *pcatv;
@@ -751,12 +755,50 @@ static void catv_get_status(struct blob_buf *b)
         blobmsg_add_string(b, "47MHz ~ 431MHz","OFF" );
 
 }
+enum {
+    STATUS_RF_ENABLE
+};
+
+#ifndef ARRAY_SIZE
+#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+#endif
+
+static const struct blobmsg_policy state_policy[] = {
+    [STATUS_RF_ENABLE] = { .name = "RF enable", .type = BLOBMSG_TYPE_STRING },
+};
 
 static int catv_get_status_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
                                      struct ubus_request_data *req, const char *method,
                                      struct blob_attr *msg)
 {
     struct blob_buf b;
+    struct blob_attr *tb[ARRAY_SIZE(state_policy)];
+
+    blobmsg_parse(state_policy, ARRAY_SIZE(state_policy) , tb, blob_data(msg), blob_len(msg));
+
+    if (tb[STATUS_RF_ENABLE]) {
+        int status;
+        int on  = 0;
+        int off = 0;
+
+        if (0 == strncasecmp("off", blobmsg_data(tb[STATUS_RF_ENABLE]), 3) ){
+            off = 1;
+        }
+        if (0 == strncasecmp("on", blobmsg_data(tb[STATUS_RF_ENABLE]), 2) ){
+            on = 1;
+        }
+
+        if (on || off) {
+            status = i2c_smbus_read_byte_data(pcatv->i2c_a2,73);
+
+            if (on)
+                status = status | 0x4;
+            if (off)
+                status = status & ~0x4;
+
+            i2c_smbus_write_byte_data(pcatv->i2c_a2, 73, status);
+        }
+    }
 
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
@@ -986,9 +1028,14 @@ struct catv_handler * catv_init(char *i2c_bus,int a0_addr,int a2_addr)
         return 0;
     }
 
+    h->ctx = ucix_init_path("/etc/config", "catw");
 
-    dump_i2c(h->i2c_a0,0,255);
-    dump_i2c(h->i2c_a2,0,255);
+    if (NULL == h->ctx) {
+        syslog(LOG_INFO,"CATV config file not found /etc/config/catv\n");
+    }
+
+//    dump_i2c(h->i2c_a0,0,255);
+//    dump_i2c(h->i2c_a2,0,255);
 
     pcatv = h;
     return h;
