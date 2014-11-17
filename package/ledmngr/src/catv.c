@@ -535,6 +535,7 @@ static int catv_get_vpdlimit_method(struct ubus_context *ubus_ctx, struct ubus_o
     return 0;
 }
 
+
 static void catv_get_rflimit(struct blob_buf *b)
 {
     char buf[15];
@@ -579,6 +580,31 @@ static int catv_get_rflimit_method(struct ubus_context *ubus_ctx, struct ubus_ob
     return 0;
 }
 
+static void catv_get_firmware(struct blob_buf *b)
+{
+    char buf[15];
+    unsigned short version;
+
+    i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 56, 2, (__u8*)buf);
+
+    version = (unsigned short)(buf[0]<<8 | (buf[1] & 0xff)) ;
+    snprintf(buf, 15, "0x%04x", version);
+    blobmsg_add_string(b, "Firmware version", buf);
+}
+
+static int catv_get_firmware_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
+                                     struct ubus_request_data *req, const char *method,
+                                     struct blob_attr *msg)
+{
+    struct blob_buf b;
+
+    memset(&b, 0, sizeof(b));
+    blob_buf_init(&b, 0);
+    catv_get_firmware(&b);
+    ubus_send_reply(ubus_ctx, req, b.head);
+    return 0;
+}
+
 
 static int catv_get_all_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
                                struct ubus_request_data *req, const char *method,
@@ -607,6 +633,7 @@ static int catv_get_all_method(struct ubus_context *ubus_ctx, struct ubus_object
     catv_get_vcclimit(&b);
     catv_get_vpdlimit(&b);
     catv_get_rflimit(&b);
+    catv_get_firmware(&b);
 
     ubus_send_reply(ubus_ctx, req, b.head);
 
@@ -632,6 +659,7 @@ static const struct ubus_method catv_methods[] = {
     { .name = "vcclimit", .handler = catv_get_vcclimit_method },
     { .name = "vpdlimit", .handler = catv_get_vpdlimit_method },
     { .name = "rflimit", .handler = catv_get_rflimit_method },
+    { .name = "firmware", .handler = catv_get_firmware_method },
 
     { .name = "get-all",  .handler = catv_get_all_method },
 };
