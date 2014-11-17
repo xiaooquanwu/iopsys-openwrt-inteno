@@ -245,6 +245,46 @@ static int catv_get_interface_method(struct ubus_context *ubus_ctx, struct ubus_
     return 0;
 }
 
+static void catv_get_bandwidth(struct blob_buf *b)
+{
+    int type;
+    char *s;
+
+    type = i2c_smbus_read_byte_data(pcatv->i2c_a0,81);
+
+    switch (type) {
+    case 0:
+        s = "47MHz~870MHz";
+        break;
+    case 1:
+        s = "47MHz~1000MHz";
+        break;
+    case 2:
+        s = "54MHz~1000MHz";
+        break;
+    case 3:
+        s = "85MHz~1000MHz";
+        break;
+    default:
+        s="Error reading data";
+    }
+
+    blobmsg_add_string(b, "RF bandwidth",s );
+}
+
+static int catv_get_bandwidth_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
+                                     struct ubus_request_data *req, const char *method,
+                                     struct blob_attr *msg)
+{
+    struct blob_buf b;
+
+    memset(&b, 0, sizeof(b));
+    blob_buf_init(&b, 0);
+    catv_get_bandwidth(&b);
+    ubus_send_reply(ubus_ctx, req, b.head);
+    return 0;
+}
+
 
 static int catv_get_all_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
                                struct ubus_request_data *req, const char *method,
@@ -263,6 +303,7 @@ static int catv_get_all_method(struct ubus_context *ubus_ctx, struct ubus_object
     catv_get_serial(&b);
     catv_get_date(&b);
     catv_get_interface(&b);
+    catv_get_bandwidth(&b);
 
     ubus_send_reply(ubus_ctx, req, b.head);
 
@@ -277,8 +318,8 @@ static const struct ubus_method catv_methods[] = {
     { .name = "revision", .handler = catv_get_revision_method },
     { .name = "serial",   .handler = catv_get_serial_method },
     { .name = "date", .handler = catv_get_date_method },
-
     { .name = "interface", .handler = catv_get_interface_method },
+    { .name = "bandwidth", .handler = catv_get_bandwidth_method },
 
     { .name = "get-all",  .handler = catv_get_all_method },
 };
