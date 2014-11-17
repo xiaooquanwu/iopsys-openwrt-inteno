@@ -528,6 +528,52 @@ static int catv_get_vpdlimit_method(struct ubus_context *ubus_ctx, struct ubus_o
     return 0;
 }
 
+static void catv_get_rflimit(struct blob_buf *b)
+{
+    char buf[15];
+    float vpd;
+
+    printf("A\n");
+
+    i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 24, 2, (__u8*)buf);
+
+    vpd = 2.44/1024.0 * (unsigned short)(buf[0]<<8 | (buf[1] & 0xff)) ;
+    vpd = (vpd + 0.9148)/ 0.0582;
+    snprintf(buf, 15, "%2.1f", vpd);
+    blobmsg_add_string(b, "RF Hi Alarm", buf);
+
+    i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 26, 2, (__u8*)buf);
+    vpd = 2.44/1024.0 * (unsigned short)(buf[0]<<8 | (buf[1] & 0xff)) ;
+    vpd = (vpd + 0.9148)/ 0.0582;
+    snprintf(buf, 15, "%2.1f", vpd );
+    blobmsg_add_string(b, "RF Lo Alarm", buf);
+
+    i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 28, 2, (__u8*)buf);
+    vpd = 2.44/1024.0 * (unsigned short)(buf[0]<<8 | (buf[1] & 0xff)) ;
+    vpd = (vpd + 0.9148)/ 0.0582;
+snprintf(buf, 15, "%2.1f", vpd );
+    blobmsg_add_string(b, "RF Hi Warning", buf);
+
+    i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 30, 2, (__u8*)buf);
+    vpd = 2.44/1024.0 * (unsigned short)(buf[0]<<8 | (buf[1] & 0xff)) ;
+    vpd = (vpd + 0.9148)/ 0.0582;
+    snprintf(buf, 15, "%2.1f", vpd );
+    blobmsg_add_string(b, "RF Lo Warning", buf);
+}
+
+static int catv_get_rflimit_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
+                                     struct ubus_request_data *req, const char *method,
+                                     struct blob_attr *msg)
+{
+    struct blob_buf b;
+
+    memset(&b, 0, sizeof(b));
+    blob_buf_init(&b, 0);
+    catv_get_rflimit(&b);
+    ubus_send_reply(ubus_ctx, req, b.head);
+    return 0;
+}
+
 
 static int catv_get_all_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
                                struct ubus_request_data *req, const char *method,
@@ -555,6 +601,7 @@ static int catv_get_all_method(struct ubus_context *ubus_ctx, struct ubus_object
     catv_get_templimit(&b);
     catv_get_vcclimit(&b);
     catv_get_vpdlimit(&b);
+    catv_get_rflimit(&b);
 
     ubus_send_reply(ubus_ctx, req, b.head);
 
@@ -578,8 +625,8 @@ static const struct ubus_method catv_methods[] = {
     { .name = "minoptical", .handler = catv_get_minoptical_method },
     { .name = "templimit", .handler = catv_get_templimit_method },
     { .name = "vcclimit", .handler = catv_get_vcclimit_method },
-
     { .name = "vpdlimit", .handler = catv_get_vpdlimit_method },
+    { .name = "rflimit", .handler = catv_get_rflimit_method },
 
     { .name = "get-all",  .handler = catv_get_all_method },
 };
