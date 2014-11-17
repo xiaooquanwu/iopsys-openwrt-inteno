@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <syslog.h>
+#include <math.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -489,27 +490,33 @@ static void catv_get_vpdlimit(struct blob_buf *b)
 {
     char buf[15];
     float vpd;
+    float resp;
 
-    printf("A\n");
+    resp = i2c_smbus_read_byte_data(pcatv->i2c_a0,84);
+    resp = resp * 0.01;
 
     i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 16, 2, (__u8*)buf);
 
-    vpd = 0.1 * (short)(buf[0]<<8 | (buf[1] & 0xff)) ;
+    vpd = 2.44/1024 * (short)(buf[0]<<8 | (buf[1] & 0xff)) ;
+    vpd = 10*log(vpd/(0.47*4.9)/resp);
     snprintf(buf, 15, "%2.1f", vpd);
     blobmsg_add_string(b, "VPD Hi Alarm", buf);
 
     i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 18, 2, (__u8*)buf);
-    vpd = 0.1 * (short)(buf[0]<<8 | (buf[1] & 0xff)) ;
+    vpd = 2.44/1024 * (short)(buf[0]<<8 | (buf[1] & 0xff)) ;
+    vpd = 10*log(vpd/(0.47*4.9)/resp);
     snprintf(buf, 15, "%2.1f", vpd );
     blobmsg_add_string(b, "VPD Lo Alarm", buf);
 
     i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 20, 2, (__u8*)buf);
-    vpd = 0.1 * (short)(buf[0]<<8 | (buf[1] & 0xff)) ;
+    vpd = 2.44/1024 * (short)(buf[0]<<8 | (buf[1] & 0xff)) ;
+    vpd = 10*log(vpd/(0.47*4.9)/resp);
     snprintf(buf, 15, "%2.1f", vpd );
     blobmsg_add_string(b, "VPD Hi Warning", buf);
 
     i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 22, 2, (__u8*)buf);
-    vpd = 0.1 * (short)(buf[0]<<8 | (buf[1] & 0xff)) ;
+    vpd = 2.44/1024 * (short)(buf[0]<<8 | (buf[1] & 0xff)) ;
+    vpd = 10*log(vpd/(0.47*4.9)/resp);
     snprintf(buf, 15, "%2.1f", vpd );
     blobmsg_add_string(b, "VPD Lo Warning", buf);
 
@@ -533,8 +540,6 @@ static void catv_get_rflimit(struct blob_buf *b)
     char buf[15];
     float vpd;
 
-    printf("A\n");
-
     i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 24, 2, (__u8*)buf);
 
     vpd = 2.44/1024.0 * (unsigned short)(buf[0]<<8 | (buf[1] & 0xff)) ;
@@ -551,7 +556,7 @@ static void catv_get_rflimit(struct blob_buf *b)
     i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 28, 2, (__u8*)buf);
     vpd = 2.44/1024.0 * (unsigned short)(buf[0]<<8 | (buf[1] & 0xff)) ;
     vpd = (vpd + 0.9148)/ 0.0582;
-snprintf(buf, 15, "%2.1f", vpd );
+    snprintf(buf, 15, "%2.1f", vpd );
     blobmsg_add_string(b, "RF Hi Warning", buf);
 
     i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 30, 2, (__u8*)buf);
