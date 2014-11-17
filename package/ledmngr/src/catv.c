@@ -379,6 +379,32 @@ static int catv_get_maxoptical_method(struct ubus_context *ubus_ctx, struct ubus
     return 0;
 }
 
+static void catv_get_minoptical(struct blob_buf *b)
+{
+    int num;
+    char buf[15];
+    signed char value;
+    num = i2c_smbus_read_byte_data(pcatv->i2c_a0,87);
+
+    value = (signed char)(num & 0xff);
+
+    snprintf(buf, 15, "%2.1f dBmV",value * 0.1 );
+    blobmsg_add_string(b, "Minimum Optical Input Power", buf);
+}
+
+static int catv_get_minoptical_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
+                                     struct ubus_request_data *req, const char *method,
+                                     struct blob_attr *msg)
+{
+    struct blob_buf b;
+
+    memset(&b, 0, sizeof(b));
+    blob_buf_init(&b, 0);
+    catv_get_minoptical(&b);
+    ubus_send_reply(ubus_ctx, req, b.head);
+    return 0;
+}
+
 
 static int catv_get_all_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
                                struct ubus_request_data *req, const char *method,
@@ -402,6 +428,7 @@ static int catv_get_all_method(struct ubus_context *ubus_ctx, struct ubus_object
     catv_get_responsivity(&b);
     catv_get_minoutput(&b);
     catv_get_maxoptical(&b);
+    catv_get_minoptical(&b);
 
     ubus_send_reply(ubus_ctx, req, b.head);
 
@@ -422,6 +449,7 @@ static const struct ubus_method catv_methods[] = {
     { .name = "responsivity", .handler = catv_get_responsivity_method },
     { .name = "minoutput", .handler = catv_get_minoutput_method },
     { .name = "maxoptical", .handler = catv_get_maxoptical_method },
+    { .name = "minoptical", .handler = catv_get_minoptical_method },
 
     { .name = "get-all",  .handler = catv_get_all_method },
 };
