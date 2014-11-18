@@ -31,12 +31,15 @@ struct catv_handler
 
 static struct catv_handler *pcatv;
 
-void catv_get_type(struct blob_buf *b)
+static int catv_get_type(struct blob_buf *b)
 {
     int type;
     char *s;
 
     type = i2c_smbus_read_byte_data(pcatv->i2c_a0,32);
+
+    if (type < 0)
+        return UBUS_STATUS_NO_DATA;
 
     switch (type) {
     case 0:
@@ -57,7 +60,9 @@ void catv_get_type(struct blob_buf *b)
 
     blobmsg_add_string(b, "Type", s);
 
+    return UBUS_STATUS_OK;
 }
+
 static int catv_get_type_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
                                    struct ubus_request_data *req, const char *method,
                                    struct blob_attr *msg)
@@ -66,22 +71,30 @@ static int catv_get_type_method(struct ubus_context *ubus_ctx, struct ubus_objec
 
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
-    catv_get_type(&b);
+
+    if (catv_get_type(&b))
+        return UBUS_STATUS_NO_DATA;
+
     ubus_send_reply(ubus_ctx, req, b.head);
 
-    return 0;
+    return UBUS_STATUS_OK;
 }
 
-
-void catv_get_partnum(struct blob_buf *b)
+static int catv_get_partnum(struct blob_buf *b)
 {
     char buf[12+1];
+    int ret;
     memset(buf, 0, sizeof(buf));
-    i2c_smbus_read_i2c_block_data(pcatv->i2c_a0, 0, 12, (__u8*)buf);
+
+    ret = i2c_smbus_read_i2c_block_data(pcatv->i2c_a0, 0, 12, (__u8*)buf);
+    if(ret < 0)
+        return UBUS_STATUS_NO_DATA;
 
     blobmsg_add_string(b, "Part number",buf );
 
+    return UBUS_STATUS_OK;
 }
+
 static int catv_get_partnum_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
                                    struct ubus_request_data *req, const char *method,
                                    struct blob_attr *msg)
@@ -90,20 +103,28 @@ static int catv_get_partnum_method(struct ubus_context *ubus_ctx, struct ubus_ob
 
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
-    catv_get_partnum(&b);
+
+    if (catv_get_partnum(&b))
+        return UBUS_STATUS_NO_DATA;
+
     ubus_send_reply(ubus_ctx, req, b.head);
 
-    return 0;
+    return UBUS_STATUS_OK;
 }
 
-void catv_get_vendor(struct blob_buf *b)
+static int catv_get_vendor(struct blob_buf *b)
 {
     char buf[20+1];
+    int ret;
     memset(buf, 0, sizeof(buf));
-    i2c_smbus_read_i2c_block_data(pcatv->i2c_a0, 12, 20, (__u8*)buf);
+
+    ret = i2c_smbus_read_i2c_block_data(pcatv->i2c_a0, 12, 20, (__u8*)buf);
+    if(ret < 0)
+        return UBUS_STATUS_NO_DATA;
 
     blobmsg_add_string(b, "Vendor",buf );
 
+    return UBUS_STATUS_OK;
 }
 
 static int catv_get_vendor_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
@@ -114,20 +135,28 @@ static int catv_get_vendor_method(struct ubus_context *ubus_ctx, struct ubus_obj
 
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
-    catv_get_vendor(&b);
+
+    if(catv_get_vendor(&b))
+        return UBUS_STATUS_NO_DATA;
+
     ubus_send_reply(ubus_ctx, req, b.head);
 
-    return 0;
+    return UBUS_STATUS_OK;
 }
 
-void catv_get_vendor_partnum(struct blob_buf *b)
+static int catv_get_vendor_partnum(struct blob_buf *b)
 {
     char buf[20+1];
+    int ret;
     memset(buf, 0, sizeof(buf));
-    i2c_smbus_read_i2c_block_data(pcatv->i2c_a0, 33, 20, (__u8*)buf);
+
+    ret = i2c_smbus_read_i2c_block_data(pcatv->i2c_a0, 33, 20, (__u8*)buf);
+    if(ret < 0)
+        return UBUS_STATUS_NO_DATA;
 
     blobmsg_add_string(b, "Vendor part number",buf );
 
+    return UBUS_STATUS_OK;
 }
 static int catv_get_vendor_partnum_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
                                    struct ubus_request_data *req, const char *method,
@@ -137,20 +166,28 @@ static int catv_get_vendor_partnum_method(struct ubus_context *ubus_ctx, struct 
 
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
-    catv_get_vendor_partnum(&b);
+
+    if(catv_get_vendor_partnum(&b))
+        return UBUS_STATUS_NO_DATA;
+
     ubus_send_reply(ubus_ctx, req, b.head);
 
-    return 0;
+    return UBUS_STATUS_OK;
 }
 
-void catv_get_date(struct blob_buf *b)
+static int catv_get_date(struct blob_buf *b)
 {
     char buf[8+1];
+    int ret;
     memset(buf, 0, sizeof(buf));
-    i2c_smbus_read_i2c_block_data(pcatv->i2c_a0, 73, 8, (__u8*)buf);
+
+    ret = i2c_smbus_read_i2c_block_data(pcatv->i2c_a0, 73, 8, (__u8*)buf);
+    if(ret < 0)
+        return UBUS_STATUS_NO_DATA;
 
     blobmsg_add_string(b, "Date",buf );
 
+    return UBUS_STATUS_OK;
 }
 
 static int catv_get_date_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
@@ -161,22 +198,30 @@ static int catv_get_date_method(struct ubus_context *ubus_ctx, struct ubus_objec
 
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
-    catv_get_date(&b);
+
+    if(catv_get_date(&b))
+        return UBUS_STATUS_NO_DATA;
+
     ubus_send_reply(ubus_ctx, req, b.head);
 
-    return 0;
+    return UBUS_STATUS_OK;
 }
 
 
 
-void catv_get_revision(struct blob_buf *b)
+static int catv_get_revision(struct blob_buf *b)
 {
     char buf[4+1];
+    int ret;
     memset(buf, 0, sizeof(buf));
-    i2c_smbus_read_i2c_block_data(pcatv->i2c_a0, 53, 4, (__u8*)buf);
+
+    ret = i2c_smbus_read_i2c_block_data(pcatv->i2c_a0, 53, 4, (__u8*)buf);
+    if(ret < 0)
+        return UBUS_STATUS_NO_DATA;
 
     blobmsg_add_string(b, "Revision",buf );
 
+    return UBUS_STATUS_OK;
 }
 static int catv_get_revision_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
                                   struct ubus_request_data *req, const char *method,
@@ -186,19 +231,28 @@ static int catv_get_revision_method(struct ubus_context *ubus_ctx, struct ubus_o
 
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
-    catv_get_revision(&b);
+
+    if(catv_get_revision(&b))
+        return UBUS_STATUS_NO_DATA;
+
     ubus_send_reply(ubus_ctx, req, b.head);
 
-    return 0;
+    return UBUS_STATUS_OK;
 }
 
-static void catv_get_serial(struct blob_buf *b)
+static int catv_get_serial(struct blob_buf *b)
 {
     char buf[16+1];
+    int ret;
     memset(buf, 0, sizeof(buf));
 
-    i2c_smbus_read_i2c_block_data(pcatv->i2c_a0, 57, 16, (__u8*)buf);
+    ret = i2c_smbus_read_i2c_block_data(pcatv->i2c_a0, 57, 16, (__u8*)buf);
+    if(ret < 0)
+        return UBUS_STATUS_NO_DATA;
+
     blobmsg_add_string(b, "Serial",buf );
+
+    return UBUS_STATUS_OK;
 }
 
 static int catv_get_serial_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
@@ -209,17 +263,24 @@ static int catv_get_serial_method(struct ubus_context *ubus_ctx, struct ubus_obj
 
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
-    catv_get_serial(&b);
+
+    if(catv_get_serial(&b))
+        return UBUS_STATUS_NO_DATA;
+
     ubus_send_reply(ubus_ctx, req, b.head);
-    return 0;
+
+    return UBUS_STATUS_OK;
 }
 
-static void catv_get_interface(struct blob_buf *b)
+static int catv_get_interface(struct blob_buf *b)
 {
     int type;
     char *s;
 
     type = i2c_smbus_read_byte_data(pcatv->i2c_a0,81);
+
+    if(type < 0)
+        return UBUS_STATUS_NO_DATA;
 
     switch (type) {
     case 0:
@@ -234,8 +295,10 @@ static void catv_get_interface(struct blob_buf *b)
     default:
         s="Error reading data";
     }
- 
+
     blobmsg_add_string(b, "Interface",s );
+
+    return UBUS_STATUS_OK;
 }
 
 static int catv_get_interface_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
@@ -246,17 +309,24 @@ static int catv_get_interface_method(struct ubus_context *ubus_ctx, struct ubus_
 
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
-    catv_get_interface(&b);
+
+    if(catv_get_interface(&b))
+        return UBUS_STATUS_NO_DATA;
+
     ubus_send_reply(ubus_ctx, req, b.head);
-    return 0;
+
+    return UBUS_STATUS_OK;
 }
 
-static void catv_get_bandwidth(struct blob_buf *b)
+static int catv_get_bandwidth(struct blob_buf *b)
 {
     int type;
     char *s;
 
     type = i2c_smbus_read_byte_data(pcatv->i2c_a0,82);
+
+    if(type < 0)
+        return UBUS_STATUS_NO_DATA;
 
     switch (type) {
     case 0:
@@ -276,6 +346,8 @@ static void catv_get_bandwidth(struct blob_buf *b)
     }
 
     blobmsg_add_string(b, "RF bandwidth",s );
+
+    return UBUS_STATUS_OK;
 }
 
 static int catv_get_bandwidth_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
@@ -286,19 +358,28 @@ static int catv_get_bandwidth_method(struct ubus_context *ubus_ctx, struct ubus_
 
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
-    catv_get_bandwidth(&b);
+
+    if(catv_get_bandwidth(&b))
+        return UBUS_STATUS_NO_DATA;
+
     ubus_send_reply(ubus_ctx, req, b.head);
-    return 0;
+
+    return UBUS_STATUS_OK;
 }
 
-static void catv_get_wavelength(struct blob_buf *b)
+static int catv_get_wavelength(struct blob_buf *b)
 {
     int num;
     char buf[10];
     num = i2c_smbus_read_byte_data(pcatv->i2c_a0,83);
 
+    if(num < 0)
+        return UBUS_STATUS_NO_DATA;
+
     snprintf(buf, 10, "%d nm",num*10 );
     blobmsg_add_string(b, "Receiver wavelength",buf );
+
+    return UBUS_STATUS_OK;
 }
 
 static int catv_get_wavelength_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
@@ -309,18 +390,27 @@ static int catv_get_wavelength_method(struct ubus_context *ubus_ctx, struct ubus
 
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
-    catv_get_wavelength(&b);
+
+    if(catv_get_wavelength(&b))
+        return UBUS_STATUS_NO_DATA;
+
     ubus_send_reply(ubus_ctx, req, b.head);
-    return 0;
+
+    return UBUS_STATUS_OK;
 }
-static void catv_get_responsivity(struct blob_buf *b)
+
+static int catv_get_responsivity(struct blob_buf *b)
 {
     int num;
     char buf[15];
     num = i2c_smbus_read_byte_data(pcatv->i2c_a0,84);
+    if(num < 0)
+        return UBUS_STATUS_NO_DATA;
 
     snprintf(buf, 15, "%1.2f",num*0.01 );
     blobmsg_add_string(b, "Responsivity",buf );
+
+    return UBUS_STATUS_OK;
 }
 
 static int catv_get_responsivity_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
@@ -331,19 +421,27 @@ static int catv_get_responsivity_method(struct ubus_context *ubus_ctx, struct ub
 
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
-    catv_get_responsivity(&b);
+
+    if(catv_get_responsivity(&b))
+        return UBUS_STATUS_NO_DATA;
+
     ubus_send_reply(ubus_ctx, req, b.head);
-    return 0;
+
+    return UBUS_STATUS_OK;
 }
 
-static void catv_get_minoutput(struct blob_buf *b)
+static int catv_get_minoutput(struct blob_buf *b)
 {
     int num;
     char buf[15];
     num = i2c_smbus_read_byte_data(pcatv->i2c_a0,85);
+    if(num < 0)
+        return UBUS_STATUS_NO_DATA;
 
     snprintf(buf, 15, "%d dBmV",num );
     blobmsg_add_string(b, "Minimum RF output",buf );
+
+    return UBUS_STATUS_OK;
 }
 
 static int catv_get_minoutput_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
@@ -354,22 +452,30 @@ static int catv_get_minoutput_method(struct ubus_context *ubus_ctx, struct ubus_
 
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
-    catv_get_minoutput(&b);
+
+    if(catv_get_minoutput(&b))
+        return UBUS_STATUS_NO_DATA;
+
     ubus_send_reply(ubus_ctx, req, b.head);
-    return 0;
+
+    return UBUS_STATUS_OK;
 }
 
-static void catv_get_maxoptical(struct blob_buf *b)
+static int catv_get_maxoptical(struct blob_buf *b)
 {
     int num;
     char buf[15];
     signed char value;
     num = i2c_smbus_read_byte_data(pcatv->i2c_a0,86);
+    if(num < 0)
+        return UBUS_STATUS_NO_DATA;
 
     value = (signed char)(num & 0xff);
 
     snprintf(buf, 15, "%2.1f dBmV",value * 0.1 );
     blobmsg_add_string(b, "Maximum Optical Input Power", buf);
+
+    return UBUS_STATUS_OK;
 }
 
 static int catv_get_maxoptical_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
@@ -380,22 +486,31 @@ static int catv_get_maxoptical_method(struct ubus_context *ubus_ctx, struct ubus
 
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
-    catv_get_maxoptical(&b);
+
+    if(catv_get_maxoptical(&b))
+        return UBUS_STATUS_NO_DATA;
+
     ubus_send_reply(ubus_ctx, req, b.head);
-    return 0;
+
+    return UBUS_STATUS_OK;
 }
 
-static void catv_get_minoptical(struct blob_buf *b)
+static int catv_get_minoptical(struct blob_buf *b)
 {
     int num;
     char buf[15];
     signed char value;
     num = i2c_smbus_read_byte_data(pcatv->i2c_a0,87);
 
+    if(num < 0)
+        return UBUS_STATUS_NO_DATA;
+
     value = (signed char)(num & 0xff);
 
     snprintf(buf, 15, "%2.1f dBmV",value * 0.1 );
     blobmsg_add_string(b, "Minimum Optical Input Power", buf);
+
+    return UBUS_STATUS_OK;
 }
 
 static int catv_get_minoptical_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
@@ -406,35 +521,45 @@ static int catv_get_minoptical_method(struct ubus_context *ubus_ctx, struct ubus
 
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
-    catv_get_minoptical(&b);
+
+    if(catv_get_minoptical(&b))
+        return UBUS_STATUS_NO_DATA;
+
     ubus_send_reply(ubus_ctx, req, b.head);
-    return 0;
+
+    return UBUS_STATUS_OK;
 }
 
-static void catv_get_templimit(struct blob_buf *b)
+static int catv_get_templimit(struct blob_buf *b)
 {
     char buf[15];
     float temp;
+    int ret;
 
-    i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 0, 2, (__u8*)buf);
+    ret = i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 0, 2, (__u8*)buf);
+    if(ret < 0)
+        return UBUS_STATUS_NO_DATA;
+
     temp = ((signed short)(buf[0]<<8 | (buf[1] &0xff) ))/256.0;
     snprintf(buf, 15, "%3.4f", temp );
     blobmsg_add_string(b, "Temp Hi Alarm", buf);
 
-    i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 2, 2, (__u8*)buf);
+    ret = i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 2, 2, (__u8*)buf);
     temp = ((signed short)(buf[0]<<8 | (buf[1] &0xff) ))/256.0;
     snprintf(buf, 15, "%3.4f", temp );
     blobmsg_add_string(b, "Temp Lo Alarm", buf);
 
-    i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 4, 2, (__u8*)buf);
+    ret = i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 4, 2, (__u8*)buf);
     temp = ((signed short)(buf[0]<<8 | (buf[1] &0xff) ))/256.0;
     snprintf(buf, 15, "%3.4f", temp );
     blobmsg_add_string(b, "Temp Hi Warning", buf);
 
-    i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 6, 2, (__u8*)buf);
+    ret = i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 6, 2, (__u8*)buf);
     temp = ((signed short)(buf[0]<<8 | (buf[1] &0xff) ))/256.0;
     snprintf(buf, 15, "%3.4f", temp );
     blobmsg_add_string(b, "Temp Lo Warning", buf);
+
+    return UBUS_STATUS_OK;
 }
 
 static int catv_get_templimit_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
@@ -445,37 +570,47 @@ static int catv_get_templimit_method(struct ubus_context *ubus_ctx, struct ubus_
 
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
-    catv_get_templimit(&b);
+
+    if(catv_get_templimit(&b))
+        return UBUS_STATUS_NO_DATA;
+
     ubus_send_reply(ubus_ctx, req, b.head);
-    return 0;
+
+    return UBUS_STATUS_OK;
 }
 
 
-static void catv_get_vcclimit(struct blob_buf *b)
+static int catv_get_vcclimit(struct blob_buf *b)
 {
     char buf[15];
     float vcc;
+    int ret;
 
-    i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 8, 2, (__u8*)buf);
+    ret = i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 8, 2, (__u8*)buf);
+    if(ret < 0)
+        return UBUS_STATUS_NO_DATA;
+
     vcc = 2.44 * (1 + (((unsigned short)(buf[0]<<8 | (buf[1] & 0xff) ))/512.0) );
 
     snprintf(buf, 15, "%2.1f", vcc);
     blobmsg_add_string(b, "VCC Hi Alarm", buf);
 
-    i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 10, 2, (__u8*)buf);
+    ret = i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 10, 2, (__u8*)buf);
     vcc = 2.44 * (1 + (((unsigned short)(buf[0]<<8 | (buf[1] & 0xff) ))/512.0) );
     snprintf(buf, 15, "%2.1f", vcc );
     blobmsg_add_string(b, "VCC Lo Alarm", buf);
 
-    i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 12, 2, (__u8*)buf);
+    ret = i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 12, 2, (__u8*)buf);
     vcc = 2.44 * (1 + (((unsigned short)(buf[0]<<8 | (buf[1] & 0xff) ))/512.0) );
     snprintf(buf, 15, "%2.1f", vcc );
     blobmsg_add_string(b, "VCC Hi Warning", buf);
 
-    i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 14, 2, (__u8*)buf);
+    ret = i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 14, 2, (__u8*)buf);
     vcc = 2.44 * (1 + (((unsigned short)(buf[0]<<8 | (buf[1] & 0xff) ))/512.0) );
     snprintf(buf, 15, "%2.1f", vcc );
     blobmsg_add_string(b, "VCC Lo Warning", buf);
+
+    return UBUS_STATUS_OK;
 }
 
 static int catv_get_vcclimit_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
@@ -486,44 +621,53 @@ static int catv_get_vcclimit_method(struct ubus_context *ubus_ctx, struct ubus_o
 
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
-    catv_get_vcclimit(&b);
+
+    if(catv_get_vcclimit(&b))
+        return UBUS_STATUS_NO_DATA;
+
     ubus_send_reply(ubus_ctx, req, b.head);
-    return 0;
+
+    return UBUS_STATUS_OK;
 }
-static void catv_get_vpdlimit(struct blob_buf *b)
+
+static int catv_get_vpdlimit(struct blob_buf *b)
 {
     char buf[15];
     float vpd;
     float resp;
+    int ret;
 
     resp = i2c_smbus_read_byte_data(pcatv->i2c_a0,84);
     resp = resp * 0.01;
 
-    i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 16, 2, (__u8*)buf);
+    ret = i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 16, 2, (__u8*)buf);
+    if(ret < 0)
+        return UBUS_STATUS_NO_DATA;
 
     vpd = 2.44/1024 * (short)(buf[0]<<8 | (buf[1] & 0xff)) ;
     vpd = 10*log(vpd/(0.47*4.9)/resp)/log(10);
     snprintf(buf, 15, "%2.1f", vpd);
     blobmsg_add_string(b, "VPD Hi Alarm", buf);
 
-    i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 18, 2, (__u8*)buf);
+    ret = i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 18, 2, (__u8*)buf);
     vpd = 2.44/1024 * (short)(buf[0]<<8 | (buf[1] & 0xff)) ;
     vpd = 10*log(vpd/(0.47*4.9)/resp)/log(10);
     snprintf(buf, 15, "%2.1f", vpd );
     blobmsg_add_string(b, "VPD Lo Alarm", buf);
 
-    i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 20, 2, (__u8*)buf);
+    ret = i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 20, 2, (__u8*)buf);
     vpd = 2.44/1024 * (short)(buf[0]<<8 | (buf[1] & 0xff)) ;
     vpd = 10*log(vpd/(0.47*4.9)/resp)/log(10);
     snprintf(buf, 15, "%2.1f", vpd );
     blobmsg_add_string(b, "VPD Hi Warning", buf);
 
-    i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 22, 2, (__u8*)buf);
+    ret = i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 22, 2, (__u8*)buf);
     vpd = 2.44/1024 * (short)(buf[0]<<8 | (buf[1] & 0xff)) ;
     vpd = 10*log(vpd/(0.47*4.9)/resp)/log(10);
     snprintf(buf, 15, "%2.1f", vpd );
     blobmsg_add_string(b, "VPD Lo Warning", buf);
 
+    return UBUS_STATUS_OK;
 }
 
 static int catv_get_vpdlimit_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
@@ -534,41 +678,50 @@ static int catv_get_vpdlimit_method(struct ubus_context *ubus_ctx, struct ubus_o
 
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
-    catv_get_vpdlimit(&b);
+
+    if(catv_get_vpdlimit(&b))
+        return UBUS_STATUS_NO_DATA;
+
     ubus_send_reply(ubus_ctx, req, b.head);
-    return 0;
+
+    return UBUS_STATUS_OK;
 }
 
 
-static void catv_get_rflimit(struct blob_buf *b)
+static int catv_get_rflimit(struct blob_buf *b)
 {
     char buf[15];
     float vpd;
+    int ret;
 
-    i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 24, 2, (__u8*)buf);
+    ret = i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 24, 2, (__u8*)buf);
+    if(ret < 0)
+        return UBUS_STATUS_NO_DATA;
 
     vpd = 2.44/1024.0 * (unsigned short)(buf[0]<<8 | (buf[1] & 0xff)) ;
     vpd = (vpd + 0.9148)/ 0.0582;
     snprintf(buf, 15, "%2.1f", vpd);
     blobmsg_add_string(b, "RF Hi Alarm", buf);
 
-    i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 26, 2, (__u8*)buf);
+    ret = i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 26, 2, (__u8*)buf);
     vpd = 2.44/1024.0 * (unsigned short)(buf[0]<<8 | (buf[1] & 0xff)) ;
     vpd = (vpd + 0.9148)/ 0.0582;
     snprintf(buf, 15, "%2.1f", vpd );
     blobmsg_add_string(b, "RF Lo Alarm", buf);
 
-    i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 28, 2, (__u8*)buf);
+    ret = i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 28, 2, (__u8*)buf);
     vpd = 2.44/1024.0 * (unsigned short)(buf[0]<<8 | (buf[1] & 0xff)) ;
     vpd = (vpd + 0.9148)/ 0.0582;
     snprintf(buf, 15, "%2.1f", vpd );
     blobmsg_add_string(b, "RF Hi Warning", buf);
 
-    i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 30, 2, (__u8*)buf);
+    ret = i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 30, 2, (__u8*)buf);
     vpd = 2.44/1024.0 * (unsigned short)(buf[0]<<8 | (buf[1] & 0xff)) ;
     vpd = (vpd + 0.9148)/ 0.0582;
     snprintf(buf, 15, "%2.1f", vpd );
     blobmsg_add_string(b, "RF Lo Warning", buf);
+
+    return UBUS_STATUS_OK;
 }
 
 static int catv_get_rflimit_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
@@ -579,21 +732,30 @@ static int catv_get_rflimit_method(struct ubus_context *ubus_ctx, struct ubus_ob
 
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
-    catv_get_rflimit(&b);
+
+    if(catv_get_rflimit(&b))
+        return UBUS_STATUS_NO_DATA;
+
     ubus_send_reply(ubus_ctx, req, b.head);
-    return 0;
+
+    return UBUS_STATUS_OK;
 }
 
-static void catv_get_firmware(struct blob_buf *b)
+static int catv_get_firmware(struct blob_buf *b)
 {
     char buf[15];
     unsigned short version;
+    int ret;
 
-    i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 56, 2, (__u8*)buf);
+    ret = i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 56, 2, (__u8*)buf);
+    if(ret < 0)
+        return UBUS_STATUS_NO_DATA;
 
     version = (unsigned short)(buf[0]<<8 | (buf[1] & 0xff)) ;
     snprintf(buf, 15, "0x%04x", version);
     blobmsg_add_string(b, "Firmware version", buf);
+
+    return UBUS_STATUS_OK;
 }
 
 static int catv_get_firmware_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
@@ -604,21 +766,31 @@ static int catv_get_firmware_method(struct ubus_context *ubus_ctx, struct ubus_o
 
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
-    catv_get_firmware(&b);
+
+    if(catv_get_firmware(&b))
+        return UBUS_STATUS_NO_DATA;
+
     ubus_send_reply(ubus_ctx, req, b.head);
-    return 0;
+
+    return UBUS_STATUS_OK;
 }
 
-static void catv_get_temp(struct blob_buf *b)
+static int catv_get_temp(struct blob_buf *b)
 {
     char buf[15];
     float temp;
+    int ret;
 
-    i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 58, 2, (__u8*)buf);
+    ret = i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 58, 2, (__u8*)buf);
+    if(ret < 0)
+        return UBUS_STATUS_NO_DATA;
+
     temp = ((signed short)(buf[0]<<8 | (buf[1] &0xff) ))/256.0;
 
     snprintf(buf, 15, "%3.4f", temp);
     blobmsg_add_string(b, "Temperature", buf);
+
+    return UBUS_STATUS_OK;
 }
 
 static int catv_get_temp_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
@@ -629,21 +801,31 @@ static int catv_get_temp_method(struct ubus_context *ubus_ctx, struct ubus_objec
 
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
-    catv_get_temp(&b);
+
+    if(catv_get_temp(&b))
+        return UBUS_STATUS_NO_DATA;
+
     ubus_send_reply(ubus_ctx, req, b.head);
-    return 0;
+
+    return UBUS_STATUS_OK;
 }
 
-static void catv_get_vcc(struct blob_buf *b)
+static int catv_get_vcc(struct blob_buf *b)
 {
     char buf[15];
     float vcc;
+    int ret;
 
-    i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 60, 2, (__u8*)buf);
+    ret = i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 60, 2, (__u8*)buf);
+    if(ret < 0)
+        return UBUS_STATUS_NO_DATA;
+
     vcc = 2.44 * (1 + (((unsigned short)(buf[0]<<8 | (buf[1] & 0xff) ))/512.0) );
 
     snprintf(buf, 15, "%2.2f", vcc);
     blobmsg_add_string(b, "VCC", buf);
+
+    return UBUS_STATUS_OK;
 }
 
 static int catv_get_vcc_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
@@ -654,25 +836,35 @@ static int catv_get_vcc_method(struct ubus_context *ubus_ctx, struct ubus_object
 
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
-    catv_get_vcc(&b);
+
+    if(catv_get_vcc(&b))
+        return UBUS_STATUS_NO_DATA;
+
     ubus_send_reply(ubus_ctx, req, b.head);
-    return 0;
+
+    return UBUS_STATUS_OK;
 }
 
-static void catv_get_vpd(struct blob_buf *b)
+static int catv_get_vpd(struct blob_buf *b)
 {
     char buf[15];
     float vpd;
     float resp;
+    int ret;
 
     resp = i2c_smbus_read_byte_data(pcatv->i2c_a0,84);
     resp = resp * 0.01;
 
-    i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 62, 2, (__u8*)buf);
+    ret = i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 62, 2, (__u8*)buf);
+    if(ret < 0)
+        return UBUS_STATUS_NO_DATA;
+
     vpd = 2.44/1024 * (short)(buf[0]<<8 | (buf[1] & 0xff)) ;
     vpd = 10*log(vpd/(0.47*4.9)/resp)/log(10);
     snprintf(buf, 15, "%2.1f", vpd);
     blobmsg_add_string(b, "VPD", buf);
+
+    return UBUS_STATUS_OK;
 }
 
 static int catv_get_vpd_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
@@ -683,21 +875,31 @@ static int catv_get_vpd_method(struct ubus_context *ubus_ctx, struct ubus_object
 
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
-    catv_get_vpd(&b);
+
+    if(catv_get_vpd(&b))
+        return UBUS_STATUS_NO_DATA;
+
     ubus_send_reply(ubus_ctx, req, b.head);
-    return 0;
+
+    return UBUS_STATUS_OK;
 }
 
-static void catv_get_rf(struct blob_buf *b)
+static int catv_get_rf(struct blob_buf *b)
 {
     char buf[15];
     float rf;
+    int ret;
 
-    i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 64, 2, (__u8*)buf);
+    ret = i2c_smbus_read_i2c_block_data(pcatv->i2c_a2, 64, 2, (__u8*)buf);
+    if(ret < 0)
+        return UBUS_STATUS_NO_DATA;
+
     rf = 2.44/1024.0 * (unsigned short)(buf[0]<<8 | (buf[1] & 0xff)) ;
     rf = (rf + 0.9148)/ 0.0582;
     snprintf(buf, 15, "%2.1f", rf);
     blobmsg_add_string(b, "RF", buf);
+
+    return UBUS_STATUS_OK;
 }
 
 static int catv_get_rf_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
@@ -708,16 +910,23 @@ static int catv_get_rf_method(struct ubus_context *ubus_ctx, struct ubus_object 
 
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
-    catv_get_rf(&b);
+
+    if(catv_get_rf(&b))
+        return UBUS_STATUS_NO_DATA;
+
     ubus_send_reply(ubus_ctx, req, b.head);
-    return 0;
+
+    return UBUS_STATUS_OK;
 }
 
-static void catv_get_status(struct blob_buf *b)
+static int catv_get_status(struct blob_buf *b)
 {
     int status;
 
     status = i2c_smbus_read_byte_data(pcatv->i2c_a2,73);
+
+    if(status < 0)
+        return UBUS_STATUS_NO_DATA;
 
     if (status & 0x01)
         blobmsg_add_string(b, "Signal detect","ON" );
@@ -754,6 +963,7 @@ static void catv_get_status(struct blob_buf *b)
     else
         blobmsg_add_string(b, "47MHz ~ 431MHz","OFF" );
 
+    return UBUS_STATUS_OK;
 }
 enum {
     STATUS_RF_ENABLE
@@ -804,16 +1014,23 @@ static int catv_get_status_method(struct ubus_context *ubus_ctx, struct ubus_obj
 
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
-    catv_get_status(&b);
+
+    if(catv_get_status(&b))
+        return UBUS_STATUS_NO_DATA;
+
     ubus_send_reply(ubus_ctx, req, b.head);
-    return 0;
+
+    return UBUS_STATUS_OK;
 }
 
-static void catv_get_alarm(struct blob_buf *b)
+static int catv_get_alarm(struct blob_buf *b)
 {
     int status;
 
     status = i2c_smbus_read_byte_data(pcatv->i2c_a2,74);
+
+    if(status < 0)
+        return UBUS_STATUS_NO_DATA;
 
     if (status & 0x01)
         blobmsg_add_string(b, "Alarm temp HI","ON" );
@@ -898,6 +1115,7 @@ static void catv_get_alarm(struct blob_buf *b)
     else
         blobmsg_add_string(b, "Warning RF LO","OFF" );
 
+    return UBUS_STATUS_OK;
 
 }
 
@@ -909,9 +1127,13 @@ static int catv_get_alarm_method(struct ubus_context *ubus_ctx, struct ubus_obje
 
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
-    catv_get_alarm(&b);
+
+    if(catv_get_alarm(&b))
+        return UBUS_STATUS_NO_DATA;
+
     ubus_send_reply(ubus_ctx, req, b.head);
-    return 0;
+
+    return UBUS_STATUS_OK;
 }
 
 static int catv_save_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
@@ -926,6 +1148,9 @@ static int catv_save_method(struct ubus_context *ubus_ctx, struct ubus_object *o
 
     status = i2c_smbus_read_byte_data(pcatv->i2c_a2,73);
 
+    if(status < 0)
+        return UBUS_STATUS_NO_DATA;
+
     if (status & 0x4)
         ucix_add_option(pcatv->ctx, "catv", "catv", "enable", "yes");
     else
@@ -938,7 +1163,7 @@ static int catv_save_method(struct ubus_context *ubus_ctx, struct ubus_object *o
 
     ubus_send_reply(ubus_ctx, req, b.head);
 
-    return 0;
+    return UBUS_STATUS_OK;
 }
 
 
@@ -947,39 +1172,43 @@ static int catv_get_all_method(struct ubus_context *ubus_ctx, struct ubus_object
                                struct blob_attr *msg)
 {
     struct blob_buf b;
+    int ret = 0;
 
     memset(&b, 0, sizeof(b));
     blob_buf_init (&b, 0);
 
-    catv_get_partnum(&b);
-    catv_get_vendor(&b);
-    catv_get_type(&b);
-    catv_get_vendor_partnum(&b);
-    catv_get_revision(&b);
-    catv_get_serial(&b);
-    catv_get_date(&b);
-    catv_get_interface(&b);
-    catv_get_bandwidth(&b);
-    catv_get_wavelength(&b);
-    catv_get_responsivity(&b);
-    catv_get_minoutput(&b);
-    catv_get_maxoptical(&b);
-    catv_get_minoptical(&b);
-    catv_get_templimit(&b);
-    catv_get_vcclimit(&b);
-    catv_get_vpdlimit(&b);
-    catv_get_rflimit(&b);
-    catv_get_firmware(&b);
-    catv_get_temp(&b);
-    catv_get_vcc(&b);
-    catv_get_vpd(&b);
-    catv_get_rf(&b);
-    catv_get_status(&b);
-    catv_get_alarm(&b);
+    ret += catv_get_partnum(&b);
+    ret += catv_get_vendor(&b);
+    ret += catv_get_type(&b);
+    ret += catv_get_vendor_partnum(&b);
+    ret += catv_get_revision(&b);
+    ret += catv_get_serial(&b);
+    ret += catv_get_date(&b);
+    ret += catv_get_interface(&b);
+    ret += catv_get_bandwidth(&b);
+    ret += catv_get_wavelength(&b);
+    ret += catv_get_responsivity(&b);
+    ret += catv_get_minoutput(&b);
+    ret += catv_get_maxoptical(&b);
+    ret += catv_get_minoptical(&b);
+    ret += catv_get_templimit(&b);
+    ret += catv_get_vcclimit(&b);
+    ret += catv_get_vpdlimit(&b);
+    ret += catv_get_rflimit(&b);
+    ret += catv_get_firmware(&b);
+    ret += catv_get_temp(&b);
+    ret += catv_get_vcc(&b);
+    ret += catv_get_vpd(&b);
+    ret += catv_get_rf(&b);
+    ret += catv_get_status(&b);
+    ret += catv_get_alarm(&b);
+
+    if (ret)
+        return UBUS_STATUS_NO_DATA;
 
     ubus_send_reply(ubus_ctx, req, b.head);
 
-    return 0;
+    return UBUS_STATUS_OK;
 }
 
 static const struct ubus_method catv_methods[] = {
