@@ -767,6 +767,22 @@ static const struct blobmsg_policy state_policy[] = {
     [STATUS_RF_ENABLE] = { .name = "RF enable", .type = BLOBMSG_TYPE_STRING },
 };
 
+static void catv_enable(struct catv_handler *h)
+{
+    int status;
+    status = i2c_smbus_read_byte_data(h->i2c_a2,73);
+    status = status | 0x4;
+    i2c_smbus_write_byte_data(h->i2c_a2, 73, status);
+}
+static void catv_disable(struct catv_handler *h)
+{
+    int status;
+    status = i2c_smbus_read_byte_data(h->i2c_a2,73);
+    status = status & ~0x4;
+    i2c_smbus_write_byte_data(h->i2c_a2, 73, status);
+}
+
+
 static int catv_get_status_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
                                      struct ubus_request_data *req, const char *method,
                                      struct blob_attr *msg)
@@ -777,26 +793,12 @@ static int catv_get_status_method(struct ubus_context *ubus_ctx, struct ubus_obj
     blobmsg_parse(state_policy, ARRAY_SIZE(state_policy) , tb, blob_data(msg), blob_len(msg));
 
     if (tb[STATUS_RF_ENABLE]) {
-        int status;
-        int on  = 0;
-        int off = 0;
 
         if (0 == strncasecmp("off", blobmsg_data(tb[STATUS_RF_ENABLE]), 3) ){
-            off = 1;
+            catv_disable(pcatv);
         }
         if (0 == strncasecmp("on", blobmsg_data(tb[STATUS_RF_ENABLE]), 2) ){
-            on = 1;
-        }
-
-        if (on || off) {
-            status = i2c_smbus_read_byte_data(pcatv->i2c_a2,73);
-
-            if (on)
-                status = status | 0x4;
-            if (off)
-                status = status & ~0x4;
-
-            i2c_smbus_write_byte_data(pcatv->i2c_a2, 73, status);
+            catv_enable(pcatv);
         }
     }
 
@@ -912,6 +914,34 @@ static int catv_get_alarm_method(struct ubus_context *ubus_ctx, struct ubus_obje
     return 0;
 }
 
+static int catv_save_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
+                            struct ubus_request_data *req, const char *method,
+                            struct blob_attr *msg)
+{
+    struct blob_buf b;
+    int status;
+
+    memset(&b, 0, sizeof(b));
+    blob_buf_init(&b, 0);
+
+    status = i2c_smbus_read_byte_data(pcatv->i2c_a2,73);
+
+    if (status & 0x4)
+        ucix_add_option(pcatv->ctx, "catv", "catv", "enable", "yes");
+    else
+        ucix_add_option(pcatv->ctx, "catv", "catv", "enable", "no");
+
+    ucix_save(pcatv->ctx);
+    ucix_commit(pcatv->ctx, "catv");
+
+    blobmsg_add_string(&b, "Saved", "/etc/config/catv");
+
+    ubus_send_reply(ubus_ctx, req, b.head);
+
+    return 0;
+}
+
+
 static int catv_get_all_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
                                struct ubus_request_data *req, const char *method,
                                struct blob_attr *msg)
@@ -978,8 +1008,9 @@ static const struct ubus_method catv_methods[] = {
     { .name = "rf", .handler = catv_get_rf_method },
     { .name = "status", .handler = catv_get_status_method },
     { .name = "alarm", .handler = catv_get_alarm_method },
-
     { .name = "get-all",  .handler = catv_get_all_method },
+
+    { .name = "save", .handler = catv_save_method },
 };
 
 static struct ubus_object_type catv_type =
@@ -996,6 +1027,47 @@ int catv_ubus_populate(struct catv_handler *h, struct ubus_context *ubus_ctx)
     ret = ubus_add_object (ubus_ctx, &catv_object);
 
     return ret;
+}
+
+static void catv_config_open(struct catv_handler *h)
+{
+    int loop = 0;
+    /* open config file */
+again:
+
+    h->ctx = ucix_init_path("/etc/config", "catv");
+
+    if (NULL == h->ctx) {
+        int fd;
+
+        syslog(LOG_INFO,"CATV config file not found /etc/config/catv\n");
+        fd = open("/etc/config/catv",O_RDWR | O_CREAT | O_TRUNC);
+        close(fd);
+        if (loop++ < 10)
+            goto again;
+    }
+}
+
+static void catv_config_read(struct catv_handler *h)
+{
+    char *s;
+    int res;
+
+again:
+    s = ucix_get_option(h->ctx, "catv", "catv", "enable");
+    if (s){
+        if (strncasecmp("yes", s, 3) == 0)
+            catv_enable(h);
+        else  if (strncasecmp("no", s, 2) == 0)
+            catv_disable(h);
+    } else {
+        /* no data recreate the file */
+        ucix_add_section(h->ctx,"catv","catv", "service");
+        ucix_add_option(h->ctx,"catv", "catv", "enable","no");
+        ucix_save(h->ctx);
+        ucix_commit(h->ctx,"catv");
+        goto again;
+    }
 }
 
 struct catv_handler * catv_init(char *i2c_bus,int a0_addr,int a2_addr)
@@ -1028,11 +1100,8 @@ struct catv_handler * catv_init(char *i2c_bus,int a0_addr,int a2_addr)
         return 0;
     }
 
-    h->ctx = ucix_init_path("/etc/config", "catw");
-
-    if (NULL == h->ctx) {
-        syslog(LOG_INFO,"CATV config file not found /etc/config/catv\n");
-    }
+    catv_config_open(h);
+    catv_config_read(h);
 
 //    dump_i2c(h->i2c_a0,0,255);
 //    dump_i2c(h->i2c_a2,0,255);
