@@ -152,10 +152,10 @@ int uci_get_rtp_port_end()
 	return ucix_get_option_int(uci_ctx, UCI_VOICE_PACKAGE, "SIP", "rtpend", RTP_RANGE_END_DEFAULT);
 }
 
-const char* uci_get_sip_proxy()
+int uci_get_sip_proxy(struct list_head *proxies)
 {
 	ucix_reload();
-	return ucix_get_option(uci_ctx, UCI_VOICE_PACKAGE, "SIP", "sip_proxy");
+	return ucix_get_option_list(uci_ctx, UCI_VOICE_PACKAGE, "SIP", "sip_proxy", proxies);
 }
 
 const char* uci_get_peer_host(SIP_PEER *peer)
@@ -437,15 +437,17 @@ int handle_iptables(SIP_PEER *peer, int doResolv)
 		}
 
 		/* Get sip proxies and resolv if configured */
-		const char* proxies = uci_get_sip_proxy();
-		if (proxies) {
-			char proxy_buf[strlen(proxies)];
-			strcpy(proxy_buf, proxies);
-			char *delimiter = " ";
-			char *value = strtok(proxy_buf, delimiter);
-			while(value) {
-				resolv(peer, value);
-				value = strtok(NULL, delimiter);
+		struct ucilist proxies;
+		INIT_LIST_HEAD(&proxies.list);
+		if (!uci_get_sip_proxy(&proxies.list)) {
+			struct list_head *i;
+			struct list_head *tmp;
+			list_for_each_safe(i, tmp, &proxies.list)
+			{
+				struct ucilist *proxy = list_entry(i, struct ucilist, list);
+				resolv(peer, proxy->val);
+				free(proxy->val);
+				free(proxy);
 			}
 		}
 	}

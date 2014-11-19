@@ -77,6 +77,38 @@ void ucix_save_state(struct uci_context *ctx)
 	uci_save(ctx, NULL);
 }
 
+int ucix_get_option_list(struct uci_context *ctx, const char *p,
+	const char *s, const char *o, struct list_head *l)
+{
+	struct uci_element *e = NULL;
+	if(ucix_get_ptr(ctx, p, s, o, NULL))
+		return 1;
+	if (!(ptr.flags & UCI_LOOKUP_COMPLETE))
+		return 1;
+	e = ptr.last;
+	switch (e->type)
+	{
+	case UCI_TYPE_OPTION:
+		switch(ptr.o->type) {
+			case UCI_TYPE_LIST:
+				uci_foreach_element(&ptr.o->v.list, e)
+				{
+					struct ucilist *ul = malloc(sizeof(struct ucilist));
+					ul->val = strdup((e->name)?(e->name):(""));
+					list_add_tail(&ul->list, l);
+				}
+				break;
+			default:
+				break;
+			}
+		break;
+	default:
+		return 1;
+	}
+
+	return 0;
+}
+
 const char* ucix_get_option(struct uci_context *ctx, const char *p, const char *s, const char *o)
 {
 	struct uci_element *e = NULL;
