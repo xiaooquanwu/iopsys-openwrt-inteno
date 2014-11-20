@@ -209,11 +209,10 @@ load_networks()
 }
 
 static void
-match_client_to_network(Network *lan, char *hostaddr, unsigned int *local, char **dev)
+match_client_to_network(Network *lan, char *hostaddr, bool *local, char **net, char **dev)
 {
 
 	struct in_addr ip, mask, snet, host, rslt;
-	char devbuf[32];
 
 	inet_pton(AF_INET, lan->ipaddr, &(ip.s_addr));
 	inet_pton(AF_INET, lan->netmask, &(mask.s_addr));
@@ -223,21 +222,18 @@ match_client_to_network(Network *lan, char *hostaddr, unsigned int *local, char 
 	rslt.s_addr = (host.s_addr & mask.s_addr);
 
 	if((snet.s_addr ^ rslt.s_addr) == 0) {
-		*local = 1;
-		if (lan->type && !strcmp(lan->type, "bridge")) {
-			sprintf(devbuf, "br-%s", lan->name);
-			*dev = strdup(devbuf);
-		}
+		*local = true;
+		snprintf(net, 32, lan->name);
+		if (lan->type && !strcmp(lan->type, "bridge"))
+			snprintf(dev, 32, "br-%s", lan->name);
 		else
-			*dev = lan->ifname;
+			snprintf(dev, 32, lan->ifname);
 	}
 }
 
 static void
 handle_client(Client *clnt)
 {
-	unsigned int local = 0;
-	char *dev;
 	int ip[4];
 	int netno;
 
@@ -245,13 +241,9 @@ handle_client(Client *clnt)
 	if (sscanf(clnt->hostaddr, "%d.%d.%d.%d", &ip[0], &ip[1], &ip[2], &ip[3]) == 4) {
 		for (netno=0; network[netno].exists; netno++) {
 			if (network[netno].is_lan) {
-				match_client_to_network(&network[netno], clnt->hostaddr, &local, &dev);
-				if (local) {
-					clnt->local = true;
-					sprintf(clnt->network, network[netno].name);
-					sprintf(clnt->device, dev);
+				match_client_to_network(&network[netno], clnt->hostaddr, &clnt->local, (char**)&clnt->network, (char**)&clnt->device);
+				if (clnt->local)
 					break;
-				}
 			}
 		}
 	}
@@ -543,16 +535,17 @@ router_dump_ports(struct blob_buf *b, char *interface)
 {
 	void *t, *c, *h, *s;
 	int pno, i, j;
-	const char *ports[7];
+	const char *ports[8];
 	bool found = false;
 
-	ports[0] = "LAN1";
-	ports[1] = "LAN2";
-	ports[2] = "LAN3";
-	ports[3] = "LAN4";
-	ports[4] = "GbE";	
-	ports[5] = "WAN";
-	ports[6] = "WLAN";
+	ports[0] = "LAN";
+	ports[1] = "LAN1";
+	ports[2] = "LAN2";
+	ports[3] = "LAN3";
+	ports[4] = "LAN4";
+	ports[5] = "GbE";
+	ports[6] = "WAN";
+	ports[7] = "WLAN";
 
 	Port *port;
 	
@@ -568,7 +561,7 @@ router_dump_ports(struct blob_buf *b, char *interface)
 	if (!found)
 		return;
 
-	for (pno=0; pno<=6; pno++) {
+	for (pno=0; pno<=7; pno++) {
 		for (i = 1; strlen(port[i].name) > 2; i++) {
 			if(strcmp(port[i].name, ports[pno]))
 				continue;
@@ -811,7 +804,7 @@ quest_router_ports(struct ubus_context *ctx, struct ubus_object *obj,
 		
 	for (i=0; network[i].exists; i++) {
 		if(!strcmp(network[i].name, blobmsg_data(tb[NETWORK_NAME])))
-			if(network[i].is_lan || !strcmp(network[i].type, "bridge"))
+			if(!strcmp(network[i].type, "bridge"))
 				nthere = true;
 	}
 
@@ -949,33 +942,8 @@ quest_ubus_init(const char *path)
 	return 0;
 }
 
-static bool
-over_memory_cons(void)
-{
-	FILE *status;
-	char line[128];
-	long consumed_mem = 0;
-	bool restart = false;
-
-	if ((status = fopen( "/proc/self/status", "r" ))) {
-		while(fgets(line, sizeof(line), status) != NULL)
-		{
-			remove_newline(line);
-			if (sscanf(line, "VmPeak:    %ld kB", &consumed_mem)) {
-				if (consumed_mem > 14000) {
-					restart = true;
-					break;
-				}
-			}
-		}
-		fclose(status);
-	}
-	return restart;
-}
-
 void *dump_router_info(void *arg)
 {
-	char qpath[16];
 	int lpcnt = 0;
 
 	jiffy_counts_t cur_jif, prev_jif;
@@ -996,10 +964,6 @@ void *dump_router_info(void *arg)
 		get_jif_val(&cur_jif);
 		lpcnt++;
 		if (lpcnt == 20) {
-			if (over_memory_cons()) {
-				readlink("/proc/self/exe", qpath, 16);
-				execve(qpath, NULL, NULL);
-			}
 			lpcnt = 0;
 			memset(clients, '\0', sizeof(clients));
 		}
