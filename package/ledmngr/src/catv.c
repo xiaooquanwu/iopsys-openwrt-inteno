@@ -966,19 +966,17 @@ static int catv_get_status(struct blob_buf *b)
     return UBUS_STATUS_OK;
 }
 
-enum {
-    FILTER_FILTER
-};
-enum {
-    STATUS_RF_ENABLE
-};
 
 #ifndef ARRAY_SIZE
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 #endif
 
+enum {
+    FILTER_FILTER
+};
+
 static const struct blobmsg_policy filter_policy[] = {
-    [STATUS_RF_ENABLE] = { .name = "filter", .type = BLOBMSG_TYPE_STRING },
+    [FILTER_FILTER] = { .name = "filter", .type = BLOBMSG_TYPE_STRING },
 };
 
 static void catv_filter(struct catv_handler *h,int num)
@@ -1016,8 +1014,11 @@ static int catv_set_filter_method(struct ubus_context *ubus_ctx, struct ubus_obj
     return UBUS_STATUS_OK;
 }
 
-static const struct blobmsg_policy state_policy[] = {
-    [STATUS_RF_ENABLE] = { .name = "RF enable", .type = BLOBMSG_TYPE_STRING },
+enum {
+    STATUS_RF_ENABLE
+};
+static const struct blobmsg_policy enable_policy[] = {
+    [STATUS_RF_ENABLE] = { .name = "enable", .type = BLOBMSG_TYPE_STRING },
 };
 
 static void catv_enable(struct catv_handler *h)
@@ -1035,15 +1036,14 @@ static void catv_disable(struct catv_handler *h)
     i2c_smbus_write_byte_data(h->i2c_a2, 73, status);
 }
 
-
-static int catv_get_status_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
-                                     struct ubus_request_data *req, const char *method,
-                                     struct blob_attr *msg)
+static int catv_set_enable_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
+                                  struct ubus_request_data *req, const char *method,
+                                  struct blob_attr *msg)
 {
     struct blob_buf b;
-    struct blob_attr *tb[ARRAY_SIZE(state_policy)];
+    struct blob_attr *tb[ARRAY_SIZE(enable_policy)];
 
-    blobmsg_parse(state_policy, ARRAY_SIZE(state_policy) , tb, blob_data(msg), blob_len(msg));
+    blobmsg_parse(enable_policy, ARRAY_SIZE(enable_policy) , tb, blob_data(msg), blob_len(msg));
 
     if (tb[STATUS_RF_ENABLE]) {
 
@@ -1055,6 +1055,23 @@ static int catv_get_status_method(struct ubus_context *ubus_ctx, struct ubus_obj
         }
     }
 
+    memset(&b, 0, sizeof(b));
+    blob_buf_init(&b, 0);
+
+    if(catv_get_status(&b))
+        return UBUS_STATUS_NO_DATA;
+
+    ubus_send_reply(ubus_ctx, req, b.head);
+
+    return UBUS_STATUS_OK;
+}
+
+
+static int catv_get_status_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
+                                     struct ubus_request_data *req, const char *method,
+                                     struct blob_attr *msg)
+{
+    struct blob_buf b;
     memset(&b, 0, sizeof(b));
     blob_buf_init(&b, 0);
 
@@ -1291,6 +1308,7 @@ static const struct ubus_method catv_methods[] = {
     { .name = "get-all",  .handler = catv_get_all_method },
 
     { .name = "set-filter",  .handler = catv_set_filter_method },
+    { .name = "set-enable",  .handler = catv_set_enable_method },
 
     { .name = "save", .handler = catv_save_method },
 };
