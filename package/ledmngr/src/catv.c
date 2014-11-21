@@ -965,6 +965,10 @@ static int catv_get_status(struct blob_buf *b)
 
     return UBUS_STATUS_OK;
 }
+
+enum {
+    FILTER_FILTER
+};
 enum {
     STATUS_RF_ENABLE
 };
@@ -972,6 +976,45 @@ enum {
 #ifndef ARRAY_SIZE
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 #endif
+
+static const struct blobmsg_policy filter_policy[] = {
+    [STATUS_RF_ENABLE] = { .name = "filter", .type = BLOBMSG_TYPE_STRING },
+};
+
+static void catv_filter(struct catv_handler *h,int num)
+{
+    int status;
+    status = i2c_smbus_read_byte_data(h->i2c_a2,73);
+    status = status &  ~(0x10 | 0x20 | 0x40);
+    status = status | (1 <<(3 + num));
+    i2c_smbus_write_byte_data(h->i2c_a2, 73, status);
+}
+
+static int catv_set_filter_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
+                                     struct ubus_request_data *req, const char *method,
+                                     struct blob_attr *msg)
+{
+    struct blob_buf b;
+    struct blob_attr *tb[ARRAY_SIZE(filter_policy)];
+
+    blobmsg_parse(filter_policy, ARRAY_SIZE(filter_policy) , tb, blob_data(msg), blob_len(msg));
+
+    if (tb[FILTER_FILTER]) {
+        int num;
+        num = strtol(blobmsg_data(tb[FILTER_FILTER]),0,0);
+        catv_filter(pcatv,num);
+    }
+
+    memset(&b, 0, sizeof(b));
+    blob_buf_init(&b, 0);
+
+    if(catv_get_status(&b))
+        return UBUS_STATUS_NO_DATA;
+
+    ubus_send_reply(ubus_ctx, req, b.head);
+
+    return UBUS_STATUS_OK;
+}
 
 static const struct blobmsg_policy state_policy[] = {
     [STATUS_RF_ENABLE] = { .name = "RF enable", .type = BLOBMSG_TYPE_STRING },
@@ -1156,6 +1199,14 @@ static int catv_save_method(struct ubus_context *ubus_ctx, struct ubus_object *o
     else
         ucix_add_option(pcatv->ctx, "catv", "catv", "enable", "no");
 
+    if (status & 0x10)
+        ucix_add_option(pcatv->ctx, "catv", "catv", "filter", "1");
+    else if (status & 0x20)
+        ucix_add_option(pcatv->ctx, "catv", "catv", "filter", "2");
+    else if (status & 0x40)
+        ucix_add_option(pcatv->ctx, "catv", "catv", "filter", "3");
+
+
     ucix_save(pcatv->ctx);
     ucix_commit(pcatv->ctx, "catv");
 
@@ -1239,6 +1290,8 @@ static const struct ubus_method catv_methods[] = {
     { .name = "alarm", .handler = catv_get_alarm_method },
     { .name = "get-all",  .handler = catv_get_all_method },
 
+    { .name = "set-filter",  .handler = catv_set_filter_method },
+
     { .name = "save", .handler = catv_save_method },
 };
 
@@ -1282,21 +1335,31 @@ static void catv_config_read(struct catv_handler *h)
     char *s;
     int res;
 
+    /* set set filter */
 again:
+    s = ucix_get_option(h->ctx, "catv", "catv", "filter");
+    if (s){
+        int num = strtol(s,0,0);
+        catv_filter(h,num);
+    } else {
+        /* no data recreate the file */
+        ucix_add_section(h->ctx,"catv","catv", "service");
+        ucix_add_option(h->ctx,"catv", "catv", "enable","no");
+        ucix_add_option(h->ctx,"catv", "catv", "filter","3");
+        ucix_save(h->ctx);
+        ucix_commit(h->ctx,"catv");
+        goto again;
+    }
+
+    /* set enable */
     s = ucix_get_option(h->ctx, "catv", "catv", "enable");
     if (s){
         if (strncasecmp("yes", s, 3) == 0)
             catv_enable(h);
         else  if (strncasecmp("no", s, 2) == 0)
             catv_disable(h);
-    } else {
-        /* no data recreate the file */
-        ucix_add_section(h->ctx,"catv","catv", "service");
-        ucix_add_option(h->ctx,"catv", "catv", "enable","no");
-        ucix_save(h->ctx);
-        ucix_commit(h->ctx,"catv");
-        goto again;
     }
+
 }
 
 struct catv_handler * catv_init(char *i2c_bus,int a0_addr,int a2_addr)
