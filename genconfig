@@ -74,7 +74,7 @@ elif  [ -d "$FILEDIR" -a $CLEAN -eq 1 ]; then
 fi
  # first build config based on boardid
   v "cp -r $CONFIGPATH/$BOARDTYPE/fs/* $FILEDIR"
-  cp -rL $CONFIGPATH/$BOARDTYPE/fs/* $FILEDIR
+  cp -rL $CONFIGPATH/$BOARDTYPE/fs/* $FILEDIR 2>/dev/null
   v "cp -r $CONFIGPATH/$BOARDTYPE/* $FILEDIR"
   [ -e "$CONFIGPATH/$BOARDTYPE/$BOARDTYPE.diff" ] && generate_config $CONFIGPATH/$BOARDTYPE/$BOARDTYPE.diff .config
   echo $BOARDTYPE > .current_config_file
