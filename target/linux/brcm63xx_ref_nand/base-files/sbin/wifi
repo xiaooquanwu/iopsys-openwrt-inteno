@@ -719,6 +719,13 @@ set_wifi_device() {
 			nvram set "$device"_acs_tx_idle_cnt="5"
 			nvram set "$device"_acs_lowband_least_rssi="-75"
 			wlctl -i $device chanim_mode 2
+
+			# temporary autochannel method
+			wlctl -i $device csscantimer "${scantimer:-15}"
+			wlctl -i $device up
+			wlctl -i $device autochannel 1
+			wlctl -i $device chanspec $(wlctl -i $device autochannel | awk '{print$1}')
+			wlctl -i $device down
 		;;
 		*)
 			wlctl -i $device chanspec $channel
@@ -971,12 +978,7 @@ case "$1" in
 		run_hooks wifi-device $ENABLE_HOOKS
 
 		# start related daemons
-		if [ -n "$acsifs" ]; then
-			acsd
-			for acsif in $acsifs; do
-				acs_cli -i $acsif mode 1
-			done
-		fi
+		# [ -n "$acsifs" ] && acsd
 		eapd
 		nas
 		[ $_enWps -gt 0 ] && wps_monitor &
