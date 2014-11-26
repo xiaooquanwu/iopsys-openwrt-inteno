@@ -1,5 +1,8 @@
 #include "brcmdaemon.h"
 
+/* BUG: move me to header.*/
+void    ledmngr( void );
+
 /**************************************************************************
     Function: Print Usage
  
