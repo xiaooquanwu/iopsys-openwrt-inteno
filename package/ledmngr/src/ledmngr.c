@@ -66,17 +66,18 @@ struct led_config  led_config;
 /* Names for led_action_t */
 static const char * const fn_actions[LED_ACTION_MAX] =
 { "off", "ok", "notice", "alert", "error",};
+
 static const char* const led_functions[LED_FUNCTIONS] =
 { "dsl", "wifi", "wps", "lan", "status", "dect", "tv", "usb",
   "wan", "internet", "voice1", "voice2", "eco", "gbe"};
+
 /* Names for led_state_t */
 static const char* const led_states[LED_STATES_MAX] =
 { "off", "on", "blink_slow", "blink_fast" };
+
 /* Names for leds_state_t */
 static const char* const leds_states[LEDS_MAX] =
 { "normal", "proximity", "silent", "info", "test", "production", "reset", "allon" , "alloff"};
-
-
 
 struct button_configuration {
     int         button_nr;
@@ -192,7 +193,9 @@ static struct leds_configuration* get_led_config(void) {
     }
 
     //reset shift register states
-    for (i=0 ; i<SR_MAX ; i++) led_cfg->shift_register_state[i] = 0;
+    for (i=0 ; i<SR_MAX ; i++) {
+        led_cfg->shift_register_state[i] = 0;
+    }
 
     //populate led mappings
     for (i=0 ; i<LED_FUNCTIONS ; i++) {
@@ -200,10 +203,12 @@ static struct leds_configuration* get_led_config(void) {
         char fn_name_action[256];
         char l1[256],s1[256];
         for (j=0 ; j<LED_ACTION_MAX ; j++) {
+
             snprintf(fn_name_action, 256, "%s_%s", led_functions[i], fn_actions[j]);
             led_fn_actions = ucix_get_option(uci_ctx, "hw", "led_map", fn_name_action);
-            DEBUG_PRINT("fn name action |%s| = %s\n", fn_name_action, led_fn_actions);
 
+            if (led_fn_actions)
+                DEBUG_PRINT("fn name action |%s| = %s\n", fn_name_action, led_fn_actions);
 
             // reset led actions
             for(k=0 ; k<LED_ACTION_MAX ; k++) {
@@ -213,6 +218,7 @@ static struct leds_configuration* get_led_config(void) {
 
             if (led_fn_actions) {
                 int l=0, m;
+                /* space separated list of actions */
                 ptr = (char *)led_fn_actions;
                 p = strtok_r(ptr, " ", &rest);
                 while(p != NULL) {
@@ -222,7 +228,11 @@ static struct leds_configuration* get_led_config(void) {
                     led_cfg->led_map_config[i][j].led_actions[l].led_index = get_led_index_by_name(led_cfg, l1);
                     led_cfg->led_map_config[i][j].led_actions[l].led_state = get_state_by_name(s1);
                     led_cfg->led_map_config[i][j].led_actions_nr++;
-                    DEBUG_PRINT("[%d] -> %d, %d\n", led_cfg->led_map_config[i][j].led_actions_nr, led_cfg->led_map_config[i][j].led_actions[l].led_index, led_cfg->led_map_config[i][j].led_actions[l].led_state);
+                    DEBUG_PRINT("[%d] -> %d, %d\n",
+                                led_cfg->led_map_config[i][j].led_actions_nr,
+                                led_cfg->led_map_config[i][j].led_actions[l].led_index,
+                                led_cfg->led_map_config[i][j].led_actions[l].led_state);
+
                     /* Get next */
                     ptr = rest;
                     p = strtok_r(NULL, " ", &rest);
