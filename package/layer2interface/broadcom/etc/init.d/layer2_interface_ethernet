@@ -30,7 +30,6 @@ addethernet() {
 	config_get baseifname $1 baseifname
 	config_get ifname $1 ifname
 	config_get bridge $1 bridge
-	ifconfig $baseifname up
 	brcm_virtual_interface_rules "$baseifname" "$ifname" "$bridge"
 	
 }

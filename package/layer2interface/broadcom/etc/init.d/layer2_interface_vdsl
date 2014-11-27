@@ -45,7 +45,6 @@ ptm_inf_conf() {
 		xtmctl operate conn --createnetdev $dslat.$ptmprio ${ifname%%.*}
 		xtmctl operate intf --state 1 enable
 		xtmctl start
-		ifconfig $baseifname up
 		brcm_virtual_interface_rules "$baseifname" "$ifname" "$bridge"
 	fi
 }

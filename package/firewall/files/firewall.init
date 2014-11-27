@@ -1,21 +1,15 @@
 #!/bin/sh /etc/rc.common
 
 START=19
-cwmp_firewallcache() {
-        [ -f /usr/sbin/freecwmp ] && {
-                ps -w | grep freecwmp | grep InternetGatewayDevice.X_INTENO_SE_IpAccCfg. >/dev/null || freecwmp get cache InternetGatewayDevice.X_INTENO_SE_IpAccCfg. &
-        }
-}
+
 boot() {
 	# Be silent on boot, firewall might be started by hotplug already,
 	# so don't complain in syslog.
 	fw3 -q start
-	cwmp_firewallcache
 }
 
 start() {
 	fw3 start
-	cwmp_firewallcache
 }
 
 stop() {
@@ -24,10 +18,8 @@ stop() {
 
 restart() {
 	fw3 restart
-	cwmp_firewallcache
 }
 
 reload() {
 	fw3 reload
-	cwmp_firewallcache
 }

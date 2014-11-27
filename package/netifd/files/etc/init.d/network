@@ -6,14 +6,6 @@ STOP=90
 SERVICE_DAEMONIZE=1
 SERVICE_WRITE_PID=1
 
-cwmp_netcache() {
-	[ -f /usr/sbin/freecwmp ] && {
-		ps -w | grep freecwmp | grep LANDevice >/dev/null || freecwmp get cache InternetGatewayDevice.LANDevice. &
-		ps -w | grep freecwmp | grep Layer2Bridging >/dev/null || freecwmp get cache InternetGatewayDevice.Layer2Bridging. &
-		ps -w | grep freecwmp | grep Layer3Forwarding >/dev/null || freecwmp get cache InternetGatewayDevice.Layer3Forwarding. &
-	}
-}
-
 start() {
 	stop
 	[ -e /proc/sys/kernel/core_pattern ] && {
@@ -30,8 +22,6 @@ start() {
 	sleep 2
 
 	/sbin/wifi
-
-	cwmp_netcache
 }
 
 restart() {
@@ -54,5 +44,4 @@ reload() {
 	/sbin/wifi
 
 	ubus call router reload
-	cwmp_netcache
 }

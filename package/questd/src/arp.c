@@ -132,7 +132,7 @@ arping(char *targetIP, char *device)
 	socklen_t alen = sizeof(from);
 	bool connected = false;
 	long tmo = 500000;
-	int cc;
+	int cc = -1;
 
 	fd_set read_fds, write_fds, except_fds;
 	FD_ZERO(&read_fds);
