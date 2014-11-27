@@ -55,7 +55,7 @@ struct catv_handler *catv_h;
 struct sfp_handler *sfp_h;
 struct i2c_touch *i2c_touch;
 
-int fd;
+int brcmboard;
 
 #define LED_FUNCTIONS 14
 #define MAX_LEDS 20
@@ -191,12 +191,12 @@ static int add_led(struct leds_configuration* led_cfg, char* led_name, const cha
 
 void open_ioctl() {
 
-    fd = open("/dev/brcmboard", O_RDWR);
-    if ( fd == -1 ) {
+    brcmboard = open("/dev/brcmboard", O_RDWR);
+    if ( brcmboard == -1 ) {
         DEBUG_PRINT("failed to open: /dev/brcmboard\n");
         return;
     }
-    DEBUG_PRINT("fd %d allocated\n", fd);
+    DEBUG_PRINT("fd %d allocated\n", brcmboard);
     return;
 }
 
@@ -389,7 +389,7 @@ int board_ioctl(int ioctl_id, int action, int hex, char* string_buf, int string_
     IoctlParms.offset = offset;
     IoctlParms.action = action;
     IoctlParms.buf    = "";
-    if ( ioctl(fd, ioctl_id, &IoctlParms) < 0 ) {
+    if ( ioctl(brcmboard, ioctl_id, &IoctlParms) < 0 ) {
         syslog(LOG_INFO, "ioctl: %d failed\n", ioctl_id);
         exit(1);
     }
