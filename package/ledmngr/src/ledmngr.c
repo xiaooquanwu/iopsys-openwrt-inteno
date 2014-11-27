@@ -255,6 +255,7 @@ static struct leds_configuration* get_led_config(void) {
     return led_cfg;
 }
 
+#if 0
 static int led_need_type(const struct leds_configuration* led_cfg, led_type_t type)
 {
     int i;
@@ -263,6 +264,7 @@ static int led_need_type(const struct leds_configuration* led_cfg, led_type_t ty
             return 1;
     return 0;
 }
+#endif
 
 void print_config(struct leds_configuration* led_cfg) {
     int i;
@@ -286,6 +288,7 @@ static int get_led_index_by_name(struct leds_configuration* led_cfg, char* led_n
     return -1;
 }
 
+#if 0
 static int get_led_index_by_function_color(struct leds_configuration* led_cfg, char* function, int color) {
     int i;
     for (i=0 ; i<led_cfg->leds_nr ; i++) {
@@ -295,6 +298,7 @@ static int get_led_index_by_function_color(struct leds_configuration* led_cfg, c
     }
     return -1;
 }
+#endif
 
 int board_ioctl(int ioctl_id, int action, int hex, char* string_buf, int string_buf_len, int offset) {
     BOARD_IOCTL_PARMS IoctlParms = {0};
@@ -395,6 +399,7 @@ static void all_leds_on(struct leds_configuration* led_cfg) {
     }
 }
 
+#if 0
 static void all_leds_test(struct leds_configuration* led_cfg) {
     int i;
     //all_leds_off(led_cfg);
@@ -413,7 +418,7 @@ static void all_leds_test(struct leds_configuration* led_cfg) {
     sleep(1);
     all_leds_off(led_cfg);
 }
-
+#endif
 
 void blink_led(struct leds_configuration* led_cfg, led_state_t state,
                int dimmed) {
@@ -1089,6 +1094,7 @@ static struct button_configuration* get_button_config(void) {
     return butt_cfg;
 }
 
+#if 0
 static int button_need_type(const struct button_configuration* butt_cfg, led_type_t type)
 {
     int i;
@@ -1097,6 +1103,7 @@ static int button_need_type(const struct button_configuration* butt_cfg, led_typ
             return 1;
     return 0;
 }
+#endif
 
 static int load_cfg_file()
 {

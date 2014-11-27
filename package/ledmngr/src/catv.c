@@ -1350,8 +1350,7 @@ again:
 
 static void catv_config_read(struct catv_handler *h)
 {
-    char *s;
-    int res;
+    const char *s;
 
     /* set set filter */
 again:
