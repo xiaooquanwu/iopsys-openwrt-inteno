@@ -219,9 +219,8 @@ static struct leds_configuration* get_led_config(void) {
             if (led_fn_actions) {
                 int l=0, m;
                 /* space separated list of actions */
-                ptr = (char *)led_fn_actions;
-                p = strtok_r(ptr, " ", &rest);
-                while(p != NULL) {
+                ptr = strtok_r((char *)led_fn_actions , " ", &rest);
+                while(ptr != NULL) {
                     m = sscanf(ptr, "%[^=]=%s", l1, s1);
                     DEBUG_PRINT("m=%d ptr=%s l1=%s s1=%s\n", m,ptr,l1,s1);
 
@@ -234,8 +233,7 @@ static struct leds_configuration* get_led_config(void) {
                                 led_cfg->led_map_config[i][j].led_actions[l].led_state);
 
                     /* Get next */
-                    ptr = rest;
-                    p = strtok_r(NULL, " ", &rest);
+                    ptr = strtok_r(NULL, " ", &rest);
                     l++;
                 }
 
