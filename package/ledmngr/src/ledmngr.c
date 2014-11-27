@@ -45,7 +45,7 @@
 #include "touch_sx9512.h"
 
 static struct ubus_context *ubus_ctx = NULL;
-static struct blob_buf b;
+static struct blob_buf bblob;
 
 static struct leds_configuration* led_cfg;
 static struct button_configuration* butt_cfg;
@@ -893,9 +893,9 @@ static int led_status_method(struct ubus_context *ubus_ctx, struct ubus_object *
 
     DEBUG_PRINT( "Led %s method: %s action %d\n", fn_name, method, action);
 
-    blob_buf_init (&b, 0);
-    blobmsg_add_string(&b, "state", fn_actions[action]);
-    ubus_send_reply(ubus_ctx, req, b.head);
+    blob_buf_init (&bblob, 0);
+    blobmsg_add_string(&bblob, "state", fn_actions[action]);
+    ubus_send_reply(ubus_ctx, req, bblob.head);
 
     return 0;
 }
@@ -1026,9 +1026,9 @@ static int leds_status_method(struct ubus_context *ubus_ctx, struct ubus_object 
 {
 	DEBUG_PRINT("\n");
 
-	blob_buf_init (&b, 0);
-	blobmsg_add_string(&b, "state", leds_states[led_cfg->leds_state]);
-	ubus_send_reply(ubus_ctx, req, b.head);
+	blob_buf_init (&bblob, 0);
+	blobmsg_add_string(&bblob, "state", leds_states[led_cfg->leds_state]);
+	ubus_send_reply(ubus_ctx, req, bblob.head);
 	return 0;
 }
 
