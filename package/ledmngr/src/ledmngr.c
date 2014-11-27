@@ -57,26 +57,11 @@ struct i2c_touch *i2c_touch;
 
 int brcmboard;
 
-#define LED_FUNCTIONS 14
-#define MAX_LEDS 20
-#define SR_MAX 16
-#define MAX_BUTTON 10
 
 #define MIN_MS_TIME_PRESSED 1000
 
 struct led_config  led_config;
 
-struct led_action {
-    int		led_index;
-    led_state_t	led_state;
-} led_action;
-
-struct led_map {
-    char*   led_function;
-    char*   led_name;
-    int     led_actions_nr;
-    struct led_action led_actions[LED_ACTION_MAX];
-};
 
 /* Names for led_action_t */
 static const char * const fn_actions[LED_ACTION_MAX] =
@@ -91,23 +76,6 @@ static const char* const led_states[LED_STATES_MAX] =
 static const char* const leds_states[LEDS_MAX] =
 { "normal", "proximity", "silent", "info", "test", "production", "reset", "allon" , "alloff"};
 
-struct leds_configuration {
-    int             leds_nr;
-    struct led_config**  leds;
-    int fd;
-    int shift_register_state[SR_MAX];
-    led_action_t led_fn_action[LED_FUNCTIONS];
-    struct led_map led_map_config[LED_FUNCTIONS][LED_ACTION_MAX];
-
-    /* If >= 0, index for the led used for button and proximity
-       feedback. */
-    int button_feedback_led;
-    leds_state_t leds_state;
-    int test_state;
-    /* Number of blink_handler ticks the buttons should stay lit up */
-    unsigned long proximity_timer; /* For active leds */
-    unsigned long proximity_all_timer; /* For all leds */
-};
 
 
 struct button_configuration {
@@ -139,54 +107,6 @@ void sx9512_reset_handler(struct uloop_timeout *timeout)
     uloop_timeout_set(&i2c_touch_reset_timer, I2C_RESET_TIME);
 }
 
-static int add_led(struct leds_configuration* led_cfg, char* led_name, const char* led_config, led_color_t color) {
-
-    if (!led_config) {
-//        printf("Led %s: not configured\n",led_name);
-        return -1;
-    } else {
-        struct led_config* lc = malloc(sizeof(struct led_config));
-        char type[256];
-        char active[256];
-        char function[256];
-        int  address;
-
-        DEBUG_PRINT("Led %s: %s\n",led_name, led_config);
-        lc->name = strdup(led_name);
-        // gpio,39,al
-        sscanf(led_config, "%s %d %s %s", type, &address, active, function);
-//        printf("Config %s,%d,%s,%s\n", type, address, active, function);
-        if (!strcmp(type, "gpio")) lc->type = GPIO;
-        if (!strcmp(type, "sr"))   lc->type = SHIFTREG2;
-        if (!strcmp(type, "csr"))  lc->type = SHIFTREG3;
-        if (!strcmp(type, "i2c"))  lc->type = I2C;
-
-        lc->address = address;
-        lc->color = color;
-
-        if (!strcmp(active, "al"))   lc->active = ACTIVE_LOW;
-        if (!strcmp(active, "ah"))   lc->active = ACTIVE_HIGH;
-
-        //realloc(led_cfg->leds, (led_cfg->leds_nr+1) * sizeof(struct led_config*));
-        if (led_cfg->leds_nr >= MAX_LEDS) {
-            DEBUG_PRINT("Too many leds configured! Only adding the %d first\n", MAX_LEDS);
-            return -1;
-        }
-        /* FIXME: Add to configuration file? Maybe we also want to
-           exclude WAN_ leds on CG300. */
-        if (!strncmp(lc->name, "Status_", 7) || !strncmp(lc->name, "WAN_", 4))
-            lc->use_proximity = 0;
-        else
-            lc->use_proximity = 1;
-
-        if (!strcmp(lc->name, "Status_red"))
-            led_cfg->button_feedback_led = led_cfg->leds_nr;
-
-        led_cfg->leds[led_cfg->leds_nr] = lc;
-        led_cfg->leds_nr++;
-        return 0;
-    }
-}
 
 
 void open_ioctl() {
@@ -233,49 +153,43 @@ static struct leds_configuration* get_led_config(void) {
 
     struct leds_configuration* led_cfg = malloc(sizeof(struct leds_configuration));
     memset(led_cfg,0,sizeof(struct leds_configuration));
-    led_cfg->leds_nr = 0;
+
     led_cfg->leds = malloc(MAX_LEDS * sizeof(struct led_config*));
     memset(led_cfg->leds, 0, MAX_LEDS * sizeof(struct led_config*));
 
     led_names = ucix_get_option(uci_ctx, "hw", "board", "lednames");
-//    printf("Led names: %s\n", led_names);
 
     led_cfg->button_feedback_led = -1;
 
-    /* Populate led configuration structure */
+    /* Populate led configuration structure              */
+    /* led_names is a space separated list of led names. */
     ptr = (char *)led_names;
     p = strtok_r(ptr, " ", &rest);
+
     while(p != NULL) {
         char led_name_color[256] = {0};
 
-        DEBUG_PRINT("%s\n", p);
+        DEBUG_PRINT("Add led colors for led name [%s]\n", p);
 
         snprintf(led_name_color, 256, "%s_green", p);
         led_config = ucix_get_option(uci_ctx, "hw", "leds", led_name_color);
         add_led(led_cfg, led_name_color, led_config, GREEN);
-        //printf("%s_green = %s\n", p, led_config);
 
         snprintf(led_name_color,   256, "%s_red", p);
         led_config = ucix_get_option(uci_ctx, "hw", "leds", led_name_color);
         add_led(led_cfg, led_name_color, led_config, RED);
-        //printf("%s_red = %s\n", p, led_config);
 
         snprintf(led_name_color,  256, "%s_blue", p);
         led_config = ucix_get_option(uci_ctx, "hw", "leds", led_name_color);
         add_led(led_cfg, led_name_color, led_config, BLUE);
-        //printf("%s_blue = %s\n", p, led_config);
 
         snprintf(led_name_color,  256, "%s_yellow", p);
         led_config = ucix_get_option(uci_ctx, "hw", "leds", led_name_color);
         add_led(led_cfg, led_name_color, led_config, YELLOW);
 
         /* Get next */
-        ptr = rest;
         p = strtok_r(NULL, " ", &rest);
     }
-//    printf("%d leds added to config\n", led_cfg->leds_nr);
-
-    //open_ioctl();
 
     //reset shift register states
     for (i=0 ; i<SR_MAX ; i++) led_cfg->shift_register_state[i] = 0;
