@@ -207,9 +207,6 @@ static struct leds_configuration* get_led_config(void) {
             snprintf(fn_name_action, 256, "%s_%s", led_functions[i], fn_actions[j]);
             led_fn_actions = ucix_get_option(uci_ctx, "hw", "led_map", fn_name_action);
 
-            if (led_fn_actions)
-                DEBUG_PRINT("fn name action |%s| = %s\n", fn_name_action, led_fn_actions);
-
             // reset led actions
             for(k=0 ; k<LED_ACTION_MAX ; k++) {
                 led_cfg->led_map_config[i][j].led_actions[k].led_index = -1;
@@ -217,20 +214,22 @@ static struct leds_configuration* get_led_config(void) {
             }
 
             if (led_fn_actions) {
-                int l=0, m;
+                int l=0;
                 /* space separated list of actions */
                 ptr = strtok_r((char *)led_fn_actions , " ", &rest);
                 while(ptr != NULL) {
-                    m = sscanf(ptr, "%[^=]=%s", l1, s1);
-                    DEBUG_PRINT("m=%d ptr=%s l1=%s s1=%s\n", m,ptr,l1,s1);
-
+                    sscanf(ptr, "%[^=]=%s", l1, s1);
                     led_cfg->led_map_config[i][j].led_actions[l].led_index = get_led_index_by_name(led_cfg, l1);
                     led_cfg->led_map_config[i][j].led_actions[l].led_state = get_state_by_name(s1);
                     led_cfg->led_map_config[i][j].led_actions_nr++;
-                    DEBUG_PRINT("[%d] -> %d, %d\n",
+
+                    DEBUG_PRINT("%-15s -> nr=%d idx=%d,state=%d -> %-15s = %s\n",
+                                fn_name_action,
                                 led_cfg->led_map_config[i][j].led_actions_nr,
                                 led_cfg->led_map_config[i][j].led_actions[l].led_index,
-                                led_cfg->led_map_config[i][j].led_actions[l].led_state);
+                                led_cfg->led_map_config[i][j].led_actions[l].led_state,
+                                l1,
+                                s1);
 
                     /* Get next */
                     ptr = strtok_r(NULL, " ", &rest);
