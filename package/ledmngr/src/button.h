@@ -3,6 +3,8 @@
 
 #include <time.h>
 
+#include "ucix.h"
+
 typedef enum {
     ACTIVE_HIGH,
     ACTIVE_LOW,
@@ -21,5 +23,12 @@ struct button_config {
     led_type_t type;
     char*   feedback_led;
 };
+
+struct button_configuration {
+    int         button_nr;
+    struct button_config**  buttons;
+};
+
+struct button_configuration* get_button_config(struct uci_context *uci_ctx);
 
 #endif /* BUTTON_H */
