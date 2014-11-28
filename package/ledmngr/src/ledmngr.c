@@ -1029,13 +1029,15 @@ static struct button_configuration* get_button_config(void) {
     int i;
     const char *butt_names;
     const char *butt_config;
-    char *p, *ptr, *rest;
+    char *ptr, *rest;
 
     butt_cfg = malloc(sizeof(struct button_configuration));
-    butt_cfg->button_nr = 0;
-    butt_cfg->buttons = malloc(MAX_BUTTON * sizeof(struct button_config*));
-    /* Initialize */
+    memset(butt_cfg,0,sizeof(butt_cfg));
 
+    butt_cfg->buttons = malloc(MAX_BUTTON * sizeof(struct button_config*));
+    memset(butt_cfg->buttons,0,sizeof(butt_cfg->buttons));
+
+    /* Initialize */
     if(!uci_ctx) {
         DEBUG_PRINT("Failed to load uci config file \"hw\"\n");
         return NULL;
@@ -1049,9 +1051,8 @@ static struct button_configuration* get_button_config(void) {
 
     /* Populate button configuration structure */
     DEBUG_PRINT("Populate button configuration structure\n");
-    ptr = (char *)butt_names;
-    p = strtok_r(ptr, " ", &rest);
-    while(p != NULL) {
+    ptr = strtok_r((char *)butt_names, " ", &rest);
+    while(ptr != NULL) {
         struct button_config* bc;
         char type[256];
         char active[256];
@@ -1059,10 +1060,10 @@ static struct button_configuration* get_button_config(void) {
         char feedback_led[256];
         int  address;
 
-        butt_config = ucix_get_option(uci_ctx, "hw", "buttons", p);
+        butt_config = ucix_get_option(uci_ctx, "hw", "buttons", ptr);
 
         bc = malloc(sizeof(struct button_config));
-        bc->name = strdup(p);
+        bc->name = strdup(ptr);
         sscanf(butt_config, "%s %d %s %s %s",type, &address, active, command, feedback_led);
         DEBUG_PRINT("butt_config %s %d %s %s %s\n",type,address, active, command, feedback_led);
 
@@ -1078,8 +1079,7 @@ static struct button_configuration* get_button_config(void) {
         bc->feedback_led = strdup(feedback_led);
 
         /* Get next */
-        ptr = rest;
-        p = strtok_r(NULL, " ", &rest);
+        ptr = strtok_r(NULL, " ", &rest);
 
         if (butt_cfg->button_nr >= MAX_BUTTON) {
             DEBUG_PRINT("Too many buttons configured! Only adding the %d first\n", MAX_BUTTON);
