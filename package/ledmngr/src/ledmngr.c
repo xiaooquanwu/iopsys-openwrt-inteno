@@ -1065,7 +1065,7 @@ static struct button_configuration* get_button_config(void) {
         bc = malloc(sizeof(struct button_config));
         bc->name = strdup(ptr);
         sscanf(butt_config, "%s %d %s %s %s",type, &address, active, command, feedback_led);
-        DEBUG_PRINT("butt_config %s %d %s %s %s\n",type,address, active, command, feedback_led);
+        DEBUG_PRINT("%-15s: %4s %2d %s %s\n",command, type,address, active, feedback_led);
 
         if (!strcmp(active, "al"))   bc->active = ACTIVE_LOW;
         if (!strcmp(active, "ah"))   bc->active = ACTIVE_HIGH;
@@ -1090,7 +1090,13 @@ static struct button_configuration* get_button_config(void) {
     }
 
     for (i=0 ; i<butt_cfg->button_nr ; i++) {
-        DEBUG_PRINT("%s button adr: %d active:%d command: %s\n",butt_cfg->buttons[i]->name, butt_cfg->buttons[i]->address, butt_cfg->buttons[i]->active, butt_cfg->buttons[i]->command);
+        DEBUG_PRINT("%-15s %-15s %d:%2d:%d \n",
+                    butt_cfg->buttons[i]->name,
+                    butt_cfg->buttons[i]->command,
+                    butt_cfg->buttons[i]->type,
+                    butt_cfg->buttons[i]->address,
+                    butt_cfg->buttons[i]->active
+                    );
     }
 
     /* Initialize the buttons, sometimes the button gpios are left in a pressed state, reading them 10 times should fix that */
