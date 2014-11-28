@@ -1379,9 +1379,10 @@ again:
 
 }
 
-struct catv_handler * catv_init(char *i2c_bus,int a0_addr,int a2_addr)
+struct catv_handler * catv_init(struct uci_context *uci_ctx, char *i2c_bus,int a0_addr,int a2_addr)
 {
     struct catv_handler *h;
+    const char *p;
 
     printf("%s:\n",__func__);
 
@@ -1389,6 +1390,18 @@ struct catv_handler * catv_init(char *i2c_bus,int a0_addr,int a2_addr)
 
     if (!h)
         return NULL;
+
+    p = ucix_get_option(uci_ctx, "hw", "board", "hardware");
+    if (p == 0) {
+        syslog(LOG_INFO, "%s: Missing Hardware identifier in configuration. I2C is not started\n",__func__);
+        return NULL;
+    }
+
+    /* only run on EG300 hardware */
+    if ( strcasecmp("EG300", p)){
+        free(h);
+        return NULL;
+    }
 
     h->i2c_a0 = i2c_open_dev(i2c_bus, a0_addr,
                              I2C_FUNC_SMBUS_READ_BYTE | I2C_FUNC_SMBUS_WRITE_BYTE);

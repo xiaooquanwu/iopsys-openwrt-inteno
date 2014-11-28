@@ -494,10 +494,6 @@ static void blink_handler(struct uloop_timeout *timeout);
 static struct uloop_timeout blink_inform_timer = { .cb = blink_handler };
 static unsigned int cnt = 0;
 
-
-
-
-
 static void blink_handler(struct uloop_timeout *timeout)
 {
     cnt++;
@@ -934,7 +930,7 @@ int ledmngr(void) {
 
     sfp_h = sfp_init(uci_ctx);
 
-    catv_h = catv_init("/dev/i2c-0", 0x50, 0x51);
+    catv_h = catv_init(uci_ctx, "/dev/i2c-0", 0x50, 0x51);
 
     if(catv_h == 0)
         DEBUG_PRINT("no catv device found \n");
