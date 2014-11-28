@@ -596,9 +596,6 @@ set_wifi_device() {
 	wlctl -i $device fcache 1 || dhdctl -i $device fcache 1
 	wlctl -i $device wnm 0x103
 
-	# Disable DHD PKTC
-	dhdctl -i $device pktc 0
-
 	# WDS Settings
 	wlctl -i $device wds none
 	wlctl -i $device wdswsec 0
