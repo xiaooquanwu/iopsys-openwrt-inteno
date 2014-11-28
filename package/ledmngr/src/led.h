@@ -51,6 +51,8 @@ typedef enum {
 #define SR_MAX 16
 #define MAX_BUTTON 10
 
+struct leds_configuration;
+
 #include "button.h"
 
 struct led_config {
