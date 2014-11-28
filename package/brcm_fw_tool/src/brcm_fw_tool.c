@@ -298,7 +298,7 @@ static int get_info(int memdump, int chip_id, int flash_size, int chip_rev, int 
     return 0;
 }
 
-static int set_info(int gpio, int led, int state, int bootline, char* wan_interface) {
+static int set_info(int gpio, int led, int state, int bootline, char* wan_interface, int spi, int spi_dev, char* payload) {
     fd = open("/dev/brcmboard", O_RDWR);
     if ( fd == -1 ) {
         fprintf(stderr, "failed to open: /dev/brcmboard\n");
@@ -348,6 +348,12 @@ static int set_info(int gpio, int led, int state, int bootline, char* wan_interf
             printf("Error opening socket: %s\n", wan_interface);
         }
     }
+
+    if (spi) {
+		unsigned char buf[6] = {8,1,0,0,0,0};
+        board_ioctl(BOARD_IOCTL_SPI_INIT, spi_dev, 0, 0, 0, 391000);
+		board_ioctl(BOARD_IOCTL_SPI_WRITE, spi_dev, 0, buf, 6, NULL);
+	}
     return 0;
 }
 
@@ -814,6 +820,7 @@ static void usage(void)
     "        -p <state>                  state of led or gpio io 0/1\n"
     "        -u <0|1>                    set bootline\n"
     "        -d <interface> -p <0|1>     set the wan state of an interface\n"
+    "        -k -s <dev> -p <payload>    write hex payload to spi device\n"
     "---- write options ----\n"
     "        -q                          write cfe to flash\n"
     "        -a                          write file system to flash\n"
@@ -857,6 +864,10 @@ int main (int argc, char **argv)
     int  status            = 0;
     int  boot_mode         = 0;
     int  boot_mode_id      = 0;
+    int  spi               = 0;
+    int  spi_dev           = 0;
+    int  offset            = 0;
+	char *payload          = NULL;
 	char *in_file          = NULL;
 	char *mtd_device       = NULL;
 	char *sequence_number  = NULL;
@@ -888,6 +899,7 @@ int main (int argc, char **argv)
                 break;
             case 'p':
                 state = atoi(optarg);
+				payload = optarg;
                 break;
             case 'x':
                 gpio = atoi(optarg)+1;
@@ -927,6 +939,7 @@ int main (int argc, char **argv)
 				break;
 			case 'o':
 				return_oem = 1;
+				offset = atoi(optarg);
 				break;
 			case 'w':
 				start_offset = 1;
@@ -950,9 +963,11 @@ int main (int argc, char **argv)
 				break;
 			case 's':
 				sequence_number = optarg;
+				spi_dev = atoi(optarg);
 				break;
             case 'k':
                 kernel_chip_id = 1;
+				spi = 1;
                 break;
             case 'f':
                 kernel_flash_size = 1;
@@ -1017,7 +1032,7 @@ int main (int argc, char **argv)
             break;
         case CMD_SET_INFO:
             if (verbose) fprintf(stderr, "Setting kernel info.\n");
-            set_info(gpio, led, state, bootline, wan_interface);
+            set_info(gpio, led, state, bootline, wan_interface, spi, spi_dev, payload);
             break;
         default:
 			fprintf(stderr, "Unknown command %d\n", cmd);
