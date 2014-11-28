@@ -1384,8 +1384,6 @@ struct catv_handler * catv_init(struct uci_context *uci_ctx, char *i2c_bus,int a
     struct catv_handler *h;
     const char *p;
 
-    printf("%s:\n",__func__);
-
     h = malloc( sizeof(struct catv_handler) );
 
     if (!h)

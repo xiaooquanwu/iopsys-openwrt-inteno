@@ -933,7 +933,7 @@ int ledmngr(void) {
     catv_h = catv_init(uci_ctx, "/dev/i2c-0", 0x50, 0x51);
 
     if(catv_h == 0)
-        DEBUG_PRINT("no catv device found \n");
+        DEBUG_PRINT("no CATV device found \n");
 
     /* initialize ubus */
     DEBUG_PRINT("initialize ubus\n");
