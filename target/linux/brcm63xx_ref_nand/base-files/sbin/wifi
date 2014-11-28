@@ -614,12 +614,14 @@ set_wifi_device() {
 	wlctl -i $device mpc 0
 	wlctl -i $device infra 1
 	wlctl -i $device closed 0
-	wlctl -i $device radar 0
+	wlctl -i $device radar 1
 
 	wlctl -i $device country "${country:-EU/13}"
 	wlctl -i $device band "${band:-b}"
 
 	# regulatory and spectrum management settings
+	wlctl -i $device regulatory 0
+	wlctl -i $device spect 1
 	case "$doth" in
 		1)
 			wlctl -i $device regulatory 0
@@ -633,7 +635,7 @@ set_wifi_device() {
 			wlctl -i $device regulatory 1
 			wlctl -i $device spect 0
 		;;
-		*)
+		0)
 			wlctl -i $device regulatory 0
 			wlctl -i $device spect 0
 		;;
@@ -800,6 +802,7 @@ set_wifi_device() {
 
 	wlctl -i $device down
 	wlctl -i $device up
+	wlctl -i $device radarthrs 0x6ae 0x30 0x6a8 0x30 0x6a4 0x30 0x6aa 0x30 0x6aa 0x30 0x6a4 0x30
 }
 
 generate_wireless_config() {
@@ -859,7 +862,6 @@ config wifi-device '$wl'
 	option rxchainps_pps '10'
 	option rifs '0'
 	option rifs_advert '0'
-	option doth '0'
 
 config wifi-iface
 	option device '$wl'
@@ -1011,7 +1013,7 @@ case "$1" in
 		run_hooks wifi-device $ENABLE_HOOKS
 
 		# start related daemons
-		# [ -n "$acsifs" ] && acsd
+		[ -n "$acsifs" ] && acsd
 		eapd
 		nas
 		[ $_enWps -gt 0 ] && wps_monitor &
