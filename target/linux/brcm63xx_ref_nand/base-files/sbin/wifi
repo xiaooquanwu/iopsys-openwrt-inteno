@@ -635,10 +635,10 @@ set_wifi_device() {
 			wlctl -i $device regulatory 1
 			wlctl -i $device spect 0
 		;;
-		0)
-			wlctl -i $device regulatory 0
-			wlctl -i $device spect 0
-		;;
+#		0)
+#			wlctl -i $device regulatory 0
+#			wlctl -i $device spect 0
+#		;;
 	esac
 
 	# set HW bandwidth and mode
