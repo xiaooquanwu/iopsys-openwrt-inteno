@@ -1,0 +1,45 @@
+;------------------------------------------------------------------------------
+; Allows customized handling of outgoing calls.
+;
+; - The called extension is stored in DIAL_EXTEN and may be altered
+;
+; - If enabled, this macro will be called before an outbound call is placed
+;   but after matching any local or special extensions
+;
+; - Control will be handed back to normal call handler at the end of this
+;   macro unless the call is ended with Hangup() or similar.
+;------------------------------------------------------------------------------
+[macro-custom-outgoing]
+;Example macro, will playback monkeys if calling extension 1234
+exten => s,1,		GotoIf($["${DIAL_EXTEN}" = "1234"]?monkeys:continue)
+exten => s,n(monkeys),	Playback(tt-monkeys)
+exten => s,n,		Hangup()
+exten => s,n(continue),	NoOp(Continue with normal outgoing call to ${DIAL_EXTEN})
+
+;------------------------------------------------------------------------------
+; Allows customized handling of incoming calls.
+; NOTE: any extension matching _[0-9a-zA-Z]. will end up here. Make sure
+; to handle extensions in a secure way - follw best practices.
+;
+; - The called extension is stored in MACRO_EXTEN
+;
+; - If enabled, this macro will be called before normal call handling begins
+;
+; - Control will be handed back to normal call handler at the end of this
+;   macro unless the call is ended with Hangup() or similar.
+;------------------------------------------------------------------------------
+[macro-custom-incoming]
+; Example macro, will play a beep before continuing normal call procedure
+exten => s,1,Answer()
+exten => s,n,NoOp(Custom handling for incoming call to extension ${MACRO_EXTEN})
+exten => s,n,Playback(beep)
+
+;------------------------------------------------------------------------------
+; Allows customized actions when other party hangs up, for example
+; playing a beep or busy tone to indicate that call is ended.
+;------------------------------------------------------------------------------
+[macro-custom-hangup]
+exten => s,1,Playtones(busy)
+exten => s,n,Wait(10)
+exten => s,n,Hangup()
+

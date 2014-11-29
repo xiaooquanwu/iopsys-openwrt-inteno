@@ -1,0 +1,96 @@
+;
+; Configuration file for chan_brcm
+;
+; The configuration is divided into sections for each physical endpoint, named '[brcmX]', where X is
+; a number indicating the endpoint id. The 'default' section contains default values that are applied to
+; all lines unless they are overridden.
+;
+[default]
+
+; Allow remote transfer on hangup.
+; With one call active, press R, dial a new number and wait for ringback. Then hangup to do a remote connect.
+hangup_xfer=yes
+
+; Country, determines dialtone and other country-specific parameters.
+; This is a global setting.
+; Available values are:
+; AUS, BEL, BRA, CHL, CHN, CZE, DNK, ETS, FIN, FRA, DEU, HUN, IND, ITA, JPN, NLD, NZL, USA, ESP, SWE, CHE, NOR, TWN, GBR, ARE
+country=|COUNTRY|
+
+; Enables the use of a jitterbuffer on the receiving side of a SIP channel. [yes/no] (Added in Version 1.4)
+; This is a global setting.
+jbenable = |JBENABLE|
+
+; Forces the use of a jitterbuffer on the receive side of a SIP channel. [yes/no] Defaults to "no". (Added in Version 1.4)
+; This is a global setting.
+jbforce = |JBFORCE|
+
+; Max length of the jitterbuffer in milliseconds. (Added in Version 1.4)
+; This is a global setting.
+jbmaxsize = |JBMAXSIZE|
+
+; Jump in the frame timestamps over which the jitterbuffer is resynchronized. Useful to improve the quality of the voice, with big jumps in/broken timestamps, usually sent from exotic devices and programs. Defaults to 1000. (Added in Version 1.4)
+; This is a global setting.
+;jbresyncthreshold = 1000
+
+; Jitterbuffer implementation, used on the receiving side of a SIP channel. Two implementations are currently available - "fixed" (with size always equals to jbmaxsize) and "adaptive" (with variable size, actually the new jb of IAX2). Defaults to fixed. (Added in Version 1.4)
+; This is a global setting.
+jbimpl = |JBIMPL|
+
+; Context used for outbound calls
+context=default
+
+; Context used for immediate/direct dialling.
+; When an exact match is found in this context, interdigit timeout is ignored and call is immediately initiated
+context_direct=default-direct
+
+; Echo Cancellation [off, on]
+echocancel=on
+
+; Voice Activity Detection
+; 0 = VAD off
+; 1 = Transparent VAD
+; 2 = Conservative VAD
+; 3 = Aggressive VAD
+silence=0
+
+; TX Gain value between -96 and 32 dB
+txgain=0
+
+; RX Gain value between -96 and 32 dB
+rxgain=0
+
+; Codec settings, can be specified multiple times to allow more codecs
+; Available values are: alaw, ulaw, g723, g726, g729
+allow = ulaw
+allow = alaw
+
+; Enable/Disable ring signal [off, on]
+ringsignal=on
+
+; Inter-digit timeout, milliseconds
+dialoutmsec=|DIALOUTMSEC|
+
+; Specify packetization rate
+; Available values are: 5, 10, 20, 30, 40
+period=20
+
+; Comfort Noise Generation
+; 0 = CNG off
+; 1 = White noise
+; 2 = Hot noise
+; 3 = Estimate
+comfortnoise=0
+
+; Maximum delay between on/off hook for detecting hook flash, milliseconds
+hfmaxdelay=500
+
+;
+; Unused/undocumented settings, do not uncomment/change these
+;
+;language=
+;jitter_fixed=0
+;jitter_min=0
+;jitter_max=0
+;jitter_target=0
+

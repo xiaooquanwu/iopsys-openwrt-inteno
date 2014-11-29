@@ -1,0 +1,29 @@
+;
+; Contexts for SIP Provider
+;
+[|PROVIDER|]
+; Main context, handles all normal calls for this Provider
+include => clir
+include => local_extensions
+include => |PROVIDER|-callforwarding
+include => |PROVIDER|-outgoing
+
+[|PROVIDER|-transfer]
+; Context used for call transfer for this Provider
+exten => _X.,1,		Transfer(SIP/${EXTEN}@|PROVIDER|,,)
+
+[|PROVIDER|-outgoing]
+; Context used for normal outgoing calls
+exten => _[*#0-9].,1,	Set(DIAL_EXTEN=${EXTEN})
+exten => _[*#0-9].,n,	|CUSTOM_OUTGOING|
+exten => _[*#0-9].,n,   |CALL_FILTER|
+exten => _[*#0-9].,n,	Set(result=${SHELL(/usr/lib/asterisk/log_call.sh Outgoing ${DIAL_EXTEN})})
+exten => _[*#0-9].,n,	Set(DB(LASTCALL/|PROVIDER|)=${DIAL_EXTEN})
+exten => _[*#0-9].,n,	Set(CALLERID(name)=|DISPLAYNAME|)
+exten => _[*#0-9].,n,	Set(__TRANSFER_CONTEXT=|PROVIDER|-transfer)
+exten => _[*#0-9].,n,	Dial(SIP/${DIAL_EXTEN}@|PROVIDER|,,gT)
+exten => _[*#0-9].,n,	Macro(endcall,SIP,|PROVIDER|,${DIAL_EXTEN},${CHANNEL(name)},|MAX_RETRIES|,|RETRYTIME|,|WAITTIME|,|CBBS_KEY|,|CONGESTIONTONE|)
+exten => _[*#0-9].,n,	Goto(hangup,h,2)
+exten => _[*#0-9].,n,	Hangup()
+
+[|PROVIDER|-callforwarding]

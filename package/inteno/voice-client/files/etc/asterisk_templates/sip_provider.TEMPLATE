@@ -1,0 +1,22 @@
+[|NAME|]
+type		= peer
+defaultuser	= |AUTHUSER|	; Authentication user for outbound proxies
+fromuser	= |USER|	; How your provider knows you
+secret		= |SECRET|	; The password they use to contact us
+host		= |HOST|
+fromdomain	= |FROMDOMAIN|
+insecure	= port,invite
+canreinvite	= no
+insecure	= invite
+;qualify		= yes
+nat		= yes
+context		= incoming_calls
+port=|PORT|
+transport	= |TRANSPORT|
+outboundproxy=|OUTBOUNDPROXY||OUTBOUNDPROXYPORT|
+registered_extension = |CONTACT_USER|
+autoframing	= |AUTOFRAMING|
+encryption	= |ENCRYPTION|
+disallow	= all
+|ALLOW|
+

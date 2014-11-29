@@ -1,0 +1,10 @@
+;
+; RTP Configuration
+;
+[general]
+;
+; RTP start and RTP end configure start and end addresses
+;
+rtpstart=|RTPSTART|
+rtpend=|RTPEND|
+rtcpinterval=|RTCPINTERVAL|

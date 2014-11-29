@@ -2,16 +2,7 @@
 # Copyright (C) 2006 OpenWrt.org
 # Copyright (C) 2010 Vertical Communications
 
-if [ ! -c /dev/kmsg ]
-then
-    mknod /dev/kmsg c 1 11
-fi
-# save stdout stderr
-exec 3>&1
-exec 4>&2
-# set stdout stderr to /dev/kmsg
-exec 1>/dev/kmsg
-exec 2>/dev/kmsg
+[ -z "$PREINIT" ] && exec /sbin/init
 
 export PATH=/bin:/sbin:/usr/bin:/usr/sbin
 
@@ -33,7 +24,8 @@ pi_init_path="/bin:/sbin:/usr/bin:/usr/sbin"
 pi_init_cmd="/sbin/init"
 
 . /lib/functions.sh
-. /lib/functions/boot.sh
+. /lib/functions/preinit.sh
+. /lib/functions/system.sh
 
 boot_hook_init preinit_essential
 boot_hook_init preinit_main
@@ -42,7 +34,7 @@ boot_hook_init initramfs
 boot_hook_init preinit_mount_root
 
 for pi_source_file in /lib/preinit/*; do
-    . $pi_source_file
+	. $pi_source_file
 done
 
 boot_run_hook preinit_essential
@@ -52,8 +44,3 @@ pi_jffs2_mount_success=false
 pi_failsafe_net_message=false
 
 boot_run_hook preinit_main
-
-# restore stdout stderr
-exec 1>&3-
-exec 2>&4-
-

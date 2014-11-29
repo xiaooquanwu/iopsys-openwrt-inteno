@@ -1,0 +1,165 @@
+;
+; extensions_macro.conf
+; Manage Call Forwarding on busy/no answer/immediate in asterisk.
+;
+; Macros to set up call forwarding via an extension (normally *21* or similar).
+; Macros to place incoming calls according to the forwarding settings.
+;
+
+[macro-create_cfim]
+;
+; ${ARG1} - Associated SIP peer
+;
+exten => s,1,		Read(input,,,,,300)
+exten => s,n,		Set(DB(CFIM/${ARG1})=${input})
+exten => s,n,		Playback(beep)
+exten => s,n,		Hangup()
+
+[macro-delete_cfim]
+;
+; ${ARG1} - Associated SIP peer
+;
+exten => s,1,		Set(ignored=${DB_DELETE(CFIM/${ARG1})})
+exten => s,n,		Playback(beep)
+exten => s,n,		Playback(beep)
+exten => s,n,		Hangup()
+
+[macro-create_cfbs]
+;
+; ${ARG1} - Associated SIP peer
+;
+exten => s,1,		Read(input,,,,,300)
+exten => s,n,		Set(DB(CFBS/${ARG1})=${input})
+exten => s,n,		Playback(beep)
+exten => s,n,		Hangup()
+
+[macro-delete_cfbs]
+;
+; ${ARG1} - Associated SIP peer
+;
+exten => s,1,		Set(ignored=${DB_DELETE(CFBS/${ARG1})})
+exten => s,n,		Playback(beep)
+exten => s,n,		Playback(beep)
+exten => s,n,		Hangup()
+
+[macro-call_return]
+;
+; Return call to last incoming caller
+; ${ARG1} - Associated SIP peer
+;
+exten => s,1,		Set(num=${DB(LASTCALLER/${ARG1})})
+exten => s,n,		GotoIf(${num}?:nonumber)
+exten => s,n,		GotoIf($["${num}" = "anonymous"]?nonumber)
+exten => s,n,		SayDigits(${num})
+exten => s,n,		Set(DIAL_EXTEN=${num})
+exten => s,n,		Goto(${ARG1}-outgoing, ${num})
+exten => s,n,		Hangup()
+;If no number was found to dial, play beep and hang up
+exten => s,n(nonumber),	Playback(beep)
+exten => s,n,		Hangup()
+
+[macro-redial]
+;
+; Redial last dialled number
+; ${ARG1} - Associated SIP peer
+;
+exten => s,1,		Set(num=${DB(LASTCALL/${ARG1})})
+exten => s,n,		GotoIf(${num}?:nonumber)
+exten => s,n,		Set(DIAL_EXTEN=${num})
+exten => s,n,		Goto(${ARG1}-outgoing, ${num})
+exten => s,n,		Hangup()
+;If no number was found to dial, play beep and hang up
+exten => s,n(nonumber),	Playback(beep)
+exten => s,n,		Hangup()
+
+[macro-endcall]
+;
+; Called after dialling out, in order to take appropriate action
+; depending on the result of the call.
+; i.e.
+; - play correct tones to caller
+; - offer call back busy subscriber if busy
+;
+; Arguments - used for CBBS:
+; ${ARG1} - Channel type
+; ${ARG2} - Channel id (e.g. sip0)  that we call through
+; ${ARG3} - Extension to call
+; ${ARG4} - Local channel to dial back on reply
+; ${ARG5} - Max retries
+; ${ARG6} - Retry interval
+; ${ARG7} - Wait time
+; ${ARG8} - Key to press to initiate cbbs
+; ${ARG9} - Tone to play on congestion
+;
+exten => s,1,			Goto(s-${DIALSTATUS},1)
+exten => s,n,			Hangup()
+
+;handle busy (with CBBS support)
+exten => s-BUSY,1,		Read(DIGIT,Busy,1,in,30)
+exten => s-BUSY,n,		GotoIf($[${DIGIT} = ${ARG8}]?ccbs)
+exten => s-BUSY,n,		Hangup()
+exten => s-BUSY,n(ccbs),	Set(result=${SHELL(/usr/lib/asterisk/cbbs.sh ${ARG1} ${ARG2} ${ARG3} ${ARG4} ${ARG5} ${ARG6} ${ARG7})})
+exten => s-BUSY,n,		Playback(beep)
+exten => s-BUSY,n,		Hangup()
+
+;handle congestion
+exten => s-CONGESTION,1,	Playtones(${ARG9})
+exten => s-CONGESTION,n,	Wait(5)
+exten => s-CONGESTION,n,	Congestion()
+exten => s-CONGESTION,n,	Hangup()
+
+;handle unavailable 
+exten => s-CHANUNAVAIL,1,	Playtones(${ARG9})
+exten => s-CHANUNAVAIL,n,	Wait(5)
+exten => s-CHANUNAVAIL,n,	Congestion()
+exten => s-CHANUNAVAIL,n,	Hangup()
+
+[macro-callhandler]
+;
+; ${ARG1} - Calling sip peer
+;
+
+; Load Call Forwarding settings
+exten => s,1,			Set(linecfim=${DB(CFIM/${ARG1})})
+
+; If we have CFIM set, go to CFIM call
+exten => s,n,			GotoIf(${linecfim}?call_cfim)
+
+;Call line normally, by going to call_line context
+exten => s,n,			Goto(call_line,${MACRO_EXTEN},1)
+
+;Call CFIM number
+exten => s,n(call_cfim),	Dial(SIP/${linecfim}@${ARG1},)
+exten => s,n,			Hangup()
+
+[macro-callhandler-noanswer]
+;
+; ${ARG1} - Calling sip peer
+;
+
+; Load Call Forwarding settings
+exten => s,1,			Set(linecfbs=${DB(CFBS/${ARG1})})
+exten => s,n,			GotoIf(${linecfbs}?call_cfbs)
+exten => s,n,			MacroExit()
+
+;Call CFBS
+exten => s,n(call_cfbs),	Dial(SIP/${linecfbs}@${ARG1})
+
+[macro-callhandler-incoming-blocked]
+;
+; ${ARG1} - Extension
+;
+exten => s,1,	Set(result=${SHELL(/usr/lib/asterisk/log_call.sh Incoming ${ARG1} Blocked)})
+exten => s,n,   Congestion(10)
+exten => s,n,	Hangup()
+
+[macro-callhandler-outgoing-blocked]
+;
+; ${ARG1} - Extension
+;
+exten => s,1,	Set(result=${SHELL(/usr/lib/asterisk/log_call.sh Outgoing ${ARG1} Blocked)})
+exten => s,n,	Playtones(congestion)
+exten => s,n,	Wait(5)
+exten => s,n,   Congestion(10)
+exten => s,n,	Hangup()
+

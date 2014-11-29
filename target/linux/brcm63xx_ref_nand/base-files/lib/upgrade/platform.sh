@@ -22,31 +22,24 @@ platform_check_image() {
 		return 1
 	}
 
-	case "$(get_image_type "$from")" in
-		"INTENO") img_type=2 ;;
-		"CFE+FS") img_type=1 ;;
-		"FS")     img_type=0 ;;
-		*)
-			echo "Unknown image type" > /dev/console
-			return 1
-	esac
-	if [ $img_type -lt 2 ] && grep -q "rootfstype=ubifs" /proc/cmdline; then
-		echo "Old image not compatible after upgrade to UBIFS" > /dev/console
+	if [ "$(get_image_type "$from")" == "CFE+FS" ]; then
+		nvram set cfe_fs=1
+	elif [ "$(get_image_type "$from")" == "FS" ]; then
+		nvram set cfe_fs=0
+	else
+		echo "Unknown image type" > /dev/console
 		return 1
 	fi
 	echo $img_type > /tmp/CFE_FS
 
-	case "$(get_flash_type "$from")" in
-		"NAND")
-			echo 1 > /tmp/IS_NAND
-			;;
-		"NOR")
-			echo 0 > /tmp/IS_NAND
-			;;
-		*)
-			echo "Unknown flash type" > /dev/console
-			return 1
-	esac
+	if [ "$(get_flash_type "$from")" == "NAND" ]; then
+		nvram set is_nand=1
+	elif [ "$(get_flash_type "$from")" == "NOR" ]; then
+		nvram set is_nand=0
+	else
+		echo "Unknown flash type" > /dev/console
+		return 1
+	fi
 
 	[ "$(check_image_size "$from")" == "SIZE_OK" ] || {
 		echo "Image size is too large" > /dev/console

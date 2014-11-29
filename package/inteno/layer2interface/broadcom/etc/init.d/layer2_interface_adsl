@@ -1,0 +1,159 @@
+#!/bin/sh /etc/rc.common
+
+. /lib/functions.sh
+include /lib/network
+START=21
+
+checkpvc() {
+	local retur
+	local vpi=$1
+	local vci=$2
+	
+	retur=$(xtmctl operate conn --show | awk -v test="$vpi/$vci" '{if ($3 ==test ) print $5 }')
+
+	case $retur in
+		''|*[!0-9]*) return 0 ;;
+		*) return $retur ;;
+	esac
+}
+
+checkxtmlist() {
+	local dtype=$1
+	local pcr
+	local scr
+	local mbs
+	local retur
+	
+	case $# in
+		1)
+			pcr=0
+			scr=0
+			mbs=0
+		;; 
+		2) 
+			pcr=$2
+			scr=0
+			mbs=0 
+		;;
+		4) 
+			pcr=$2
+			scr=$3
+			mbs=$4 
+		;;
+	esac
+	
+	retur=$(xtmctl operate tdte --show | awk -v test="$dtype" -v pcr="$pcr" -v scr="$scr" -v mbs="$mbs" '{if ($2 ==test && $3==pcr && $4==scr && $5==mbs ) print $1 }')
+
+	case $retur in
+		''|*[!0-9]*) return 0 ;;
+		*) return $retur ;;
+	esac	
+}
+
+atm_inf_conf() {
+	local vpi
+	local vci
+	local link_type
+	local atmtype
+	local pcr
+	local scr
+	local mbs
+	local encaps
+	local ifname
+	local ret
+	local baseifname
+	config_get atmtype $1 atmtype
+	config_get link_type $1 link_type
+	config_get pcr $1 pcr
+	config_get scr $1 scr
+	config_get mbs $1 mbs
+	config_get vpi $1 vpi
+	config_get vci $1 vci
+	config_get ifname $1 ifname 
+	config_get baseifname $1 baseifname
+	config_get name $1 name
+	config_get bridge $1 bridge
+	checkpvc $vpi $vci
+	ret=$?
+
+	if [ "$ret" -eq 0 ]; then
+		checkxtmlist $atmtype $pcr $scr $mbs
+		ret=$?
+		if [ "$ret" -eq 0 ]; then
+			case $atmtype in
+				ubr) xtmctl operate tdte --add "$atmtype";;
+				ubr_pcr ) xtmctl operate tdte --add "$atmtype" $pcr;;
+				cbr) xtmctl operate tdte --add "$atmtype" $pcr;;
+				nrtvbr)	xtmctl operate tdte --add "$atmtype" $pcr $scr $mbs;;
+				rtvbr)xtmctl operate tdte --add "$atmtype" $pcr $scr $mbs;;
+			esac
+		fi
+		 
+		case $link_type in
+			EoA)config_get encaps $1 encapseoa;;
+			PPPoA)config_get encaps $1 encapspppoa;;
+			IPoA)config_get encaps $1 encapsipoa;;
+		esac
+
+		checkxtmlist $atmtype $pcr $scr $mbs
+		ret="$?"
+		xtmctl operate conn --add 1.$vpi.$vci aal5 $encaps 1 $ret $ret
+		xtmctl operate conn --addq 1.$vpi.$vci 0 wrr 1
+		xtmctl operate conn --createnetdev 1.$vpi.$vci ${ifname%%.*}
+		xtmctl operate intf --state 1 enable
+		ifconfig $baseifname up
+		
+		brcm_virtual_interface_rules "$baseifname" "$ifname" "$bridge"
+	fi
+}
+
+remove_netdevices() {
+	local vpi
+	local vci
+	local rest
+	local x=0
+	#local baseifname
+	local vpivci=`xtmctl operate conn --show | awk '{if (NR!=1 && $1!="PTM") {print $3}}'`
+
+	for i in $vpivci
+	do
+		rest=${i#\/}
+		vpi=${rest%%\/*}
+		vci=${rest#*\/}
+		echo "xtmctl operate conn --delete 1.$vpi.$vci"
+		xtmctl operate conn --delete 1.$vpi.$vci
+		echo "xtmctl operate conn --deletenetdev 1.$vpi.$vci"
+		xtmctl operate conn --deletenetdev 1.$vpi.$vci
+	done
+}
+
+boot() {
+	#xdslctl start
+	echo "Boot ADSL"
+	start
+}
+
+start() {
+	local adslstatus
+	echo "Starting ADSL"
+	config_load layer2_interface
+	config_get adslstatus adsl device
+	if [ "$adslstatus" == "up" ]; then
+		xtmctl start
+		config_load layer2_interface_adsl
+		config_foreach atm_inf_conf atm_bridge
+	fi
+}
+
+stop() {
+	echo "Stopping ADSL"
+
+	#xtmctl stop
+	remove_netdevices	
+}
+
+restart() {
+	stop
+	start
+}
+

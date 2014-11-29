@@ -1,0 +1,121 @@
+--- a/config.c
++++ b/config.c
+@@ -60,6 +60,7 @@ config_parse_interface(struct uci_section *s, bool alias)
+ 	struct blob_attr *config;
+ 	struct device *dev;
+ 	bool bridge = false;
++	bool anywan = false;
+ 
+ 	disabled = uci_lookup_option_string(uci_ctx, s, "disabled");
+ 	if (disabled && !strcmp(disabled, "1"))
+@@ -75,6 +76,8 @@ config_parse_interface(struct uci_section *s, bool alias)
+ 
+ 		bridge = true;
+ 	}
++	else if (type && !strcmp(type, "anywan"))
++		anywan = true;
+ 
+ 	uci_to_blob(&b, s, &interface_attr_list);
+ 
+@@ -88,6 +91,9 @@ config_parse_interface(struct uci_section *s, bool alias)
+ 	if (!bridge && uci_to_blob(&b, s, simple_device_type.config_params))
+ 		iface->device_config = true;
+ 
++	if (anywan)
++		iface->anywan = true;
++
+ 	config = blob_memdup(b.head);
+ 	if (!config)
+ 		goto error;
+
+--- a/interface.c
++++ b/interface.c
+@@ -490,6 +490,11 @@ interface_claim_device(struct interface *iface)
+ {
+ 	struct interface *parent;
+ 	struct device *dev = NULL;
++	char ifnames[256];
++	char *devnames = NULL;
++	char devname[10][10];
++	int devno = 0;
++	int i;
+ 
+ 	if (iface->parent_iface.iface)
+ 		interface_remove_user(&iface->parent_iface);
+@@ -500,12 +505,32 @@ interface_claim_device(struct interface *iface)
+ 		interface_add_user(&iface->parent_iface, parent);
+ 	} else if (iface->ifname &&
+ 		!(iface->proto_handler->flags & PROTO_FLAG_NODEV)) {
+-		dev = device_get(iface->ifname, true);
++		if (!iface->anywan)
++			dev = device_get(iface->ifname, true);
+ 	} else {
+ 		dev = iface->ext_dev.dev;
+ 	}
+ 
+-	if (dev)
++	if (iface->anywan) {
++		strcpy(ifnames, iface->ifname);
++		devnames = strtok(ifnames, " ");
++		while (devnames != NULL)
++		{
++		    strcpy(devname[devno], devnames);
++		    devnames = strtok(NULL, " ");
++		    devno++;
++		}
++
++		for (i=0; i<devno; i++) {
++			dev = device_get(devname[i], true);
++			if (dev && dev->present) {
++				interface_set_main_dev(iface, dev);
++				break;
++			}
++		}
++		memset(ifnames, '\0', sizeof(ifnames));
++	}
++	else if (dev)
+ 		interface_set_main_dev(iface, dev);
+ 
+ 	if (iface->proto_handler->flags & PROTO_FLAG_INIT_AVAILABLE)
+@@ -907,6 +932,10 @@ interface_set_up(struct interface *iface)
+ 		return 0;
+ 
+ 	interface_clear_errors(iface);
++
++	if (iface->anywan && !iface->available)
++		interface_claim_device(iface);
++
+ 	if (!iface->available) {
+ 		interface_add_error(iface, "interface", "NO_DEVICE", NULL, 0);
+ 		return -1;
+@@ -1022,6 +1051,7 @@ interface_change_config(struct interface *if_old, struct interface *if_new)
+ 	if_old->parent_ifname = if_new->parent_ifname;
+ 	if_old->proto_handler = if_new->proto_handler;
+ 	if_old->force_link = if_new->force_link;
++	if_old->anywan = if_new->anywan;
+ 
+ 	if_old->proto_ip.no_dns = if_new->proto_ip.no_dns;
+ 	interface_replace_dns(&if_old->config_ip, &if_new->config_ip);
+
+--- a/interface.h
++++ b/interface.h
+@@ -106,6 +106,7 @@ struct interface {
+ 	bool link_state;
+ 	bool force_link;
+ 	bool dynamic;
++	bool anywan;
+ 
+ 	time_t start_time;
+ 	enum interface_state state;
+
+--- a/ubus.c
++++ b/ubus.c
+@@ -1233,6 +1233,8 @@ netifd_ubus_add_interface(struct interface *iface)
+ 		free(name);
+ 		obj->name = NULL;
+ 	}
++	if (iface->anywan)
++		netifd_ubus_interface_event(iface, true);
+ }
+ 
+ void

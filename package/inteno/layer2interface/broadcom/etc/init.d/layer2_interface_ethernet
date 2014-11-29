@@ -1,0 +1,63 @@
+#!/bin/sh /etc/rc.common
+
+. /lib/functions.sh
+include /lib/network
+
+START=21
+
+removeethernet() {
+	config_get ifname $1 ifname
+	vlanctl --if-delete $ifname
+	config_load layer2_interface_vlan
+	#kill all vlans related to this interface
+	config_foreach removevlan vlan_interface
+}
+
+removevlan() {
+	local baseifname
+	local ifname
+	local wan=`uci -q get layer2_interface_ethernet.Wan.baseifname`
+
+	config_get baseifname $1 baseifname
+	config_get ifname $1 ifname
+	if [ "$wan" == "$baseifname" ]; then
+		echo "vlanctl --if-delete $ifname"
+		vlanctl --if-delete $ifname
+	fi
+}
+
+addethernet() {
+	config_get baseifname $1 baseifname
+	config_get ifname $1 ifname
+	config_get bridge $1 bridge
+	ifconfig $baseifname up
+	brcm_virtual_interface_rules "$baseifname" "$ifname" "$bridge"
+	
+}
+
+boot() {
+	local $baseifname
+	config_load layer2_interface_ethernet
+	config_get baseifname Wan baseifname
+	for interf in `db get hw.board.ethernetPortOrder`; do ethswctl -c wan -i $interf -o disable ; done
+	ethswctl -c pause -p 8 -v 1
+	ethswctl -c hw-switching -o enable
+	if [ $baseifname ]; then
+		ethswctl -c wan -i $baseifname -o enable
+	fi
+	ifconfig $baseifname up
+}
+
+start() {
+	local baseifname
+	echo "Setting up Ethernet WAN"
+	config_load layer2_interface_ethernet
+	config_foreach addethernet ethernet_interface
+}
+
+stop() {
+	local ifname
+	config_load layer2_interface_ethernet
+	config_foreach removeethernet ethernet_interface
+}
+

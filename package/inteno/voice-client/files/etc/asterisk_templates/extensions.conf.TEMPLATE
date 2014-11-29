@@ -1,0 +1,41 @@
+#include extensions_extra.conf
+#include extensions_macro.conf
+
+[default]
+; no calls should normally end up here
+exten => _X!,1,Answer()
+exten => _X!,2,Playback(tt-monkeys)
+exten => _X!,3,Hangup()
+
+[incoming_calls]
+; Handle incoming calls from SIP accounts
+
+; Custom dialplan hook
+exten => _[+0-9a-zA-Z].,1,	|CUSTOM_INCOMING|
+
+; Store caller id, and write to call log
+exten => _[+0-9a-zA-Z].,n,	Set(DB(LASTCALLER/${CHANNEL(peername)})=${CALLERID(NUM)})
+exten => _[+0-9a-zA-Z].,n,	Set(result=${SHELL(/usr/lib/asterisk/log_call.sh Incoming ${CALLERID(NUM)})})
+
+; Handle call - Goto(call_line,${EXTEN},1) or Macro(callhandler,${CHANNEL(peername)})
+exten => _[+0-9a-zA-Z].,n,	|INCOMING_HANDLER|
+exten => _[+0-9a-zA-Z].,n,	Hangup()
+
+[cbbs]
+; Receive calls after Callback - play something to caller
+; Don't run callhandler macro, we have already done that once for this call
+exten => s,1,           Playback(queue-thankyou)
+exten => s,n,           Dial(${BRCMLINE},,F(hangup,h,2))
+exten => s,n,		Hangup()
+
+[hangup]
+; Local lines end up here after other party hangs up.
+; Play some tone to indicate that call has ended.
+exten => h,1,		Hangup()
+exten => h,2,		|CUSTOM_HANGUP|
+exten => h,3,		Hangup()
+
+[clir]
+|CLIR_FAC_SET|exten => _|CLIR|.,1,      Set(CALLERID(num-pres)=prohib_not_screened)
+|CLIR_FAC_SET|exten => _|CLIR|.,n,      Set(CALLERID(name-pres)=prohib_not_screened)
+|CLIR_FAC_SET|exten => _|CLIR|.,n,      Goto(${EXTEN:4},1)

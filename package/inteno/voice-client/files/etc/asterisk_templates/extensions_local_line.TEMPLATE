@@ -1,0 +1,6 @@
+exten => |EXTEN|,1,Dial(BRCM/|LINE|,|TIMEOUT|,g)
+exten => |EXTEN|,n,GotoIf($["${DIALSTATUS}"="ANSWER"]?endcall)
+exten => |EXTEN|,n,|VOICEMAIL|
+exten => |EXTEN|,n(endcall),Macro(endcall,BRCM,|LINE|,|EXTEN|,${CHANNEL(name)},|MAX_RETRIES|,|RETRYTIME|,|WAITTIME|,|CBBS_KEY|,|CONGESTIONTONE|)
+exten => |EXTEN|,n,Goto(hangup,h,2)
+exten => |EXTEN|,n,Hangup()

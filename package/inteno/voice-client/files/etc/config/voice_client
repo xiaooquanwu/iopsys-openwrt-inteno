@@ -1,0 +1,165 @@
+config 'brcm_line' 'brcm0'
+	option 'extension' '0000'
+	option 'sip_account' 'sip0'
+	option 'noise' '0'
+	option 'vad' '0'
+	option 'txgain' 0
+	option 'rxgain' 0
+	option 'echo_cancel' 1
+	option 'callwaiting' '0'
+	option 'clir' '0'
+
+config 'brcm_line' 'brcm1'
+	option 'extension' '1111'
+	option 'sip_account' 'sip0'
+	option 'noise' '0'
+	option 'vad' '0'
+	option 'txgain' 0
+	option 'rxgain' 0
+	option 'echo_cancel' 1
+	option 'callwaiting' '0'
+	option 'clir' '0'
+
+config 'brcm_line' 'brcm2'
+	option 'extension' '2222'
+	option 'sip_account' 'sip0'
+	option 'noise' '0'
+	option 'vad' '0'
+	option 'txgain' 0
+	option 'rxgain' 0
+	option 'echo_cancel' 1
+	option 'callwaiting' '0'
+	option 'clir' '0'
+
+config 'brcm_line' 'brcm3'
+	option 'extension' '3333'
+	option 'sip_account' 'sip0'
+	option 'noise' '0'
+	option 'vad' '0'
+	option 'txgain' 0
+	option 'rxgain' 0
+	option 'echo_cancel' 1
+	option 'callwaiting' '0'
+	option 'clir' '0'
+
+config 'brcm_line' 'brcm4'
+	option 'extension' '4444'
+	option 'sip_account' 'sip0'
+	option 'noise' '0'
+	option 'vad' '0'
+	option 'txgain' 0
+	option 'rxgain' 0
+	option 'echo_cancel' 1
+	option 'callwaiting' '0'
+	option 'clir' '0'
+
+config 'brcm_line' 'brcm5'
+	option 'extension' '5555'
+	option 'sip_account' 'sip0'
+	option 'noise' '0'
+	option 'vad' '0'
+	option 'txgain' 0
+	option 'rxgain' 0
+	option 'echo_cancel' 1
+	option 'callwaiting' '0'
+	option 'clir' '0'
+
+config 'brcm_line' 'brcm6'
+	option 'extension' '6666'
+	option 'sip_account' 'sip0'
+	option 'noise' '0'
+	option 'vad' '0'
+	option 'txgain' 0
+	option 'rxgain' 0
+	option 'echo_cancel' 1
+	option 'callwaiting' '0'
+	option 'clir' '0'
+
+config 'brcm_line' 'brcm7'
+	option 'extension' '7777'
+	option 'sip_account' 'sip0'
+	option 'noise' '0'
+	option 'vad' '0'
+	option 'txgain' 0
+	option 'rxgain' 0
+	option 'echo_cancel' 1
+	option 'callwaiting' '0'
+	option 'clir' '0'
+
+config 'dialplan' 'custom_dialplan'
+	option 'custom_outgoing_enabled' '0'
+	option 'custom_incoming_enabled' '0'
+	option 'custom_hangup_enabled' '0'
+	option 'all_ports_extension' '#123456'
+	option 'test_audio_extension' '#123457'
+	option 'test_echo_extension' '#123458'
+	option 'record_message_extension' '#999999'
+
+config 'sip_advanced' 'SIP'
+	option 'rtpstart' '10000'
+	option 'rtpend' '20000'
+	option 'dtmfmode' 'rfc2833'
+	option 'remotehold' 'yes'
+	option 'contact_line_suffix' '1'
+	option 'registertimeoutbackoff' '512'
+	option 'registerattemptsbackoff' '0'
+	option 'register403timeout' '0'
+	option 'register503timeout' '0'
+	option 'registertimeoutguardsecs' '15'
+	option 'registertimeoutguardlimit' '30'
+	option 'registertimeoutguardpct' '0.2'
+	option defaultexpiry '300'
+	option 'tls_version' 'tlsv1'
+	option 'tls_cipher' 'DES-CBC3-SHA'
+	option 'stun_server' ''
+	option 'dnsmgr' 'no'
+	option 'dnsmgr_refresh_interval' '300'
+	option 'srvlookup' 'yes'
+
+config 'brcm_advanced' 'BRCM'
+	option 'country' 'SWE'
+	option 'jbenable' 'yes'
+	option 'jbforce' 'no'
+	option 'jbmaxsize' '500'
+	option 'jbimpl' 'adaptive'
+	option 'genericplc' 'yes'
+	option 'dialoutmsec' '4000'
+	option 'cw_enable' 'yes'
+
+config 'features' 'features'
+	option 'cbbs_enabled' '1'
+	option 'callforward_enabled' '1'
+	option 'redial_enabled' '1'
+	option 'callreturn_enabled' '1'
+	option 'advanced_register_settings' '1'
+
+config 'sip_service_provider' 'sip0'
+	option 'name' 'Account 1'
+	option 'enabled' '0'
+	option 'codec0' 'alaw'
+	option 'codec1' 'ulaw'
+	option 'codec2' 'g729'
+	option 'codec3' 'g726'
+	option 'autoframing' '1'
+	option 'call_lines' '0'
+	option 'cfim_on' '*21*'
+	option 'cfim_off' '#21#'
+	option 'cfbs_on' '*61*'
+	option 'cfbs_off' '#61#'
+	option 'call_return' '*69'
+	option 'redial' '*66'
+	option 'is_fax' '0'
+	option 'transport' 'udp'
+
+config log 'LOG'
+	option console 'notice,warning,error'
+	option messages 'error'
+	option syslog_facility 'local0'
+	option syslog ''
+
+config cbbs_localextensions 'cbbs_localextensions'
+	option name 'Local Extensions'
+	option cbbs_key '5'
+	option cbbs_maxretry '5'
+	option cbbs_retrytime '30'
+	option cbbs_waittime '20'

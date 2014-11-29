@@ -1,0 +1,65 @@
+[general]
+context=incoming_calls
+allowoverlap=yes
+allowtransfer=yes
+bindaddr=0.0.0.0
+srvlookup=|SRVLOOKUP|
+maxexpiry=600
+minexpiry=60
+qualifyfreq=55
+alwaysauthreject=yes
+t1min=100
+timert1=500
+timerb=16000
+rtptimeout=1800
+rtpkeepalive=30
+rtpholdtimeout=1800
+localnet=192.168.0.0/16
+localnet=10.0.0.0/8
+localnet=172.16.0.0/12
+nat=yes
+directmedia=no
+sipdebug=no
+session-timers=refuse
+
+realm=|REALM|
+defaultexpiry=|DEFAULTEXPIRY|
+useragent=|USERAGENT|
+bindport=|BINDPORT|
+externhost=|EXTERNHOST|
+dtmfmode=|DTMFMODE|
+registertimeout=|REGISTERTIMEOUT|
+registertimeoutguardsecs=|REGISTERTIMEOUTGUARDSECS|
+registertimeoutguardlimit=|REGISTERTIMEOUTGUARDLIMIT|
+registertimeoutguardpct=|REGISTERTIMEOUTGUARDPCT|
+registerattempts=|REGISTERATTEMPTS|
+registertimeoutbackoff=|REGISTERTIMEOUTBACKOFF|
+registerattemptsbackoff=|REGISTERATTEMPTSBACKOFF|
+register403timeout=|REGISTER403TIMEOUT|
+register503timeout=|REGISTER503TIMEOUT|
+remotehold=|REMOTEHOLD|
+
+; Differentiated Services settings. See https://wiki.asterisk.org/wiki/display/AST/IP+Quality+of+Service for a description of these parameters.
+tos_sip=|TOS_SIP|		; Sets TOS for SIP packets. Recommended = cs3
+tos_audio=|TOS_AUDIO|		; Sets TOS for RTP audio packets. Recommended = ef
+tos_video=|TOS_VIDEO|		; Sets TOS for RTP video packets. Recommended = af41
+tos_text=|TOS_TEXT|		; Sets TOS for RTP text packets. Recommended = af41
+
+tcpenable=|TCPENABLE|
+tlsbindaddr=0.0.0.0
+
+tlsenable=|TLSENABLE|
+tlsbindaddr=0.0.0.0
+tlsdontverifyserver=no
+tlscipher=|TLSCIPHER|
+tlsclientmethod=|TLSCLIENTMETHOD|
+tlscafile=/etc/asterisk/ssl/ca.pem
+
+transport=udp|TCPTRANSPORT||TLSTRANSPORT|
+
+#include sip_registrations.conf
+
+[authentication]
+
+#include sip_providers.conf
+#include sip_users.conf

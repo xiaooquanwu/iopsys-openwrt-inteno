@@ -1,0 +1,8 @@
+exten => |CONTACT_USER|,1,	Set(__TRANSFER_CONTEXT=transfer_${CHANNEL(peername)})
+exten => |CONTACT_USER|,n,	Dial(|LINES|,,F(hangup,h,2),20)
+exten => |CONTACT_USER|,n,	Goto(s-${DIALSTATUS},1)
+exten => |CONTACT_USER|,n,	Hangup()
+
+exten => |CONTACT_USER|,n(busy),Macro(callhandler-noanswer,${CHANNEL(peername)})
+exten => s-BUSY,1,		Goto(|CONTACT_USER|,busy)
+exten => s-NOANSWER,1,		Goto(|CONTACT_USER|,busy)

@@ -1,0 +1,94 @@
+#!/bin/sh /etc/rc.common
+
+. /lib/functions.sh
+include /lib/network
+START=21
+
+checkptm() {
+	local retur
+	local ptmprio=$1
+	local dslat=$2
+
+	if [ "$ptmprio" -eq 2 ]; then
+		ptmprio="high"
+	else
+		ptmprio="low"
+	fi
+
+	retur=$(xtmctl operate conn --show | awk -v dslat="$dslat" -v ptmprio="$ptmprio" '{if ($2 == dslat && $3 == ptmprio ) print $2 }')
+	
+	case $retur in
+		''|*[!0-9]*) return 0 ;;
+		*) return $retur ;;
+	esac
+}
+
+ptm_inf_conf() {
+	local ret
+	local ptmprio
+	local dslat
+	local ifname
+	local bridge
+
+	config_get ptmprio $1 ptmprio
+	config_get dslat $1 dslat
+	config_get ifname $1 ifname
+	config_get baseifname $1 baseifname
+	config_get bridge $1 bridge
+
+	checkptm $ptmprio $dslat
+	ret=$?
+
+	if [ "$ret" -eq 0 ]; then
+		xtmctl operate conn --add $dslat.$ptmprio 0 1
+		xtmctl operate conn --addq $dslat.$ptmprio 0 wrr 1 -1 -1 3000
+		xtmctl operate conn --createnetdev $dslat.$ptmprio ${ifname%%.*}
+		xtmctl operate intf --state 1 enable
+		xtmctl start
+		ifconfig $baseifname up
+		brcm_virtual_interface_rules "$baseifname" "$ifname" "$bridge"
+	fi
+}
+
+remove_netdevices() {
+	local delptm
+	local x=0
+
+	IFS=$'\n'
+	for i in `xtmctl operate conn --show`
+	do
+		if [ $x -eq 1 ]; then
+			delptm=$(echo $i | awk '{if ($1!="ATM") print $2"."$10}')
+			echo "xtmctl operate conn --delete $delptm"
+			xtmctl operate conn --delete $delptm
+			xtmctl operate conn --deletenetdev $delptm
+		fi
+		x=1
+	done
+	unset IFS
+}
+
+start() {
+	local vdslstatus
+	echo "Starting VDSL"
+	config_load layer2_interface
+	config_get vdslstatus vdsl device
+
+	if [ "$vdslstatus" == "up" ]; then
+		xtmctl start
+		config_load layer2_interface_vdsl
+		config_foreach ptm_inf_conf vdsl_interface
+	fi
+}
+
+stop() {
+	echo "Stopping VDSL"
+	#xtmctl stop
+	remove_netdevices
+}
+
+restart() {
+	stop
+	start
+}
+

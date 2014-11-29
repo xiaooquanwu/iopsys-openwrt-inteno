@@ -1,0 +1,2 @@
+#exec echo "register => |TRANSPORT|://|USER|@|DOMAIN|:$(/usr/bin/voicesec -d /usr/lib/asterisk/voicesec_|PROVIDER|)|AUTHUSER|@|PROVIDER||PORT|/|CONTACT_USER|"
+

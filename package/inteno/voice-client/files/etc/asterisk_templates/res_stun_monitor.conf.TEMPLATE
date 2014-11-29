@@ -1,0 +1,11 @@
+;
+; Configuration file for the res_stun_monitor module
+;
+
+[general]
+;
+; ---- STUN Server configuration ---
+;  Setting the 'stunaddr' option to a valid address enables the STUN monitor.
+;
+stunaddr = |SERVER|
+stunrefresh = 30

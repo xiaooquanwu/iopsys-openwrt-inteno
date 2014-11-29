@@ -1,0 +1,29 @@
+#!/bin/sh
+#
+# Part of luci-app-voice.
+# This file adds dependencies to /etc/config/ucitrack to allow uci to
+# 1. recreate asterisk configuration files
+# 2. restart asterisk
+# whenever a user applies settings in the luci UI
+#
+# This file should be placed in /etc/uci-defaults/ on installation of
+# the luci-app-voice-client. It will then be executed (once) by uci
+# on the following reboot.
+#
+
+uci -q batch <<-EOF >/dev/null
+	delete ucitrack.@asterisk[-1]
+	add ucitrack asterisk
+	set ucitrack.@asterisk[-1].init=asterisk
+	commit ucitrack
+EOF
+
+uci -q batch <<-EOF >/dev/null
+	delete ucitrack.@voice_client[-1]
+	add ucitrack voice_client
+	set ucitrack.@voice_client[-1].init=voice_client
+	add_list ucitrack.@voice_client[-1].affects=asterisk
+	commit ucitrack
+EOF
+
+exit

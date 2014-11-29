@@ -1,0 +1,11 @@
+[|USER|]
+type		= peer
+callerid	= "|NAME|" <|EXTENSION|>
+defaultuser	= |USER|
+secret		= |SECRET|
+host		= |HOST|
+qualify		= |QUALIFY|
+context		= |CONTEXT|
+disallow	= all
+|ALLOW|
+

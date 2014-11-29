@@ -1,0 +1,26 @@
+;
+; Voicemail Configuration
+;
+
+[general]
+; Formats for writing Voicemail.  Note that when using IMAP storage for
+; voicemail, only the first format specified will be used.
+format=wav49|gsm|wav
+; Maximum number of messages per folder.  If not specified, a default value
+; (100) is used.  Maximum value for this option is 9999.  If set to 0, a
+; mailbox will be greetings-only.
+maxmsg=100
+; Maximum length of a voicemail message in seconds
+maxsecs=180
+; Maximum length of greetings in seconds
+maxgreet=60
+; How many milliseconds to skip forward/back when rew/ff in message playback
+skipms=3000
+; How many seconds of silence before we end the recording
+maxsilence=10
+; Silence threshold (what we consider silence: the lower, the more sensitive)
+silencethreshold=128
+; Max number of failed login attempts
+maxlogins=3
+
+[default]

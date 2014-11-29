@@ -1,0 +1,3 @@
+[|PROVIDER|-direct]
+; extensions that will be dialled immediately when they are matched
+; useful for fixed length number series

@@ -1,0 +1,9 @@
+[|SECTION|]
+musicclass = default
+strategy = |STRATEGY|
+wrapuptime=15
+
+announce-frequency = 30
+min-announce-frequency = 15
+periodic-announce-frequency=60
+announce-position = yes
