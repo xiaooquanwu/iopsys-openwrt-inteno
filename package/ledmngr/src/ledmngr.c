@@ -40,8 +40,10 @@
 #include "catv.h"
 #include "sfp.h"
 
+
 #include "button.h"
 #include "led.h"
+#include "spi.h"
 #include "touch_sx9512.h"
 
 static struct ubus_context *ubus_ctx = NULL;
@@ -55,7 +57,7 @@ struct catv_handler *catv_h;
 struct sfp_handler *sfp_h;
 struct i2c_touch *i2c_touch;
 
-int brcmboard;
+int brcmboard = -1;
 
 struct led_config  led_config;
 
@@ -127,6 +129,7 @@ static int get_state_by_name(char* state_name) {
 
 static void all_leds_off(struct leds_configuration* led_cfg) {
     int i;
+    DEBUG_PRINT("leds_nr %d\n", led_cfg->leds_nr);
     for (i=0 ; i<led_cfg->leds_nr ; i++) {
         led_set(led_cfg, i, OFF);
     }
@@ -368,6 +371,8 @@ int led_set(struct leds_configuration* led_cfg, int led_idx, int state) {
         board_ioctl( BOARD_IOCTL_LED_CTRL, 0, 0, NULL, lc->address, state^lc->active);
     } else if (lc->type == I2C) {
         sx9512_led_set(lc, state);
+	} else if (lc->type == SPI) {
+		spi_led_set(lc, state);
     } else
         DEBUG_PRINT("Wrong type of bus (%d)\n",lc->type);
 
@@ -920,6 +925,7 @@ int ledmngr(void) {
 //    if (led_need_type (led_cfg, I2C) || button_need_type (butt_cfg, I2C))
 
 	i2c_touch = sx9512_init(uci_ctx);
+    spi_init(uci_ctx);
 
     led_cfg  = get_led_config();
     butt_cfg = get_button_config(uci_ctx, i2c_touch);

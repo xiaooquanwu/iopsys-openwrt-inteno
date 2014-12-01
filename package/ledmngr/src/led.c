@@ -33,6 +33,7 @@ int add_led(struct leds_configuration* led_cfg, char* led_name, const char* led_
     if (!strcmp(type, "sr"))   lc->type = SHIFTREG2;
     if (!strcmp(type, "csr"))  lc->type = SHIFTREG3;
     if (!strcmp(type, "i2c"))  lc->type = I2C;
+    if (!strcmp(type, "spi"))  lc->type = SPI;
 
     lc->address = address;
     lc->color = color;

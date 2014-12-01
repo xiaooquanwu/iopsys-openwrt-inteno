@@ -22,6 +22,7 @@ typedef enum {
     SHIFTREG2,
     SHIFTREG3,
     I2C,
+    SPI,
 } led_type_t;
 
 typedef enum {
