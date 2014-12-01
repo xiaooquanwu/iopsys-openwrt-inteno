@@ -144,10 +144,10 @@ struct button_configuration* get_button_config(struct uci_context *uci_ctx,struc
     struct button_configuration* butt_cfg;
 
     butt_cfg = malloc(sizeof(struct button_configuration));
-    memset(butt_cfg,0,sizeof(butt_cfg));
+    memset(butt_cfg,0,sizeof(struct button_configuration));
 
     butt_cfg->buttons = malloc(MAX_BUTTON * sizeof(struct button_config*));
-    memset(butt_cfg->buttons,0,sizeof(butt_cfg->buttons));
+    memset(butt_cfg->buttons,0,sizeof(struct button_config*));
 
     /* Initialize */
     if(!uci_ctx) {
@@ -196,7 +196,7 @@ struct button_configuration* get_button_config(struct uci_context *uci_ctx,struc
         ptr = strtok_r(NULL, " ", &rest);
 
         if (butt_cfg->button_nr >= MAX_BUTTON) {
-            DEBUG_PRINT("Too many buttons configured! Only adding the %d first\n", MAX_BUTTON);
+            DEBUG_PRINT("Too many buttons configured!: %d Only adding the %d first\n", butt_cfg->button_nr, MAX_BUTTON);
             return NULL;
         }
         butt_cfg->buttons[butt_cfg->button_nr] = bc;
