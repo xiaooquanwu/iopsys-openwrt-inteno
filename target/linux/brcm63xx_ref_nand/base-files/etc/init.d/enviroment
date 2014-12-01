@@ -59,7 +59,7 @@ handle_configs()
 			sed -i "s/\$SER/$SERIALNR/g" /etc/config/$config
 			sed -i "s/\$OUI/$oid/g" /etc/config/$config
 			sed -i "s/\$HARDWAREID/$hardwareid/g" /etc/config/$config
-			[ "$config" == "network" ] && sed -i "s/multiwan/anywan/g" /etc/config/$config
+			[ "$config" == "wireless" ] && sed -i "s/pskmixedpsk2/mixed-psk/g" /etc/config/$config
 		fi
 	done
 }
