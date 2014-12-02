@@ -25,7 +25,7 @@ cleanup() {
 
 	# clean NVRAM parameters and set debug mode
 	sed -i "/option $1/ d" /etc/config/broadcom
-	sed -i "s/$1//g" /etc/config/broadcom
+	sed -i "s/$1$//g" /etc/config/broadcom
 	nvram set init=1
 	nvram set debug=0
 }
@@ -521,6 +521,9 @@ wdev_wif_bringup() {
 			[ -n "$network" ] && ubus call network.interface."$network" add_device "{ \"name\": \"$iface\" }" 2>/dev/null
 		}
 
+		# toggle wireless virtual interface
+		wlctl -i $iface bss down
+		wlctl -i $iface bss up
 		wlctl -i $iface bss down
 		[ $(nvram get "$nif"_bss_enabled) -eq 1 ] && wlctl -i $iface bss up
 	}
