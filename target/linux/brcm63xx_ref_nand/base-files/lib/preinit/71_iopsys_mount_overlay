@@ -3,16 +3,15 @@
 
 iopsys_rootfs_pivot() {
 	echo "mounting and populating overlay"
-
 	local iop3_first_boot=$(ls -1 / | grep IOP3 | wc -l)
 	if [ "$iop3_first_boot" == "1" ]; then
 		# only do this once after flashing a new image
 		rm /IOP3
 		#Check if previous image was IOP3 or not
 		local mtdpart=$(find_mtd_part rootfs_update)
-		local iop3_prev_image=$(hexdump -n 100 -C $mtdpart | grep IOP3 | wc -l)
-		if [ "$iop3_prev_image" == "1" ]; then
-			echo "IOP3 marker detected"
+		local iVersion=`cat /proc/nvram/iVersion`
+		if [ "$iVersion" = "03" ]; then
+			echo "iVersion == 3 detected"
 			mount -t jffs2 $mtdpart /mnt
 			local save_config=$(ls -1 /mnt/overlay/ | grep SAVE_CONFIG | wc -l)
 			if [ "$save_config" == "1" ]; then
@@ -20,11 +19,14 @@ iopsys_rootfs_pivot() {
 				cp -rfd /mnt/overlay/* /overlay/
 				rm /overlay/SAVE_CONFIG
 			fi
-		else
-			echo "No IOP3 marker detected, forcing config copy"
+		elif [ "$iVersion" = "ff" ]; then
+			echo "iVersion == ff detected, forcing config copy and setting iVersion=03"
+			echo 03 >/proc/nvram/iVersion
 			local mtdpart=$(find_mtd_part rootfs_update_data)
 			mount -t jffs2 $mtdpart /mnt
 			cp -rfd /mnt/* /overlay/
+		else
+			echo "Unknown iVersion==$iVersion detected, doing nothing"
 		fi
 		umount /mnt
 		#remove db
