@@ -13,15 +13,14 @@
 #include <linux/i2c.h>
 #include <linux/i2c-dev.h>
 
-#include "i2c.h"
-#include "sfp.h"
-#include "log.h"
-
 #include "libubus.h"
 #include <uci_config.h>
 #include <uci.h>
 #include "ucix.h"
 
+#include "i2c.h"
+#include "sfp.h"
+#include "log.h"
 
 static struct blob_buf b;
 

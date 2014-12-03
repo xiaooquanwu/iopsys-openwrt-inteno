@@ -11,9 +11,9 @@
 #include "smbus.h"
 #include <linux/i2c.h>
 #include <linux/i2c-dev.h>
+#include "ucix.h"
 #include "i2c.h"
 
-#include "ucix.h"
 #include "log.h"
 #include "touch_sx9512.h"
 
@@ -43,11 +43,6 @@
    BL6, BL7: Unused.
 */
 
-struct i2c_reg_tab {
-    char addr;
-    char value;
-    char range;  /* if set registers starting from addr to addr+range will be set to the same value */
-};
 
 /*addr,value,range*/
 static const struct i2c_reg_tab i2c_init_tab_cg300[]={
@@ -152,19 +147,7 @@ static const struct i2c_reg_tab i2c_init_tab_eg300[]={
     {0x00, 0x04, 0x00 },      /* Trigger compensation */
 };
 
-struct i2c_touch{
-    int dev;
-    int shadow_irq;
-    int shadow_touch;
-    int shadow_proximity;
-    int addr;
-    int irq_button;
-    const struct i2c_reg_tab *init_tab;
-    int init_tab_len;
-    const char *name;
-} *i2c_touch;
-
-struct i2c_touch i2c_touch_list[] = {
+static struct i2c_touch i2c_touch_list[] = {
     {.addr = 0x2b,
      .name = "CG300",
      .irq_button = 1,
@@ -180,68 +163,10 @@ struct i2c_touch i2c_touch_list[] = {
     }
 };
 
-static void do_init_tab( struct i2c_touch *i2c_touch)
-{
-    const struct i2c_reg_tab *tab;
-    int i;
-
-    tab = i2c_touch->init_tab;
-
-    for (i = 0 ; i < i2c_touch->init_tab_len ; i++){
-        int y;
-        int ret;
-        for ( y = 0 ; y <= tab[i].range; y++ ){
-//          DEBUG_PRINT("%s: addr %02X = %02X \n",__func__,(unsigned char)tab[i].addr+y, (unsigned char)tab[i].value);
-            ret = i2c_smbus_write_byte_data(i2c_touch->dev, tab[i].addr+y, tab[i].value);
-            if (ret < 0){
-                perror("write to i2c dev\n");
-            }
-        }
-    }
-//  dump_i2c(i2c_touch->dev,0,13);
-
+struct i2c_touch* sx9512_init(struct uci_context *uci_ctx) {
+	return i2c_init(uci_ctx, "/dev/i2c-0", i2c_touch_list);
 }
 
-struct i2c_touch * sx9512_init(struct uci_context *uci_ctx)
-{
-    const char *p;
-    int i;
-
-    p = ucix_get_option(uci_ctx, "hw", "board", "hardware");
-    if (p == 0){
-        syslog(LOG_INFO, "%s: Missing Hardware identifier in configuration. I2C is not started\n",__func__);
-        return 0;
-    }
-
-    /* Here we match the hardware name to a init table, and get the
-       i2c chip address */
-    i2c_touch = NULL;
-    for (i = 0; i < sizeof(i2c_touch_list) / sizeof(i2c_touch_list[0]); i++)
-        if (!strcmp(i2c_touch_list[i].name, p)) {
-            DEBUG_PRINT("I2C hardware platform %s found.\n", p);
-            i2c_touch = &i2c_touch_list[i];
-            break;
-        }
-    if (!i2c_touch) {
-        DEBUG_PRINT("No I2C hardware found: %s.\n", p);
-        return 0;
-    }
-
-    i2c_touch->dev = i2c_open_dev("/dev/i2c-0", i2c_touch->addr,
-                                  I2C_FUNC_SMBUS_READ_BYTE | I2C_FUNC_SMBUS_WRITE_BYTE);
-
-    if (i2c_touch->dev < 0) {
-        syslog(LOG_INFO,"%s: could not open i2c touch device\n",__func__);
-        i2c_touch->dev = 0;
-        return 0;
-    }
-
-    DEBUG_PRINT("Opened device and selected address %x \n", i2c_touch->addr);
-
-    do_init_tab(i2c_touch);
-
-    return i2c_touch;
-}
 
 extern struct uloop_timeout i2c_touch_reset_timer;
 
