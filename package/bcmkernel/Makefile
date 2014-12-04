@@ -91,7 +91,6 @@ endif
 #endif
 
 define Package/bcmkernel/install
-	$(INSTALL_DIR) $(1)/lib/bcm
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_DIR) $(1)/usr/lib
 	$(INSTALL_DIR) $(1)/etc/adsl
@@ -200,21 +199,27 @@ define Package/bcmkernel/install
 	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/gpl/*	$(1)/usr/lib/
 	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/private/*	$(1)/usr/lib/
 
-	mv $(1)/usr/lib/ld-uClibc.so.0		$(1)/lib/bcm/
-	mv $(1)/usr/lib/libc.so.0		$(1)/lib/bcm/
-	mv $(1)/usr/lib/libdl.so.0		$(1)/lib/bcm/
-	mv $(1)/usr/lib/libgcc_s.so.1		$(1)/lib/bcm/
-	mv $(1)/usr/lib/libpthread.so.0		$(1)/lib/bcm/
-
-#	rm -f $(1)/usr/lib/libcrypt.so.0
+	rm -f $(1)/usr/lib/ld-uClibc.so.0
+	rm -f $(1)/usr/lib/libc.so.0
+	rm -f $(1)/usr/lib/libdl.so.0
+	rm -f $(1)/usr/lib/libgcc_s.so.1
+	rm -f $(1)/usr/lib/libpthread.so.0
 	rm -f $(1)/usr/lib/libm.so.0
 	rm -f $(1)/usr/lib/libutil.so.0
 	rm -f $(1)/usr/lib/libcms_boardctl.so
 	rm -f $(1)/usr/lib/libcms_msg.so
 	rm -f $(1)/usr/lib/libcms_util.so
-#	rm -f $(1)/usr/lib/libcrypto.so.0.9.7
-#	rm -f $(1)/usr/lib/libssl.so.0.9.7
 	rm -f $(1)/usr/lib/libnvram.so
+	rm -f $(1)/usr/lib/libcrypt.so.0
+
+	rm -f $(1)/usr/lib/libcrypto.so
+	ln -s /usr/lib/libcrypto.so.1.0.0 $(1)/usr/lib/libcrypto.so
+	rm -f $(1)/usr/lib/libcrypto.so.0.9.7
+	ln -s /usr/lib/libcrypto.so.1.0.0 $(1)/usr/lib/libcrypto.so.0.9.7
+	rm -f $(1)/usr/lib/libssl.so
+	ln -s /usr/lib/libssl.so.1.0.0 $(1)/usr/lib/libssl.so
+	rm -f $(1)/usr/lib/libssl.so.0.9.7
+	ln -s /usr/lib/libssl.so.1.0.0 $(1)/usr/lib/libssl.so.0.9.7
 
 
 	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/public/*	$(1)/usr/lib/
