@@ -2,11 +2,11 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=alleato-base
 
-PKG_VERSION:=14.46.0
+PKG_VERSION:=14.49.0
 PKG_RELEASE=$(PKG_SOURCE_VERSION)
 PKG_SOURCE_URL:=git@iopsys.inteno.se:alleato_base.git
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=dcc6c901bc2f17a831f8118483f84109bb981bd3
+PKG_SOURCE_VERSION:=721a83a5a19183152f48993e440a80572cd71b95
 
 PKG_MAINTAINER:=Martin Assarsson, ALLEATO
 
@@ -46,20 +46,6 @@ define Package/zwave-profiler
   TITLE:=Alleato zwave profiler
 endef
 
-define Package/alleato-house
-  SECTION:=utils
-  CATEGORY:=Utilities
-  DEPENDS:=alleato3
-  TITLE:=Alleato house
-endef
-
-define Package/social-alarm
-  SECTION:=utils
-  CATEGORY:=Utilities
-  DEPENDS:=alleato3
-  TITLE:=Alleato social alarm
-endef
-
 define Package/alleato-scheduler
   SECTION:=utils
   CATEGORY:=Utilities
@@ -81,20 +67,6 @@ define Package/all-omc
   TITLE:=Alleato remote tunnel
 endef
 
-define Package/telia-rules
-  SECTION:=utils
-  CATEGORY:=Utilities
-  DEPENDS:=+alleato3
-  TITLE:=Alleato telia rules
-endef
-
-define Package/nightalarm
-  SECTION:=utils
-  CATEGORY:=Utilities
-  DEPENDS:=+alleato3
-  TITLE:=Alleato night alarm
-endef
-
 define Package/ubus-kicker
   SECTION:=utils
   CATEGORY:=Utilities
@@ -107,6 +79,13 @@ define Package/mqttnagios
   CATEGORY:=Utilities
   DEPENDS:=
   TITLE:=Alleato mqttnagios
+endef
+
+define Package/all4-alleato-tools
+  SECTION:=utils
+  CATEGORY:=Utilities
+  DEPENDS:=
+  TITLE:=Alleato tools
 endef
 
 ######################################################
@@ -134,19 +113,6 @@ define Package/zwave-profiler/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/zwave-profiler $(1)/usr/mqttrules/zwave-profiler
 endef
 
-define Package/alleato-house/install
-	$(INSTALL_DIR) $(1)/usr/mqttrules $(1)/etc/init.d
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/init.d/house $(1)/etc/init.d/house
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/house $(1)/usr/mqttrules/house
-endef
-
-define Package/social-alarm/install
-	$(INSTALL_DIR) $(1)/usr/mqttrules $(1)/etc/init.d
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/init.d/social-alarm $(1)/etc/init.d/social-alarm
-	$(INSTALL_DATA) $(PKG_BUILD_DIR)/etc/social-alarm.conf.example $(1)/etc/social-alarm.conf
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/social-alarm $(1)/usr/mqttrules/social-alarm
-endef
-
 define Package/alleato-scheduler/install
 	$(INSTALL_DIR) $(1)/usr/mqttrules $(1)/etc/init.d $(1)/etc/crontabs/sched
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/init.d/scheduler $(1)/etc/init.d/scheduler 
@@ -172,20 +138,6 @@ define Package/all-omc/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/omc $(1)/usr/bin/omc
 endef
 
-define Package/telia-rules/install
-	$(INSTALL_DIR) $(1)/etc/init.d $(1)/usr/mqttrules $(1)/etc/alleato
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/init.d/telia-rules $(1)/etc/init.d/telia-rules
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/telia-rules $(1)/usr/mqttrules/telia-rules
-	$(INSTALL_DATA) $(PKG_BUILD_DIR)/data/telia.json $(1)/etc/alleato/telia.json
-endef
-
-define Package/nightalarm/install
-	$(INSTALL_DIR) $(1)/etc/init.d $(1)/usr/mqttrules $(1)/etc/alleato
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/init.d/nightalarm $(1)/etc/init.d/nightalarm
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/nightalarm $(1)/usr/mqttrules/nightalarm
-	$(INSTALL_DATA) $(PKG_BUILD_DIR)/data/night_alarm.json $(1)/etc/alleato/night_alarm.json
-endef
-
 define Package/ubus-kicker/install
 	$(INSTALL_DIR) $(1)/etc/init.d $(1)/usr/sbin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/init.d/ubus-kicker $(1)/etc/init.d/ubus-kicker
@@ -205,19 +157,22 @@ define Package/mqttnagios/install
 	echo '/5 * * * * /usr/sbin/check_client_id' >> $(1)/etc/crontabs/root
 endef
 
+define Package/all4-alleato-tools/install
+	$(INSTALL_DIR) $(1)/usr/bin $(1)/etc/init.d $(1)/opt/alleato
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/init.d/house $(1)/etc/init.d/house
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/init.d/rulesd $(1)/etc/init.d/rulesd
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/binaries/alleato_tools $(1)/usr/bin/alleato_tools
+endef
+
 ######################################################
 
 $(eval $(call BuildPackage,alleato3))
 $(eval $(call BuildPackage,zwaved))
 $(eval $(call BuildPackage,zwave-mgr))
 $(eval $(call BuildPackage,zwave-profiler))
-$(eval $(call BuildPackage,alleato-house))
-$(eval $(call BuildPackage,social-alarm))
 $(eval $(call BuildPackage,alleato-scheduler))
 $(eval $(call BuildPackage,alleato-boxconfig))
 $(eval $(call BuildPackage,all-omc))
-$(eval $(call BuildPackage,telia-rules))
 $(eval $(call BuildPackage,ubus-kicker))
 $(eval $(call BuildPackage,mqttnagios))
-$(eval $(call BuildPackage,nightalarm))
-
+$(eval $(call BuildPackage,all4-alleato-tools))
