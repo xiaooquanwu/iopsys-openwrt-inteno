@@ -2,11 +2,11 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=alleato-base
 
-PKG_VERSION:=14.49.0
+PKG_VERSION:=14.49.2
 PKG_RELEASE=$(PKG_SOURCE_VERSION)
 PKG_SOURCE_URL:=git@iopsys.inteno.se:alleato_base.git
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=721a83a5a19183152f48993e440a80572cd71b95
+PKG_SOURCE_VERSION:=8314aed451255410a2cd4fa43ac3235504e8f018
 
 PKG_MAINTAINER:=Martin Assarsson, ALLEATO
 
@@ -21,6 +21,7 @@ include $(INCLUDE_DIR)/package.mk
 define Package/alleato3
   SECTION:=utils
   CATEGORY:=Utilities
+  SUBMENU:=Alleato
   DEPENDS:=+python
   TITLE:=Alleato python libraries
 endef
@@ -28,6 +29,7 @@ endef
 define Package/zwaved
   SECTION:=utils
   CATEGORY:=Utilities
+  SUBMENU:=Alleato
   DEPENDS:=+jansson
   TITLE:=Alleato zwave daemon
 endef
@@ -35,34 +37,39 @@ endef
 define Package/zwave-mgr
   SECTION:=utils
   CATEGORY:=Utilities
-  DEPENDS:=alleato3
+  SUBMENU:=Alleato
+  DEPENDS:=+alleato3
   TITLE:=Alleato zwave manager
 endef
 
 define Package/zwave-profiler
   SECTION:=utils
   CATEGORY:=Utilities
-  DEPENDS:=alleato3
+  SUBMENU:=Alleato
+  DEPENDS:=+alleato3
   TITLE:=Alleato zwave profiler
 endef
 
 define Package/alleato-scheduler
   SECTION:=utils
   CATEGORY:=Utilities
-  DEPENDS:=alleato3
+  SUBMENU:=Alleato
+  DEPENDS:=+alleato3
   TITLE:=Alleato scheduler
 endef
 
 define Package/alleato-boxconfig
   SECTION:=utils
   CATEGORY:=Utilities
-  DEPENDS:=alleato3
+  SUBMENU:=Alleato
+  DEPENDS:=+alleato3
   TITLE:=Alleato boxconfig
 endef
 
 define Package/all-omc
   SECTION:=utils
   CATEGORY:=Utilities
+  SUBMENU:=Alleato
   DEPENDS:=+alleato3 +screen
   TITLE:=Alleato remote tunnel
 endef
@@ -70,6 +77,7 @@ endef
 define Package/ubus-kicker
   SECTION:=utils
   CATEGORY:=Utilities
+  SUBMENU:=Alleato
   DEPENDS:=
   TITLE:=Alleato ubus-kicker
 endef
@@ -77,6 +85,7 @@ endef
 define Package/mqttnagios
   SECTION:=utils
   CATEGORY:=Utilities
+  SUBMENU:=Alleato
   DEPENDS:=
   TITLE:=Alleato mqttnagios
 endef
@@ -84,6 +93,7 @@ endef
 define Package/all4-alleato-tools
   SECTION:=utils
   CATEGORY:=Utilities
+  SUBMENU:=Alleato
   DEPENDS:=
   TITLE:=Alleato tools
 endef
