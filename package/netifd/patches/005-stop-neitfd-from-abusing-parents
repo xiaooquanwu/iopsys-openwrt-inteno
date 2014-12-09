@@ -1,11 +1,41 @@
 --- a/system-linux.c
 +++ b/system-linux.c
-@@ -829,7 +829,7 @@
- 	if (!devname)
- 		return NULL;
- 
--	return device_get(devname, true);
-+	return device_get(devname, false);
+@@ -526,6 +526,28 @@ out:
+ 	nl_cb_put(cb);
  }
  
- static bool
++static bool
++is_parent_dev(const char *name)
++{
++	FILE *fp;
++	char cmnd[64];
++	char baseif[8];
++	bool ret = false;
++
++	if ((strstr(name, "atm") || strstr(name, "ptm")) && !strchr(name, '.'))
++		ret = true;
++	else if (strstr(name, "eth") && !strchr(name, '.')) {
++		sprintf(cmnd, "db get hw.board.ethernetWanPort | tr -d '\n'");
++		if ((fp = popen(cmnd, "r"))) {
++			if(fgets(baseif, sizeof(baseif), fp) && !strcmp(baseif, name))
++				ret = true;
++			pclose(fp);
++		}
++	}
++
++	return ret;
++}
++
+ /*
+  * Clear bridge (membership) state and bring down device
+  */
+@@ -537,6 +559,9 @@ void system_if_clear_state(struct device *dev)
+ 	if (dev->external)
+ 		return;
+ 
++	if (is_parent_dev(dev->ifname))
++		return;
++
+ 	dev->ifindex = system_if_resolve(dev);
+ 	if (!dev->ifindex)
+ 		return;
