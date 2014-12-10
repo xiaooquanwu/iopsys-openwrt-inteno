@@ -942,46 +942,6 @@ quest_ubus_init(const char *path)
 	return 0;
 }
 
-static void
-monitor_wireless_thread()
-{
-	pid_t chpid;
-	int status;
-	FILE *threads;
-	char cmnd[48];
-	char line[64];
-	char user[8];
-	char stat[8];
-	int pid, ppid, vsz, mem, cpu, idx;
-	char wldown[18];
-	char wlup[16];
-
-	chpid = fork();
-	if (chpid == 0)
-	{
-		sprintf(cmnd, "top -bn1 | grep kthrd | grep wl | grep -v tmr");
-		if ((threads = popen(cmnd, "r"))) {
-			while(fgets(line, sizeof(line), threads) != NULL)
-			{
-				remove_newline(line);
-				if (sscanf(line, "%d %d %s %s %d %d%% %d%% [wl%d-kthrd]", &pid, &ppid, user, stat, &vsz, &mem, &cpu, &idx) == 8) {
-					if (cpu >= 45) {
-						sprintf(wldown, "wlctl -i wl%d down", idx);
-						sprintf(wlup, "wlctl -i wl%d up", idx);
-						system(wldown);
-						system(wlup);
-					}
-				}
-			}
-			pclose(threads);
-		}
-		_exit(1);
-	}
-	else if (chpid > 0) {
-		wait(&status);
-	}
-}
-
 void *dump_router_info(void *arg)
 {
 	int lpcnt = 0;
@@ -1003,11 +963,6 @@ void *dump_router_info(void *arg)
 		recalc_sleep_time(false, 0);
 		get_jif_val(&cur_jif);
 		lpcnt++;
-		if ((lpcnt % 2) == 0) {
-			/* approximately every 10 seconds check */
-			/* if wireless thread overconsumes cpu */
-			monitor_wireless_thread();
-		}
 		if (lpcnt == 20) {
 			lpcnt = 0;
 			memset(clients, '\0', sizeof(clients));
