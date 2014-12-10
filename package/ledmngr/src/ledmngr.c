@@ -503,18 +503,35 @@ static void blink_handler(struct uloop_timeout *timeout)
 {
     cnt++;
 
+    /* handle press indicator for touch */
+    if(led_cfg->press_indicator) {
+        static int times = 0;
+        if (times >= 10 )
+            led_cfg->press_indicator = 0;
+        times++;
+        if (times%2)
+            proximity_light(led_cfg, 1);
+        else
+            proximity_dim(led_cfg, 1);
+    }
+
+    /* handle proximity timer */
     if (led_cfg->proximity_timer) {
         led_cfg->proximity_timer--;
         if (led_cfg->leds_state == LEDS_PROXIMITY
             && !led_cfg->proximity_timer)
             proximity_dim(led_cfg, 1);
     }
+
+    /*handle proximity all timer */
     if (led_cfg->proximity_all_timer) {
         led_cfg->proximity_all_timer--;
         if (led_cfg->leds_state == LEDS_PROXIMITY
             && !led_cfg->proximity_all_timer)
             proximity_dim(led_cfg, !led_cfg->proximity_timer);
     }
+
+    /* normal operation. */
     if (led_cfg->leds_state == LEDS_TEST) {
         if (!(cnt%3))
             leds_test(led_cfg);
@@ -525,14 +542,16 @@ static void blink_handler(struct uloop_timeout *timeout)
         leds_reset(led_cfg);
     } else if (led_cfg->leds_state != LEDS_INFO) {
         /* LEDS_NORMAL or LEDS_PROXIMITY */
-        int dimmed = (led_cfg->leds_state == LEDS_PROXIMITY
-                      && !led_cfg->proximity_timer);
+        int dimmed = (led_cfg->leds_state == LEDS_PROXIMITY && !led_cfg->proximity_timer);
+
         if (!(cnt%4))
             blink_led(led_cfg, BLINK_FAST, dimmed);
 
         if (!(cnt%8))
             blink_led(led_cfg, BLINK_SLOW, dimmed);
     }
+
+    /* check buttons every fourth run */
     if (!(cnt%4))
         check_buttons(led_cfg,butt_cfg, 0);
 
@@ -621,11 +640,15 @@ static void set_function_led(struct leds_configuration* led_cfg, const char* fn_
 static void proximity_light(struct leds_configuration* led_cfg, int all)
 {
     int i;
+
+    /* if led stored state is not OFF and the leds is used to indicate proximity turn on */
     for (i=0 ; i<led_cfg->leds_nr ; i++) {
         struct led_config* lc = led_cfg->leds[i];
         if (lc->use_proximity && (lc->state || all))
             led_set(led_cfg, i, 1);
     }
+
+    /* if we have a feedback led turn it on if state is PROXIMITY else set to internal state.*/
     if (led_cfg->button_feedback_led >= 0)
         led_set(led_cfg, led_cfg->button_feedback_led,
                 led_cfg->leds_state == LEDS_PROXIMITY ? 1 : -1);

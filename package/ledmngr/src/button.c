@@ -89,8 +89,7 @@ void check_buttons(struct leds_configuration *led_cfg, struct button_configurati
 
                 if (button_use_feedback(led_cfg, bc)) {
                     if ( button_press_time_valid(bc, MIN_MS_TIME_PRESSED) ) {
-                        led_set(led_cfg, led_cfg->button_feedback_led,
-                                !led_cfg->leds[led_cfg->button_feedback_led]->blink_state);
+                        led_cfg->press_indicator = 1;
                     }
                 }
                 //syslog(LOG_INFO, "Button %s pressed\n",bc->name);
@@ -116,6 +115,15 @@ void check_buttons(struct leds_configuration *led_cfg, struct button_configurati
                         (led_cfg->leds_state == LEDS_PROXIMITY) ||
                         (led_cfg->leds_state == LEDS_SILENT)    ||
                         (led_cfg->leds_state == LEDS_INFO)) {
+
+                        if (led_cfg->press_indicator == 1){
+                            int i;
+                            for (i=0 ; i<led_cfg->leds_nr ; i++) {
+                                led_set(led_cfg, i, -1);
+                            }
+                            led_cfg->press_indicator = 0;
+                        }
+
                         DEBUG_PRINT("Button %s released, executing hotplug button command: %s\n",bc->name, bc->command);
                         snprintf(str, 512, "ACTION=register INTERFACE=%s /sbin/hotplug-call button &",bc->command);
                         system(str);
