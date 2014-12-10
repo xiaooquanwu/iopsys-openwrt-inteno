@@ -82,7 +82,7 @@ int get_led_index_by_name(struct leds_configuration* led_cfg, char* led_name);
 int led_set(struct leds_configuration* led_cfg, int led_idx, int state);
 int board_ioctl(int ioctl_id, int action, int hex, char* string_buf, int string_buf_len, int offset);
 static void proximity_light(struct leds_configuration* led_cfg, int all);
-static void proximity_dim(struct leds_configuration* led_cfg, int all);
+void proximity_dim(struct leds_configuration* led_cfg, int all);
 
 void sx9512_reset_handler(struct uloop_timeout *timeout);
 
@@ -506,8 +506,6 @@ static void blink_handler(struct uloop_timeout *timeout)
     /* handle press indicator for touch */
     if(led_cfg->press_indicator) {
         static int times = 0;
-        if (times >= 10 )
-            led_cfg->press_indicator = 0;
         times++;
         if (times%2)
             proximity_light(led_cfg, 1);
@@ -640,7 +638,7 @@ static void set_function_led(struct leds_configuration* led_cfg, const char* fn_
 static void proximity_light(struct leds_configuration* led_cfg, int all)
 {
     int i;
-
+    DEBUG_PRINT("\n");
     /* if led stored state is not OFF and the leds is used to indicate proximity turn on */
     for (i=0 ; i<led_cfg->leds_nr ; i++) {
         struct led_config* lc = led_cfg->leds[i];
@@ -648,21 +646,25 @@ static void proximity_light(struct leds_configuration* led_cfg, int all)
             led_set(led_cfg, i, 1);
     }
 
+#if 0
     /* if we have a feedback led turn it on if state is PROXIMITY else set to internal state.*/
     if (led_cfg->button_feedback_led >= 0)
         led_set(led_cfg, led_cfg->button_feedback_led,
                 led_cfg->leds_state == LEDS_PROXIMITY ? 1 : -1);
+#endif
 }
 
-static void proximity_dim(struct leds_configuration* led_cfg, int all)
+void proximity_dim(struct leds_configuration* led_cfg, int all)
 {
     int i;
+    DEBUG_PRINT("\n");
     for (i=0 ; i<led_cfg->leds_nr ; i++) {
         struct led_config* lc = led_cfg->leds[i];
         if (lc->use_proximity && (!lc->state || all)
             && lc->blink_state)
             led_set(led_cfg, i, 0);
     }
+
     if (all && led_cfg->leds_state == LEDS_PROXIMITY
         && led_cfg->button_feedback_led >= 0) {
         led_set(led_cfg, led_cfg->button_feedback_led, -1);

@@ -63,6 +63,8 @@ static int button_use_feedback(const struct leds_configuration *led_cfg,
         && bc->type == I2C && bc->address < 8;
 }
 
+void proximity_dim(struct leds_configuration* led_cfg, int all);
+
 void check_buttons(struct leds_configuration *led_cfg, struct button_configuration *butt_cfg, int initialize) {
     int button, i;
     struct button_config* bc;
@@ -102,6 +104,7 @@ void check_buttons(struct leds_configuration *led_cfg, struct button_configurati
 
             if ((!(button^bc->active)) && (bc->pressed_state)) {
                 char str[512] = {0};
+#if 0
                 if (button_use_feedback(led_cfg, bc)) {
                     if (led_cfg->leds_state == LEDS_PROXIMITY
                         && led_cfg->proximity_timer)
@@ -109,7 +112,7 @@ void check_buttons(struct leds_configuration *led_cfg, struct button_configurati
                     else
                         led_set(led_cfg, led_cfg->button_feedback_led, -1);
                 }
-
+#endif
                 if (button_press_time_valid(bc, MIN_MS_TIME_PRESSED)){
                     if ((led_cfg->leds_state == LEDS_NORMAL)    ||
                         (led_cfg->leds_state == LEDS_PROXIMITY) ||
@@ -118,6 +121,7 @@ void check_buttons(struct leds_configuration *led_cfg, struct button_configurati
 
                         if (led_cfg->press_indicator == 1){
                             int i;
+                            proximity_dim(led_cfg, 1);
                             for (i=0 ; i<led_cfg->leds_nr ; i++) {
                                 led_set(led_cfg, i, -1);
                             }
