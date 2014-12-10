@@ -32,7 +32,8 @@ static bool running = false;
 
 //TODO: all uci things here
 void ucix_reload();
-static struct uci_context *uci_ctx = NULL;
+static struct uci_context *uci_voice_client_ctx = NULL;
+static struct uci_context *uci_voice_codecs_ctx = NULL;
 
 //TODO: all ubus things here
 static bool ubus_connected = false;
@@ -137,51 +138,51 @@ int uci_get_voice_led_count()
 const char* uci_get_called_lines(const SIP_PEER* peer)
 {
 	ucix_reload();
-	return ucix_get_option(uci_ctx, UCI_VOICE_PACKAGE, peer->account.name, "call_lines");
+	return ucix_get_option(uci_voice_client_ctx, UCI_VOICE_PACKAGE, peer->account.name, "call_lines");
 }
 
 int uci_get_rtp_port_start()
 {
 	ucix_reload();
-	return ucix_get_option_int(uci_ctx, UCI_VOICE_PACKAGE, "SIP", "rtpstart", RTP_RANGE_START_DEFAULT);
+	return ucix_get_option_int(uci_voice_client_ctx, UCI_VOICE_PACKAGE, "SIP", "rtpstart", RTP_RANGE_START_DEFAULT);
 }
 
 int uci_get_rtp_port_end()
 {
 	ucix_reload();
-	return ucix_get_option_int(uci_ctx, UCI_VOICE_PACKAGE, "SIP", "rtpend", RTP_RANGE_END_DEFAULT);
+	return ucix_get_option_int(uci_voice_client_ctx, UCI_VOICE_PACKAGE, "SIP", "rtpend", RTP_RANGE_END_DEFAULT);
 }
 
 int uci_get_sip_proxy(struct list_head *proxies)
 {
 	ucix_reload();
-	return ucix_get_option_list(uci_ctx, UCI_VOICE_PACKAGE, "SIP", "sip_proxy", proxies);
+	return ucix_get_option_list(uci_voice_client_ctx, UCI_VOICE_PACKAGE, "SIP", "sip_proxy", proxies);
 }
 
 const char* uci_get_peer_host(SIP_PEER *peer)
 {
 	ucix_reload();
-	int enabled = ucix_get_option_int(uci_ctx, UCI_VOICE_PACKAGE, peer->account.name, "enabled", 0);
+	int enabled = ucix_get_option_int(uci_voice_client_ctx, UCI_VOICE_PACKAGE, peer->account.name, "enabled", 0);
 	if (enabled == 0) {
 		return NULL;
 	}
-	return ucix_get_option(uci_ctx, UCI_VOICE_PACKAGE, peer->account.name, "host");
+	return ucix_get_option(uci_voice_client_ctx, UCI_VOICE_PACKAGE, peer->account.name, "host");
 }
 
 const char* uci_get_peer_domain(SIP_PEER *peer)
 {
 	ucix_reload();
-	int enabled = ucix_get_option_int(uci_ctx, UCI_VOICE_PACKAGE, peer->account.name, "enabled", 0);
+	int enabled = ucix_get_option_int(uci_voice_client_ctx, UCI_VOICE_PACKAGE, peer->account.name, "enabled", 0);
 	if (enabled == 0) {
 		return NULL;
 	}
-	return ucix_get_option(uci_ctx, UCI_VOICE_PACKAGE, peer->account.name, "domain");
+	return ucix_get_option(uci_voice_client_ctx, UCI_VOICE_PACKAGE, peer->account.name, "domain");
 }
 
 int uci_get_peer_enabled(SIP_PEER* peer)
 {
 	ucix_reload();
-	return ucix_get_option_int(uci_ctx, UCI_VOICE_PACKAGE, peer->account.name, "enabled", 0);
+	return ucix_get_option_int(uci_voice_client_ctx, UCI_VOICE_PACKAGE, peer->account.name, "enabled", 0);
 }
 
 struct codec *uci_get_codecs()
@@ -190,7 +191,7 @@ struct codec *uci_get_codecs()
 	struct codec *c = codec_create();
 
 	ucix_reload();
-	ucix_for_each_section_type(uci_ctx, UCI_VOICE_PACKAGE, "supported_codec", codec_cb, c);
+	ucix_for_each_section_type(uci_voice_codecs_ctx, UCI_CODEC_PACKAGE, "supported_codec", codec_cb, c);
 	return c;
 }
 
@@ -1299,8 +1300,8 @@ static void codec_cb(const char * name, void *priv)
 		c = c->next;
 	}
 	c->key = strdup(name);
-	c->value = strdup(ucix_get_option(uci_ctx, UCI_VOICE_PACKAGE, name, "name"));
-	const char *bitrate = ucix_get_option(uci_ctx, UCI_VOICE_PACKAGE, name, "bitrate");
+	c->value = strdup(ucix_get_option(uci_voice_codecs_ctx, UCI_CODEC_PACKAGE, name, "name"));
+	const char *bitrate = ucix_get_option(uci_voice_codecs_ctx, UCI_CODEC_PACKAGE, name, "bitrate");
 	c->bitrate = bitrate ? atoi(bitrate) : 0;
 
 	/* Create space for next codec */
@@ -1590,8 +1591,13 @@ void set_state(AMI_STATE new_state, ami_connection* con)
  */
 void ucix_reload()
 {
-	if (uci_ctx) {
-		ucix_cleanup(uci_ctx);
+	if (uci_voice_client_ctx) {
+		ucix_cleanup(uci_voice_client_ctx);
 	}
-	uci_ctx = ucix_init(UCI_VOICE_PACKAGE);
+	uci_voice_client_ctx = ucix_init(UCI_VOICE_PACKAGE);
+
+	if (uci_voice_codecs_ctx) {
+		ucix_cleanup(uci_voice_codecs_ctx);
+	}
+	uci_voice_codecs_ctx = ucix_init(UCI_CODEC_PACKAGE);
 }
