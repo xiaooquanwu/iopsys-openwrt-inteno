@@ -644,17 +644,9 @@ wdev_channel_settings() {
 			nvram set "$device"_acs_tx_idle_cnt="5"
 			nvram set "$device"_acs_lowband_least_rssi="-75"
 			wlctl -i $device chanim_mode 2
-
-			# alternative autochannel method
-			wlctl -i $device csscantimer $scantimer
-			wlctl -i $device up
-			wlctl -i $device autochannel 1
-			wlctl -i $device chanspec $(wlctl -i $device autochannel | awk '{print$1}')
-			wlctl -i $device down
-
-			[ $(wlctl -i $device csscantimer) -gt 0 ] && nvram set acs_ifnames=""
 		;;
 		*)
+			wlctl -i $device chanim_mode 0
 			wlctl -i $device chanspec $channel
 		;;
 	esac
