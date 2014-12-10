@@ -1,0 +1,455 @@
+--- a/mkfs.jffs2.c	2014-12-06 16:41:43.551782683 +0100
++++ b/mkfs.jffs2.c	2014-12-06 17:10:46.199759482 +0100
+@@ -109,6 +109,11 @@ struct filesystem_entry {
+ 	struct rb_node hardlink_rb;
+ };
+ 
++struct sortfile_entry {
++	struct sortfile_entry *next;
++	char fullname[0];
++};
++
+ struct rb_root hardlinks;
+ static int out_fd = -1;
+ static int in_fd = -1;
+@@ -121,6 +126,7 @@ static int fake_times = 0;
+ int target_endian = __BYTE_ORDER;
+ static char default_compression_name[16] = "priority";
+ static char donotcompress_filelist[256] = "";
++static struct sortfile_entry *sortfile_list = NULL;
+ 
+ uint32_t find_hardlink(struct filesystem_entry *e)
+ {
+@@ -595,6 +601,40 @@ static int parse_device_table(struct fil
+ 	return status;
+ }
+ 
++static struct sortfile_entry * parse_sort_filelist(const char *path)
++{
++	struct sortfile_entry *s = NULL, *e, *t;
++	char fullname[256];
++	FILE *fp;
++	int len;
++
++	fp = xfopen(path, "r");
++	while( fgets(fullname, sizeof(fullname), fp) )
++	{
++		len = strlen(fullname) - 1;  /* Assume end is '\n' */
++		if (len > 0) {
++			fullname[len] = '\0';
++
++			if (verbose)
++				printf("Adding sortfile-list entry: %s\n",
++				       fullname);
++
++			e = xmalloc(sizeof(*e) + len + 1);
++			strcpy(e->fullname, fullname);
++			e->next = NULL;
++
++			if (!s)
++				s = e;
++			else
++				t->next = e;
++			t = e;
++		}
++	}
++
++	fclose(fp);
++	return s;
++}
++
+ static void cleanup(struct filesystem_entry *dir)
+ {
+ 	struct filesystem_entry *e, *prev;
+@@ -916,6 +956,89 @@ static unsigned int write_regular_file(s
+ 	return totcomp;
+ }
+ 
++static unsigned int write_block_padding_file(char * name,
++					      struct filesystem_entry *parent)
++{
++	uint32_t ver;
++	unsigned int offset;
++	unsigned char *buf;
++	struct filesystem_entry e;
++	struct jffs2_raw_inode ri;
++	unsigned int tot_space;
++	unsigned int pages;
++	unsigned int size;
++	unsigned int totcomp = 0;
++
++	/* Create a dummy filesystem entry */
++	memset(&e, 0, sizeof(e));
++	e.name = name;
++	e.ino = ++ino;
++	e.sb.st_mode = 0644 | S_IFREG;
++	e.parent = parent;
++
++	mkfs_debug_msg("writing file '%s'  ino=%lu  parent_ino=%lu",
++			e.name, (unsigned long) e.ino,
++			(unsigned long) (parent->ino) ? : 1);
++	write_dirent(&e);
++
++	tot_space = erase_block_size - (out_ofs % erase_block_size);
++	pages = tot_space / (page_size + sizeof(ri));
++	size = pages * page_size;
++	tot_space -= pages * (page_size + sizeof(ri));
++	if (tot_space > (sizeof(ri) + 3))
++		size += tot_space - (sizeof(ri) + 3);
++	e.sb.st_size = size;
++
++	buf = xmalloc(page_size);
++	memset(buf, 0xad, page_size);
++
++	ver = 0;
++	offset = 0;
++
++	memset(&ri, 0, sizeof(ri));
++	ri.magic = cpu_to_je16(JFFS2_MAGIC_BITMASK);
++	ri.nodetype = cpu_to_je16(JFFS2_NODETYPE_INODE);
++
++	ri.ino = cpu_to_je32(e.ino);
++	ri.mode = cpu_to_jemode(e.sb.st_mode);
++	ri.uid = cpu_to_je16(e.sb.st_uid);
++	ri.gid = cpu_to_je16(e.sb.st_gid);
++	ri.atime = cpu_to_je32(e.sb.st_atime);
++	ri.ctime = cpu_to_je32(e.sb.st_ctime);
++	ri.mtime = cpu_to_je32(e.sb.st_mtime);
++	ri.isize = cpu_to_je32(e.sb.st_size);
++	/*ri.compr = 0x00;*/
++
++	while (size) {
++		uint32_t space;
++
++		space = (size > page_size) ? page_size : size;
++		ri.totlen = cpu_to_je32(sizeof(ri) + space);
++		ri.hdr_crc = cpu_to_je32(mtd_crc32(0,
++					&ri, sizeof(struct jffs2_unknown_node) - 4));
++
++		ri.version = cpu_to_je32(++ver);
++		ri.offset = cpu_to_je32(offset);
++		ri.csize = cpu_to_je32(space);
++		ri.dsize = cpu_to_je32(space);
++		ri.node_crc = cpu_to_je32(mtd_crc32(0, &ri, sizeof(ri) - 8));
++		ri.data_crc = cpu_to_je32(mtd_crc32(0, buf, space));
++
++		full_write(out_fd, &ri, sizeof(ri));
++		totcomp += sizeof(ri);
++		full_write(out_fd, buf, space);
++		totcomp += space;
++		padword();
++
++		size -= space;
++		offset += space;
++	}
++
++	free(buf);
++
++	return totcomp;
++}
++
+ static void write_symlink(struct filesystem_entry *e)
+ {
+ 	int len;
+@@ -1281,104 +1404,179 @@ static void write_xattr_entry(struct fil
+ #define write_xattr_entry(x)
+ #endif
+ 
++static void write_entry(struct filesystem_entry *e)
++{
++	unsigned int wrote;
++
++	if (e->sb.st_nlink >= 1 &&
++	    (e->ino = find_hardlink(e))) {
++
++		write_dirent(e);
++		if (verbose) {
++			printf("\tL %04o %9lu             %5d:%-3d %s\n",
++			       e->sb.st_mode & ~S_IFMT, (unsigned long) e->ino,
++			       (int) (e->sb.st_uid), (int) (e->sb.st_gid),
++			       e->name);
++		}
++	} else switch (e->sb.st_mode & S_IFMT) {
++		case S_IFDIR:
++			if (verbose) {
++				printf("\td %04o %9" PRIu64 "             %5d:%-3d %s\n",
++						e->sb.st_mode & ~S_IFMT, e->sb.st_size,
++						(int) (e->sb.st_uid), (int) (e->sb.st_gid),
++						e->name);
++			}
++			write_pipe(e);
++			write_xattr_entry(e);
++			break;
++		case S_IFSOCK:
++			if (verbose) {
++				printf("\ts %04o %9" PRIu64 "             %5d:%-3d %s\n",
++						e->sb.st_mode & ~S_IFMT, e->sb.st_size,
++						(int) e->sb.st_uid, (int) e->sb.st_gid, e->name);
++			}
++			write_pipe(e);
++			write_xattr_entry(e);
++			break;
++		case S_IFIFO:
++			if (verbose) {
++				printf("\tp %04o %9" PRIu64 "             %5d:%-3d %s\n",
++						e->sb.st_mode & ~S_IFMT, e->sb.st_size,
++						(int) e->sb.st_uid, (int) e->sb.st_gid, e->name);
++			}
++			write_pipe(e);
++			write_xattr_entry(e);
++			break;
++		case S_IFCHR:
++			if (verbose) {
++				printf("\tc %04o %4d,%4d             %5d:%-3d %s\n",
++						e->sb.st_mode & ~S_IFMT, major(e->sb.st_rdev),
++						minor(e->sb.st_rdev), (int) e->sb.st_uid,
++						(int) e->sb.st_gid, e->name);
++			}
++			write_special_file(e);
++			write_xattr_entry(e);
++			break;
++		case S_IFBLK:
++			if (verbose) {
++				printf("\tb %04o %4d,%4d             %5d:%-3d %s\n",
++						e->sb.st_mode & ~S_IFMT, major(e->sb.st_rdev),
++						minor(e->sb.st_rdev), (int) e->sb.st_uid,
++						(int) e->sb.st_gid, e->name);
++			}
++			write_special_file(e);
++			write_xattr_entry(e);
++			break;
++		case S_IFLNK:
++			if (verbose) {
++				printf("\tl %04o %9" PRIu64 "             %5d:%-3d %s -> %s\n",
++						e->sb.st_mode & ~S_IFMT, e->sb.st_size,
++						(int) e->sb.st_uid, (int) e->sb.st_gid, e->name,
++						e->link);
++			}
++			write_symlink(e);
++			write_xattr_entry(e);
++			break;
++		case S_IFREG:
++			wrote = write_regular_file(e);
++			write_xattr_entry(e);
++			if (verbose) {
++				printf("\tf %04o %9" PRIu64 " (%9u) %5d:%-3d %s\n",
++						e->sb.st_mode & ~S_IFMT, e->sb.st_size, wrote,
++						(int) e->sb.st_uid, (int) e->sb.st_gid, e->name);
++			}
++			break;
++		default:
++			errmsg("Unknown mode %o for %s", e->sb.st_mode,
++					e->fullname);
++			break;
++	}
++}
++
+ static void recursive_populate_directory(struct filesystem_entry *dir)
+ {
+ 	struct filesystem_entry *e;
+-	unsigned int wrote;
++	struct filesystem_entry *s = NULL;
++	struct filesystem_entry *prev, *next;
++	int dir_is_root = !(dir->parent);
+ 
+ 	if (verbose) {
+ 		printf("%s\n", dir->fullname);
+ 	}
+ 	write_xattr_entry(dir);		/* for '/' */
+ 
+-	e = dir->files;
+-	while (e) {
+-		if (e->sb.st_nlink >= 1 &&
+-		    (e->ino = find_hardlink(e))) {
++	if (sortfile_list) {
++		struct sortfile_entry *l;
+ 
+-			write_dirent(e);
+-			if (verbose) {
+-				printf("\tL %04o %9lu             %5d:%-3d %s\n",
+-				       e->sb.st_mode & ~S_IFMT, (unsigned long) e->ino,
+-				       (int) (e->sb.st_uid), (int) (e->sb.st_gid),
+-				       e->name);
+-			}
+-		} else switch (e->sb.st_mode & S_IFMT) {
+-			case S_IFDIR:
+-				if (verbose) {
+-					printf("\td %04o %9" PRIu64 "             %5d:%-3d %s\n",
+-							e->sb.st_mode & ~S_IFMT, e->sb.st_size,
+-							(int) (e->sb.st_uid), (int) (e->sb.st_gid),
+-							e->name);
+-				}
+-				write_pipe(e);
+-				write_xattr_entry(e);
+-				break;
+-			case S_IFSOCK:
+-				if (verbose) {
+-					printf("\ts %04o %9" PRIu64 "             %5d:%-3d %s\n",
+-							e->sb.st_mode & ~S_IFMT, e->sb.st_size,
+-							(int) e->sb.st_uid, (int) e->sb.st_gid, e->name);
+-				}
+-				write_pipe(e);
+-				write_xattr_entry(e);
+-				break;
+-			case S_IFIFO:
+-				if (verbose) {
+-					printf("\tp %04o %9" PRIu64 "             %5d:%-3d %s\n",
+-							e->sb.st_mode & ~S_IFMT, e->sb.st_size,
+-							(int) e->sb.st_uid, (int) e->sb.st_gid, e->name);
+-				}
+-				write_pipe(e);
+-				write_xattr_entry(e);
+-				break;
+-			case S_IFCHR:
+-				if (verbose) {
+-					printf("\tc %04o %4d,%4d             %5d:%-3d %s\n",
+-							e->sb.st_mode & ~S_IFMT, major(e->sb.st_rdev),
+-							minor(e->sb.st_rdev), (int) e->sb.st_uid,
+-							(int) e->sb.st_gid, e->name);
+-				}
+-				write_special_file(e);
+-				write_xattr_entry(e);
+-				break;
+-			case S_IFBLK:
+-				if (verbose) {
+-					printf("\tb %04o %4d,%4d             %5d:%-3d %s\n",
+-							e->sb.st_mode & ~S_IFMT, major(e->sb.st_rdev),
+-							minor(e->sb.st_rdev), (int) e->sb.st_uid,
+-							(int) e->sb.st_gid, e->name);
+-				}
+-				write_special_file(e);
+-				write_xattr_entry(e);
+-				break;
+-			case S_IFLNK:
+-				if (verbose) {
+-					printf("\tl %04o %9" PRIu64 "             %5d:%-3d %s -> %s\n",
+-							e->sb.st_mode & ~S_IFMT, e->sb.st_size,
+-							(int) e->sb.st_uid, (int) e->sb.st_gid, e->name,
+-							e->link);
+-				}
+-				write_symlink(e);
+-				write_xattr_entry(e);
+-				break;
+-			case S_IFREG:
+-				wrote = write_regular_file(e);
+-				write_xattr_entry(e);
+-				if (verbose) {
+-					printf("\tf %04o %9" PRIu64 " (%9u) %5d:%-3d %s\n",
+-							e->sb.st_mode & ~S_IFMT, e->sb.st_size, wrote,
+-							(int) e->sb.st_uid, (int) e->sb.st_gid, e->name);
++		/* Move sorted files in this dir to their own file list */
++		l = sortfile_list;
++		while (l) {
++			e = dir->files;
++			while (e) {
++				if (!strcmp(l->fullname, e->fullname)) {
++
++					if (dir->files == e)
++						dir->files = e->next;
++
++					prev = e->prev;
++					next = e->next;
++					e->next = NULL;
++
++					if (!s) {
++						s = e;
++						s->prev = e;
++					} else {
++						s->prev->next = e;
++						e->prev = s->prev;
++						s->prev = e;
++					}
++
++					if (prev)
++						prev->next = next;
++					if (next)
++						next->prev = prev;
++					break;
+ 				}
+-				break;
+-			default:
+-				errmsg("Unknown mode %o for %s", e->sb.st_mode,
+-						e->fullname);
+-				break;
++				e = e->next;
++			}
++			l = l->next;
+ 		}
++
++		if (s) {
++			if (!dir_is_root)
++				padblock();
++
++			/* Write sorted files first */
++			e = s;
++			while (e) {
++				write_entry(e);
++				e = e->next;
++			}
++
++			/* Fill remaining space of final sorted block with dummy file */
++			write_block_padding_file(".padding", dir);
++			padblock();
++		}
++	}
++
++	/* Write not sorted files */
++	e = dir->files;
++	while (e) {
++		write_entry(e);
+ 		e = e->next;
+ 	}
+ 
++	if (sortfile_list && s) {
++		/* Return sorted files to directory file list */
++		e = dir->files;
++		dir->files = s;
++		if (e) {
++			s->prev->next = e;
++			e->prev = s->prev;
++			s->prev = NULL;
++		}
++	}
++
+ 	e = dir->files;
+ 	while (e) {
+ 		if (S_ISDIR(e->sb.st_mode)) {
+@@ -1473,6 +1671,7 @@ static struct option long_options[] = {
+ 	{"with-posix-acl", 0, NULL, 1002 },
+ #endif
+ 	{"donotcompress-filelist", 1, NULL, 'N'},
++	{"sortedfiles-list", 1, NULL, 'S'},
+ 	{NULL, 0, NULL, 0}
+ };
+ 
+@@ -1514,7 +1713,8 @@ static const char helptext[] =
+ "  -v, --verbose           Verbose operation\n"
+ "  -V, --version           Display version information\n"
+ "  -i, --incremental=FILE  Parse FILE and generate appendage output for it\n"
+-"  -N, --donotcompress-filelist=FILE  Do not compress files in FILE\n\n";
++"  -N, --donotcompress-filelist=FILE  Do not compress files in FILE\n"
++"  -S, --sortedfiles-list=FILE  Put files in FILE first in their directory\n\n";
+ 
+ static const char revtext[] = "1.60";
+ 
+@@ -1667,7 +1867,7 @@ int main(int argc, char **argv)
+ 	jffs2_compressors_init();
+ 
+ 	while ((opt = getopt_long(argc, argv,
+-					"D:d:r:s:o:qUPfh?vVe:lbp::nc:m:x:X:Lty:i:N:", long_options, &c)) >= 0)
++					"D:d:r:s:o:qUPfh?vVe:lbp::nc:m:x:X:Lty:i:N:S:", long_options, &c)) >= 0)
+ 	{
+ 		switch (opt) {
+ 			case 'D':
+@@ -1849,6 +2049,11 @@ int main(int argc, char **argv)
+ 			case 'N':
+ 	                  strcpy(donotcompress_filelist, optarg);
+ 					  break;
++			case 'S':
++					  sortfile_list = parse_sort_filelist(optarg);
++					  if (!sortfile_list)
++						  errmsg_die("Error in sorted files list");
++					  break;
+ 		}
+ 	}
+ 	if (warn_page_size) {

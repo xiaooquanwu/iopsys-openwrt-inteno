@@ -61,6 +61,10 @@ define Image/Prepare
 	echo -ne $(CONFIG_TARGET_CUSTOMER) >>$(KDIR)/jffs2_eof_marker_2048
 	cat $(KDIR)/jffs2_eof_marker_2048 $(KDIR)/file128k.tmp | head --bytes=131072 > $(KDIR)/jffs2_eof_marker_128k
 
+	#these files need to go in a set of erase blocks of their own to minimize the chance of relocation
+	echo "/cferam.000"    >  $(KDIR)/sortlist
+	echo "/vmlinux.lz"    >> $(KDIR)/sortlist
+
 	#add the files that should not be compressed
 	echo -i "/IOP3"       >> $(KDIR)/nocomprlist
 	echo -e "/cferam.000" >> $(KDIR)/nocomprlist
