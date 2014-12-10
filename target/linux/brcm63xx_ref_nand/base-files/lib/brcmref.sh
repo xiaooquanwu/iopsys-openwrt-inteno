@@ -57,6 +57,7 @@ brcm_insmod() {
 }
 
 brcm_env() {
+	echo "Y" > /sys/module/printk/parameters/time
 	echo Setting up brcm environment
 	/bin/mount -a
 	mknod /var/fuse c 10 229
