@@ -64,7 +64,7 @@ struct led_config {
     led_type_t	type;
     int		address;
     button_active_t active;
-    int		use_proximity;
+    int		use_proximity;      /* indicate led is to be used as proximity detect indicator */
     /* State */
     led_state_t	state;
     int		blink_state;
@@ -90,14 +90,15 @@ struct leds_configuration {
     led_action_t led_fn_action[LED_FUNCTIONS];
     struct led_map led_map_config[LED_FUNCTIONS][LED_ACTION_MAX];
 
-    /* If >= 0, index for the led used for button and proximity
-       feedback. */
+    /* If >= 0, index for the led used for button and proximity feedback. */
     int button_feedback_led;
     leds_state_t leds_state;
     int test_state;
     /* Number of blink_handler ticks the buttons should stay lit up */
     unsigned long proximity_timer; /* For active leds */
     unsigned long proximity_all_timer; /* For all leds */
+
+    int press_indicator;     /* press indicator set when any valid button press is detected */
 };
 
 int add_led(struct leds_configuration* led_cfg, char* led_name, const char* led_config, led_color_t color);
