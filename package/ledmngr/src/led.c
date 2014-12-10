@@ -48,7 +48,7 @@ int add_led(struct leds_configuration* led_cfg, char* led_name, const char* led_
     else
         lc->use_proximity = 1;
 
-    if (!strcmp(lc->name, "Status_red"))
+    if (!strcmp(lc->name, "Status_green"))
         led_cfg->button_feedback_led = led_cfg->leds_nr;
 
     led_cfg->leds[led_cfg->leds_nr] = lc;
