@@ -191,7 +191,7 @@ struct button_configuration* get_button_config(struct uci_context *uci_ctx,struc
         bc = malloc(sizeof(struct button_config));
         bc->name = strdup(ptr);
         sscanf(butt_config, "%s %d %s %s %s",type, &address, active, command, feedback_led);
-        DEBUG_PRINT("%-15s: %4s %2d %s %s\n",command, type,address, active, feedback_led);
+        DEBUG_PRINT("%-15s: %4s %2d %s feedback_led=[%s] \n",command, type,address, active, feedback_led);
 
         if (!strcmp(active, "al"))   bc->active = ACTIVE_LOW;
         if (!strcmp(active, "ah"))   bc->active = ACTIVE_HIGH;

@@ -18,9 +18,13 @@ struct button_config {
     int     active;
     char*   command;
     int     pressed_state;
-    struct timespec pressed_time;
+    struct timespec pressed_time;       /* Store the time we get a press detection */
+    int     press_min_time;             /* time in miliseconds that button needs to be pressed to be valid */
     led_type_t type;
-    char*   feedback_led;
+
+    /* feedback_led feature is currently not activated. All leds used in proximity detect is flashed instead. */
+    /* should that instead be encoded as a special led, ??? */
+    char*   feedback_led;       /* led to flash when pressed */
 };
 
 struct button_configuration {
