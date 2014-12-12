@@ -31,7 +31,7 @@ static void touch_button_press_timer_start(struct button_config* bc)
 /* For i2c buttons but not the near & far we check that is was
    pressed long enough.
 */
-static int  button_press_time_valid(struct button_config* bc, int msec)
+static int  button_press_time_valid(struct button_config* bc)
 {
     struct timespec now;
     int sec;
@@ -43,7 +43,7 @@ static int  button_press_time_valid(struct button_config* bc, int msec)
             sec = now.tv_sec - bc->pressed_time.tv_sec;
             nsec = now.tv_nsec - bc->pressed_time.tv_nsec;
 
-            if ( msec < (sec*1000 + nsec/1000000)) {
+            if ( bc->press_min_time < (sec*1000 + nsec/1000000)) {
                 return 1;
             }
         }
@@ -90,7 +90,7 @@ void check_buttons(struct leds_configuration *led_cfg, struct button_configurati
                 touch_button_press_timer_start(bc);
 
                 if (button_use_feedback(led_cfg, bc)) {
-                    if ( button_press_time_valid(bc, MIN_MS_TIME_PRESSED) ) {
+                    if ( button_press_time_valid(bc) ) {
                         led_cfg->press_indicator = 1;
                     }
                 }
@@ -113,7 +113,7 @@ void check_buttons(struct leds_configuration *led_cfg, struct button_configurati
                         led_set(led_cfg, led_cfg->button_feedback_led, -1);
                 }
 #endif
-                if (button_press_time_valid(bc, MIN_MS_TIME_PRESSED)){
+                if (button_press_time_valid(bc)){
                     if ((led_cfg->leds_state == LEDS_NORMAL)    ||
                         (led_cfg->leds_state == LEDS_PROXIMITY) ||
                         (led_cfg->leds_state == LEDS_SILENT)    ||
@@ -184,14 +184,21 @@ struct button_configuration* get_button_config(struct uci_context *uci_ctx,struc
         char active[256];
         char command[256];
         char feedback_led[256];
-        int  address;
+        int  address = 0;
+        int  min_time = 0;
 
         butt_config = ucix_get_option(uci_ctx, "hw", "buttons", ptr);
 
         bc = malloc(sizeof(struct button_config));
         bc->name = strdup(ptr);
-        sscanf(butt_config, "%s %d %s %s %s",type, &address, active, command, feedback_led);
-        DEBUG_PRINT("%-15s: %4s %2d %s feedback_led=[%s] \n",command, type,address, active, feedback_led);
+
+        sscanf(butt_config, "%s %d %s %s %s %d",type, &address, active, command, feedback_led, &min_time);
+        DEBUG_PRINT("%-15s: %4s %2d %s feedback_led=[%s] min_time %d\n",command, type,address, active, feedback_led, min_time);
+
+        /* set default min time to 100ms if there is no data in config file */
+        if(min_time == 0)
+            min_time=100;
+        bc->press_min_time = min_time;
 
         if (!strcmp(active, "al"))   bc->active = ACTIVE_LOW;
         if (!strcmp(active, "ah"))   bc->active = ACTIVE_HIGH;
