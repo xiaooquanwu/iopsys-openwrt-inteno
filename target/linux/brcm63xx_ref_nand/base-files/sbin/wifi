@@ -948,8 +948,9 @@ wifi_reload() {
 }
 
 wifi_detect() {
+	local WLDIR="/tmp/wireless"
 	local wls="wl0 wl1"
-	local bands band bwidth country hwmode pcid wl
+	local bands band bwidth country hwmode pcid wl bno
 	local BMAC=$(cat /proc/nvram/BaseMacAddr | tr '[a-z]' '[A-Z]')
 	BMAC=${BMAC// /}
 	local BSSID=$(printf "%X\n" $((0x$BMAC + 2)))
@@ -966,21 +967,32 @@ wifi_detect() {
 	isAC() {
 		[ "$(db get hw.$1.is_ac)" == "1" ] && return 0 || return 1
 	}
+	populate_chanspecs() {
+		wlctl -i $1 country $country
+		wlctl -i $1 chanspecs -b $bno -w 20 | awk '{print$1}' > /$WLDIR/$1"_chanspecs"
+		wlctl -i $1 chanspecs -b $bno -w 40 | awk '{print$1}' >> /$WLDIR/$1"_chanspecs"
+		wlctl -i $1 chanspecs -b $bno -w 80 | awk '{print$1}' >> /$WLDIR/$1"_chanspecs"
+		sed -i '/^$/d' /$WLDIR/$1"_chanspecs"
+	}
 
+	mkdir -p $WLDIR
 	for wl in $wls; do
 		if wlctl -i $wl ap >/dev/null 2>&1; then
+			pcid=$(pcID $wl)
+			country="EU/13"
+			hwmode="auto"
+			if $(is5G $pcid); then
+				band="a"
+				bwidth="40"
+				bno=5
+				$(isAC $pcid) && hwmode="11ac"
+			else
+				band="b"
+				bwidth="20"
+				bno=2
+			fi
+			populate_chanspecs $wl
 			if ! uci -q get wireless.$wl; then
-				pcid=$(pcID $wl)
-				country="EU/13"
-				hwmode="auto"
-				if $(is5G $pcid); then
-					band="a"
-					bwidth="40"
-					$(isAC $pcid) && hwmode="11ac"
-				else
-					band="b"
-					bwidth="20"
-				fi
 				cat >> /etc/config/wireless <<EOF
 config wifi-device '$wl'
 	option type 'broadcom'
