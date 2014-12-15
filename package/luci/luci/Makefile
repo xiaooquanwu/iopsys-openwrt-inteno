@@ -444,6 +444,7 @@ define Package/luci-app-voice/install
 	
 	$(INSTALL_DIR) $(1)/etc/config
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/etc/config/voice_client $(1)/etc/config/
+        $(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/etc/config/voice_codecs $(1)/etc/config/
 
 	echo $(PKG_VERSION) > $(1)/etc/iop_luci_version.log
 	echo $(PKG_SOURCE_VERSION) >> $(1)/etc/iop_luci_version.log
