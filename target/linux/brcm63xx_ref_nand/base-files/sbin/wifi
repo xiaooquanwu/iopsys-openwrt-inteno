@@ -112,10 +112,12 @@ netno() {
 
 find_network() {
 	local device="$1"
-	local ifdev ifl3dev ifobj devtype
+	local ifdev ifl3dev ifobj devtype ifname
 	for ifobj in `ubus list network.interface.\*`; do
 		interface="${ifobj##network.interface.}"
 		[ "$interface" == "loopback" ] && continue
+		ifname=`uci -q get network.$interface.ifname`
+		[ "${ifname:0:1}" == "@" ] && continue
 		json_load "$(ifstatus $interface)"
 		json_get_var ifdev device
 		json_get_var ifl3dev l3_device
