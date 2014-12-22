@@ -270,12 +270,16 @@ default_do_upgrade() {
 			sync
 		fi
 		[ $cfe_fs -eq 1 ] && v "Writing CFE + File System ..." || v "Writing File System ..."
+        v "-> Kill JFFS2 garbage collector ..."
+        kill -KILL $(ps |grep jffs2_gcd_mtd |grep -v grep |awk '{print $1}') &> /dev/console
         v "-> Display meminfo ..."
         cat /proc/meminfo > /dev/console
+        v "-> Display procs ..."
+        ps > /dev/console
 		v "-> Disable printk interrupt ..."
         echo 0 >/proc/sys/kernel/printk_with_interrupt_enabled
 		v "-> Will reboot the system after writing finishes ..."
-		brcm_fw_tool -q write $from
+		brcm_fw_tool -V -q write $from &> /dev/console
 		v "Upgrade syscall failed for some reason ..."
 	else
 		if [ "$SAVE_CONFIG" -eq 1 -a -z "$USE_REFRESH" ]; then
