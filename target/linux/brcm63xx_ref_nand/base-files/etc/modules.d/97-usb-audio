@@ -1,2 +1,2 @@
-snd-usbmidi-lib.ko
-snd-usb-audio.ko
+snd-usbmidi-lib
+snd-usb-audio
