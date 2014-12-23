@@ -44,6 +44,13 @@ config BCM_I2C
        help
 		Set this to include the i2c modules in image
 
+config BCM_BLUETOOTH
+       bool
+       prompt "Broadcom Bluetooth support"
+       default n
+       help
+		Set this to include the Bluetooth modules in image
+
 
 config SECURE_BOOT_CFE
        prompt "Secure boot CFE"

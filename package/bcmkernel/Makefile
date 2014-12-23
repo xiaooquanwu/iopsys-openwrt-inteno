@@ -87,6 +87,20 @@ define Package/bcmkernel/removei2c
 endef
 endif
 
+define Package/bcmkernel/removebluetooth
+	rm $(1)/lib/modules/$(BCM_KERNEL_VERSION)/bluetooth.ko
+	rm $(1)/lib/modules/$(BCM_KERNEL_VERSION)/bnep.ko
+	rm $(1)/lib/modules/$(BCM_KERNEL_VERSION)/btusb.ko
+	rm $(1)/lib/modules/$(BCM_KERNEL_VERSION)/rfcomm.ko
+	rm $(1)/lib/modules/$(BCM_KERNEL_VERSION)/hci_uart.ko
+endef
+
+ifeq ($(CONFIG_BCM_BLUETOOTH),y)
+define Package/bcmkernel/removebluetooth
+	echo not removing $(1)/lib/modules/$(BCM_KERNEL_VERSION)/bluetooth.ko etc...
+endef
+endif
+
 #define Package/bcmkernel/prepare
 #endif
 
