@@ -32,7 +32,8 @@ static bool running = false;
 
 //TODO: all uci things here
 void ucix_reload();
-static struct uci_context *uci_ctx = NULL;
+static struct uci_context *uci_voice_client_ctx = NULL;
+static struct uci_context *uci_voice_codecs_ctx = NULL;
 
 //TODO: all ubus things here
 static bool ubus_connected = false;
@@ -41,6 +42,16 @@ static struct blob_buf bb;
 static struct blob_buf b_led;
 
 static SIP_PEER sip_peers[SIP_ACCOUNT_UNKNOWN + 1];
+
+struct codec {
+  char *key;
+  char *value;
+  unsigned int bitrate;
+  struct codec *next;
+};
+static struct codec *codec_create();
+static void codec_delete(struct codec *codec);
+static void codec_cb(const char * name, void *codec);
 
 static int rtpstart_current = 0;
 static int rtpend_current = 0;
@@ -127,51 +138,61 @@ int uci_get_voice_led_count()
 const char* uci_get_called_lines(const SIP_PEER* peer)
 {
 	ucix_reload();
-	return ucix_get_option(uci_ctx, UCI_VOICE_PACKAGE, peer->account.name, "call_lines");
+	return ucix_get_option(uci_voice_client_ctx, UCI_VOICE_PACKAGE, peer->account.name, "call_lines");
 }
 
 int uci_get_rtp_port_start()
 {
 	ucix_reload();
-	return ucix_get_option_int(uci_ctx, UCI_VOICE_PACKAGE, "SIP", "rtpstart", RTP_RANGE_START_DEFAULT);
+	return ucix_get_option_int(uci_voice_client_ctx, UCI_VOICE_PACKAGE, "SIP", "rtpstart", RTP_RANGE_START_DEFAULT);
 }
 
 int uci_get_rtp_port_end()
 {
 	ucix_reload();
-	return ucix_get_option_int(uci_ctx, UCI_VOICE_PACKAGE, "SIP", "rtpend", RTP_RANGE_END_DEFAULT);
+	return ucix_get_option_int(uci_voice_client_ctx, UCI_VOICE_PACKAGE, "SIP", "rtpend", RTP_RANGE_END_DEFAULT);
 }
 
-const char* uci_get_sip_proxy()
+int uci_get_sip_proxy(struct list_head *proxies)
 {
 	ucix_reload();
-	return ucix_get_option(uci_ctx, UCI_VOICE_PACKAGE, "SIP", "sip_proxy");
+	return ucix_get_option_list(uci_voice_client_ctx, UCI_VOICE_PACKAGE, "SIP", "sip_proxy", proxies);
 }
 
 const char* uci_get_peer_host(SIP_PEER *peer)
 {
 	ucix_reload();
-	int enabled = ucix_get_option_int(uci_ctx, UCI_VOICE_PACKAGE, peer->account.name, "enabled", 0);
+	int enabled = ucix_get_option_int(uci_voice_client_ctx, UCI_VOICE_PACKAGE, peer->account.name, "enabled", 0);
 	if (enabled == 0) {
 		return NULL;
 	}
-	return ucix_get_option(uci_ctx, UCI_VOICE_PACKAGE, peer->account.name, "host");
+	return ucix_get_option(uci_voice_client_ctx, UCI_VOICE_PACKAGE, peer->account.name, "host");
 }
 
 const char* uci_get_peer_domain(SIP_PEER *peer)
 {
 	ucix_reload();
-	int enabled = ucix_get_option_int(uci_ctx, UCI_VOICE_PACKAGE, peer->account.name, "enabled", 0);
+	int enabled = ucix_get_option_int(uci_voice_client_ctx, UCI_VOICE_PACKAGE, peer->account.name, "enabled", 0);
 	if (enabled == 0) {
 		return NULL;
 	}
-	return ucix_get_option(uci_ctx, UCI_VOICE_PACKAGE, peer->account.name, "domain");
+	return ucix_get_option(uci_voice_client_ctx, UCI_VOICE_PACKAGE, peer->account.name, "domain");
 }
 
 int uci_get_peer_enabled(SIP_PEER* peer)
 {
 	ucix_reload();
-	return ucix_get_option_int(uci_ctx, UCI_VOICE_PACKAGE, peer->account.name, "enabled", 0);
+	return ucix_get_option_int(uci_voice_client_ctx, UCI_VOICE_PACKAGE, peer->account.name, "enabled", 0);
+}
+
+struct codec *uci_get_codecs()
+{
+	/* Create space for first codec */
+	struct codec *c = codec_create();
+
+	ucix_reload();
+	ucix_for_each_section_type(uci_voice_codecs_ctx, UCI_CODEC_PACKAGE, "supported_codec", codec_cb, c);
+	return c;
 }
 
 /* Resolv name into ip (A or AAA record), update IP list for peer */
@@ -417,15 +438,17 @@ int handle_iptables(SIP_PEER *peer, int doResolv)
 		}
 
 		/* Get sip proxies and resolv if configured */
-		const char* proxies = uci_get_sip_proxy();
-		if (proxies) {
-			char proxy_buf[strlen(proxies)];
-			strcpy(proxy_buf, proxies);
-			char *delimiter = " ";
-			char *value = strtok(proxy_buf, delimiter);
-			while(value) {
-				resolv(peer, value);
-				value = strtok(NULL, delimiter);
+		struct ucilist proxies;
+		INIT_LIST_HEAD(&proxies.list);
+		if (!uci_get_sip_proxy(&proxies.list)) {
+			struct list_head *i;
+			struct list_head *tmp;
+			list_for_each_safe(i, tmp, &proxies.list)
+			{
+				struct ucilist *proxy = list_entry(i, struct ucilist, list);
+				resolv(peer, proxy->val);
+				free(proxy->val);
+				free(proxy);
 			}
 		}
 	}
@@ -1205,6 +1228,87 @@ static int ubus_asterisk_sip_cb (
 }
 
 /*
+ * ubus callback that replies to "asterisk.codecs status"
+ */
+static int ubus_codecs_cb (
+	struct ubus_context *ctx, struct ubus_object *obj,
+	struct ubus_request_data *req, const char *method,
+	struct blob_attr *msg)
+{
+	struct blob_attr *tb[__UBUS_ARGMAX];
+	struct codec *codec;
+	struct codec *codec_tmp;
+
+	blobmsg_parse(ubus_string_argument, __UBUS_ARGMAX, tb, blob_data(msg), blob_len(msg));
+	blob_buf_init(&bb, 0);
+
+	codec = uci_get_codecs();
+
+	while (codec) {
+		/* Node with next == NULL serves as end marker */
+		if (codec->next == NULL) {
+			codec_delete(codec);
+			break;
+		}
+
+		void *table = blobmsg_open_table(&bb, codec->key);
+		blobmsg_add_string(&bb, "name", codec->value);
+		if (codec->bitrate) {
+			blobmsg_add_u32(&bb, "bitrate", codec->bitrate);
+		}
+		blobmsg_close_table(&bb, table);
+
+		codec_tmp = codec;
+		codec = codec->next;
+		codec_delete(codec_tmp);
+	}
+
+	ubus_send_reply(ctx, req, bb.head);
+	return 0;
+}
+
+static struct codec *codec_create()
+{
+	struct codec *c = malloc(sizeof(struct codec));
+	bzero(c, sizeof(struct codec));
+
+	return c;
+}
+
+static void codec_delete(struct codec *c)
+{
+	if (c->key) {
+		free(c->key);
+	}
+
+	if (c->value) {
+		free(c->value);
+	}
+
+	free(c);
+}
+
+/*
+ * uci callback, called for each "supported_codec" found
+ */
+static void codec_cb(const char * name, void *priv)
+{
+	struct codec *c = (struct codec *) priv;
+
+	/* Store key/value to last codec in list */
+	while (c->next) {
+		c = c->next;
+	}
+	c->key = strdup(name);
+	c->value = strdup(ucix_get_option(uci_voice_codecs_ctx, UCI_CODEC_PACKAGE, name, "name"));
+	const char *bitrate = ucix_get_option(uci_voice_codecs_ctx, UCI_CODEC_PACKAGE, name, "bitrate");
+	c->bitrate = bitrate ? atoi(bitrate) : 0;
+
+	/* Create space for next codec */
+	c->next = codec_create();
+}
+
+/*
  * ubus callback that replies to "asterisk status".
  * Recursively reports status for all lines/accounts
  */
@@ -1278,6 +1382,7 @@ static struct ubus_object ubus_brcm_objects[] = {
 
 static struct ubus_method asterisk_object_methods[] = {
 	{ .name = "status", .handler = ubus_asterisk_cb },
+	{ .name = "codecs", .handler = ubus_codecs_cb },
 };
 
 static struct ubus_object_type asterisk_object_type =
@@ -1486,8 +1591,13 @@ void set_state(AMI_STATE new_state, ami_connection* con)
  */
 void ucix_reload()
 {
-	if (uci_ctx) {
-		ucix_cleanup(uci_ctx);
+	if (uci_voice_client_ctx) {
+		ucix_cleanup(uci_voice_client_ctx);
 	}
-	uci_ctx = ucix_init(UCI_VOICE_PACKAGE);
+	uci_voice_client_ctx = ucix_init(UCI_VOICE_PACKAGE);
+
+	if (uci_voice_codecs_ctx) {
+		ucix_cleanup(uci_voice_codecs_ctx);
+	}
+	uci_voice_codecs_ctx = ucix_init(UCI_CODEC_PACKAGE);
 }

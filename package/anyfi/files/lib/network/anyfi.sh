@@ -285,7 +285,7 @@ anyfi_vif_gen_config() {
 
 	# Resolve authentication protocol (WPA or WPA2)
 	case "$enc" in
-	psk-mixed*|wpa-mixed*|pskmixedpsk2*|wpamixedwpa2*)
+	psk-mixed*|wpa-mixed*|mixed-psk*|mixed-wpa*)
 		auth_proto=wpa+rsn
 		wpa_ciphers=$ciphers
 		rsn_ciphers=$ciphers
