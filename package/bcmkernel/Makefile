@@ -17,6 +17,9 @@ PKG_SOURCE_PROTO:=git
 
 PKG_SOURCE_VERSION:=8216815ced065e527681a079ad0e17fbb007baec
 
+# update this based on the Broadcom SDK version, 4.16L.02 -> 41602
+BRCM_SDK_VERSION:=41404
+
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
 
 include $(INCLUDE_DIR)/package.mk
@@ -146,7 +149,7 @@ define Package/bcmkernel/install
 
 	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/bcmdrivers/broadcom/include/bcm963xx/endptvoicestats.h $(STAGING_DIR)/usr/include/bcm963xx/bcmdrivers/broadcom/include/bcm963xx/endptvoicestats.h
 	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/bcmdrivers/broadcom/include/bcm963xx/endpointdrv.h $(STAGING_DIR)/usr/include/bcm963xx/bcmdrivers/broadcom/include/bcm963xx/endpointdrv.h
-
+	echo "#define BCM_SDK_VERSION $(BCM_SDK_VERSION)" > $(STAGING_DIR)/usr/include/bcm_sdk_version.h
 
 
 ###
