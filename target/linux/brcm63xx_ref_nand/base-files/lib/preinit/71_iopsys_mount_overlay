@@ -2,7 +2,6 @@
 # Copyright (C) 2006-2010 OpenWrt.org
 
 iopsys_rootfs_pivot() {
-	check_skip && return
 	echo "mounting and populating overlay"
 	local iop3_first_boot=$(ls -1 / | grep IOP3 | wc -l)
 	if [ "$iop3_first_boot" == "1" ]; then
