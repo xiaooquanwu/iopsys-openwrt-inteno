@@ -556,6 +556,7 @@ create_vif() {
 
 wdev_static_settings() {
 	local device=$1
+	wlctl -i $device msglevel 0
 	wlctl -i $device phy_watchdog 1
 	wlctl -i $device stbc_rx 0
 	wlctl -i $device stbc_tx -1
@@ -590,6 +591,7 @@ wdev_radar_settings() {
 	local device=$1
 	local doth
 	config_get doth "$device" doth "1"
+
 	case "$doth" in
 		1)
 			wlctl -i $device radar 1
@@ -612,17 +614,31 @@ wdev_radar_settings() {
 			wlctl -i $device spect 0
 		;;
 	esac
+
+	local pcid="$(wlctl -i $device revinfo | awk 'FNR == 2 {print}' | cut -d'x' -f2)"
+	local isac="$(db get hw.$pcid.is_ac)"
+	if [ "$isac" == "1" ]; then
+		wlctl -i $device msglevel +radar +dfs
+	fi
+	local rdrthrs="$(db get hw.$pcid.radarthrs)"
+	if [ -n "$rdrthrs" ]; then
+		wlctl -i $device up
+		wlctl -i $device radarthrs $rdrthrs
+		wlctl -i $device down
+	fi
 }
 
 wdev_bwcap_settings() {
 	local device=$1
-	local country band bandwidth
+	local country band bandwidth obss_coex
 	config_get country "$device" country "EU/13"
 	config_get band "$device" band "b"
 	config_get bandwidth "$device" bandwidth
+	config_get obss_coex "$device" obss_coex "1"
 
 	wlctl -i $device country $country
 	wlctl -i $device band $band
+	wlctl -i $device obss_coex $obss_coex
 	case "$bandwidth" in
 		80)
 			wlctl -i $device mimo_bw_cap 2
@@ -721,6 +737,7 @@ wdev_channel_settings() {
 			wlctl -i $device chanim_mode 2
 		;;
 		*)
+			wlctl -i $device chanim_mode 0
 			wlctl -i $device chanspec $channel
 		;;
 	esac
