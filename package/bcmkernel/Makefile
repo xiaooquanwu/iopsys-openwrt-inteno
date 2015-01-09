@@ -17,6 +17,10 @@ PKG_SOURCE_PROTO:=git
 
 PKG_SOURCE_VERSION:=9695a498ae64604cdbd9e2b1403e332ecec6bd9f
 
+# update this based on the Broadcom SDK version, 4.16L.02 -> 41602
+BRCM_SDK_VERSION:=41602
+
+
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
 
 include $(INCLUDE_DIR)/package.mk
@@ -174,7 +178,7 @@ define Package/bcmkernel/install
 	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/bcmdrivers/broadcom/include/bcm963xx/endptvoicestats.h $(STAGING_DIR)/usr/include/bcm963xx/bcmdrivers/broadcom/include/bcm963xx/endptvoicestats.h
 	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/bcmdrivers/broadcom/include/bcm963xx/endpointdrv.h $(STAGING_DIR)/usr/include/bcm963xx/bcmdrivers/broadcom/include/bcm963xx/endpointdrv.h
 	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/userspace/private/apps/vodsl/voip/inc/tpProfiles.h $(STAGING_DIR)/usr/include/bcm963xx/userspace/private/apps/vodsl/voip/inc
-
+	echo "#define BCM_SDK_VERSION $(BCM_SDK_VERSION)" > $(STAGING_DIR)/usr/include/bcm_sdk_version.h
 
 
 ###
