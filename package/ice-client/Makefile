@@ -15,14 +15,14 @@ export PLATFORM_INCLUDE:=platforms/iopsys/build.mk
 
 export DATE:=$(shell date +%Y-%m-%d-%H-%M-%S)
 export LOGIN:=$(shell whoami)
-BASE_PKG_VERSION:=3.0.0
-PKG_RELEASE:=RC11
+BASE_PKG_VERSION:=3.1.0
+PKG_RELEASE:=RC1
 PKG_VERSION:=$(BASE_PKG_VERSION)-$(PKG_RELEASE)_$(DATE)_$(LOGIN)
 
 ###########################--RELEASE--################################
 
 PKG_SOURCE_URL:=ssh://git@iopsys.inteno.se/ice-client.git
-PKG_SOURCE_VERSION:=6a84678cc194b3081926eca2e811719ff691cb7e
+PKG_SOURCE_VERSION:=d1373fedfc6d927875fe295bf1b21d6f5c77d9c0
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(BASE_PKG_VERSION)
 PKG_SOURCE:=$(PKG_NAME)-$(BASE_PKG_VERSION)-$(PKG_RELEASE).tar.gz
 
@@ -69,7 +69,7 @@ endef
 #define Build/Prepare
 #	rm -rf $(PKG_BUILD_DIR)
 #	ln -s /home/erik/Desktop/ice-client $(PKG_BUILD_DIR)
-#	ln -s /home/erik/Desktop/checkCompilation/iopsys-client $(PKG_BUILD_DIR)
+##	ln -s /home/erik/Desktop/checkCompilation/iopsys-client $(PKG_BUILD_DIR)
 #endef
 
 ###########################--DEVELOPMENT--################################
@@ -162,7 +162,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  /bin/echo "system moduleRemove topic=cameramanager" > /tmp/cfin
 	  /bin/sleep 3
@@ -177,7 +177,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  /bin/echo "system moduleRemove topic=cameramanager" > /tmp/cfin
 	  /bin/sleep 3
@@ -220,7 +220,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  /bin/echo "system moduleRemove topic=guestMgr" > /tmp/cfin
 	  /bin/sleep 3
@@ -235,7 +235,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  /bin/echo "system moduleRemove topic=guestMgr" > /tmp/cfin
 	  /bin/sleep 3
@@ -277,7 +277,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  /bin/echo "system moduleRemove topic=ovpnMgr" > /tmp/cfin
 	  /bin/sleep 3
@@ -292,7 +292,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  /bin/echo "system moduleRemove topic=ovpnMgr" > /tmp/cfin
 	  /bin/sleep 3
@@ -334,7 +334,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  /bin/echo "system moduleRemove topic=anyfiMgr" > /tmp/cfin
 	  /bin/sleep 3
@@ -349,7 +349,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  /bin/echo "system moduleRemove topic=anyfiMgr" > /tmp/cfin
 	  /bin/sleep 3
@@ -391,7 +391,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  /bin/echo "system moduleRemove topic=netroundsMgr" > /tmp/cfin
 	  /bin/sleep 3
@@ -406,7 +406,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  /bin/echo "system moduleRemove topic=netroundsMgr" > /tmp/cfin
 	  /bin/sleep 3
@@ -448,7 +448,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  /bin/echo "system moduleRemove topic=log" > /tmp/cfin
 	  /bin/sleep 3
@@ -463,7 +463,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  /bin/echo "system moduleRemove topic=log" > /tmp/cfin
 	  /bin/sleep 3
@@ -506,7 +506,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  echo "system moduleRemove topic=fileMeMgr" > /tmp/cfin
 	  /bin/sleep 2
@@ -521,7 +521,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  echo "system moduleRemove topic=fileMeMgr" > /tmp/cfin
 	  /bin/sleep 2
@@ -568,7 +568,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  echo "system moduleRemove topic=example" > /tmp/cfin
 	fi
@@ -582,7 +582,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  echo "system moduleRemove topic=example" > /tmp/cfin
 	fi
@@ -623,7 +623,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  echo "system moduleRemove topic=iperfMgr" > /tmp/cfin
 	fi
@@ -637,7 +637,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  echo "system moduleRemove topic=iperfMgr" > /tmp/cfin
 	fi
@@ -678,7 +678,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  echo "system moduleRemove topic=rshellMgr" > /tmp/cfin
 	fi
@@ -692,7 +692,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  echo "system moduleRemove topic=rshellMgr" > /tmp/cfin
 	fi
@@ -733,7 +733,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  echo "system moduleRemove topic=rework" > /tmp/cfin
 	fi
@@ -747,7 +747,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  echo "system moduleRemove topic=rework" > /tmp/cfin
 	fi
@@ -790,7 +790,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  echo "system moduleRemove topic=sip" > /tmp/cfin
 	fi
@@ -804,7 +804,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  echo "system moduleRemove topic=sip" > /tmp/cfin
 	fi
@@ -845,7 +845,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  echo "system moduleRemove topic=monitor" > /tmp/cfin
 	fi
@@ -859,7 +859,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
 	PROC_ID=$$(cat /tmp/ice.pid)
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
-	if [  $$PROC_EXISTS ]; then
+	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
 	  echo "system moduleRemove topic=monitor" > /tmp/cfin
 	fi
