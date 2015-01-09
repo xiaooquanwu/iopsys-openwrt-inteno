@@ -44,7 +44,11 @@ kill_related_daemons() {
 }
 
 start_related_daemons() {
+	local wldev
 	[ -n "$(nvram get acs_ifnames)" ] && acsd
+	for wldev in $(nvram get acs_ifnames); do
+		acs_cli -i $wldev mode 1
+	done
 	eapd
 	nas
 	[ $_enWps -gt 0 ] && wps_monitor &
