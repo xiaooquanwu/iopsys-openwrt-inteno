@@ -35,6 +35,7 @@ config wifi-chip '43a2'
 config wifi-chip '43bc'
         option bands 'a'
         option is_ac '1'
+	option radarthrs '0x6aa 0x30 0x6a8 0x30 0x69c 0x30 0x6aa 0x30 0x6aa 0x30 0x6a2 0x30'
 
 config buttons 'buttons'
 	option RESET 'gpio 32 al resetbutton Ethernet_green'
