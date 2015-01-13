@@ -17,8 +17,9 @@ PKG_SOURCE_PROTO:=git
 
 PKG_SOURCE_VERSION:=8216815ced065e527681a079ad0e17fbb007baec
 
-# update this based on the Broadcom SDK version, 4.16L.02 -> 41602
-BRCM_SDK_VERSION:=41404
+# update this based on the Broadcom SDK version, 4.16L.02  -> 416020
+#                                                4.16L.02A -> 416021
+BRCM_SDK_VERSION:=414040
 
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
 
