@@ -27,7 +27,7 @@ define Package/ledmngr
   CATEGORY:=Utilities
   TITLE:=Application deamon for handling of leds
   URL:=
-  DEPENDS:=PACKAGE_libuci:libuci
+  DEPENDS:=+libuci +libubus +libblobmsg-json
 endef
 
 define Package/ledmngr/description
