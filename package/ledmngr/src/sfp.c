@@ -13,15 +13,14 @@
 #include <linux/i2c.h>
 #include <linux/i2c-dev.h>
 
-#include "i2c.h"
-#include "sfp.h"
-#include "log.h"
-
 #include "libubus.h"
 #include <uci_config.h>
 #include <uci.h>
 #include "ucix.h"
 
+#include "i2c.h"
+#include "sfp.h"
+#include "log.h"
 
 static struct blob_buf b;
 
@@ -1068,7 +1067,9 @@ struct sfp_handler * sfp_init( struct uci_context *uci_ctx)
         DEBUG_PRINT("No sfp I2C hardware found: %s.\n", p);
         return 0;
     }
-    return 1;
+
+    /* just return something not NULL */
+    return (struct sfp_handler *)4;
 }
 
 int sfp_ubus_populate( struct sfp_handler *h, struct ubus_context *ubus_ctx)
@@ -1081,4 +1082,5 @@ int sfp_ubus_populate( struct sfp_handler *h, struct ubus_context *ubus_ctx)
         if (ret)
             DEBUG_PRINT("Failed to add sfp object: %s\n", ubus_strerror(ret));
     }
+    return 0;
 }
