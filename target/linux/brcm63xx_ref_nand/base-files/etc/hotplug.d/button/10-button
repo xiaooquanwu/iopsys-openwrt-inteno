@@ -3,6 +3,23 @@
 . /lib/functions.sh
 . /usr/share/libubox/jshn.sh
 
+wpsbutton_action () {
+        killall -USR2 wps_monitor
+}
+
+dectbutton_action () {
+        local parsed=$(ubus call led.dect status)
+        json_load "$parsed"
+        json_get_var ledstate state
+	/usr/bin/dect -r > /dev/null
+
+        [ "$ledstate" == "off" ] && {
+                ubus call led.dect set '{ "state": "notice"}'
+        } || {
+                ubus call led.dect set '{ "state": "off"}'
+        }
+}
+
 case "$ACTION" in
         add|register)
         [ "resetbutton" == "$INTERFACE" ] && {
@@ -21,21 +38,12 @@ case "$ACTION" in
 		echo  $buttoncomb"eco" > /var/buttoncomb
         }
         [ "wpsbutton" == "$INTERFACE" ] && {
-		        printf "\n\nWPS button is pressed\n\n" > /dev/console
-		        killall -USR2 wps_monitor
+	        printf "\n\nWPS button is pressed\n\n" > /dev/console
+		wpsbutton_action
         }
         [ "dectbutton" == "$INTERFACE" ] && {
                 printf "\n\nRegistering DECT\n\n" > /dev/console
-                local parsed=$(ubus call led.dect status)
-                json_load "$parsed"
-                json_get_var ledstate state
-		/usr/bin/dect -r > /dev/null
-
-                [ "$ledstate" == "off" ] && {
-                        ubus call led.dect set '{ "state": "notice"}'
-                } || {
-                        ubus call led.dect set '{ "state": "off"}'
-                }
+		dectbutton_action
         }
         [ "infobutton" == "$INTERFACE" ] && {
                 printf "\n\nINFO button is pressed\n\n" > /dev/console
@@ -49,6 +57,20 @@ case "$ACTION" in
                         ubus call leds set '{ "state": "normal"}'
                 }
         }
+	[ "communicationbutton" == "$INTERFACE" ] && {
+		printf "\n\nCommunication button pressed - not implemented!\n\n" > /dev/console
+	}
+	[ "servicebutton" == "$INTERFACE" ] && {
+		printf "\n\nService button pressed - not implemented!\n\n" > /dev/console
+	}
+	[ "pairbutton" == "$INTERFACE" ] && {
+		printf "\n\nPair button pressed\n\n" > /dev/console
+		wpsbutton_action
+		dectbutton_action
+	}
+	[ "cancelbutton" == "$INTERFACE" ] && {
+		printf "\n\nCancel button pressed - not implemented!\n\n" > /dev/console
+	}
 	[ "touch_near" == "$INTERFACE" ] && {
 	        ubus call leds proximity '{ "timeout" : "15", "light-all" : "2" }'
 	}
