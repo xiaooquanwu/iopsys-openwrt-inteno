@@ -164,7 +164,8 @@ static struct i2c_touch i2c_touch_list[] = {
 };
 
 struct i2c_touch* sx9512_init(struct uci_context *uci_ctx) {
-	return i2c_init(uci_ctx, "/dev/i2c-0", i2c_touch_list);
+	return i2c_init(uci_ctx, "/dev/i2c-0", i2c_touch_list,
+                        sizeof(i2c_touch_list)/sizeof(i2c_touch_list[0]));
 }
 
 

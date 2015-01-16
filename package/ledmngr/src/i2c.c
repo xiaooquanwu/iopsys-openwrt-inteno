@@ -78,7 +78,7 @@ void do_init_tab( struct i2c_touch *i2c_touch)
 }
 
 
-struct i2c_touch * i2c_init(struct uci_context *uci_ctx, char* i2c_dev_name, struct i2c_touch* i2c_touch_list)
+struct i2c_touch * i2c_init(struct uci_context *uci_ctx, char* i2c_dev_name, struct i2c_touch* i2c_touch_list, int len)
 {
     const char *p;
     int i;
@@ -92,7 +92,7 @@ struct i2c_touch * i2c_init(struct uci_context *uci_ctx, char* i2c_dev_name, str
     /* Here we match the hardware name to a init table, and get the
        i2c chip address */
     i2c_touch = NULL;
-    for (i = 0; i < sizeof(i2c_touch_list) / sizeof(struct i2c_touch*); i++)
+    for (i = 0; i < len; i++)
         if (!strcmp(i2c_touch_list[i].name, p)) {
             DEBUG_PRINT("I2C hardware platform %s found.\n", p);
             i2c_touch = &i2c_touch_list[i];
