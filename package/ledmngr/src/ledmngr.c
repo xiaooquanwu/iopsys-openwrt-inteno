@@ -180,6 +180,10 @@ static struct leds_configuration* get_led_config(void) {
         led_config = ucix_get_option(uci_ctx, "hw", "leds", led_name_color);
         add_led(led_cfg, led_name_color, led_config, YELLOW);
 
+        snprintf(led_name_color, 256, "%s_white", p);
+        led_config = ucix_get_option(uci_ctx, "hw", "leds", led_name_color);
+        add_led(led_cfg, led_name_color, led_config, WHITE);
+
         /* Get next */
         p = strtok_r(NULL, " ", &rest);
     }

@@ -14,6 +14,7 @@ typedef enum {
     GREEN,
     BLUE,
     YELLOW,
+    WHITE,
 } led_color_t;
 
 typedef enum {
