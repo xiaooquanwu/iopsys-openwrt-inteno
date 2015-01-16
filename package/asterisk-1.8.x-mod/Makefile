@@ -752,6 +752,8 @@ $(eval $(call Buildasterisk18-modModuleTemplate,codec_ulaw,Signed linear to ulaw
 $(eval $(call Buildasterisk18-modModuleTemplate,codec_a_mu,Alaw to ulaw translation,translation between alaw and ulaw codecs))
 $(eval $(call Buildasterisk18-modModuleTemplate,codec_g722,G.722,a high bit rate 48/56/64Kbps ITU standard codec))
 $(eval $(call Buildasterisk18-modModuleTemplate,codec_g726,Signed linear to G.726 translation,translation between signed linear and ITU G.726-32kbps codecs))
+$(eval $(call Buildasterisk18-modModuleTemplate,codec_ilbc,iLBC,internet Low Bitrate Codec))
+$(eval $(call Buildasterisk18-modModuleTemplate,codec_gsm,GSM,GSM codec))
 $(eval $(call Buildasterisk18-modModuleTemplate,format_g726,G.726,support for headerless G.726 16/24/32/40kbps data format))
 $(eval $(call Buildasterisk18-modModuleTemplate,format_g729,G.729,support for raw headerless G729 data))
 $(eval $(call Buildasterisk18-modModuleTemplate,format_sln,Raw slinear format,support for raw slinear format))

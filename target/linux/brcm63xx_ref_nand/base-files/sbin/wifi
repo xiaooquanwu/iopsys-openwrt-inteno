@@ -48,6 +48,8 @@ start_related_daemons() {
 	[ -n "$(nvram get acs_ifnames)" ] && acsd
 	for wldev in $(nvram get acs_ifnames); do
 		acs_cli -i $wldev mode 1
+		wlctl -i $wldev down
+		wlctl -i $wldev up
 	done
 	eapd
 	nas
@@ -522,7 +524,7 @@ wdev_static_settings() {
 
 wdev_radar_settings() {
 	local device=$1
-	config_get doth "$device" doth "1"
+	config_get doth "$device" doth "0"
 	case "$doth" in
 		1)
 			wlctl -i $device radar 1
@@ -853,7 +855,7 @@ wifi_reload() {
 wifi_detect() {
 	local WLDIR="/tmp/wireless"
 	local wls="wl0 wl1"
-	local bands band bwidth country hwmode pcid wl bno
+	local bands band bwidth country hwmode pcid wl bno doth
 	local BMAC=$(cat /proc/nvram/BaseMacAddr | tr '[a-z]' '[A-Z]')
 	BMAC=${BMAC// /}
 	local BSSID=$(printf "%X\n" $((0x$BMAC + 2)))
@@ -888,11 +890,13 @@ wifi_detect() {
 				band="a"
 				bwidth="40"
 				bno=5
+				doth="1"
 				$(isAC $pcid) && hwmode="11ac"
 			else
 				band="b"
 				bwidth="20"
 				bno=2
+				doth="0"
 			fi
 			populate_chanspecs $wl
 			if ! uci -q get wireless.$wl; then
@@ -920,6 +924,7 @@ config wifi-device '$wl'
 	option rifs '0'
 	option rifs_advert '0'
 	option maxassoc '16'
+	option doth '$doth'
 
 config wifi-iface
 	option device '$wl'
