@@ -132,9 +132,7 @@ static int sfp_rom_get_type_method(struct ubus_context *ubus_ctx, struct ubus_ob
                                    struct blob_attr *msg)
 {
     blob_buf_init (&b, 0);
-    if (!sfp_rom_get_type(&b))
-        return UBUS_STATUS_NO_DATA;
-
+    sfp_rom_get_type(&b);
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
 }
@@ -207,8 +205,7 @@ static int sfp_rom_get_connector_method(struct ubus_context *ubus_ctx, struct ub
                                         struct blob_attr *msg)
 {
     blob_buf_init (&b, 0);
-    if (!sfp_rom_get_connector (&b))
-        return UBUS_STATUS_NO_DATA;
+    sfp_rom_get_connector (&b);
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
 }
@@ -255,8 +252,7 @@ static int sfp_rom_get_ethernet_method(struct ubus_context *ubus_ctx, struct ubu
                                        struct blob_attr *msg)
 {
     blob_buf_init (&b, 0);
-    if (!sfp_rom_get_ethernet(&b))
-        return UBUS_STATUS_NO_DATA;
+    sfp_rom_get_ethernet(&b);
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
 }
@@ -302,8 +298,7 @@ static int sfp_rom_get_encoding_method(struct ubus_context *ubus_ctx, struct ubu
                                        struct blob_attr *msg)
 {
     blob_buf_init (&b, 0);
-    if (!sfp_rom_get_encoding(&b))
-        return UBUS_STATUS_NO_DATA;
+    sfp_rom_get_encoding(&b);
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
 }
@@ -333,8 +328,7 @@ static int sfp_rom_get_rate_method(struct ubus_context *ubus_ctx, struct ubus_ob
                                    struct blob_attr *msg)
 {
     blob_buf_init (&b, 0);
-    if (!sfp_rom_get_rate(&b))
-        return UBUS_STATUS_NO_DATA;
+    sfp_rom_get_rate(&b);
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
 }
@@ -372,8 +366,7 @@ static int sfp_rom_get_length_method(struct ubus_context *ubus_ctx, struct ubus_
                                      struct blob_attr *msg)
 {
     blob_buf_init (&b, 0);
-    if (!sfp_rom_get_length(&b))
-        return UBUS_STATUS_NO_DATA;
+    sfp_rom_get_length(&b);
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
 }
@@ -398,8 +391,7 @@ static int sfp_rom_get_vendor_method(struct ubus_context *ubus_ctx, struct ubus_
                                      struct blob_attr *msg)
 {
     blob_buf_init (&b, 0);
-    if (!sfp_rom_get_vendor(&b))
-        return UBUS_STATUS_NO_DATA;
+    sfp_rom_get_vendor(&b);
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
 }
@@ -423,8 +415,7 @@ static int sfp_rom_get_oui_method(struct ubus_context *ubus_ctx, struct ubus_obj
                                   struct blob_attr *msg)
 {
     blob_buf_init (&b, 0);
-    if (!sfp_rom_get_oui(&b))
-        return UBUS_STATUS_NO_DATA;
+    sfp_rom_get_oui(&b);
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
 }
@@ -449,8 +440,7 @@ static int sfp_rom_get_pn_method(struct ubus_context *ubus_ctx, struct ubus_obje
                                  struct blob_attr *msg)
 {
     blob_buf_init (&b, 0);
-    if (!sfp_rom_get_pn(&b))
-        return UBUS_STATUS_NO_DATA;
+    sfp_rom_get_pn(&b);
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
 }
@@ -475,8 +465,7 @@ static int sfp_rom_get_rev_method(struct ubus_context *ubus_ctx, struct ubus_obj
                                   struct blob_attr *msg)
 {
     blob_buf_init (&b, 0);
-    if (!sfp_rom_get_rev(&b))
-        return UBUS_STATUS_NO_DATA;
+    sfp_rom_get_rev(&b);
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
 }
@@ -500,8 +489,7 @@ static int sfp_rom_get_sn_method(struct ubus_context *ubus_ctx, struct ubus_obje
                                  struct blob_attr *msg)
 {
     blob_buf_init (&b, 0);
-    if (!sfp_rom_get_sn(&b))
-        return UBUS_STATUS_NO_DATA;
+    sfp_rom_get_sn(&b);
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
 }
@@ -543,8 +531,7 @@ static int sfp_rom_get_date_method(struct ubus_context *ubus_ctx, struct ubus_ob
                                    struct blob_attr *msg)
 {
     blob_buf_init (&b, 0);
-    if (sfp_rom_get_date(&b))
-        return UBUS_STATUS_NO_DATA;
+    sfp_rom_get_date(&b);
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
 }
@@ -594,8 +581,7 @@ static int sfp_rom_get_ddm_method(struct ubus_context *ubus_ctx, struct ubus_obj
                                   struct blob_attr *msg)
 {
     blob_buf_init (&b, 0);
-    if (!sfp_rom_get_ddm(&b))
-        return UBUS_STATUS_NO_DATA;
+    sfp_rom_get_ddm(&b);
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
 }
@@ -605,8 +591,6 @@ static int sfp_rom_get_all_method(struct ubus_context *ubus_ctx, struct ubus_obj
                                   struct blob_attr *msg)
 {
     blob_buf_init (&b, 0);
-    if (!sfp_rom_get_type(&b))
-        return UBUS_STATUS_NO_DATA;
     sfp_rom_get_connector(&b);
     sfp_rom_get_ethernet(&b);
     sfp_rom_get_encoding(&b);
@@ -843,8 +827,7 @@ static int sfp_ddm_get_temperature_method(struct ubus_context *ubus_ctx, struct 
                                           struct blob_attr *msg)
 {
     blob_buf_init (&b, 0);
-    if (!sfp_ddm_get_temperature(&b, 1))
-        return UBUS_STATUS_NO_DATA;
+    sfp_ddm_get_temperature(&b, 1);
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
 }
@@ -874,8 +857,7 @@ static int sfp_ddm_get_voltage_method(struct ubus_context *ubus_ctx, struct ubus
                                       struct blob_attr *msg)
 {
     blob_buf_init (&b, 0);
-    if (!sfp_ddm_get_voltage(&b, 1))
-        return UBUS_STATUS_NO_DATA;
+    sfp_ddm_get_voltage(&b, 1);
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
 }
@@ -905,8 +887,7 @@ static int sfp_ddm_get_current_method(struct ubus_context *ubus_ctx, struct ubus
                                       struct blob_attr *msg)
 {
     blob_buf_init (&b, 0);
-    if (!sfp_ddm_get_current(&b, 1))
-        return UBUS_STATUS_NO_DATA;
+    sfp_ddm_get_current(&b, 1);
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
 }
@@ -937,8 +918,7 @@ static int sfp_ddm_get_tx_pwr_method(struct ubus_context *ubus_ctx, struct ubus_
                                      struct blob_attr *msg)
 {
     blob_buf_init (&b, 0);
-    if (!sfp_ddm_get_tx_pwr(&b, 1))
-        return UBUS_STATUS_NO_DATA;
+    sfp_ddm_get_tx_pwr(&b, 1);
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
 }
@@ -981,8 +961,7 @@ static int sfp_ddm_get_rx_pwr_method(struct ubus_context *ubus_ctx, struct ubus_
                                      struct blob_attr *msg)
 {
     blob_buf_init (&b, 0);
-    if (!sfp_ddm_get_rx_pwr(&b, 1))
-        return UBUS_STATUS_NO_DATA;
+    sfp_ddm_get_rx_pwr(&b, 1);
     ubus_send_reply(ubus_ctx, req, b.head);
     return 0;
 }
@@ -991,8 +970,7 @@ static int sfp_ddm_get_all_method(struct ubus_context *ubus_ctx, struct ubus_obj
                                   struct blob_attr *msg)
 {
     blob_buf_init (&b, 0);
-    if (!sfp_ddm_get_temperature(&b, 0))
-        return UBUS_STATUS_NO_DATA;
+    sfp_ddm_get_temperature(&b, 0);
     sfp_ddm_get_voltage(&b, 0);
     sfp_ddm_get_current(&b, 0);
     sfp_ddm_get_tx_pwr(&b, 0);
