@@ -31,6 +31,16 @@ typedef struct {
 } Client;
 
 typedef struct {
+	bool exists;
+	char ip6addr[128];
+	char macaddr[24];
+	char hostname[32];
+	char duid[64];
+	char device[32];
+	bool connected;
+} Client6;
+
+typedef struct {
         unsigned long rx_bytes;
         unsigned long rx_packets;
         unsigned long rx_errors;

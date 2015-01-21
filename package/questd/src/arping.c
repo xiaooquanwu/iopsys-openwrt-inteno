@@ -1,3 +1,22 @@
+/*
+ * arping -- arping tool for questd
+ *
+ * Author: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
+ * Author: Sukru Senli sukru.senli@inteno.se
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <net/if.h>
@@ -149,9 +168,7 @@ arping(char *targetIP, char *device)
 		cc = recvfrom(sock_fd, packet, sizeof(packet), 0, (struct sockaddr *) &from, &alen);
 	}
 
-	if (cc < 0)
-		perror("recvfrom");
-	else
+	if (cc >= 0)
 		connected = recv_pack(packet, cc, &from);
 
 	close(sock_fd);

@@ -39,6 +39,7 @@ static const char *ubus_path;
 
 static Network network[MAX_NETWORK];
 static Client clients[MAX_CLIENT], clients_old[MAX_CLIENT], clients_new[MAX_CLIENT];
+static Client6 clients6[MAX_CLIENT];
 static Router router;
 static Memory memory;
 static Key keys;
@@ -320,6 +321,31 @@ populate_clients()
 }
 
 static void
+populate_clients6()
+{
+	FILE *hosts6;
+	char line[512];
+	int cno = 0;
+	int iaid, ts, id, length;
+
+	if ((hosts6 = fopen("/tmp/hosts/6relayd", "r"))) {
+		while(fgets(line, sizeof(line), hosts6) != NULL)
+		{
+			remove_newline(line);
+			clients6[cno].exists = false;
+			if (sscanf(line, "# %s %s %d %s %d %x %d %s", clients6[cno].device, clients6[cno].duid, &iaid, clients6[cno].hostname, &ts, &id, &length, clients6[cno].ip6addr)) {
+				clients6[cno].exists = true;
+				if(!(clients6[cno].connected = ndisc (clients6[cno].hostname, clients6[cno].device, 0x8, 1, 500)))
+					recalc_sleep_time(true, 500000);
+				sprintf(clients6[cno].macaddr, get_macaddr());
+				cno++;
+			}
+		}
+		fclose(hosts6);
+	}
+}
+
+static void
 populate_ports(Network *network)
 {
 	char bridge[32];
@@ -486,6 +512,28 @@ router_dump_clients(struct blob_buf *b)
 		blobmsg_add_string(b, "device", clients[i].device);
 		blobmsg_add_u8(b, "dhcp", clients[i].dhcp);
 		blobmsg_add_u8(b, "connected", clients[i].connected);
+		blobmsg_close_table(b, t);
+	}
+}
+
+static void
+router_dump_clients6(struct blob_buf *b)
+{
+	void *t;
+	char clientnum[16];
+	int i;
+
+	for (i = 0; i < MAX_CLIENT; i++) {
+		if (!clients6[i].exists)
+			break;
+		sprintf(clientnum, "client-%d", i + 1);
+		t = blobmsg_open_table(b, clientnum);
+		blobmsg_add_string(b, "hostname", clients6[i].hostname);
+		blobmsg_add_string(b, "ip6addr", clients6[i].ip6addr);
+		blobmsg_add_string(b, "macaddr", clients[i].macaddr);
+		blobmsg_add_string(b, "duid", clients6[i].duid);
+		blobmsg_add_string(b, "device", clients6[i].device);
+		blobmsg_add_u8(b, "connected", clients6[i].connected);
 		blobmsg_close_table(b, t);
 	}
 }
@@ -735,6 +783,22 @@ quest_router_clients(struct ubus_context *ctx, struct ubus_object *obj,
 }
 
 static int
+quest_router_clients6(struct ubus_context *ctx, struct ubus_object *obj,
+		  struct ubus_request_data *req, const char *method,
+		  struct blob_attr *msg)
+{
+	struct blob_attr *tb[__QUEST_MAX];
+
+	blobmsg_parse(quest_policy, __QUEST_MAX, tb, blob_data(msg), blob_len(msg));
+
+	blob_buf_init(&bb, 0);
+	router_dump_clients6(&bb);
+	ubus_send_reply(ctx, req, bb.head);
+
+	return 0;
+}
+
+static int
 quest_router_usbs(struct ubus_context *ctx, struct ubus_object *obj,
 		  struct ubus_request_data *req, const char *method,
 		  struct blob_attr *msg)
@@ -866,6 +930,7 @@ static struct ubus_method router_object_methods[] = {
 	UBUS_METHOD("quest", quest_router_specific, quest_policy),
 	{ .name = "networks", .handler = quest_router_networks },
 	{ .name = "clients", .handler = quest_router_clients },
+	{ .name = "clients6", .handler = quest_router_clients6 },
 	UBUS_METHOD("ports", quest_router_ports, network_policy),
 	UBUS_METHOD("leases", quest_network_leases, network_policy),
 	UBUS_METHOD("host", quest_host_status, host_policy),
@@ -958,6 +1023,7 @@ void *dump_router_info(void *arg)
 		dump_sysinfo(&router, &memory);
 		dump_cpuinfo(&router, &prev_jif, &cur_jif);
 		populate_clients();
+		populate_clients6();
 		get_jif_val(&prev_jif);
 		usleep(sleep_time);
 		recalc_sleep_time(false, 0);
@@ -966,6 +1032,7 @@ void *dump_router_info(void *arg)
 		if (lpcnt == 20) {
 			lpcnt = 0;
 			memset(clients, '\0', sizeof(clients));
+			memset(clients6, '\0', sizeof(clients6));
 		}
 	}
 
