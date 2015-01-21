@@ -22,6 +22,7 @@ define Package/brcm_fw_tool
   SECTION:=utils
   CATEGORY:=Base system
   TITLE:=Update utility for Broadcom nand firmware images
+  DEPENDS:=+bcmkernel
 endef
 
 define Package/brcm_fw_tool/description
