@@ -36,7 +36,7 @@ define Package/dectmngr
   CATEGORY:=Utilities
   TITLE:=Broadcom endpoint test application
   URL:=
-  DEPENDS:= +libevent2 +libjson +natalie-dect-h
+  DEPENDS:= +libevent2 +libjson +natalie-dect-h +bcmkernel
 endef
 
 define Package/dectmngr/description
