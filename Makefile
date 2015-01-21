@@ -11,6 +11,12 @@ LC_ALL:=C
 LANG:=C
 export TOPDIR LC_ALL LANG
 
+# compiler cache (ccache) is default checking that the compiler used is the same.
+# since we build the toolchain it's not the same for a project clone :(
+# so to get maximum benefit remove that check.
+CCACHE_COMPILERCHECK:=none
+export CCACHE_COMPILERCHECK
+
 world:
 
 include $(TOPDIR)/include/host.mk
