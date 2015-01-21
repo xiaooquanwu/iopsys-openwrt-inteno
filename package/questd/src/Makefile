@@ -2,8 +2,8 @@ CC		= gcc
 CFLAGS		= -g -Wall
 LOCLIBS		= 
 LIBS		= -luci -lubus -lubox -lpthread
-OBJS		= questd.o dumper.o port.o arp.o usb.o
-SRCS		= questd.c dumper.c port.c arp.c usb.c
+OBJS		= questd.o dumper.o port.o arping.o usb.o ndisc.o
+SRCS		= questd.c dumper.c port.c arping.c usb.c ndisc.c
 LIBSRCS		= 
 ISRCS		= questd.h
 
