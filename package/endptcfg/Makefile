@@ -39,7 +39,7 @@ define Package/endptcfg
   CATEGORY:=Utilities
   TITLE:=Broadcom endpoint driver configuration application
   URL:=
-  DEPENDS:=+libpthread
+  DEPENDS:=+libpthread +bcmkernel
 endef
 
 define Package/endptcfg/description
