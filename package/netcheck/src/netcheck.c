@@ -474,7 +474,7 @@ static void usage(void)
 	fprintf(stderr, "\t\t-c\t\treturn DHCP leases of the network interface\n");
 	fprintf(stderr, "\t\t-m\t\treturn netmask of the network interface\n");
 	fprintf(stderr, "\t\t-p\t\treturn ports information of the network interface\n");
-	fprintf(stderr, "\t\t-q\t\tarpscan the network\n");
+	fprintf(stderr, "\t\t-q <timeout>\tarpscan the network with given timeout value in miliseconds\n");
 	fprintf(stderr, "\tnetcheck -h <hostaddr> <option>\n");
 	fprintf(stderr, "\t\t-d\t\treturn the device the host connects to\n");
 	fprintf(stderr, "\t\t-l\t\treturn 1 if the host address is local otherwise return 0\n");
