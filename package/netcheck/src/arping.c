@@ -142,7 +142,7 @@ arping(char *targetIP, char *device, long tmo)
 
 	struct timeval timeout;
 	timeout.tv_sec = 0;
-	timeout.tv_usec = tmo;
+	timeout.tv_usec = tmo * 1000;
 
 	if (select(sock_fd + 1, &read_fds, &write_fds, &except_fds, &timeout) == 1)
 	{

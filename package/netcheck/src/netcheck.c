@@ -357,7 +357,7 @@ stats:
 }
 
 static void
-arpscan(char *netname, char *ipaddr, char *netmask, char *device)
+arpscan(char *netname, char *ipaddr, char *netmask, char *device, long timeout)
 {
 	struct in_addr ip, nmask, fmask, rmask, last, host;
 	char str[INET_ADDRSTRLEN];
@@ -372,13 +372,13 @@ arpscan(char *netname, char *ipaddr, char *netmask, char *device)
         fprintf(stdout, "Scanning network '%s'\n", netname);
 	for(host.s_addr = ip.s_addr; host.s_addr <= last.s_addr; host.s_addr++) {
 		inet_ntop(AF_INET, &(host.s_addr), str, INET_ADDRSTRLEN);
-		if(arping(str, device, 10000))
+		if(arping(str, device, timeout))
 			fprintf(stdout, "Host found: %s\n", str);
 	}
 }
 
 static void
-handle_network(char *interface, int qaddr, int qmask, int qclnt, int qport, int qscan)
+handle_network(char *interface, int qaddr, int qmask, int qclnt, int qport, int qscan, long timeout)
 {
 	struct uci_element *e;
 	uci_network = init_package("network");
@@ -422,7 +422,7 @@ handle_network(char *interface, int qaddr, int qmask, int qclnt, int qport, int 
 		    if (qport == 1)
 			    find_ports(interface, ifname, ipaddr, netmask, bridge);
 		    if (qscan == 1)
-			    arpscan(s->e.name, ipaddr, netmask, device);
+			    arpscan(s->e.name, ipaddr, netmask, device, timeout);
 
 		    exit(0);
 		}
@@ -498,13 +498,14 @@ int main(int argc, char **argv)
 	int qlocal = 0;
 	int qdev = 0;
 	int qstat = 0;
+	long timeout = 100;
 	const char *interface = NULL;
 	const char *host = NULL;
 
 	if (argc < 2)
 		usage();
 
-	while ((opt = getopt(argc, argv, "i:h:amcpqnlds")) != -1) {
+	while ((opt = getopt(argc, argv, "i:h:q:amcpnlds")) != -1) {
 
 		switch (opt) {
 			case 'i':
@@ -529,6 +530,7 @@ int main(int argc, char **argv)
 				break;
 			case 'q':
 				qscan = 1;
+				timeout = atoi(optarg);
 				break;
 			case 'n':
 				qnet = 1;
@@ -552,7 +554,7 @@ int main(int argc, char **argv)
 	if (qinf == 1 && qhost == 1)
 		usage();
 	else if (qinf == 1 & (qaddr + qmask + qclnt + qport + qscan) == 1)
-		handle_network(interface, qaddr, qmask, qclnt, qport, qscan);
+		handle_network(interface, qaddr, qmask, qclnt, qport, qscan, timeout);
 	else if (qhost == 1 & (qnet + qlocal + qdev + qstat) == 1)
 		handle_ip(host, qnet, qlocal, qdev, qstat);
 	else
