@@ -11,17 +11,16 @@ PKG_NAME:=bcmkernel-3.4
 PKG_VERSION:=4.16
 PKG_RELEASE:=4
 
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=git@iopsys.inteno.se:bcmkernel-4.16L.02A
-PKG_SOURCE_PROTO:=git
-
-PKG_SOURCE_VERSION:=00e673bd751d19059cb3ed5fd2dbf3831a7e0401
-
 # Update this based on the Broadcom SDK version:
 # 4.16L.02 ->  416020
 # 4.16L.02A -> 416021
-BRCM_SDK_VERSION:=416021
+BRCM_SDK_VERSION:=416030
 
+PKG_SOURCE_URL:=git@iopsys.inteno.se:bcmkernel-4.16L.03
+PKG_SOURCE_PROTO:=git
+
+PKG_SOURCE_VERSION:=9ac31d900d2c7779d1df1bb9d76577b3508b2d91
+PKG_SOURCE:=$(PKG_NAME)-$(BRCM_SDK_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
 
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
 
@@ -230,6 +229,8 @@ define Package/bcmkernel/install
 	rm -f $(1)/usr/lib/libcms_util.so
 	rm -f $(1)/usr/lib/libnvram.so
 	rm -f $(1)/usr/lib/libcrypt.so.0
+	rm -f $(1)/usr/lib/libbcm_crc.so
+	rm -f $(1)/usr/lib/libbcm_flashutil.so
 
 	rm -f $(1)/usr/lib/libcrypto.so
 	ln -s /usr/lib/libcrypto.so.1.0.0 $(1)/usr/lib/libcrypto.so
