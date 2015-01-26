@@ -75,7 +75,7 @@ case "$ACTION" in
 	        ubus call leds proximity '{ "timeout" : "15", "light-all" : "2" }'
 	}
 	[ "touch_far" == "$INTERFACE" ] && {
-	        ubus call leds proximity '{ "timeout" : "10" }'
+	        ubus call leds proximity '{ "timeout" : "300" }'
 	}
         ;;
         remove|unregister)
