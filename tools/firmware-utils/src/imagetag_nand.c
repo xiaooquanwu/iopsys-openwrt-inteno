@@ -150,7 +150,7 @@ size_t getlen(FILE *fp)
 	return retval;
 }
 
-int write_kernel_header(const char* kernel, const char* bin, const uint32_t loadaddr, const uint32_t entry) {
+int write_kernel_header(const char* kernel, const char* bin, const uint32_t loadaddr, const uint32_t entry, int endian) {
 	struct kernelhdr khdr;
 	size_t kernellen;
 	FILE  *kernelfile = NULL, *binfile = NULL;
@@ -170,9 +170,9 @@ int write_kernel_header(const char* kernel, const char* bin, const uint32_t load
 	kernellen = getlen(kernelfile);
 
 	/* Build the kernel header */
-	khdr.loadaddr	= htonl(loadaddr);
-	khdr.entry	= htonl(entry);
-	khdr.lzmalen	= htonl(kernellen);
+	khdr.loadaddr	= endian ? loadaddr : htonl(loadaddr);
+	khdr.entry	= endian ? entry : htonl(entry);
+	khdr.lzmalen	= endian ? kernellen : htonl(kernellen);
 
 	/* Write the kernel header */
 	fwrite(&khdr, sizeof(khdr), 1, binfile);
@@ -190,7 +190,7 @@ int write_kernel_header(const char* kernel, const char* bin, const uint32_t load
 }
 
 
-int tag_w_file(const char* rootfs, const char* bin, const char* chipid, const char* flashtype, const char* boardid) {
+int tag_w_file(const char* rootfs, const char* bin, const char* chipid, const char* flashtype, const char* boardid, int endian) {
 	WFI_TAG nand_tag = {0};
 	uint32_t imagecrc = IMAGETAG_CRC_START;
 	FILE  *rootfsfile = NULL, *binfile;
@@ -207,29 +207,30 @@ int tag_w_file(const char* rootfs, const char* bin, const char* chipid, const ch
 		fprintf(stderr, "Unable to open output file \"%s\"\n", bin);
 		return 1;
 	}
-
-	nand_tag.wfiVersion = htonl(WFI_VERSION);
-	nand_tag.wfiChipId  = htonl(strtoul(chipid, NULL, 16));
-	memcpy(&nand_tag.wfiReserved, boardid, 4);
-	
+	nand_tag.wfiVersion = endian ? WFI_VERSION : htonl(WFI_VERSION);
+	nand_tag.wfiChipId  = endian ? strtoul(chipid, NULL, 16) : htonl(strtoul(chipid, NULL, 16));
+	if (boardid)
+	    memcpy(&nand_tag.wfiReserved, boardid, 4);
 	if      (!strcmp(flashtype, "NAND16")) {
-		nand_tag.wfiFlashType = htonl(WFI_NAND16_FLASH);
+		nand_tag.wfiFlashType = WFI_NAND16_FLASH;
 	} else if (!strcmp(flashtype, "NAND128")) {
-		nand_tag.wfiFlashType = htonl(WFI_NAND128_FLASH);
+		nand_tag.wfiFlashType = WFI_NAND128_FLASH;
 	} else if (!strcmp(flashtype, "NOR")) {
-		nand_tag.wfiFlashType = htonl(WFI_NOR_FLASH);
+		nand_tag.wfiFlashType = WFI_NOR_FLASH;
 	} else if (!strcmp(flashtype, "NANDFS128")) {
-		nand_tag.wfiFlashType = htonl(WFI_NANDFS128_IMAGE);
+		nand_tag.wfiFlashType = WFI_NANDFS128_IMAGE;
 	} else if (!strcmp(flashtype, "NANDFS16")) {
-		nand_tag.wfiFlashType = htonl(WFI_NANDFS16_IMAGE);
+		nand_tag.wfiFlashType = WFI_NANDFS16_IMAGE;
 	} else if (!strcmp(flashtype, "NANDCFE")) {
-		nand_tag.wfiFlashType = htonl(WFI_NANDCFE_IMAGE);
+		nand_tag.wfiFlashType = WFI_NANDCFE_IMAGE;
 	} else if (!strcmp(flashtype, "NORCFE")) {
-		nand_tag.wfiFlashType = htonl(WFI_NORCFE_IMAGE);
+		nand_tag.wfiFlashType = WFI_NORCFE_IMAGE;
 	} else {
 		fprintf(stderr, "Unknown flashtype \"%s\"\n", flashtype);
 		return 1;
 	}
+	if (!endian)
+	    nand_tag.wfiFlashType = htonl(nand_tag.wfiFlashType);
 
 	//copy input to output
 	while (rootfsfile && !feof(rootfsfile) && !ferror(rootfsfile)) {
@@ -240,7 +241,8 @@ int tag_w_file(const char* rootfs, const char* bin, const char* chipid, const ch
 	//CRC
 	imagelen = getlen(binfile);
 	imagecrc = compute_crc32(imagecrc, binfile, 0, imagelen);
-	imagecrc = htonl(imagecrc);
+	if (!endian)
+	    imagecrc = htonl(imagecrc);
 	memcpy(&nand_tag.wfiCrc, &imagecrc, 4);
 
 	//write tag/trailer at end of output image
@@ -257,7 +259,7 @@ int main(int argc, char **argv)
         int c, i;
 	char *kernel, *rootfs, *bin, *boardid, *chipid, *magic2, *ver, *tagid, *information, *layoutver, *flashtype;
 	uint32_t flashstart, fwoffset, loadaddr, entry;
-	uint32_t fwaddr, flash_bs;
+	uint32_t fwaddr, flash_bs, endian = 0;
 	int tagidfound = 0;
 	int wkh = 0;
 	
@@ -272,7 +274,7 @@ int main(int argc, char **argv)
 	printf("Broadcom nand image tagger - v1.0.0\n");
 	printf("Copyright (C) 2013 Benjamin Larsson\n");
 
-	while ((c = getopt(argc, argv, "i:f:o:b:c:q:s:n:v:m:k:l:e:h:t:d:y:K")) != -1) {
+	while ((c = getopt(argc, argv, "i:f:o:b:c:q:s:n:v:m:k:l:e:h:t:d:y:KL")) != -1) {
 		switch (c) {
 			case 'i':
 				kernel = optarg;
@@ -325,6 +327,9 @@ int main(int argc, char **argv)
 			case 'K':
 				wkh = 1;
 				break;
+			case 'L':
+				endian = 1;
+				break;
 			case 'h':
 			default:
 				fprintf(stderr, "Usage: imagetag <parameters>\n\n");
@@ -348,12 +353,12 @@ int main(int argc, char **argv)
 	}
 	
 	if (wkh && entry && kernel && bin && loadaddr) {
-		return write_kernel_header(kernel, bin, loadaddr, entry);
+		return write_kernel_header(kernel, bin, loadaddr, entry, endian);
 	}
 
 
 	if (flashtype && (!memcmp(flashtype, "NAND", 4) || !memcmp(flashtype, "NOR", 3))) {
-		return tag_w_file(rootfs, bin, chipid, flashtype, boardid);
+		return tag_w_file(rootfs, bin, chipid, flashtype, boardid, endian);
 	} else {
 		fprintf(stderr, "Not all parameters set!\n");
 	}
