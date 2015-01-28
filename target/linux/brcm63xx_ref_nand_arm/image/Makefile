@@ -47,7 +47,7 @@ endef
 
 define Image/Prepare
 	$(STAGING_DIR_HOST)/bin/lzma e -d22 -lp2 -lc1 $(KDIR)/vmlinux.bcm $(KDIR)/vmlinux.lzma
-	$(STAGING_DIR_HOST)/bin/imagetag_nand -K -i $(KDIR)/vmlinux.lzma -o $(KDIR)/vmlinux.lz -e $(KERNEL_ENTRY)
+	$(STAGING_DIR_HOST)/bin/imagetag_nand -L -K -i $(KDIR)/vmlinux.lzma -o $(KDIR)/vmlinux.lz -e $(KERNEL_ENTRY) -l $(KERNEL_ENTRY)
 
 	dd if=/dev/zero of=$(KDIR)/file128k.tmp bs=1k count=128
 
@@ -62,16 +62,16 @@ define Image/Prepare
 	cat $(KDIR)/jffs2_eof_marker_2048 $(KDIR)/file128k.tmp | head --bytes=131072 > $(KDIR)/jffs2_eof_marker_128k
 
 	#these files need to go in a set of erase blocks of their own to minimize the chance of relocation
-	echo "/cferam.000"    >  $(KDIR)/sortlist
+	echo "/cferam.001"    >  $(KDIR)/sortlist
 	echo "/vmlinux.lz"    >> $(KDIR)/sortlist
 
 	#add the files that should not be compressed
-	echo -i "/IOP3"       >> $(KDIR)/nocomprlist
-	echo -e "/cferam.000" >> $(KDIR)/nocomprlist
+	echo -e "/IOP3"       >  $(KDIR)/nocomprlist
+	echo -e "/cferam.001" >> $(KDIR)/nocomprlist
 	echo -e "/vmlinux.lz" >> $(KDIR)/nocomprlist
 	touch $(TARGET_DIR)/IOP3
 	cp $(KDIR)/vmlinux.lz $(TARGET_DIR)/
-	cp $(KDIR)/cferam.000 $(TARGET_DIR)/
+	cp $(KDIR)/cferam.001 $(TARGET_DIR)/
 
 	touch -c $(TOPDIR)/target/linux/$(BOARD)/base-files/etc/banner
 	cp $(TOPDIR)/target/linux/$(BOARD)/base-files/etc/banner $(TARGET_DIR)/etc/banner
