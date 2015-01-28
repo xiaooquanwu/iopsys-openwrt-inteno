@@ -25,7 +25,11 @@ iopsys_rootfs_pivot() {
 			echo 03 >/proc/nvram/iVersion
 			local mtdpart=$(find_mtd_part rootfs_update_data)
 			mount -t jffs2 $mtdpart /mnt
-			cp -rfd /mnt/* /overlay/
+			if [ -e /etc/clean ]; then
+			  echo "Config will not be saved"
+			else
+			  cp -rfd /mnt/* /overlay/
+			fi
 		else
 			echo "Unknown iVersion==$iVersion detected, doing nothing, config lost"
 		fi
