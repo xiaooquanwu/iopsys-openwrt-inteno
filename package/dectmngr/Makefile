@@ -8,14 +8,14 @@
 include $(TOPDIR)/rules.mk
 
 PKG_RELEASE:=1
-PKG_VERSION:=1.0.17
+PKG_VERSION:=1.0.18
 ifeq ($(CONFIG_PACKAGE_bcmkernel),y)
 PKG_SOURCE_URL:=git@iopsys.inteno.se:dectmngr.git
 else
 PKG_SOURCE_URL:=http://ihgsp.inteno.se/git/dectmngr.git
 endif
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=1f7dcebfb3258e96fc90b3df046f781981ea877e
+PKG_SOURCE_VERSION:=37f8cca71907e901bc5b4d556467bb540b042909
 PKG_NAME:=dectmngr
 
 
@@ -40,7 +40,7 @@ define Package/dectmngr
 endef
 
 define Package/dectmngr/description
-	Broadcom endpoint test application
+	Dect proxy, manager and tools
 endef
 
 
