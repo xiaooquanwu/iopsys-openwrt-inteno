@@ -35,5 +35,12 @@ stop() {
 }
 
 restart() {
-	echo "restart dect"
+	echo "restarting dect"
+	killall dectmngr
+	dectmngr > /tmp/dectmngr 2>&1 &
+}
+
+reload() {
+	# reload config
+	dect -c
 }
