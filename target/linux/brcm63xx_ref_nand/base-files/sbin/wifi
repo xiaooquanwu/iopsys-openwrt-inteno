@@ -2,6 +2,7 @@
 ENABLE_HOOKS=
 DISABLE_HOOKS=
 
+. /lib/brcmaliases.sh
 . /lib/functions.sh
 . /usr/share/libubox/jshn.sh
 . /lib/network/ebtables.sh

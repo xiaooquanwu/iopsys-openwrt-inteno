@@ -14,3 +14,4 @@ export SSL_CERT_DIR=/etc/ssl/certs
 [ -x /usr/bin/arp ] || arp() { cat /proc/net/arp; }
 [ -x /usr/bin/ldd ] || ldd() { LD_TRACE_LOADED_OBJECTS=1 $*; }
 
+. /lib/brcmaliases.sh
