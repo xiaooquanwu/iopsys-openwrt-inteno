@@ -36,7 +36,7 @@ brcm_insmod() {
 	test -e /lib/modules/3.4.11-rt19/extra/bcm_enet.ko     && insmod /lib/modules/3.4.11-rt19/extra/bcm_enet.ko
 	test -e /lib/modules/3.4.11-rt19/extra/nciTMSkmod.ko   && insmod /lib/modules/3.4.11-rt19/extra/nciTMSkmod.ko
 	test -e /lib/modules/3.4.11-rt19/extra/bcmsw.ko        && insmod /lib/modules/3.4.11-rt19/extra/bcmsw.ko && ifconfig bcmsw up
-#	test -e /lib/modules/3.4.11-rt19/extra/bcm_usb.ko      && insmod /lib/modules/3.4.11-rt19/extra/bcm_usb.ko
+	test -e /lib/modules/3.4.11-rt19/extra/bcm_usb.ko      && insmod /lib/modules/3.4.11-rt19/extra/bcm_usb.ko && rmmod bcm_usb
 	test -e /lib/modules/3.4.11-rt19/extra/bcmarl.ko       && insmod /lib/modules/3.4.11-rt19/extra/bcmarl.ko
 #	/usr/bin/taskset 2>/dev/null
 	test -e /lib/modules/3.4.11-rt19/extra/wfd.ko          && insmod /lib/modules/3.4.11-rt19/extra/wfd.ko
@@ -50,7 +50,7 @@ brcm_insmod() {
 	test -e /lib/modules/3.4.11-rt19/extra/endpointdd.ko   && insmod /lib/modules/3.4.11-rt19/extra/endpointdd.ko
 	test -e /lib/modules/3.4.11-rt19/extra/p8021ag.ko      && insmod /lib/modules/3.4.11-rt19/extra/p8021ag.ko
 	test -e /lib/modules/3.4.11-rt19/extra/bcmvlan.ko      && insmod /lib/modules/3.4.11-rt19/extra/bcmvlan.ko
-	test -e /lib/modules/3.4.11-rt19/extra/pwrmngtd.ko     && insmod /lib/modules/3.4.11-rt19/extra/pwrmngtd.ko
+#	test -e /lib/modules/3.4.11-rt19/extra/pwrmngtd.ko     && insmod /lib/modules/3.4.11-rt19/extra/pwrmngtd.ko
 	test -e /lib/modules/3.4.11-rt19/rng-core.ko           && insmod /lib/modules/3.4.11-rt19/rng-core.ko
 	test -e /lib/modules/3.4.11-rt19/extra/bcmtrng.ko      && insmod /lib/modules/3.4.11-rt19/extra/bcmtrng.ko
 	echo brcm modules loaded
