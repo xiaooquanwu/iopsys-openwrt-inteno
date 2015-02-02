@@ -626,13 +626,14 @@ static void
 router_dump_clients(struct blob_buf *b)
 {
 	void *t;
-	char clientnum[16];
+	char clientnum[10];
+	int num = 1;
 	int i;
 
 	for (i = 0; i < MAX_CLIENT; i++) {
 		if (!clients[i].exists)
 			break;
-		sprintf(clientnum, "client-%d", i + 1);
+		sprintf(clientnum, "client-%d", num);
 		t = blobmsg_open_table(b, clientnum);
 		blobmsg_add_string(b, "hostname", clients[i].hostname);
 		blobmsg_add_string(b, "ipaddr", clients[i].hostaddr);
@@ -646,6 +647,37 @@ router_dump_clients(struct blob_buf *b)
 			blobmsg_add_string(b, "wdev", clients[i].wdev);
 		}
 		blobmsg_close_table(b, t);
+		num++;
+	}
+}
+
+static void
+router_dump_connected_clients(struct blob_buf *b)
+{
+	void *t;
+	char clientnum[10];
+	int num = 1;
+	int i;
+
+	for (i = 0; i < MAX_CLIENT; i++) {
+		if (!clients[i].exists)
+			break;
+		if (!(clients[i].connected))
+			continue;
+		sprintf(clientnum, "client-%d", num);
+		t = blobmsg_open_table(b, clientnum);
+		blobmsg_add_string(b, "hostname", clients[i].hostname);
+		blobmsg_add_string(b, "ipaddr", clients[i].hostaddr);
+		blobmsg_add_string(b, "macaddr", clients[i].macaddr);
+		blobmsg_add_string(b, "network", clients[i].network);
+		blobmsg_add_string(b, "device", clients[i].device);
+		blobmsg_add_u8(b, "dhcp", clients[i].dhcp);
+		blobmsg_add_u8(b, "wireless", clients[i].wireless);
+		if(clients[i].wireless) {
+			blobmsg_add_string(b, "wdev", clients[i].wdev);
+		}
+		blobmsg_close_table(b, t);
+		num++;
 	}
 }
 
@@ -653,7 +685,8 @@ static void
 router_dump_network_clients(struct blob_buf *b, char *net)
 {
 	void *t;
-	char clientnum[16];
+	char clientnum[10];
+	int num = 1;
 	int i;
 
 	for (i = 0; i < MAX_CLIENT; i++) {
@@ -661,7 +694,7 @@ router_dump_network_clients(struct blob_buf *b, char *net)
 			break;
 		if (strcmp(clients[i].network, net))
 			continue;
-		sprintf(clientnum, "client-%d", i + 1);
+		sprintf(clientnum, "client-%d", num);
 		t = blobmsg_open_table(b, clientnum);
 		blobmsg_add_string(b, "hostname", clients[i].hostname);
 		blobmsg_add_string(b, "ipaddr", clients[i].hostaddr);
@@ -675,6 +708,7 @@ router_dump_network_clients(struct blob_buf *b, char *net)
 			blobmsg_add_string(b, "wdev", clients[i].wdev);
 		}
 		blobmsg_close_table(b, t);
+		num++;
 	}
 }
 
@@ -682,13 +716,14 @@ static void
 router_dump_clients6(struct blob_buf *b)
 {
 	void *t;
-	char clientnum[16];
+	char clientnum[10];
+	int num = 1;
 	int i;
 
 	for (i = 0; i < MAX_CLIENT; i++) {
 		if (!clients6[i].exists)
 			break;
-		sprintf(clientnum, "client-%d", i + 1);
+		sprintf(clientnum, "client-%d", num);
 		t = blobmsg_open_table(b, clientnum);
 		blobmsg_add_string(b, "hostname", clients6[i].hostname);
 		blobmsg_add_string(b, "ip6addr", clients6[i].ip6addr);
@@ -701,6 +736,7 @@ router_dump_clients6(struct blob_buf *b)
 			blobmsg_add_string(b, "wdev", clients6[i].wdev);
 		}
 		blobmsg_close_table(b, t);
+		num++;
 	}
 }
 
@@ -708,15 +744,16 @@ static void
 router_dump_stas(struct blob_buf *b)
 {
 	void *t;
-	char stanum[16];
+	char stanum[8];
+	int num = 1;
 	int i;
 
 	for (i = 0; i < MAX_CLIENT; i++) {
 		if (!clients[i].exists)
 			break;
-		if (!clients[i].wireless)
+		if (!(clients[i].wireless))
 			continue;
-		sprintf(stanum, "sta-%d", i + 1);
+		sprintf(stanum, "sta-%d", num);
 		t = blobmsg_open_table(b, stanum);
 		blobmsg_add_string(b, "hostname", clients[i].hostname);
 		blobmsg_add_string(b, "ipaddr", clients[i].hostaddr);
@@ -727,6 +764,7 @@ router_dump_stas(struct blob_buf *b)
 			blobmsg_add_string(b, "bridge", clients[i].device);
 		blobmsg_add_string(b, "wdev", clients[i].wdev);
 		blobmsg_close_table(b, t);
+		num++;
 	}
 }
 
@@ -734,8 +772,9 @@ static void
 router_dump_wireless_stas(struct blob_buf *b, char *wname, bool vif)
 {
 	void *t;
-	char stanum[16];
+	char stanum[8];
 	char compare[8];
+	int num = 1;
 	int i;
 
 	for (i = 0; i < MAX_CLIENT; i++) {
@@ -753,7 +792,7 @@ router_dump_wireless_stas(struct blob_buf *b, char *wname, bool vif)
 		if (strcmp(compare, wname))
 			continue;
 
-		sprintf(stanum, "sta-%d", i + 1);
+		sprintf(stanum, "sta-%d", num);
 		t = blobmsg_open_table(b, stanum);
 		blobmsg_add_string(b, "hostname", clients[i].hostname);
 		blobmsg_add_string(b, "ipaddr", clients[i].hostaddr);
@@ -765,6 +804,7 @@ router_dump_wireless_stas(struct blob_buf *b, char *wname, bool vif)
 		if(!vif)
 			blobmsg_add_string(b, "wdev", clients[i].wdev);
 		blobmsg_close_table(b, t);
+		num++;
 	}
 }
 
@@ -1004,6 +1044,22 @@ quest_router_clients(struct ubus_context *ctx, struct ubus_object *obj,
 }
 
 static int
+quest_router_connected_clients(struct ubus_context *ctx, struct ubus_object *obj,
+		  struct ubus_request_data *req, const char *method,
+		  struct blob_attr *msg)
+{
+	struct blob_attr *tb[__QUEST_MAX];
+
+	blobmsg_parse(quest_policy, __QUEST_MAX, tb, blob_data(msg), blob_len(msg));
+
+	blob_buf_init(&bb, 0);
+	router_dump_connected_clients(&bb);
+	ubus_send_reply(ctx, req, bb.head);
+
+	return 0;
+}
+
+static int
 quest_router_network_clients(struct ubus_context *ctx, struct ubus_object *obj,
 		  struct ubus_request_data *req, const char *method,
 		  struct blob_attr *msg)
@@ -1223,6 +1279,7 @@ static struct ubus_method router_object_methods[] = {
 	UBUS_METHOD("quest", quest_router_specific, quest_policy),
 	{ .name = "networks", .handler = quest_router_networks },
 	UBUS_METHOD("client", quest_router_network_clients, network_policy),
+	{ .name = "connected", .handler = quest_router_connected_clients },
 	{ .name = "clients", .handler = quest_router_clients },
 	{ .name = "clients6", .handler = quest_router_clients6 },
 	UBUS_METHOD("sta", quest_router_wireless_stas, wl_policy),

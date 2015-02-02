@@ -13,7 +13,7 @@
 #include <uci.h>
 
 #define MAX_VIF		8
-#define MAX_NETWORK	32
+#define MAX_NETWORK	16
 #define MAX_CLIENT	128
 #define MAX_PORT	8
 #define MAX_USB		18
