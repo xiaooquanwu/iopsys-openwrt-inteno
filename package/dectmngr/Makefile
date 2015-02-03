@@ -51,6 +51,7 @@ define Package/dectmngr/install
 	$(INSTALL_DIR) $(1)/etc/hotplug.d/dect
 	$(INSTALL_DIR) $(1)/etc/init.d/
 	$(INSTALL_DIR) $(1)/etc/dect/
+	$(INSTALL_DIR) $(1)/etc/config/
 
 	cp $(PKG_BUILD_DIR)/dectmngr $(1)/usr/bin/
 	cp $(PKG_BUILD_DIR)/atohx $(1)/usr/bin/
