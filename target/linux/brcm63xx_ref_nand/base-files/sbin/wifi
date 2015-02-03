@@ -175,7 +175,6 @@ set_wifi_down() {
 wif_encryption_settings() {
 	local vif=$1
 	local iface=$2
-	local nif=${iface/./_}
 	local qr_enc="nopass"
 	local qr_hidden=false
 	local qr_key="no"
@@ -196,18 +195,18 @@ wif_encryption_settings() {
 	[ "$hidden" == "1" ] && qr_hidden=true
 
 	wlctl -i $iface auth 0
-	nvram set "$nif"_auth=0
-	nvram set "$nif"_preauth=0
-	nvram set "$nif"_net_auth_type=1
-	nvram set "$nif"_wep=disabled
+	nvram set "$iface"_auth=0
+	nvram set "$iface"_preauth=0
+	nvram set "$iface"_net_auth_type=1
+	nvram set "$iface"_wep=disabled
 	case "$enc" in
 		*wep*)
 			wsec_r=1
 			wsec=1
-			nvram set "$nif"_wep=enabled
+			nvram set "$iface"_wep=enabled
 			config_get key "$vif" key
 			case "$enc" in
-				*shared*) wlctl -i $iface auth 1; nvram set "$nif"_auth=1;;
+				*shared*) wlctl -i $iface auth 1; nvram set "$iface"_auth=1;;
 			esac
 			case "$key" in
 				[1234])
@@ -237,21 +236,21 @@ wif_encryption_settings() {
 			eap_r=1
 			config_get key "$vif" key
 			config_get gtk "$vif" gtk_rekey "0"
-			nvram set "$nif"_wpa_gtk_rekey=$gtk
+			nvram set "$iface"_wpa_gtk_rekey=$gtk
 			# psk version + default cipher
 			case "$enc" in
-				*mixed*|*psk+psk2*) auth=132; wsec=6; nvram set "$nif"_akm='psk psk2'; nvram set "$nif"_crypto=tkip+aes;;
-				*psk2*) auth=128; wsec=4; nvram set "$nif"_akm=psk2; nvram set "$nif"_crypto=aes;;
-				*) auth=4; wsec=2; nvram set "$nif"_akm=psk; nvram set "$nif"_crypto=tkip;;
+				*mixed*|*psk+psk2*) auth=132; wsec=6; nvram set "$iface"_akm='psk psk2'; nvram set "$iface"_crypto=tkip+aes;;
+				*psk2*) auth=128; wsec=4; nvram set "$iface"_akm=psk2; nvram set "$iface"_crypto=aes;;
+				*) auth=4; wsec=2; nvram set "$iface"_akm=psk; nvram set "$iface"_crypto=tkip;;
 			esac
 			# cipher override
 			case "$cipher" in
-				*tkip+aes*|*tkip+ccmp*|*aes+tkip*|*ccmp+tkip*) wsec=6; nvram set "$nif"_crypto=tkip+aes;;
-				*aes*|*ccmp*) wsec=4; nvram set "$nif"_crypto=aes;;
-				*tkip*) wsec=2; nvram set "$nif"_crypto=tkip;;
+				*tkip+aes*|*tkip+ccmp*|*aes+tkip*|*ccmp+tkip*) wsec=6; nvram set "$iface"_crypto=tkip+aes;;
+				*aes*|*ccmp*) wsec=4; nvram set "$iface"_crypto=aes;;
+				*tkip*) wsec=2; nvram set "$iface"_crypto=tkip;;
 			esac
-			nvram set "$nif"_wpa_psk="$key"
-			nvram set "$nif"_auth_mode="psk"
+			nvram set "$iface"_wpa_psk="$key"
+			nvram set "$iface"_auth_mode="psk"
 			qr_enc="WPA"
 			qr_key="$key"
 		;;
@@ -266,29 +265,29 @@ wif_encryption_settings() {
 			config_get rad_port "$vif" radius_port "1812"
 			config_get rad_sec "$vif" radius_secret
 			config_get net_reauth "$vif" key net_reauth "36000"
-			nvram set "$nif"_net_reauth="$net_reauth"
+			nvram set "$iface"_net_reauth="$net_reauth"
 			# wpa version + default cipher
 			case "$enc" in
-				*mixed*|*wpa+wpa2*) auth=66; wsec=6; nvram set "$nif"_akm='wpa wpa2'; nvram set "$nif"_crypto=tkip+aes;;
-				*wpa2*) auth=64; wsec=4; nvram set "$nif"_akm=wpa2; nvram set "$nif"_crypto=aes;;
-				*) auth=2; wsec=2; nvram set "$nif"_akm=wpa; nvram set "$nif"_crypto=tkip;;
+				*mixed*|*wpa+wpa2*) auth=66; wsec=6; nvram set "$iface"_akm='wpa wpa2'; nvram set "$iface"_crypto=tkip+aes;;
+				*wpa2*) auth=64; wsec=4; nvram set "$iface"_akm=wpa2; nvram set "$iface"_crypto=aes;;
+				*) auth=2; wsec=2; nvram set "$iface"_akm=wpa; nvram set "$iface"_crypto=tkip;;
 			esac
 			# cipher override
 			case "$cipher" in
-				*tkip+aes*|*tkip+ccmp*|*aes+tkip*|*ccmp+tkip*) wsec=6; nvram set "$nif"_crypto=tkip+aes;;
-				*aes*|*ccmp*) wsec=4; nvram set "$nif"_crypto=aes;;
-				*tkip*) wsec=2; nvram set "$nif"_crypto=tkip;;
+				*tkip+aes*|*tkip+ccmp*|*aes+tkip*|*ccmp+tkip*) wsec=6; nvram set "$iface"_crypto=tkip+aes;;
+				*aes*|*ccmp*) wsec=4; nvram set "$iface"_crypto=aes;;
+				*tkip*) wsec=2; nvram set "$iface"_crypto=tkip;;
 			esac
-			nvram set "$nif"_wpa_psk="$key"
-			nvram set "$nif"_auth_mode="radius"
-			nvram set "$nif"_radius_ipaddr="$rad_serv"
-			nvram set "$nif"_radius_port="$rad_port"
-			nvram set "$nif"_radius_key="$rad_sec"
+			nvram set "$iface"_wpa_psk="$key"
+			nvram set "$iface"_auth_mode="radius"
+			nvram set "$iface"_radius_ipaddr="$rad_serv"
+			nvram set "$iface"_radius_port="$rad_port"
+			nvram set "$iface"_radius_key="$rad_sec"
 			qr_enc="WPA"
 			qr_key="$key"
 		;;
 	esac
-	[ "$mode" == "sta" ] && nvram set "$nif"_auth_mode="none"
+	[ "$mode" == "sta" ] && nvram set "$iface"_auth_mode="none"
 	wlctl -i $iface wsec $wsec
 	wlctl -i $iface wpa_auth $auth
 	wlctl -i $iface wsec_restrict $wsec_r
@@ -302,7 +301,6 @@ wif_encryption_settings() {
 wif_general_settings() {
 	local vif=$1
 	local iface=$2
-	local nif=${iface/./_}
 	local mode ssid network bridged bss_max isolate vlan_mode
 	config_get mode "$vif" mode "ap"
 	config_get ssid "$vif" ssid
@@ -321,17 +319,16 @@ wif_general_settings() {
 	[ "$mode" == "sta" ] && staifs="$staifs $iface"
 	[ "$mode" == "wet" ] && wetifs="$wetifs $iface"
 
-	nvram set "$nif"_mode="$mode"
-	nvram set "$nif"_ifname="$iface"
-	nvram set "$nif"_ssid="${ssid:-Inteno}"
-	nvram set "$nif"_radio=1
-	nvram set "$nif"_infra=1
+	nvram set "$iface"_mode="$mode"
+	nvram set "$iface"_ifname="$iface"
+	nvram set "$iface"_ssid="${ssid:-Inteno}"
+	nvram set "$iface"_radio=1
+	nvram set "$iface"_infra=1
 }
 
 wif_apsta_settings() {
 	local vif=$1
 	local iface=$2
-	local nif=${iface/./_}
 	local device mode autoconf apsta
 	config_get device "$vif" device
 	config_get mode "$vif" mode "ap"
@@ -364,14 +361,13 @@ wif_apsta_settings() {
 wif_wps_settings() {
 	local vif=$1
 	local iface=$2
-	local nif=${iface/./_}
 	local device mode wps_mode lno
 	config_get device "$vif" device
 	config_get mode "$vif" mode "ap"
 	config_get wps_mode "$vif" wps_pbc
 
 	if [ "$wps_mode" == "1" ]; then
-		nvram set "$nif"_wps_mode="enabled"
+		nvram set "$iface"_wps_mode="enabled"
 		nvram set router_disable="0"
 		nvram set wps_modelnum="123456"
 		nvram set boardnum="1234"
@@ -393,14 +389,13 @@ wif_wps_settings() {
 		nvram set wps_config="DONE"
 		_enWps=$((_enWps+1))
 	else
-		nvram set "$nif"_wps_mode="disabled"
+		nvram set "$iface"_wps_mode="disabled"
 	fi
 }
 
 wif_macfilter() {
 	local vif=$1
 	local iface=$2
-	local nif=${iface/./_}
 	local macfilter maclist
 	config_get macfilter "$vif" macfilter "0"
 	config_get maclist "$vif" maclist
@@ -417,7 +412,6 @@ wif_macfilter() {
 wif_wmx_settings() {
 	local vif=$1
 	local iface=$2
-	local nif=${iface/./_}
 	local wmf_en wmm_dis
 	config_get_bool wmf_en "$vif" wmf_bss_enable "1"
 	config_get_bool wmm_dis "$vif" wmm_bss_disable "0"
@@ -431,7 +425,6 @@ wif_wmx_settings() {
 wif_setup() {
 	local vif=$1
 	local iface=$2
-	local nif=${iface/./_}
 	local device network disabled vifs wmm
 	config_get device "$vif" device
 	config_get network "$vif" network
@@ -451,13 +444,13 @@ wif_setup() {
 	[ "$wmm" == "1" ] && add_ebtables_wme_rules $iface
 
 	# tag VIF network
-	nvram set "$nif"_network=$network
+	nvram set "$iface"_network=$network
 
 	# check if VIF is disabled in config
 	if [ "$disabled" == "1" ]; then
-		nvram set "$nif"_bss_enabled=0
+		nvram set "$iface"_bss_enabled=0
 	else
-		nvram set "$nif"_bss_enabled=1
+		nvram set "$iface"_bss_enabled=1
 	fi
 }
 
@@ -499,9 +492,8 @@ wdev_wif_bringup() {
 
 	bring_wif_up() {
 		local iface=$1
-		local nif=${iface/./_}
-		local network=$(nvram get "$nif"_network)
-		local bss=$(nvram get "$nif"_bss_enabled)
+		local network=$(nvram get "$iface"_network)
+		local bss=$(nvram get "$iface"_bss_enabled)
 		local perethr curethr
 
 		# toggle wireless virtual interface
@@ -510,7 +502,7 @@ wdev_wif_bringup() {
 
 		perethr=$(wlctl -i $iface perm_etheraddr | awk '{print$2}')
 		curethr=$(wlctl -i $iface cur_etheraddr | awk '{print$2}')
-		nvram set "$nif"_hwaddr="$curethr"
+		nvram set "$iface"_hwaddr="$curethr"
 		ifconfig $iface hw ether $curethr 2>/dev/null
 		ifconfig "$iface" up >/dev/null 2>&1 && {
 			[ -n "$network" ] && ubus call network.interface."$network" add_device "{ \"name\": \"$iface\" }" 2>/dev/null
@@ -545,6 +537,9 @@ create_vif() {
 	wlctl -i $device ssid -C $_cno ""
 	wlctl -i $device bss -C $_cno down
 	[ $_cno -eq 0 ] && iface="$device" || iface="$device"."$_cno"
+
+	# save uci config no for each virtual interface
+	nvram set "$iface"_cfgno="$vif"
 
 	# tag guestMgr interface
 	[ "$network" == "guestMgr" ] && {
@@ -1063,12 +1058,11 @@ wifi_toggle_iface() {
 	[ -z "$2" ] && return
 	local wif="$2"
 	local wdev="${wif:0:3}"
-	local nif=${wif/./_}
 	if [ "$1" == "disable" ]; then
-		nvram set "$nif"_bss_enabled=0
+		nvram set "$wif"_bss_enabled=0
 		wlctl -i $wif bss down
 	else
-		nvram set "$nif"_bss_enabled=1
+		nvram set "$wif"_bss_enabled=1
 		wlctl -i $wif bss up
 	fi
 }
