@@ -62,6 +62,7 @@ define Package/dectmngr/install
 	cp files/etc/init.d/* $(1)/etc/init.d/
 	cp files/etc/hotplug.d/dect/* $(1)/etc/hotplug.d/dect/
 	cp files/etc/dect/* $(1)/etc/dect/
+	cp files/etc/config/* $(1)/etc/config/
 	cp files/sbin/dectreg $(1)/sbin/
 endef
 
