@@ -3,8 +3,10 @@
 # Copyright (C) 2009 OpenWrt.org
 #
 
-START=41
+START=24
 
 start() {
+	sleep 1
         swmdk &
+	sleep 1
 }
