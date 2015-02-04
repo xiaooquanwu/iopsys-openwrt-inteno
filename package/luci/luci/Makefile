@@ -2,8 +2,8 @@ include $(TOPDIR)/rules.mk
 
 PKG_BRANCH:=svn-0.11
 PKG_NAME:=luci
-PKG_VERSION:=inteno-1.0.159
-PKG_SOURCE_VERSION:=c34a3ad94b586c561247eb04381cd821f2cc0848
+PKG_VERSION:=inteno-1.0.162
+PKG_SOURCE_VERSION:=3dc2325add00fcd6b3c8330efbe34049ba06f450
 
 PKG_SOURCE_PROTO:=git
 ifeq ($(CONFIG_PACKAGE_bcmkernel),y)
@@ -571,6 +571,12 @@ $(eval $(call application,dslstats,LuCI Support for DSL Statistics,\
 
 $(eval $(call application,mcpd,LuCI Support for IGMP Proxy,\
 	+PACKAGE_luci-app-mcpd:mcpd))
+
+$(eval $(call application,sfp,LuCI Support for SFP status,\
+        +PACKAGE_luci-app-sfp:sfp))
+
+$(eval $(call application,catv,LuCI Support for CATV Module,\
+        +PACKAGE_luci-app-catv:catv))
 
 $(eval $(call application,mount,LuCI Support for Mount Management,\
 	+PACKAGE_luci-app-mount))
