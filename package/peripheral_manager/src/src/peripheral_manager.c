@@ -1,17 +1,24 @@
 #include <stdio.h>
+#include <string.h>
+#include <libgen.h>
 #include <stdlib.h>
 #include <syslog.h>
 #include <config.h>
 #include <getopt.h>
 #include "log.h"
+#include "ucix.h"
 
 int debug_level = 0;
+
+static char *config_path = "/lib/db/config";
+static char *config_file = "hw";
 
 void print_usage(char *prg_name) {
         printf("Usage: %s -h -f\n", prg_name);
         printf("  Options: \n");
         printf("      -f, --foreground\tDon't fork off as a daemon.\n");
         printf("      -d, --debug=NUM\tSet debug level. Higher = more output\n");
+        printf("      -c, --config=FILE\tConfig file to use. default = %s/%s\n", config_path, config_file);
         printf("      -h\t\tShow this help screen.\n");
         printf("\n");
 }
@@ -21,17 +28,19 @@ int main(int argc, char **argv)
 	int ch;
 	int daemon = 1;
 	pid_t pid, sid;
+	struct uci_context *uci_ctx = NULL;
 
 	while (1) {
 		int option_index = 0;
 		static struct option long_options[] = {
-                        {"foreground", no_argument, 0, 'f'},
-                        {"verbose",    no_argument, 0, 'v'},
-                        {"debug",required_argument, 0, 'd'},
+                        {"foreground",  no_argument, 0, 'f'},
+                        {"verbose",     no_argument, 0, 'v'},
+                        {"debug", required_argument, 0, 'd'},
+                        {"config",required_argument, 0, 'c'},
                         {0, 0, 0, 0}
                 };
 
-                ch = getopt_long(argc, argv, "vfhd:",
+                ch = getopt_long(argc, argv, "vfhd:c:",
                                 long_options, &option_index);
 
 		if (ch == -1)
@@ -45,6 +54,10 @@ int main(int argc, char **argv)
                         debug_level = strtol(optarg, 0, 0);
                         break;
 
+                case 'c':
+			config_file = basename(optarg);
+			config_path = dirname(optarg);
+			break;
 		case 'h':
                 default:
 			print_usage(argv[0]);
@@ -107,6 +120,12 @@ int main(int argc, char **argv)
 		//close(STDIN_FILENO);
 		//close(STDOUT_FILENO);
 		//close(STDERR_FILENO);
+	}
+
+	uci_ctx = ucix_init_path(config_path , config_file);
+	if (! uci_ctx ) {
+		syslog(LOG_ERR,"Failed to load config file \"%s/%s\"\n", config_path, config_file);
+		exit(1);
 	}
 
 	DBG(1,"testing\n");
