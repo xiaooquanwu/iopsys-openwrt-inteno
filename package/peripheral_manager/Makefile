@@ -1,0 +1,49 @@
+#
+# Copyright (C) 2006-2010 OpenWrt.org
+#
+# This is free software, licensed under the GNU General Public License v2.
+# See /LICENSE for more information.
+#
+
+include $(TOPDIR)/rules.mk
+include $(INCLUDE_DIR)/kernel.mk
+
+PKG_NAME:=peripheral_manager
+PKG_RELEASE:=1
+
+# support parallel build
+PKG_BUILD_PARALLEL:=1
+
+#re create configure scripts if not present.
+PKG_FIXUP:=autoreconf
+
+# run install target when cross compiling. basically, make install DESTDIR=$(PKG_INSTALL_DIR)
+# this way we don't need to pick out the resulting files from the build dir.
+PKG_INSTALL:=1
+
+include $(INCLUDE_DIR)/package.mk
+
+define Package/peripheral_manager
+  CATEGORY:=Utilities
+  TITLE:=Application deamon for handling of peripheral
+  URL:=
+  DEPENDS:=+libuci +libubus +libblobmsg-json +bcmkernel
+endef
+
+define Package/peripheral_manager/description
+	Application handling peripheral
+endef
+
+# In future get the git. unpack it in src.
+define Build/Prepare
+	mkdir -p $(PKG_BUILD_DIR)
+	$(CP) ./src/* $(PKG_BUILD_DIR)/
+#	$(CP) ./files/* $(PKG_BUILD_DIR)/
+endef
+
+define Package/peripheral_manager/install
+	$(INSTALL_DIR) $(1)/usr/bin
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/peripheral_manager $(1)/usr/bin
+endef
+
+$(eval $(call BuildPackage,peripheral_manager))
