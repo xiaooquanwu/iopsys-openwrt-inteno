@@ -10,8 +10,9 @@ int debug_level = 0;
 void print_usage(char *prg_name) {
         printf("Usage: %s -h -f\n", prg_name);
         printf("  Options: \n");
-        printf("      -f\tDon't fork off as a daemon.\n");
-        printf("      -h\tShow this help screen.\n");
+        printf("      -f, --foreground\tDon't fork off as a daemon.\n");
+        printf("      -d, --debug=NUM\tSet debug level. Higher = more output\n");
+        printf("      -h\t\tShow this help screen.\n");
         printf("\n");
 }
 
