@@ -147,6 +147,11 @@ static void test_handler(struct uloop_timeout *timeout) {
 		goto done;
 	}
 
+	if (global_state == LEDS_RESET){
+		cnt = 0;
+		goto done;
+	}
+
 	/* cycle through every led once */
 	if (cnt == 4 ) {
 		cnt++;
@@ -172,7 +177,7 @@ static void test_handler(struct uloop_timeout *timeout) {
 	}
 done:
 
-    if (global_state == LEDS_TEST)
+    if (global_state == LEDS_TEST || global_state == LEDS_RESET)
 	    uloop_timeout_set(&test_inform_timer, TEST_TIMEOUT);
     else{
 	    cnt = 0;
@@ -317,7 +322,11 @@ static int leds_set_method(struct ubus_context *ubus_ctx, struct ubus_object *ob
 			set_function_led("eco", "ok");
 		}
 
-		if (global_state == LEDS_TEST) {
+		if (global_state == LEDS_PROD) {
+			all_leds_off();
+		}
+
+		if (global_state == LEDS_TEST || global_state == LEDS_RESET) {
 			all_leds_off();
 			uloop_timeout_set(&test_inform_timer, TEST_TIMEOUT);
 		}
