@@ -1,11 +1,14 @@
 /*-*- Mode: C; c-basic-offset: 8; indent-tabs-mode: nil -*-*/
 #include <syslog.h>
+#include <time.h>
 #include "log.h"
 #include "button.h"
+
 
 /* used to map in the driver buttons to a function button */
 struct button_drv_list {
         struct list_head list;
+        struct timespec pressed_time;
         struct button_drv *drv;
 };
 
@@ -26,6 +29,7 @@ struct drv_button_list{
 
 static LIST_HEAD(drv_buttons_list);
 
+/* list containing all function buttons */
 static LIST_HEAD(buttons);
 
 static struct button_drv *get_drv_button(char *name);
@@ -81,7 +85,7 @@ static void dump_buttons_list(void)
                 {
                         struct list_head *j;
                         list_for_each(j, &node->drv_list) {
-                                struct drv_button_list *drv_node = list_entry(j, struct drv_button_list, list);
+                                struct button_drv_list *drv_node = list_entry(j, struct button_drv_list, list);
                                 if(drv_node->drv != NULL)
                                         DBG(1,"%13s drv button name = [%s]\n","",drv_node->drv->name);
                         }
@@ -89,6 +93,84 @@ static void dump_buttons_list(void)
                         DBG(1,"%13s longpress = %d\n","",node->longpress);
                 }
 	}
+}
+
+static int timer_started(struct button_drv_list *button_drv)
+{
+        if (button_drv->pressed_time.tv_sec == 0 )
+                if (button_drv->pressed_time.tv_nsec == 0 )
+                        return 0;
+        return 1;
+}
+
+static void timer_start(struct button_drv_list *button_drv)
+{
+        clock_gettime(CLOCK_MONOTONIC, &button_drv->pressed_time);
+}
+
+static void timer_stop(struct button_drv_list *button_drv)
+{
+        button_drv->pressed_time.tv_sec = 0;
+        button_drv->pressed_time.tv_nsec = 0;
+}
+
+static int timer_valid(struct button_drv_list *button_drv, int mtimeout)
+{
+        struct timespec now;
+        int sec;
+        int nsec;
+
+        if (timer_started(button_drv)) {
+                clock_gettime(CLOCK_MONOTONIC, &now);
+                sec =  now.tv_sec  - button_drv->pressed_time.tv_sec;
+                nsec = now.tv_nsec - button_drv->pressed_time.tv_nsec;
+                if ( mtimeout < (sec*1000 + nsec/1000000)) {
+                        return 1;
+                }
+        }
+        return 0;
+}
+
+#define BUTTON_TIMEOUT 100
+static void button_handler(struct uloop_timeout *timeout);
+static struct uloop_timeout button_inform_timer = { .cb = button_handler };
+
+static void button_handler(struct uloop_timeout *timeout)
+{
+ 	struct list_head *i;
+//        DBG(1, "");
+	list_for_each(i, &buttons) {
+                struct list_head *j;
+		struct function_button *node = list_entry(i, struct function_button, list);
+
+              list_for_each(j, &node->drv_list) {
+                        struct button_drv_list *drv_node = list_entry(j, struct button_drv_list, list);
+                        if (drv_node->drv) {
+                                button_state_t st = drv_node->drv->func->get_state(drv_node->drv);
+
+                                if (st == PRESSED ) {
+                                        if (! timer_started(drv_node)) {
+                                                timer_start(drv_node);
+                                                DBG(1, " %s pressed\n", drv_node->drv->name);
+                                        }
+                                }
+                                if (st == RELEASED ) {
+                                        if (timer_started(drv_node)) {
+                                                DBG(1, " %s released\n", drv_node->drv->name);
+
+                                                if ( timer_valid(drv_node, node->minpress) ) {
+                                                        DBG(1, "send key %s to system\n", node->name);
+                                                }else {
+//                                                DBG(1, " %s not valid\n", drv_node->drv->name);
+                                                }
+                                        }
+                                        timer_stop(drv_node);
+                                }
+//                                DBG(1, " %s state = %d\n", drv_node->drv->name,st);
+                        }
+                }
+        }
+	uloop_timeout_set(&button_inform_timer, BUTTON_TIMEOUT);
 }
 
 void button_init( struct server_ctx *s_ctx)
@@ -166,6 +248,9 @@ void button_init( struct server_ctx *s_ctx)
 
                 list_add(&function->list, &buttons);
         }
+
+	uloop_timeout_set(&button_inform_timer, BUTTON_TIMEOUT);
+
 	dump_drv_list();
         dump_buttons_list();
 }

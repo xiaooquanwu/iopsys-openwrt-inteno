@@ -7,17 +7,6 @@
 
 void sim_button_init(struct server_ctx *s_ctx);
 
-static button_state_t sim_get_state(struct button_drv *drv)
-{
-	DBG(1, "state for %s\n",  drv->name);
-
-	return 0;
-}
-
-static struct button_drv_func func = {
-	.get_state = sim_get_state,
-};
-
 struct sim_data {
 	int addr;
 	int active;
@@ -30,7 +19,20 @@ struct drv_button_list{
 	struct button_drv *drv;
 };
 
+static button_state_t sim_get_state(struct button_drv *drv)
+{
+//	DBG(1, "state for %s\n",  drv->name);
+	struct sim_data *p = (struct sim_data *)drv->priv;
+
+	return p->state;
+}
+
+static struct button_drv_func func = {
+	.get_state = sim_get_state,
+};
+
 static LIST_HEAD(sim_buttons);
+
 
 enum {
 	SIM_NAME,
