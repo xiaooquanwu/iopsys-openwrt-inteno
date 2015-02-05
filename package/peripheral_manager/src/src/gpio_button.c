@@ -19,8 +19,14 @@ static button_state_t gpio_get_state(struct button_drv *drv)
 {
 //	DBG(1, "state for %s",  drv->name);
 	struct gpio_data *p = (struct gpio_data *)drv->priv;
+	int value;
 
-	p->state = board_ioctl( BOARD_IOCTL_GET_GPIO, 0, 0, NULL, p->addr, 0);
+	value = board_ioctl( BOARD_IOCTL_GET_GPIO, 0, 0, NULL, p->addr, 0);
+
+	if(p->active)
+		p->state = value ? PRESSED : RELEASED;
+	else
+		p->state = value ? RELEASED : PRESSED;
 
 	return p->state;
 }
