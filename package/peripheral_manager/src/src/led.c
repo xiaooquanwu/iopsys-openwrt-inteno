@@ -122,6 +122,64 @@ static void all_leds_on(void) {
 	all_leds(ON);
 }
 
+#define TEST_TIMEOUT 250
+static void test_handler(struct uloop_timeout *timeout);
+static struct uloop_timeout test_inform_timer = { .cb = test_handler };
+
+static void test_handler(struct uloop_timeout *timeout) {
+
+	static int cnt = 0;
+	static led_state_t state = OFF;
+
+	static struct drv_led_list *led;
+	DBG(1,"cnt = %d state %d\n",cnt,state);
+
+	/* flash all leads 2 times.*/
+	if ( cnt < 4) {
+		cnt++;
+		if (state == OFF){
+			all_leds_on();
+			state = ON;
+		}else{
+			all_leds_off();
+			state = OFF;
+		}
+		goto done;
+	}
+
+	/* cycle through every led once */
+	if (cnt == 4 ) {
+		cnt++;
+		led = list_first_entry(&drv_leds_list, struct drv_led_list, list );
+	}
+	if (cnt == 5 ) {
+		if (state == OFF){
+			led->drv->func->set_state(led->drv, ON);
+			state = ON;
+		}else{
+			led->drv->func->set_state(led->drv, OFF);
+			/* was this the last led ? if so stop */
+			if ( list_is_last(&led->list, &drv_leds_list) ){
+				cnt = 0;
+				state = OFF;
+				goto done;
+			}else{ /* nope more leds in list. get next and turn it on */
+				led = (struct drv_led_list *)led->list.next;
+				led->drv->func->set_state(led->drv, ON);
+				state = ON;
+			}
+		}
+	}
+done:
+
+    if (global_state == LEDS_TEST)
+	    uloop_timeout_set(&test_inform_timer, TEST_TIMEOUT);
+    else{
+	    cnt = 0;
+	    state = OFF;
+    }
+}
+
 /* go over the driver list for any led name that matches name and returna pointer to driver. */
 struct led_drv *get_drv_led(char *name)
 {
@@ -261,6 +319,7 @@ static int leds_set_method(struct ubus_context *ubus_ctx, struct ubus_object *ob
 
 		if (global_state == LEDS_TEST) {
 			all_leds_off();
+			uloop_timeout_set(&test_inform_timer, TEST_TIMEOUT);
 		}
 		if (global_state == LEDS_ALLON) {
 			all_leds_on();
