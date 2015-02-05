@@ -202,10 +202,12 @@ static int led_status_method(struct ubus_context *ubus_ctx, struct ubus_object *
                              struct ubus_request_data *req, const char *method,
                              struct blob_attr *msg)
 {
-	DBG(1,"\n");
+	char *fn_name = strchr(obj->name, '.') + 1;
+	int led_idx = get_index_by_name(led_functions, LED_FUNCTIONS , fn_name);
+	DBG(1,"for led %s\n",leds[led_idx].name);
+
 	blob_buf_init (&bblob, 0);
-//    blobmsg_add_string(&bblob, "state", fn_actions[action]);
-	blobmsg_add_string(&bblob, "state", "led_fixme_state");
+	blobmsg_add_string(&bblob, "state",fn_actions[leds[led_idx].state]);
 	ubus_send_reply(ubus_ctx, req, bblob.head);
 
 	return 0;
