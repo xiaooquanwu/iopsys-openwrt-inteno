@@ -52,10 +52,11 @@ int main(int argc, char **argv)
                         {"debug", required_argument, 0, 'd'},
                         {"config",required_argument, 0, 'c'},
                         {"socket",required_argument, 0, 's'},
+                        {"help",	no_argument, 0, 'h'},
                         {0, 0, 0, 0}
                 };
 
-                ch = getopt_long(argc, argv, "vfhd:c:s:",
+                ch = getopt_long(argc, argv, "hvfhd:c:s:",
                                 long_options, &option_index);
 
 		if (ch == -1)
