@@ -16,6 +16,7 @@ struct button_drv_list {
 struct function_button {
 	struct list_head list;
         char *name;
+        char *hotplug;
         int minpress;
         int longpress;                          /* negative value means valid if  mintime < time < abs(longpress ) */
                                                 /* positive value means valid if time > longpreass */
@@ -162,7 +163,7 @@ static void button_handler(struct uloop_timeout *timeout)
                 struct list_head *j;
 		struct function_button *node = list_entry(i, struct function_button, list);
 
-              list_for_each(j, &node->drv_list) {
+                list_for_each(j, &node->drv_list) {
                         struct button_drv_list *drv_node = list_entry(j, struct button_drv_list, list);
                         if (drv_node->drv) {
                                 button_state_t st = drv_node->drv->func->get_state(drv_node->drv);
@@ -173,12 +174,20 @@ static void button_handler(struct uloop_timeout *timeout)
                                                 DBG(1, " %s pressed\n", drv_node->drv->name);
                                         }
                                 }
+
                                 if (st == RELEASED ) {
                                         if (timer_started(drv_node)) {
                                                 DBG(1, " %s released\n", drv_node->drv->name);
 
                                                 if ( timer_valid(drv_node, node->minpress, node->longpress) ) {
-                                                        DBG(1, "send key %s to system\n", node->name);
+                                                        char str[512];
+                                                        DBG(1, "send key %s [%s]to system\n", node->name, node->hotplug);
+                                                        snprintf(str,
+                                                                 512,
+                                                                 "ACTION=register INTERFACE=%s /sbin/hotplug-call button &",
+                                                                 node->hotplug);
+                                                        system(str);
+                                                        syslog(LOG_INFO, "%s",str);
                                                 } else {
 //                                                DBG(1, " %s not valid\n", drv_node->drv->name);
                                                 }
@@ -204,19 +213,18 @@ static void longpress_set(int time,struct button_drv *drv) {
 	struct list_head *i;
 	list_for_each(i, &buttons) {
 		struct function_button *node = list_entry(i, struct function_button, list);
-                {
-                        struct list_head *j;
-                        list_for_each(j, &node->drv_list) {
-                                struct button_drv_list *drv_node = list_entry(j, struct button_drv_list, list);
-                                if(drv_node->drv == drv){
-                                        if (node->longpress == 0) {
-                                                node->longpress = time;
-                                        }
+                struct list_head *j;
+                list_for_each(j, &node->drv_list) {
+                        struct button_drv_list *drv_node = list_entry(j, struct button_drv_list, list);
+                        if(drv_node->drv == drv){
+                                if (node->longpress == 0) {
+                                        node->longpress = time;
                                 }
                         }
                 }
-	}
+        }
 }
+
 
 /* find any use of longpress and set all other to negative longpress time to indicate min max time
    for a valid press
@@ -225,16 +233,14 @@ static void longpress_find(void) {
 	struct list_head *i;
 	list_for_each(i, &buttons) {
 		struct function_button *node = list_entry(i, struct function_button, list);
-                {
-                        struct list_head *j;
-                        list_for_each(j, &node->drv_list) {
-                                struct button_drv_list *drv_node = list_entry(j, struct button_drv_list, list);
-                                if(drv_node->drv != NULL){
-                                        if (node->longpress > 0) {
-                                                DBG(1,"%13s drv button name = [%s]\n","",drv_node->drv->name);
-                                                DBG(1,"%13s longpress = %d\n","",node->longpress);
-                                                longpress_set(node->longpress * -1, drv_node->drv);
-                                        }
+                struct list_head *j;
+                list_for_each(j, &node->drv_list) {
+                        struct button_drv_list *drv_node = list_entry(j, struct button_drv_list, list);
+                        if(drv_node->drv != NULL){
+                                if (node->longpress > 0) {
+                                        DBG(1,"%13s drv button name = [%s]\n","",drv_node->drv->name);
+                                        DBG(1,"%13s longpress = %d\n","",node->longpress);
+                                        longpress_set(node->longpress * -1, drv_node->drv);
                                 }
                         }
                 }
@@ -279,6 +285,13 @@ void button_init( struct server_ctx *s_ctx)
                 DBG(1, "longpress = [%s]\n", s);
                 if (s){
                         function->longpress =  strtol(s,0,0);
+                }
+
+                /* read out hotplug option */
+                s = ucix_get_option(s_ctx->uci_ctx, "hw" , function->name, "hotplug");
+                DBG(1, "hotplug = [%s]\n", s);
+                if (s){
+                        function->hotplug = s;
                 }
 
                 INIT_LIST_HEAD(&function->drv_list);
