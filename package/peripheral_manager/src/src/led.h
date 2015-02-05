@@ -1,5 +1,6 @@
 #ifndef LED_H
-
+#define LED_H
+#include "server.h"
 typedef enum {
 	OFF,
 	ON,
@@ -37,5 +38,6 @@ struct led_drv {
 };
 
 void led_add( struct led_drv *);
+void led_init(struct server_ctx *);
 
 #endif /* LED_H */

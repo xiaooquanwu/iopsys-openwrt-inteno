@@ -3,6 +3,7 @@
 AM_CFLAGS = $(OUR_CFLAGS)
 
 bin_PROGRAMS = peripheral_manager
+dist_data_DATA = configs/hw
 
 peripheral_manager_SOURCES = \
 	src/peripheral_manager.c \

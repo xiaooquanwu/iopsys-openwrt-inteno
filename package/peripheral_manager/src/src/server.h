@@ -1,4 +1,5 @@
 #ifndef SERVER_H
+#define SERVER_H
 #include <libubus.h>
 #include "ucix.h"
 

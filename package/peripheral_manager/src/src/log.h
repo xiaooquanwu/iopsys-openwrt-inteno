@@ -1,4 +1,5 @@
 #ifndef LOG_H
+#define LOG_H
 /* Use this */
 
 extern int debug_level;
