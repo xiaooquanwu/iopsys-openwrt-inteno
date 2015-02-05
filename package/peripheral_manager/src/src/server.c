@@ -4,6 +4,7 @@
 #include "led.h"
 #include "button.h"
 #include "catv.h"
+#include "sfp.h"
 
 struct server_ctx server;
 
@@ -11,6 +12,7 @@ void sim_led_init(struct server_ctx *);
 void sim_button_init(struct server_ctx *);
 
 struct catv_handler *catv_h;
+struct sfp_handler *sfp_h;
 
 void server_start(struct uci_context *uci_ctx, struct ubus_context *ubus_ctx)
 
@@ -30,12 +32,16 @@ void server_start(struct uci_context *uci_ctx, struct ubus_context *ubus_ctx)
 	led_init(&server);
 	button_init(&server);
 
+
+	sfp_h = sfp_init(uci_ctx);
+	if (sfp_h) {
+		sfp_ubus_populate(sfp_h, ubus_ctx);
+	}
+
 	catv_h = catv_init(uci_ctx, "/dev/i2c-0", 0x50, 0x51);
 	if (catv_h){
 		catv_ubus_populate(catv_h, ubus_ctx);
 	}
-
-	DBG(1, "Start all timmers.");
 
 	DBG(1, "give control to uloop main loop.");
 	uloop_run();

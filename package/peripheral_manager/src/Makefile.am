@@ -22,7 +22,9 @@ peripheral_manager_SOURCES = \
 	src/smbus.c \
 	src/smbus.h \
 	src/i2c.c \
-	src/i2c.h
+	src/i2c.h \
+	src/sfp.c \
+	src/sfp.h
 
 peripheral_manager_LDADD = $(UCI_LIB) $(UBOX_LIB) $(UBUS_LIB) -lm
 
