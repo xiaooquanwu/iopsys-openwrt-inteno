@@ -142,8 +142,6 @@ static void dump_led(void)
 					    led_states[led->state]);
 }}}}}
 
-
-
 static void set_function_led(const char* fn_name, const char* action) {
 	int led_idx = get_index_by_name(led_functions, LED_FUNCTIONS , fn_name);
 	int act_idx = get_index_by_name(fn_actions   , LED_ACTION_MAX, action );
@@ -156,15 +154,19 @@ static void set_function_led(const char* fn_name, const char* action) {
 		syslog(LOG_WARNING, "called over ubus with non valid action [%s] for led [%s]\n", action, fn_name);
 		return;
 	}
+
+	leds[led_idx].state = act_idx;
+
 	if ( leds[led_idx].actions[act_idx].name != NULL ) {
 		struct led *led;
 		list_for_each_entry(led, &leds[led_idx].actions[act_idx].led_list, list) {
-			if (led->drv)
+			if (led->drv){
 				led->drv->func->set_state(led->drv, led->state);
+			}
 		}
 	}
+	syslog(LOG_WARNING, "led set on [%s] has no valid [%s] handler registered.\n", fn_name, action);
 }
-
 
 enum {
 	LED_STATE,
@@ -189,8 +191,7 @@ static int led_set_method(struct ubus_context *ubus_ctx, struct ubus_object *obj
 	if (tb[LED_STATE]) {
 		char *fn_name = strchr(obj->name, '.') + 1;
 		state = blobmsg_data(tb[LED_STATE]);
-//    	fprintf(stderr, "Led %s method: %s state %s\n", fn_name, method, state);
-		syslog(LOG_INFO, "Led %s method: %s state %s", fn_name, method, state);
+//		syslog(LOG_INFO, "Led %s method: %s state %s", fn_name, method, state);
 		set_function_led(fn_name, state);
 	}
 
@@ -272,6 +273,39 @@ static struct ubus_object led_objects[LED_OBJECTS] = {
 };
 
 
+#define FLASH_TIMEOUT 250
+static void flash_handler(struct uloop_timeout *timeout);
+static struct uloop_timeout flash_inform_timer = { .cb = flash_handler };
+
+static void flash_handler(struct uloop_timeout *timeout)
+{
+	static int counter = 1; /* bit 0 is fast flash bit 1 is slow flash */
+	int i;
+	led_state_t slow=OFF,fast=OFF;
+	counter++;
+
+	if (counter & 1 )
+		fast = ON;
+	if (counter & 2 )
+		slow = ON;
+
+	/* BUG we should check if the driver support flash in hardware and only do this on simple on/off leds */
+	for (i = 0; i < LED_FUNCTIONS ; i++) {
+		struct led *led;
+		list_for_each_entry(led, &leds[i].actions[leds[i].state].led_list, list) {
+			if (led->state == FLASH_FAST){
+				if (led->drv)
+					led->drv->func->set_state(led->drv, fast);
+			}else if (led->state == FLASH_SLOW){
+				if (led->drv)
+					led->drv->func->set_state(led->drv, slow);
+			}
+		}
+	}
+
+	uloop_timeout_set(&flash_inform_timer, FLASH_TIMEOUT);
+}
+
 void led_init( struct server_ctx *s_ctx)
 {
 	int i,j,ret;
@@ -344,6 +378,9 @@ void led_init( struct server_ctx *s_ctx)
 			}
 		}
 	}
+
+	uloop_timeout_set(&flash_inform_timer, FLASH_TIMEOUT);
+
 	dump_led();
 }
 

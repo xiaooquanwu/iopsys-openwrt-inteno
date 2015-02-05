@@ -183,17 +183,17 @@ config led_map wifi_alert
 			list led_action sim_led_A=OFF
 			list led_action sim_led_C=ON
 config led_map wifi_error
-			list led_action sim_led_A=OFF
-			list led_action sim_led_C=FLASH_FAST
+			list led_action sim_led_A=FLASH_SLOW
+			list led_action sim_led_C=FLASH_SLOW
 
 config led_map wps_ok
 			list led_action sim_led_B=ON
 config led_map wps_off
 			list led_action sim_led_B=OFF
 config led_map wps_notice
-			list led_action sim_led_B=FLASH_SLOW
+			list led_action sim_led_B=ON
 config led_map wps_alert
-			list led_action sim_led_B=FLASH_FAST
+			list led_action sim_led_B=ON
 config led_map wps_error
-			list led_action sim_led_B=FLASH_FAST
+			list led_action sim_led_B=ON
 
