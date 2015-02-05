@@ -245,26 +245,32 @@ config gpio_led gpio_leds
 config gpio_led Status_green
        option addr     39
        option active   low
+       option mode     direct
 
 config gpio_led Status_red
        option addr     38
        option active   low
+       option mode     direct
 
 config gpio_led Wireless_green
        option addr     37
        option active   low
+       option mode     direct
 
 config gpio_led Wireless_blue
        option addr     36
        option active   low
+       option mode     direct
 
 config gpio_led WAN_green
        option addr     9
        option active   low
+       option mode     direct
 
 config gpio_led WAN_yellow
        option addr     10
        option active   low
+       option mode     direct
 
 ###############################################################################
 #
@@ -283,18 +289,15 @@ config led_map led_map
 config led_map status_ok
 			list led_action	Status_green=ON
 			list led_action	Status_red=OFF
-
 config led_map status_off
 			list led_action	Status_green=OFF
 			list led_action	Status_red=OFF
 config led_map status_notice
 			list led_action	Status_green=FLASH_SLOW
 			list led_action	Status_red=OFF
-
 config led_map status_alert
 			list led_action	Status_green=
 			list led_action	Status_red=FLASH_SLOW
-
 config led_map status_error
 			list led_action	Status_green=OFF
 			list led_action	Status_red=FLASH_FAST
