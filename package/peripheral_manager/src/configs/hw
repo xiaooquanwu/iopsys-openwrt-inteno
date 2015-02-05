@@ -125,6 +125,73 @@ config leds 'leds'
 # 	option eco_alert ''
 # 	option eco_error ''
 
+###############################################################################
+#
+# example for low level button.
+#
+#
+
+config sim_button sim_buttons
+       list buttons sim_button_A
+       list buttons sim_button_B
+       list buttons sim_button_C
+
+config sim_button sim_button_A
+       option addr 10
+       option active hi
+
+config sim_button sim_button_B
+       option addr 11
+       option active low
+
+config sim_button sim_button_c
+       option addr 12
+       option active hi
+
+config sim_button sim_button_d
+       option addr 13
+       option active hi
+
+config sim_button sim_button_e
+       option addr 14
+       option active hi
+
+###############################################################################
+#
+# example for mapping system button to driver button.
+# 
+# mapping serveral "functions" buttons to one physical can be done with the long press option
+# if 
+#
+# this is a list of all button names. perifmanger will read this list then read out the specific button config
+config button_map button_map
+	list buttonnames RESET
+	list buttonnames Wireless
+	list buttonnames WPS DECT
+	list buttonnames TOUCH_NEAR
+	list buttonnames TOUCH_FAR
+	option minpress 100	# default minimum time a button nedes to be pressed. 
+
+config button_map reset
+       list button sim_button_A # driver that is used for this button
+       option minpress 5000	# don't allow button unless pressed for 5 seconds.
+
+config button_map wirless
+       list button sim_button_B # driver that is used for this button
+       list button sim_button_C # we support user having to press two at the same time to register a button event.
+       option minpress 1000
+
+
+# long press example one or the other of touch_near or touch_far will trigger not booth.
+config button_map touch_near
+       list button sim_button_d # driver that is used for this button
+
+config button_map touch_far
+       list button sim_button_d # driver that is used for this button
+       option longpress	3000    # this button has a long press option. 
+
+
+
 
 ###############################################################################
 #
