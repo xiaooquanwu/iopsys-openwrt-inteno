@@ -15,6 +15,7 @@ config board 'board'
 	option ethernetWanPort 'eth0'
 	option adslWanPort ''
 	option vdslWanPort ''
+#	option lednames 'Status Internet Wireless WPS DECT WAN'
 	option lednames 'Status Internet Wireless WPS DECT WAN'
 	option buttonnames 'RESET Wireless WPS DECT TOUCH_NEAR TOUCH_FAR'
 	option wpsButtonGpio '0'
@@ -170,22 +171,29 @@ config sim_led sim_led_C
 config led_map led_map
 
 config led_map wifi_ok
-       list led_action sim_led_A=ON
-       list led_action sim_led_C=OFF	
-
+			list led_action sim_led_A=ON
+			list led_action sim_led_C=OFF	
 config led_map wifi_off
-       list led_action sim_led_A=OFF
-       list led_action sim_led_C=OFF
-
+			list led_action sim_led_A=OFF
+			list led_action sim_led_C=OFF
 config led_map wifi_notice
-       list led_action sim_led_A=OFF
-       list led_action sim_led_C=ON
-
+			list led_action sim_led_A=OFF
+			list led_action sim_led_C=ON
 config led_map wifi_alert
-       list led_action sim_led_A=OFF
-       list led_action sim_led_C=ON
-
+			list led_action sim_led_A=OFF
+			list led_action sim_led_C=ON
 config led_map wifi_error
-       list led_action sim_led_A=OFF
-       list led_action sim_led_C=FLASH_FAST
+			list led_action sim_led_A=OFF
+			list led_action sim_led_C=FLASH_FAST
+
+config led_map wps_ok
+			list led_action sim_led_B=ON
+config led_map wps_off
+			list led_action sim_led_B=OFF
+config led_map wps_notice
+			list led_action sim_led_B=FLASH_SLOW
+config led_map wps_alert
+			list led_action sim_led_B=FLASH_FAST
+config led_map wps_error
+			list led_action sim_led_B=FLASH_FAST
 

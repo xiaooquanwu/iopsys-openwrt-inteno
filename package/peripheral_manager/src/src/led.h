@@ -6,10 +6,9 @@ typedef enum {
 	ON,
 	FLASH_SLOW,
 	FLASH_FAST,
-	BREADING_SLOW,
-	BREADING_FAST,
-	FADEIN,
-	FADEOUT,
+	BREADING,
+	FADEON,
+	FADEOFF,
 	LED_STATES_MAX,
 } led_state_t;
 
