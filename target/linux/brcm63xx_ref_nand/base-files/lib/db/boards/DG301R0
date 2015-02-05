@@ -15,8 +15,6 @@ config board 'board'
 	option ethernetWanPort 'eth0'
 	option adslWanPort 'atm0'
 	option vdslWanPort 'ptm0'
-	option lednames 'Ethernet Wireless Voice Broadband Status Internet DECT TV WPS WAN'
-	option buttonnames 'RESET DECT WPS INFO ECO'
 	option wpsButtonGpio '22'
 	option fxsRelayGpio '8'
 	option hasBrcmAvs '0'
@@ -37,94 +35,271 @@ config wifi-chip '43bc'
         option is_ac '1'
 	option radarthrs '0x6aa 0x30 0x6a8 0x30 0x69c 0x30 0x6aa 0x30 0x6aa 0x30 0x6a2 0x30'
 
-config buttons 'buttons'
-	option RESET 'gpio 32 al resetbutton Ethernet_green'
-	option DECT 'gpio 20 al dectbutton Wireless_green'
-	option WPS 'gpio 22 al wpsbutton Voice_green'
-	option INFO 'gpio 37 al infobutton Broadband_green'
-	option ECO 'gpio 36 al ecobutton Status_blue'
+###############################################################################
+#
+#		Button config, start
+# 
 
-config leds 'leds'
-	option Ethernet_green 'csr 0 ah'
-	option Wireless_green 'csr 3 ah'
-	option Voice_green 'gpio 9 al'
-	option Broadband_green 'csr 6 ah'
-	option Status_blue 'csr 7 ah'
-	option Status_green 'gpio 39 al'
-	option Status_red 'gpio 38 al'
-	option Internet_green 'csr 5 ah'
-	option Internet_red 'csr 4 ah'
-	option DECT_red 'gpio 19 al'
-	option DECT_green 'gpio 15 al'
-	option TV_green 'gpio 35 al'
-	option WPS_green 'csr 2 ah'
-	option WPS_red 'csr 1 ah'
-	option WAN_yellow 'gpio 21 ah'
+############### gpio buttons, driver config
+config gpio_button gpio_buttons
+       list buttons gpio_reset
+       list buttons gpio_dect
+       list buttons gpio_wps
+       list buttons gpio_info
+       list buttons gpio_eco
 
-config led_map 'led_map'
-	option dsl_ok 'Broadband_green=ON'
-	option dsl_off 'Broadband_green=OFF'
-	option dsl_notice 'Broadband_green=BLINK_SLOW'
-	option dsl_alert 'Broadband_green=BLINK_SLOW'
-	option dsl_error 'Broadband_green=BLINK_FAST'
-	option wifi_ok 'Wireless_green=ON'
-	option wifi_off 'Wireless_green=OFF'
-	option wifi_notice 'Wireless_green=BLINK_SLOW'
-	option wifi_alert 'Wireless_green=BLINK_SLOW'
-	option wifi_error 'Wireless_green=BLINK_FAST'
-	option wps_ok 'WPS_green=ON WPS_red=OFF'
-	option wps_off 'WPS_green=OFF WPS_red=OFF'
-	option wps_notice 'WPS_green=BLINK_SLOW WPS_red=OFF'
-	option wps_alert 'WPS_green=OFF WPS_red=BLINK_SLOW'
-	option wps_error 'WPS_green=OFF WPS_red=BLINK_FAST'
-	option lan_ok 'Ethernet_green=ON'
-	option lan_off 'Ethernet_green=OFF'
-	option lan_notice 'Ethernet_green=BLINK_SLOW'
-	option lan_alert 'Ethernet_green=BLINK_SLOW'
-	option lan_error 'Ethernet_green=BLINK_FAST'
-	option status_ok 'Status_green=ON Status_red=OFF Status_blue=OFF'
-	option status_off 'Status_green=OFF Status_red=OFF Status_blue=OFF'
-	option status_notice 'Status_green=BLINK_SLOW Status_red=OFF Status_blue=OFF'
-	option status_alert 'Status_green=OFF Status_red=BLINK_SLOW Status_blue=OFF'
-	option status_error 'Status_green=OFF Status_red=BLINK_FAST Status_blue=OFF'
-	option dect_ok 'DECT_green=ON DECT_red=OFF'
-	option dect_off 'DECT_green=OFF DECT_red=OFF'
-	option dect_notice 'DECT_green=BLINK_SLOW DECT_red=OFF'
-	option dect_alert 'DECT_green=OFF DECT_red=BLINK_SLOW'
-	option dect_error 'DECT_green=OFF DECT_red=BLINK_FAST'
-	option tv_ok 'TV_green=ON'
-	option tv_off 'TV_green=OFF'
-	option tv_notice 'TV_green=BLINK_SLOW'
-	option tv_alert 'TV_green=BLINK_SLOW'
-	option tv_error 'TV_green=BLINK_FAST'
-	option usb_ok ''
-	option usb_off ''
-	option usb_notice ''
-	option usb_alert ''
-	option usb_error ''
-	option wan_ok ''
-	option wan_off 'WAN_yellow=OFF'
-	option wan_notice ''
-	option wan_alert 'WAN_yellow=ON'
-	option wan_error ''
-	option internet_ok 'Internet_green=ON Internet_red=OFF'
-	option internet_off 'Internet_green=OFF Internet_red=OFF'
-	option internet_notice 'Internet_green=BLINK_SLOW Internet_red=OFF'
-	option internet_alert 'Internet_green=OFF Internet_red=BLINK_SLOW'
-	option internet_error 'Internet_green=OFF Internet_red=ON'
-	option voice1_ok 'Voice_green=ON'
-	option voice1_off 'Voice_green=OFF'
-	option voice1_notice 'Voice_green=BLINK_SLOW'
-	option voice1_alert 'Voice_green=BLINK_SLOW'
-	option voice1_error 'Voice_green=BLINK_FAST'
-	option voice2_ok ''
-	option voice2_off ''
-	option voice2_notice ''
-	option voice2_alert ''
-	option voice2_error ''
-	option eco_ok 'Status_blue=ON'
-	option eco_off 'Status_blue=OFF'
-	option eco_notice 'Status_blue=BLINK_SLOW'
-	option eco_alert 'Status_blue=BLINK_SLOW'
-	option eco_error 'Status_blue=BLINK_FAST'
+config gpio_button gpio_reset
+       option addr 32
+       option active low
 
+config gpio_button gpio_dect
+       option addr 20
+       option active low
+
+config gpio_button gpio_wps
+       option addr 22
+       option active low
+
+config gpio_button gpio_info
+       option addr 37
+       option active low
+
+config gpio_button gpio_eco
+       option addr 36
+       option active low
+
+############### function buttons used on board.
+config button_map button_map
+	list buttonnames RESET
+	list buttonnames DECT
+	list buttonnames WPS
+	list buttonnames INFO
+	list buttonnames ECO
+	option minpress 100
+
+############### mapping function button to driver button
+config button_map RESET
+       list button gpio_reset
+       option minpress 5000
+       option hotplug resetbutton
+
+config button_map DECT
+       list button gpio_dect
+       option hotplug dectbutton
+
+config button_map WPS
+       list button gpio_wps
+       option hotplug wpsbutton
+
+config button_map INFO
+       list button gpio_info
+       option hotplug infobutton
+
+config button_map ECO
+       list button gpio_eco
+       option hotplug ecobutton
+
+#
+#		Button config , end
+#
+###############################################################################
+
+###############################################################################
+#
+#		Led config, start
+#
+
+############### gpio led, driver config
+config gpio_led gpio_leds
+        list leds Ethernet_green
+        list leds Wireless_green
+	list leds Voice_green
+	list leds Broadband_green
+	list leds Status_blue
+	list leds Status_green
+	list leds Status_red
+	list leds Internet_green
+	list leds Internet_red
+	list leds DECT_red
+	list leds DECT_green
+	list leds TV_green
+	list leds WPS_green
+	list leds WPS_red
+	list leds WAN_yellow
+
+config gpio_led Ethernet_green
+       option addr     0
+       option active   hi
+       option mode     csr
+
+config gpio_led Wireless_green
+       option addr     3
+       option active   hi
+       option mode     csr
+
+config gpio_led Voice_green
+       option addr     9
+       option active   low
+       option mode     direct
+
+config gpio_led Broadband_green
+       option addr     6
+       option active   hi
+       option mode     csr
+
+config gpio_led Status_blue
+       option addr     7
+       option active   hi
+       option mode     csr
+
+config gpio_led Status_green
+       option addr     39
+       option active   low
+       option mode     direct
+
+config gpio_led Status_red
+       option addr     38
+       option active   low
+       option mode     direct
+
+config gpio_led Internet_green
+       option addr     5
+       option active   hi
+       option mode     csr
+
+config gpio_led Internet_red
+       option addr     4
+       option active   hi
+       option mode     csr
+
+config gpio_led DECT_red
+       option addr     19
+       option active   low
+       option mode     direct
+
+config gpio_led DECT_green
+       option addr     15
+       option active   low
+       option mode     direct
+
+config gpio_led TV_green
+       option addr     35
+       option active   low
+       option mode     direct
+
+config gpio_led WPS_green
+       option addr     2
+       option active   hi
+       option mode     csr
+
+config gpio_led WPS_red
+       option addr     1
+       option active   hi
+       option mode     csr
+
+config gpio_led WAN_yellow
+       option addr     21
+       option active   hi
+       option mode     direct
+
+############### mapping led function to driver led
+
+config led_map led_dsl
+       list led_action_ok     Broadband_green=ON
+       list led_action_off    Broadband_green=OFF
+       list led_action_notice Broadband_green=FLASH_SLOW
+       list led_action_alert  Broadband_green=FLASH_SLOW
+       list led_action_error  Broadband_green=FLASH_FAST
+
+config led_map led_wifi
+       list led_action_ok     Wireless_green=ON
+       list led_action_off    Wireless_green=OFF
+       list led_action_notice Wireless_green=FLASH_SLOW
+       list led_action_alert  Wireless_green=FLASH_SLOW
+       list led_action_error  Wireless_green=FLASH_FAST
+
+config led_map led_wps
+       list led_action_ok     'WPS_green = ON'
+       list led_action_ok     'WPS_red   = OFF'
+       list led_action_off    'WPS_green = OFF'
+       list led_action_off    'WPS_red   = OFF'
+       list led_action_notice 'WPS_green = FLASH_SLOW'
+       list led_action_notice 'WPS_red   = OFF'
+       list led_action_alert  'WPS_green = OFF'
+       list led_action_alert  'WPS_red   = FLASH_SLOW'
+       list led_action_error  'WPS_green = OFF'
+       list led_action_error  'WPS_red   = FLASH_FAST'
+
+config led_map led_lan
+       list led_action_ok     Ethernet_green=ON
+       list led_action_off    Ethernet_green=OFF
+       list led_action_notice Ethernet_green=FLASH_SLOW
+       list led_action_alert  Ethernet_green=FLASH_SLOW
+       list led_action_error  Ethernet_green=FLASH_FAST
+
+config led_map led_status
+       list led_action_ok     'Status_green = ON'
+       list led_action_ok     'Status_red   = OFF'
+       list led_action_ok     'Status_blue  = OFF'
+
+       list led_action_off    'Status_green = OFF'
+       list led_action_off    'Status_red   = OFF'
+       list led_action_off    'Status_blue  = OFF'
+
+       list led_action_notice 'Status_green = FLASH_SLOW'
+       list led_action_notice 'Status_red   = OFF'
+       list led_action_notice 'Status_blue  = OFF'
+
+       list led_action_alert  'Status_green = OFF'
+       list led_action_alert  'Status_red   = FLASH_SLOW'
+       list led_action_alert  'Status_blue  = OFF'
+
+       list led_action_error  'Status_green = OFF'
+       list led_action_error  'Status_red   = FLASH_FAST'
+       list led_action_error  'Status_blue  = OFF'
+
+config led_map led_tv
+       list led_action_ok     TV_green=ON
+       list led_action_off    TV_green=OFF
+       list led_action_notice TV_green=FLASH_SLOW
+       list led_action_alert  TV_green=FLASH_SLOW
+       list led_action_error  TV_green=FLASH_FAST
+
+config led_map led_wan
+       list led_action_off    WAN_yellow=OFF
+       list led_action_alert  WAN_yellow=ON
+
+config led_map led_internet
+       list led_action_ok     'Internet_green = ON'
+       list led_action_ok     'Internet_red   = OFF'
+
+       list led_action_off    'Internet_green = OFF'
+       list led_action_off    'Internet_red   = OFF'
+
+       list led_action_notice 'Internet_green = FLASH_SLOW'
+       list led_action_notice 'Internet_red   = OFF'
+
+       list led_action_alert  'Internet_green = OFF'
+       list led_action_alert  'Internet_red   = FLASH_SLOW'
+
+       list led_action_error  'Internet_green = OFF'
+       list led_action_error  'Internet_red   = ON'
+
+config led_map led_voice1
+       list led_action_ok     Voice_green=ON
+       list led_action_off    Voice_green=OFF
+       list led_action_notice Voice_green=FLASH_SLOW
+       list led_action_alert  Voice_green=FLASH_SLOW
+       list led_action_error  Voice_green=FLASH_FAST
+
+config led_map led_eco
+       list led_action_ok     Status_blue=ON
+       list led_action_off    Status_blue=OFF
+       list led_action_notice Status_blue=FLASH_SLOW
+       list led_action_alert  Status_blue=FLASH_SLOW
+       list led_action_error  Status_blue=FLASH_FAST
+
+#
+#		Led config , end
+#
+###############################################################################
