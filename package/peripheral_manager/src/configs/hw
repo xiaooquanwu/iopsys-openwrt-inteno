@@ -176,21 +176,21 @@ config button_map button_map
 	list buttonnames TOUCH_FAR
 	option minpress 100	# default minimum time a button nedes to be pressed. 
 
-config button_map reset
+config button_map RESET
        list button sim_button_A # driver that is used for this button
        option minpress 5000	# don't allow button unless pressed for 5 seconds.
 
-config button_map wirless
+config button_map Wireless
        list button sim_button_B # driver that is used for this button
-       list button sim_button_C # we support user having to press two at the same time to register a button event.
+       list button sim_button_c # we support user having to press two at the same time to register a button event.
        option minpress 1000
 
 
 # long press example one or the other of touch_near or touch_far will trigger not booth.
-config button_map touch_near
+config button_map TOUCH_NEAR
        list button sim_button_d # driver that is used for this button
 
-config button_map touch_far
+config button_map TOUCH_FAR
        list button sim_button_d # driver that is used for this button
        option longpress	3000    # this button has a long press option. 
 
