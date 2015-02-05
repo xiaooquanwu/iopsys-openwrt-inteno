@@ -142,7 +142,7 @@ int main(int argc, char **argv)
 	}
 
 	/* open configuration file */
-	uci_ctx = ucix_init_path(config_path , config_file);
+	uci_ctx = ucix_init_path(config_path , config_file, 0 );
 	if (! uci_ctx ) {
 		syslog(LOG_ERR,"Failed to load config file \"%s/%s\"\n", config_path, config_file);
 		exit(1);

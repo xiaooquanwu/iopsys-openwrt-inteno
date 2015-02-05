@@ -1,21 +1,24 @@
 #ifndef LED_H
 
 typedef enum {
-    OFF,
-    ON,
-    FLASH_SLOW,
-    FLASH_FAST,
-    BREADING_SLOW,
-    BREADING_FAST,
-    LED_STATES_MAX,
+	OFF,
+	ON,
+	FLASH_SLOW,
+	FLASH_FAST,
+	BREADING_SLOW,
+	BREADING_FAST,
+	FADEIN,
+	FADEOUT,
+	LED_STATES_MAX,
 } led_state_t;
 
 typedef enum {
-    RED,
-    GREEN,
-    BLUE,
-    YELLOW,
-    WHITE,
+	NONE,
+	RED,
+	GREEN,
+	BLUE,
+	YELLOW,
+	WHITE,
 } led_color_t;
 
 struct led_drv;
