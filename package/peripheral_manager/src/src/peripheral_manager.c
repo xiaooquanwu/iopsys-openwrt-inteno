@@ -14,6 +14,8 @@
 #include <libubox/uloop.h>
 #include <libubus.h>
 
+#include "server.h"
+
 int debug_level = 0;
 
 static const char *config_path = "/lib/db/config";
@@ -139,25 +141,28 @@ int main(int argc, char **argv)
 		//close(STDERR_FILENO);
 	}
 
+	/* open configuration file */
 	uci_ctx = ucix_init_path(config_path , config_file);
 	if (! uci_ctx ) {
 		syslog(LOG_ERR,"Failed to load config file \"%s/%s\"\n", config_path, config_file);
 		exit(1);
 	}
 
-	if (uloop_init() != 0) {
-		syslog(LOG_ERR,"Could not init event loop, Can't continue.\n");
-		exit(EXIT_FAILURE);
-	}
-
+	/* connect to ubus */
 	ubus_ctx = ubus_connect(ubus_socket);
-
 	if (!ubus_ctx) {
 		syslog(LOG_ERR,"Failed to connect to ubus. Can't continue.\n");
 		exit(EXIT_FAILURE);
 	}
 
+	/* connect ubus handler to ubox evenet loop */
+	if (uloop_init() != 0) {
+		syslog(LOG_ERR,"Could not init event loop, Can't continue.\n");
+		exit(EXIT_FAILURE);
+	}
 	ubus_add_uloop(ubus_ctx);
+
+	server_start(uci_ctx, ubus_ctx);
 
 	ubus_free(ubus_ctx);
 

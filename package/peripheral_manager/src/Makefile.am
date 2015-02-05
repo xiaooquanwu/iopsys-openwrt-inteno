@@ -7,7 +7,12 @@ bin_PROGRAMS = peripheral_manager
 peripheral_manager_SOURCES = \
 	src/peripheral_manager.c \
 	src/ucix.c \
-	src/ucix.h
+	src/ucix.h \
+	src/server.c \
+	src/server.h \
+	src/led.c \
+	src/led.h \
+	src/sim_led.c
 
 peripheral_manager_LDADD = $(UCI_LIB) $(UBOX_LIB) $(UBUS_LIB)
 
