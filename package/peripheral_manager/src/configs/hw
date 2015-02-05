@@ -134,7 +134,9 @@ config leds 'leds'
 config sim_button sim_buttons
        list buttons sim_button_A
        list buttons sim_button_B
-       list buttons sim_button_C
+       list buttons sim_button_c
+       list buttons sim_button_d
+       list buttons sim_button_e
 
 config sim_button sim_button_A
        option addr 10
@@ -164,10 +166,12 @@ config sim_button sim_button_e
 # if 
 #
 # this is a list of all button names. perifmanger will read this list then read out the specific button config
+
 config button_map button_map
 	list buttonnames RESET
 	list buttonnames Wireless
-	list buttonnames WPS DECT
+	list buttonnames WPS
+	list buttonnames DECT
 	list buttonnames TOUCH_NEAR
 	list buttonnames TOUCH_FAR
 	option minpress 100	# default minimum time a button nedes to be pressed. 

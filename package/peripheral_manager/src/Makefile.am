@@ -13,7 +13,10 @@ peripheral_manager_SOURCES = \
 	src/server.h \
 	src/led.c \
 	src/led.h \
-	src/sim_led.c
+	src/sim_led.c \
+	src/button.h \
+	src/button.c \
+	src/sim_button.c
 
 peripheral_manager_LDADD = $(UCI_LIB) $(UBOX_LIB) $(UBUS_LIB)
 
