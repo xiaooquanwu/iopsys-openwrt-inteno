@@ -37,13 +37,13 @@ static LIST_HEAD(drv_buttons_list);
 static LIST_HEAD(buttons);
 
 static struct button_drv *get_drv_button(char *name);
-static struct function_button *get_button(char *name);
+//static struct function_button *get_button(char *name);
 
 void button_add( struct button_drv *drv)
 {
 	struct drv_button_list *drv_node = malloc(sizeof(struct drv_button_list));
 
-	DBG(1,"called with led name [%s]\n", drv->name);
+	DBG(1,"called with led name [%s]", drv->name);
 	drv_node->drv = drv;
 
 	list_add(&drv_node->list, &drv_buttons_list);
@@ -60,6 +60,7 @@ static struct button_drv *get_drv_button(char *name)
         return NULL;
 }
 
+#if 0
 static struct function_button *get_button(char *name)
 {
 	struct list_head *i;
@@ -70,13 +71,14 @@ static struct function_button *get_button(char *name)
 	}
         return NULL;
 }
+#endif
 
 static void dump_drv_list(void)
 {
 	struct list_head *i;
 	list_for_each(i, &drv_buttons_list) {
 		struct drv_button_list *node = list_entry(i, struct drv_button_list, list);
-		DBG(1,"button name = [%s]\n",node->drv->name);
+		DBG(1,"button name = [%s]",node->drv->name);
 	}
 }
 
@@ -91,10 +93,10 @@ static void dump_buttons_list(void)
                         list_for_each(j, &node->drv_list) {
                                 struct button_drv_list *drv_node = list_entry(j, struct button_drv_list, list);
                                 if(drv_node->drv != NULL)
-                                        DBG(1,"%13s drv button name = [%s]\n","",drv_node->drv->name);
+                                        DBG(1,"%13s drv button name = [%s]","",drv_node->drv->name);
                         }
-                        DBG(1,"%13s minpress = %d\n","",node->minpress);
-                        DBG(1,"%13s longpress = %d\n","",node->longpress);
+                        DBG(1,"%13s minpress = %d","",node->minpress);
+                        DBG(1,"%13s longpress = %d","",node->longpress);
                 }
 	}
 }
@@ -171,17 +173,17 @@ static void button_handler(struct uloop_timeout *timeout)
                                 if (st == PRESSED ) {
                                         if (! timer_started(drv_node)) {
                                                 timer_start(drv_node);
-                                                DBG(1, " %s pressed\n", drv_node->drv->name);
+                                                DBG(1, " %s pressed", drv_node->drv->name);
                                         }
                                 }
 
                                 if (st == RELEASED ) {
                                         if (timer_started(drv_node)) {
-                                                DBG(1, " %s released\n", drv_node->drv->name);
+                                                DBG(1, " %s released", drv_node->drv->name);
 
                                                 if ( timer_valid(drv_node, node->minpress, node->longpress) ) {
                                                         char str[512];
-                                                        DBG(1, "send key %s [%s]to system\n", node->name, node->hotplug);
+                                                        DBG(1, "send key %s [%s]to system", node->name, node->hotplug);
                                                         snprintf(str,
                                                                  512,
                                                                  "ACTION=register INTERFACE=%s /sbin/hotplug-call button &",
@@ -189,12 +191,12 @@ static void button_handler(struct uloop_timeout *timeout)
                                                         system(str);
                                                         syslog(LOG_INFO, "%s",str);
                                                 } else {
-//                                                DBG(1, " %s not valid\n", drv_node->drv->name);
+//                                                DBG(1, " %s not valid", drv_node->drv->name);
                                                 }
                                         }
                                         timer_stop(drv_node);
                                 }
-//                                DBG(1, " %s state = %d\n", drv_node->drv->name,st);
+//                                DBG(1, " %s state = %d", drv_node->drv->name,st);
                         }
                 }
         }
@@ -238,8 +240,8 @@ static void longpress_find(void) {
                         struct button_drv_list *drv_node = list_entry(j, struct button_drv_list, list);
                         if(drv_node->drv != NULL){
                                 if (node->longpress > 0) {
-                                        DBG(1,"%13s drv button name = [%s]\n","",drv_node->drv->name);
-                                        DBG(1,"%13s longpress = %d\n","",node->longpress);
+                                        DBG(1,"%13s drv button name = [%s]","",drv_node->drv->name);
+                                        DBG(1,"%13s longpress = %d","",node->longpress);
                                         longpress_set(node->longpress * -1, drv_node->drv);
                                 }
                         }
@@ -256,7 +258,7 @@ void button_init( struct server_ctx *s_ctx)
 
         /* read out default global options */
         s = ucix_get_option(s_ctx->uci_ctx, "hw" , "button_map", "minpress");
-        DBG(1, "default minpress = [%s]\n", s);
+        DBG(1, "default minpress = [%s]", s);
         if (s){
                 default_minpress =  strtol(s,0,0);
         }
@@ -266,7 +268,7 @@ void button_init( struct server_ctx *s_ctx)
 	list_for_each_entry(node, &buttonnames, list) {
                 struct function_button *function;
 
-//                DBG(1, "value = [%s]\n",node->val);
+//                DBG(1, "value = [%s]",node->val);
 
 		function = malloc(sizeof(struct function_button));
 		memset(function,0,sizeof(struct function_button));
@@ -274,7 +276,7 @@ void button_init( struct server_ctx *s_ctx)
 
                 /* read out minpress */
                 s = ucix_get_option(s_ctx->uci_ctx, "hw" , function->name, "minpress");
-                DBG(1, "minpress = [%s]\n", s);
+                DBG(1, "minpress = [%s]", s);
                 if (s){
                         function->minpress =  strtol(s,0,0);
                 }else
@@ -282,14 +284,14 @@ void button_init( struct server_ctx *s_ctx)
 
                 /* read out long_press */
                 s = ucix_get_option(s_ctx->uci_ctx, "hw" , function->name, "longpress");
-                DBG(1, "longpress = [%s]\n", s);
+                DBG(1, "longpress = [%s]", s);
                 if (s){
                         function->longpress =  strtol(s,0,0);
                 }
 
                 /* read out hotplug option */
                 s = ucix_get_option(s_ctx->uci_ctx, "hw" , function->name, "hotplug");
-                DBG(1, "hotplug = [%s]\n", s);
+                DBG(1, "hotplug = [%s]", s);
                 if (s){
                         function->hotplug = s;
                 }
@@ -308,7 +310,7 @@ void button_init( struct server_ctx *s_ctx)
                                 struct button_drv_list *new_button;
 
                                 num++;
-                                DBG(1,"function %s -> drv button %s\n", function->name, drv_node->val);
+                                DBG(1,"function %s -> drv button %s", function->name, drv_node->val);
 
                                 new_button = malloc(sizeof(struct button_drv_list));
                                 memset(new_button,0,sizeof(struct button_drv_list));
@@ -316,7 +318,7 @@ void button_init( struct server_ctx *s_ctx)
                                 new_button->drv = get_drv_button(drv_node->val);
 
                                 if(new_button->drv == NULL){
-                                        syslog(LOG_WARNING, "%s wanted drv button [%s] but it can't be found. check spelling.\n",
+                                        syslog(LOG_WARNING, "%s wanted drv button [%s] but it can't be found. check spelling.",
                                                function->name,
                                                drv_node->val);
                                 }
@@ -324,7 +326,7 @@ void button_init( struct server_ctx *s_ctx)
                                 list_add( &new_button->list, &function->drv_list);
                         }
                         if (num == 0 )
-                                syslog(LOG_WARNING, "Function  %s did not have any mapping to a driver button\n", function->name);
+                                syslog(LOG_WARNING, "Function  %s did not have any mapping to a driver button", function->name);
                 }
 
                 list_add(&function->list, &buttons);

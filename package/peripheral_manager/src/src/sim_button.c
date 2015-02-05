@@ -21,7 +21,7 @@ struct drv_button_list{
 
 static button_state_t sim_get_state(struct button_drv *drv)
 {
-//	DBG(1, "state for %s\n",  drv->name);
+//	DBG(1, "state for %s",  drv->name);
 	struct sim_data *p = (struct sim_data *)drv->priv;
 
 	return p->state;
@@ -61,7 +61,7 @@ static int sim_set_method(struct ubus_context *ubus_ctx, struct ubus_object *obj
                           struct blob_attr *msg)
 {
 	struct blob_attr *tb[__SIM_MAX];
-	DBG(1, "\n");
+	DBG(1, "");
 
 	blobmsg_parse(sim_policy, ARRAY_SIZE(sim_policy), tb, blob_data(msg), blob_len(msg));
 
@@ -94,7 +94,7 @@ static int sim_status_method(struct ubus_context *ubus_ctx, struct ubus_object *
 	static struct blob_buf blob;
 	struct list_head *i;
 
-	DBG(1, "\n");
+	DBG(1, "");
 
 	blob_buf_init(&blob, 0);
 
@@ -138,14 +138,14 @@ void sim_button_init(struct server_ctx *s_ctx) {
 	struct ucilist *node;
 	LIST_HEAD(buttons);
 
-	DBG(1, "\n");
+	DBG(1, "");
 
 	ucix_get_option_list(s_ctx->uci_ctx, "hw" ,"sim_buttons", "buttons", &buttons);
 	list_for_each_entry(node, &buttons, list) {
 		struct sim_data *data;
 		const char *s;
 
-		DBG(1, "value = [%s]\n",node->val);
+		DBG(1, "value = [%s]",node->val);
 
 		data = malloc(sizeof(struct sim_data));
 		memset(data,0,sizeof(struct sim_data));
@@ -153,7 +153,7 @@ void sim_button_init(struct server_ctx *s_ctx) {
 		data->button.name = node->val;
 
 		s = ucix_get_option(s_ctx->uci_ctx, "hw" , data->button.name, "addr");
-		DBG(1, "addr = [%s]\n", s);
+		DBG(1, "addr = [%s]", s);
 		if (s){
 			data->addr =  strtol(s,0,0);
 		}
@@ -167,7 +167,7 @@ void sim_button_init(struct server_ctx *s_ctx) {
 				data->active =  0;
 
 		}
-		DBG(1, "active = %d\n", data->active);
+		DBG(1, "active = %d", data->active);
 
 		data->button.func = &func;
 		data->button.priv = data;
@@ -185,6 +185,6 @@ void sim_button_init(struct server_ctx *s_ctx) {
 	for (i=0 ; i<SIM_OBJECTS ; i++) {
 		ret = ubus_add_object(s_ctx->ubus_ctx, &sim_objects[i]);
 		if (ret)
-			DBG(1,"Failed to add object: %s\n", ubus_strerror(ret));
+			DBG(1,"Failed to add object: %s", ubus_strerror(ret));
 	}
 }

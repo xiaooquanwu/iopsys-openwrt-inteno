@@ -16,8 +16,14 @@ peripheral_manager_SOURCES = \
 	src/sim_led.c \
 	src/button.h \
 	src/button.c \
-	src/sim_button.c
+	src/sim_button.c \
+	src/catv.c \
+	src/catv.h \
+	src/smbus.c \
+	src/smbus.h \
+	src/i2c.c \
+	src/i2c.h
 
-peripheral_manager_LDADD = $(UCI_LIB) $(UBOX_LIB) $(UBUS_LIB)
+peripheral_manager_LDADD = $(UCI_LIB) $(UBOX_LIB) $(UBUS_LIB) -lm
 
 peripheral_manager_CFLAGS =  $(AM_CFLAGS) -DPRG_VERSION=\"$(PRG_VERSION)\"

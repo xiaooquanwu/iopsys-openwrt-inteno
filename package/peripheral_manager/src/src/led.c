@@ -99,7 +99,7 @@ void led_add( struct led_drv *drv)
 {
 	struct drv_led_list *drv_node = malloc(sizeof(struct drv_led_list));
 
-	DBG(1,"called with led name [%s]\n", drv->name);
+	DBG(1,"called with led name [%s]", drv->name);
 	drv_node->drv = drv;
 
 	list_add(&drv_node->list, &drv_leds_list);
@@ -107,7 +107,7 @@ void led_add( struct led_drv *drv)
 
 static void all_leds(led_state_t state) {
 	struct drv_led_list *node;
-	DBG(1, "set to state %d\n",state);
+	DBG(1, "set to state %d",state);
 
 	list_for_each_entry(node, &drv_leds_list, list) {
 		node->drv->func->set_state( node->drv, state);
@@ -132,7 +132,7 @@ static void test_handler(struct uloop_timeout *timeout) {
 	static led_state_t state = OFF;
 
 	static struct drv_led_list *led;
-	DBG(1,"cnt = %d state %d\n",cnt,state);
+	DBG(1,"cnt = %d state %d",cnt,state);
 
 	/* flash all leads 2 times.*/
 	if ( cnt < 4) {
@@ -202,7 +202,7 @@ static void dump_drv_list(void)
 	struct list_head *i;
 	list_for_each(i, &drv_leds_list) {
 		struct drv_led_list *node = list_entry(i, struct drv_led_list, list);
-		DBG(1,"led name = [%s]\n",node->drv->name);
+		DBG(1,"led name = [%s]",node->drv->name);
 	}
 }
 
@@ -215,7 +215,7 @@ static void dump_led(void)
 			if ( leds[i].actions[j].name != NULL ) {
 				struct led *led;
 				list_for_each_entry(led, &leds[i].actions[j].led_list, list) {
-					DBG(2,"%-15s %-8s %-15s %-10s\n",
+					DBG(2,"%-15s %-8s %-15s %-10s",
 					    leds[i].name,
 					    leds[i].actions[j].name,
 					    led->drv->name,
@@ -227,11 +227,11 @@ static void set_function_led(const char* fn_name, const char* action) {
 	int act_idx = get_index_by_name(fn_actions   , LED_ACTION_MAX, action );
 
 	if(led_idx == -1) {
-		syslog(LOG_WARNING, "called over ubus with non valid led name [%s]\n", fn_name);
+		syslog(LOG_WARNING, "called over ubus with non valid led name [%s]", fn_name);
 		return;
 	}
 	if(act_idx == -1) {
-		syslog(LOG_WARNING, "called over ubus with non valid action [%s] for led [%s]\n", action, fn_name);
+		syslog(LOG_WARNING, "called over ubus with non valid action [%s] for led [%s]", action, fn_name);
 		return;
 	}
 
@@ -245,7 +245,7 @@ static void set_function_led(const char* fn_name, const char* action) {
 			}
 		}
 	}
-	syslog(LOG_WARNING, "led set on [%s] has no valid [%s] handler registered.\n", fn_name, action);
+	syslog(LOG_WARNING, "led set on [%s] has no valid [%s] handler registered.", fn_name, action);
 }
 
 enum {
@@ -264,7 +264,7 @@ static int led_set_method(struct ubus_context *ubus_ctx, struct ubus_object *obj
 	struct blob_attr *tb[__LED_MAX];
 	char* state;
 
-	DBG(1,"led_set_method (%s)\n",method);
+	DBG(1,"led_set_method (%s)",method);
 
 	blobmsg_parse(led_policy, ARRAY_SIZE(led_policy), tb, blob_data(msg), blob_len(msg));
 
@@ -284,7 +284,7 @@ static int led_status_method(struct ubus_context *ubus_ctx, struct ubus_object *
 {
 	char *fn_name = strchr(obj->name, '.') + 1;
 	int led_idx = get_index_by_name(led_functions, LED_FUNCTIONS , fn_name);
-	DBG(1,"for led %s\n",leds[led_idx].name);
+	DBG(1,"for led %s",leds[led_idx].name);
 
 	blob_buf_init (&bblob, 0);
 	blobmsg_add_string(&bblob, "state",fn_actions[leds[led_idx].state]);
@@ -298,7 +298,7 @@ static int leds_set_method(struct ubus_context *ubus_ctx, struct ubus_object *ob
                            struct blob_attr *msg)
 {
 	struct blob_attr *tb[__LED_MAX];
-	DBG(1,"\n");
+	DBG(1,"");
 
 	blobmsg_parse(led_policy, ARRAY_SIZE(led_policy), tb, blob_data(msg), blob_len(msg));
 
@@ -310,7 +310,7 @@ static int leds_set_method(struct ubus_context *ubus_ctx, struct ubus_object *ob
 		state_idx = get_index_by_name(leds_states, LEDS_MAX , state);
 
 		if (state_idx == -1) {
-			syslog(LOG_WARNING, "leds_set_method: Unknown state %s.\n", state);
+			syslog(LOG_WARNING, "leds_set_method: Unknown state %s.", state);
 			return 0;
 		}
 
@@ -337,7 +337,7 @@ static int leds_set_method(struct ubus_context *ubus_ctx, struct ubus_object *ob
 			all_leds_off();
 		}
 	}else
-		syslog(LOG_WARNING, "leds_set_method: Unknown attribute.\n");
+		syslog(LOG_WARNING, "leds_set_method: Unknown attribute.");
 
 	return 0;
 }
@@ -346,7 +346,7 @@ static int leds_status_method(struct ubus_context *ubus_ctx, struct ubus_object 
                               struct ubus_request_data *req, const char *method,
                               struct blob_attr *msg)
 {
-	DBG(1,"\n");
+	DBG(1,"");
 
 	blob_buf_init (&bblob, 0);
 //	blobmsg_add_string(&bblob, "state", leds_states[led_cfg->leds_state]);
@@ -433,7 +433,7 @@ void led_init( struct server_ctx *s_ctx)
 {
 	int i,j,ret;
 //	char *led_names;
-	DBG(1,"\n");
+	DBG(1,"");
 
 	/* map */
 
@@ -443,7 +443,7 @@ void led_init( struct server_ctx *s_ctx)
 	for (i=0 ; i<LED_OBJECTS ; i++) {
 		ret = ubus_add_object(s_ctx->ubus_ctx, &led_objects[i]);
 		if (ret)
-			DBG(1,"Failed to add object: %s\n", ubus_strerror(ret));
+			DBG(1,"Failed to add object: %s", ubus_strerror(ret));
 	}
 
 	/* we create a top list of led functions */
@@ -474,7 +474,7 @@ void led_init( struct server_ctx *s_ctx)
 				leds[i].actions[j].name    = fn_actions[j];
 
 				/* fill in led actions */
-				DBG(1,"%-15s has led actions -> \n",fn_name_action);
+				DBG(1,"%-15s has led actions -> ",fn_name_action);
 				list_for_each_entry(node, &led_action_list, list) {
 					char led_name[256],led_state[256];
 					struct led *led;
@@ -490,9 +490,9 @@ void led_init( struct server_ctx *s_ctx)
 						led->state = get_index_by_name(led_states, LED_STATES_MAX, led_state);
 						list_add(&led->list, &leds[i].actions[j].led_list);
 					}else {
-						syslog(LOG_ERR,"Config specified use of led name [%s]. But it's not registerd with a led driver.\n", led_name);
+						syslog(LOG_ERR,"Config specified use of led name [%s]. But it's not registerd with a led driver.", led_name);
 					}
-					DBG(1, "%-35s%s\n","",node->val);
+					DBG(1, "%-35s%s","",node->val);
 				}
 
 				/* fill in button actions */
