@@ -6,35 +6,35 @@
 
 void sim_led_init(struct server_ctx *s_ctx);
 
-static int set_state(struct led_drv *drv, led_state_t state)
+static int sim_set_state(struct led_drv *drv, led_state_t state)
 {
-	DBG(1, "state [%x]\n", state);
+	DBG(1, "state %x on %s\n", state, drv->name);
 	return 0;
 }
 
-static led_state_t get_state(struct led_drv *drv)
+static led_state_t sim_get_state(struct led_drv *drv)
 {
-	DBG(1, "\n");
+	DBG(1, "state for %s\n",  drv->name);
 	return 0;
 }
 
-static int set_color(struct led_drv *drv, led_color_t color)
+static int sim_set_color(struct led_drv *drv, led_color_t color)
 {
-	DBG(1, "color [%d]\n", color);
+	DBG(1, "color %d on %s\n", color, drv->name);
 	return 0;
 }
 
-static led_color_t get_color(struct led_drv *drv)
+static led_color_t sim_get_color(struct led_drv *drv)
 {
-	DBG(1, "\n");
+	DBG(1, "color for %s\n", drv->name);
 	return 0;
 }
 
 static struct led_drv_func func = {
-	.set_state = set_state,
-	.get_state = get_state,
-	.set_color = set_color,
-	.get_color = get_color,
+	.set_state = sim_set_state,
+	.get_state = sim_get_state,
+	.set_color = sim_set_color,
+	.get_color = sim_get_color,
 };
 
 struct sim_data {

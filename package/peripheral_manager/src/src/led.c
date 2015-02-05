@@ -73,8 +73,8 @@ struct function_led leds[LED_FUNCTIONS];
 
 int get_index_by_name(const char *const*array, int max, const char *name);
 struct led_drv *get_drv_led(char *name);
-void dump_drv_list(void);
-void dump_led(void);
+static void dump_drv_list(void);
+static void dump_led(void);
 
 
 /* we find out the index for a match in an array of char pointers containing max number of pointers */
@@ -85,7 +85,7 @@ int get_index_by_name(const char *const*array, int max, const char *name)
 		if (!strcasecmp(name, array[i]))
 			return i;
 	}
-	return 0;
+	return -1;
 }
 
 /* PUT every led from drivers into a list */
@@ -117,7 +117,7 @@ struct led_drv *get_drv_led(char *name)
 	return NULL;
 }
 
-void dump_drv_list(void)
+static void dump_drv_list(void)
 {
 	struct list_head *i;
 	list_for_each(i, &drv_leds_list) {
@@ -126,7 +126,7 @@ void dump_drv_list(void)
 	}
 }
 
-void dump_led(void)
+static void dump_led(void)
 {
 	int i,j;
 
@@ -142,6 +142,30 @@ void dump_led(void)
 					    led_states[led->state]);
 }}}}}
 
+
+
+static void set_function_led(const char* fn_name, const char* action) {
+	int led_idx = get_index_by_name(led_functions, LED_FUNCTIONS , fn_name);
+	int act_idx = get_index_by_name(fn_actions   , LED_ACTION_MAX, action );
+
+	if(led_idx == -1) {
+		syslog(LOG_WARNING, "called over ubus with non valid led name [%s]\n", fn_name);
+		return;
+	}
+	if(act_idx == -1) {
+		syslog(LOG_WARNING, "called over ubus with non valid action [%s] for led [%s]\n", action, fn_name);
+		return;
+	}
+	if ( leds[led_idx].actions[act_idx].name != NULL ) {
+		struct led *led;
+		list_for_each_entry(led, &leds[led_idx].actions[act_idx].led_list, list) {
+			if (led->drv)
+				led->drv->func->set_state(led->drv, led->state);
+		}
+	}
+}
+
+
 enum {
 	LED_STATE,
 	__LED_MAX
@@ -155,7 +179,20 @@ static int led_set_method(struct ubus_context *ubus_ctx, struct ubus_object *obj
                           struct ubus_request_data *req, const char *method,
                           struct blob_attr *msg)
 {
+	struct blob_attr *tb[__LED_MAX];
+	char* state;
+
 	DBG(1,"led_set_method (%s)\n",method);
+
+	blobmsg_parse(led_policy, ARRAY_SIZE(led_policy), tb, blob_data(msg), blob_len(msg));
+
+	if (tb[LED_STATE]) {
+		char *fn_name = strchr(obj->name, '.') + 1;
+		state = blobmsg_data(tb[LED_STATE]);
+//    	fprintf(stderr, "Led %s method: %s state %s\n", fn_name, method, state);
+		syslog(LOG_INFO, "Led %s method: %s state %s", fn_name, method, state);
+		set_function_led(fn_name, state);
+	}
 
 	return 0;
 }
