@@ -480,9 +480,13 @@ void led_init( struct server_ctx *s_ctx)
 					char led_name[256],led_state[256];
 					struct led *led;
 					struct led_drv *drv;
+					char *s = strdup(node->val);
+					led_name[0]=0;
+					led_state[0]=0;
 
 					/* get pointer to low level led driver.*/
-					sscanf(node->val, "%[^=]=%s", led_name, led_state);
+					*strchr(s,'=') = ' ';
+					sscanf(s, "%s %s", led_name, led_state);
 					drv = get_drv_led(led_name);
 
 					if (drv) {
@@ -494,6 +498,7 @@ void led_init( struct server_ctx *s_ctx)
 						syslog(LOG_ERR,"Config specified use of led name [%s]. But it's not registerd with a led driver.", led_name);
 					}
 					DBG(2, "%-35s%s","",node->val);
+					free(s);
 				}
 
 				/* fill in button actions */
