@@ -1,6 +1,8 @@
 #ifndef LED_H
 #define LED_H
+
 #include "server.h"
+
 typedef enum {
 	OFF,
 	ON,

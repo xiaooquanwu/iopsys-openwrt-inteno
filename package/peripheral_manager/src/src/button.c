@@ -18,15 +18,15 @@ struct function_button {
 	struct list_head drv_list;             /* list of all driver button that is needed to activate this button function */
 };
 
-/* PUT every led from drivers into a list */
+/* PUT every button from drivers into a list */
 struct drv_button_list{
 	struct list_head list;
 	struct button_drv *drv;
 };
 
-LIST_HEAD(drv_buttons_list);
+static LIST_HEAD(drv_buttons_list);
 
-LIST_HEAD(buttons);
+static LIST_HEAD(buttons);
 
 static struct button_drv *get_drv_button(char *name);
 static struct function_button *get_button(char *name);
