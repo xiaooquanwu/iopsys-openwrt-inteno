@@ -11,5 +11,8 @@ AC_CONFIG_FILES([Makefile])
 dnl check for uci , its manadatory
 AC_SEARCH_LIBS([uci_load], [uci], [], [AC_MSG_ERROR([*** UCI library not found])])
 
+dnl ubox
+AC_SEARCH_LIBS([uloop_init], [ubox], [], [AC_MSG_ERROR([*** UBOX library not found])])
+
 AC_OUTPUT
 

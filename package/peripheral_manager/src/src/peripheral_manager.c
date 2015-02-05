@@ -8,6 +8,8 @@
 #include "log.h"
 #include "ucix.h"
 
+#include <libubox/uloop.h>
+
 int debug_level = 0;
 
 static char *config_path = "/lib/db/config";
@@ -128,9 +130,14 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
+	if (uloop_init() != 0) {
+		syslog(LOG_ERR,"Could not init event loop, Can't continue.\n");
+		exit(1);
+	}
+
 	DBG(1,"testing\n");
 	syslog(LOG_INFO, "%s exiting", PACKAGE);
-	exit(0);
 
+	uloop_done();
 	return 0;
 }

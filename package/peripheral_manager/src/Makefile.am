@@ -7,6 +7,6 @@ peripheral_manager_SOURCES = \
 	src/ucix.c \
 	src/ucix.h
 
-peripheral_manager_LDADD = $(UCI_LIB)
+peripheral_manager_LDADD = $(UCI_LIB) $(UBOX_LIB)
 
 peripheral_manager_CFLAGS = -DPRG_VERSION=\"$(PRG_VERSION)\"
