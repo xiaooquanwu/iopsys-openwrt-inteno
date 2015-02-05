@@ -12,13 +12,11 @@ s/^CONFIG_BIG_ENDIAN=y//g
 s/^# CONFIG_TARGET_OPTIONS is not set/CONFIG_TARGET_OPTIONS=y/g
 s/^CONFIG_TARGET_OPTIMIZATION.*/CONFIG_TARGET_OPTIMIZATION="-Os -pipe -march=armv7-a -mfpu=vfpv3-d16 -mfloat-abi=softfp"/g
 s/^CONFIG_TARGET_SUFFIX="uclibc"/CONFIG_TARGET_SUFFIX="uclibcgnueabi"/g
+s/^CONFIG_BCM_KERNEL_PROFILE.*/CONFIG_BCM_KERNEL_PROFILE="963138BGWV"/g
+s/^CONFIG_BCM_CHIP_ID.*/CONFIG_BCM_CHIP_ID="63138"/g
+s/^CONFIG_PACKAGE_ice-client.*/# CONFIG_PACKAGE_ice-client is not set/g
 
-
-s/^CONFIG_PACKAGE_asterisk18*/# CONFIG_PACKAGE_asterisk18/g
-s/^CONFIG_BCM_ENDPOINT_MODULE.*/# CONFIG_BCM_ENDPOINT_MODULE is not set/g
-s/^CONFIG_PACKAGE_luci-app-voice-client=y/# CONFIG_PACKAGE_luci-app-voice-client is not set/g
-s/^CONFIG_PACKAGE_natalie-dect=y/# CONFIG_PACKAGE_natalie-dect is not set/g
-s/^CONFIG_PACKAGE_ami=y/# CONFIG_PACKAGE_ami is not set/g
 s/^CONFIG_PACKAGE_dectmngr=y/# CONFIG_PACKAGE_dectmngr is not set/g
 s/^CONFIG_PACKAGE_luci-app-dect=y/# CONFIG_PACKAGE_luci-app-dect is not set/g
-s/^CONFIG_PACKAGE_endptcfg=y/# CONFIG_PACKAGE_endptcfg is not set/g
+s/^CONFIG_PACKAGE_natalie-dect=y/# CONFIG_PACKAGE_natalie-dect is not set/g
+
