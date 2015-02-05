@@ -215,7 +215,7 @@ static void dump_led(void)
 			if ( leds[i].actions[j].name != NULL ) {
 				struct led *led;
 				list_for_each_entry(led, &leds[i].actions[j].led_list, list) {
-					DBG(2,"%-15s %-8s %-15s %-10s",
+					DBG(1,"%-15s %-8s %-15s %-10s",
 					    leds[i].name,
 					    leds[i].actions[j].name,
 					    led->drv->name,
@@ -432,12 +432,9 @@ static void flash_handler(struct uloop_timeout *timeout)
 void led_init( struct server_ctx *s_ctx)
 {
 	int i,j,ret;
-//	char *led_names;
-	DBG(1,"");
-
-	/* map */
 
 	dump_drv_list();
+
 	/* register leds with ubus */
 
 	for (i=0 ; i<LED_OBJECTS ; i++) {
@@ -455,13 +452,17 @@ void led_init( struct server_ctx *s_ctx)
 
 	for (i = 0; i < LED_FUNCTIONS ; i++) {
 		for (j = 0 ; j < LED_ACTION_MAX; j++ ) {
-			char fn_name_action[256];
+			char led_fn_name[256];
+			char led_action[256];
 
 			LIST_HEAD(led_action_list);
 			struct ucilist *node;
 
-			snprintf(fn_name_action, 256, "%s_%s", led_functions[i], fn_actions[j]);
-			ucix_get_option_list( s_ctx->uci_ctx, "hw", fn_name_action, "led_action" , &led_action_list);
+			snprintf(led_fn_name, 256, "led_%s", led_functions[i]);
+			snprintf(led_action, 256, "led_action_%s", fn_actions[j]);
+			ucix_get_option_list( s_ctx->uci_ctx, "hw", led_fn_name, led_action , &led_action_list);
+
+			DBG(2,"ken: hw %s %s",led_fn_name, led_action);
 
 			INIT_LIST_HEAD( &leds[i].actions[j].led_list );
 
@@ -474,7 +475,7 @@ void led_init( struct server_ctx *s_ctx)
 				leds[i].actions[j].name    = fn_actions[j];
 
 				/* fill in led actions */
-				DBG(1,"%-15s has led actions -> ",fn_name_action);
+				DBG(2,"%-15s has led actions -> ",led_fn_name);
 				list_for_each_entry(node, &led_action_list, list) {
 					char led_name[256],led_state[256];
 					struct led *led;
@@ -492,7 +493,7 @@ void led_init( struct server_ctx *s_ctx)
 					}else {
 						syslog(LOG_ERR,"Config specified use of led name [%s]. But it's not registerd with a led driver.", led_name);
 					}
-					DBG(1, "%-35s%s","",node->val);
+					DBG(2, "%-35s%s","",node->val);
 				}
 
 				/* fill in button actions */
