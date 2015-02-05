@@ -44,9 +44,6 @@ static const char* const led_states[LED_STATES_MAX] =
 static const char* const leds_states[LEDS_MAX] =
 { "normal", "proximity", "silent", "info", "test", "production", "reset", "allon" , "alloff"};
 
-#define MAX_LEDS (LED_FUNCTIONS)
-
-
 /* lowest level, contain states, timers,pointer to driver for a single physical led.*/
 struct led {
 	struct list_head list;
@@ -70,12 +67,15 @@ struct function_led {
 
 struct function_led leds[LED_FUNCTIONS];
 
+static leds_state_t global_state;	/* global state for the leds,overrids individual states */
 
 int get_index_by_name(const char *const*array, int max, const char *name);
 struct led_drv *get_drv_led(char *name);
 static void dump_drv_list(void);
 static void dump_led(void);
-
+static void all_leds_off(void);
+static void all_leds_on(void);
+static void all_leds(led_state_t state);
 
 /* we find out the index for a match in an array of char pointers containing max number of pointers */
 int get_index_by_name(const char *const*array, int max, const char *name)
@@ -103,6 +103,23 @@ void led_add( struct led_drv *drv)
 	drv_node->drv = drv;
 
 	list_add(&drv_node->list, &drv_leds_list);
+}
+
+static void all_leds(led_state_t state) {
+	struct drv_led_list *node;
+	DBG(1, "set to state %d\n",state);
+
+	list_for_each_entry(node, &drv_leds_list, list) {
+		node->drv->func->set_state( node->drv, state);
+	}
+}
+
+static void all_leds_off(void) {
+	all_leds(OFF);
+}
+
+static void all_leds_on(void) {
+	all_leds(ON);
 }
 
 /* go over the driver list for any led name that matches name and returna pointer to driver. */
@@ -217,7 +234,42 @@ static int leds_set_method(struct ubus_context *ubus_ctx, struct ubus_object *ob
                            struct ubus_request_data *req, const char *method,
                            struct blob_attr *msg)
 {
+	struct blob_attr *tb[__LED_MAX];
 	DBG(1,"\n");
+
+	blobmsg_parse(led_policy, ARRAY_SIZE(led_policy), tb, blob_data(msg), blob_len(msg));
+
+	if (tb[LED_STATE]) {
+		char* state;
+		int state_idx;
+
+		state = blobmsg_data(tb[LED_STATE]);
+		state_idx = get_index_by_name(leds_states, LEDS_MAX , state);
+
+		if (state_idx == -1) {
+			syslog(LOG_WARNING, "leds_set_method: Unknown state %s.\n", state);
+			return 0;
+		}
+
+		global_state = state_idx;
+
+		if (global_state == LEDS_INFO) {
+			all_leds_off();
+			set_function_led("eco", "off"); // KEN ??? what is this ?
+			set_function_led("eco", "ok");
+		}
+
+		if (global_state == LEDS_TEST) {
+			all_leds_off();
+		}
+		if (global_state == LEDS_ALLON) {
+			all_leds_on();
+		}
+		if (global_state == LEDS_ALLOFF) {
+			all_leds_off();
+		}
+	}else
+		syslog(LOG_WARNING, "leds_set_method: Unknown attribute.\n");
 
 	return 0;
 }
@@ -291,20 +343,21 @@ static void flash_handler(struct uloop_timeout *timeout)
 	if (counter & 2 )
 		slow = ON;
 
-	/* BUG we should check if the driver support flash in hardware and only do this on simple on/off leds */
-	for (i = 0; i < LED_FUNCTIONS ; i++) {
-		struct led *led;
-		list_for_each_entry(led, &leds[i].actions[leds[i].state].led_list, list) {
-			if (led->state == FLASH_FAST){
-				if (led->drv)
-					led->drv->func->set_state(led->drv, fast);
-			}else if (led->state == FLASH_SLOW){
-				if (led->drv)
-					led->drv->func->set_state(led->drv, slow);
+	if (global_state == LEDS_NORMAL) {
+		/* BUG we should check if the driver support flash in hardware and only do this on simple on/off leds */
+		for (i = 0; i < LED_FUNCTIONS ; i++) {
+			struct led *led;
+			list_for_each_entry(led, &leds[i].actions[leds[i].state].led_list, list) {
+				if (led->state == FLASH_FAST){
+					if (led->drv)
+						led->drv->func->set_state(led->drv, fast);
+				}else if (led->state == FLASH_SLOW){
+					if (led->drv)
+						led->drv->func->set_state(led->drv, slow);
+				}
 			}
 		}
 	}
-
 	uloop_timeout_set(&flash_inform_timer, FLASH_TIMEOUT);
 }
 
