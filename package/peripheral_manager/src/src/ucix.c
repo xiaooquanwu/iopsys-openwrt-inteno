@@ -1,4 +1,8 @@
 /*
+ *   ucix
+ *   Copyright (C) 2010 John Crispin <blogic@openwrt.org>
+ *   Copyright (C) 2010 Steven Barth <steven@midlink.org>
+ *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation; either version 2 of the License, or
@@ -13,88 +17,111 @@
  *   along with this program; if not, write to the Free Software
  *   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
  *
- *   Copyright (C) 2008 John Crispin <blogic@openwrt.org> 
  */
 
 #include <string.h>
 #include <stdlib.h>
 
-#include <uci_config.h>
-#include <uci.h>
 #include "ucix.h"
 
-static struct uci_ptr ptr;
+struct uci_ptr uci_ptr;
 
-static inline int ucix_get_ptr(struct uci_context *ctx, const char *p, const char *s, const char *o, const char *t)
+int ucix_get_ptr(struct uci_context *ctx, const char *p, const char *s, const char *o, const char *t)
 {
-	memset(&ptr, 0, sizeof(ptr));
-	ptr.package = p;
-	ptr.section = s;
-	ptr.option = o;
-	ptr.value = t;
-	return uci_lookup_ptr(ctx, &ptr, NULL, true);
+	memset(&uci_ptr, 0, sizeof(uci_ptr));
+	uci_ptr.package = p;
+	uci_ptr.section = s;
+	uci_ptr.option = o;
+	uci_ptr.value = t;
+	return uci_lookup_ptr(ctx, &uci_ptr, NULL, true);
 }
 
-struct uci_context* ucix_init(const char *config_file)
+struct uci_context* ucix_init(const char *config_file, int state)
 {
 	struct uci_context *ctx = uci_alloc_context();
-	uci_add_delta_path(ctx, "/var/state");
+	uci_set_confdir(ctx, "/etc/config");
+	if(state)
+		uci_set_savedir(ctx, "/var/state/");
+	else
+		uci_set_savedir(ctx, "/tmp/.uci/");
 	if(uci_load(ctx, config_file, NULL) != UCI_OK)
 	{
-		printf("%s/%s is missing or corrupt\n", ctx->savedir, config_file);
+		printf("%s/%s is missing or corrupt\n", ctx->confdir, config_file);
 		return NULL;
 	}
 	return ctx;
 }
 
-struct uci_context* ucix_init_path(const char *path, const char *config_file)
+struct uci_context* ucix_init_path(const char *vpath, const char *config_file, int state)
 {
-	struct uci_context *ctx = uci_alloc_context();
-	if(path)
-		uci_set_confdir(ctx, path);
+	struct uci_context *ctx;
+	char buf[256];
+	if(!vpath)
+		return ucix_init(config_file, state);
+	ctx = uci_alloc_context();
+	buf[255] = '\0';
+	snprintf(buf, 255, "%s", vpath);
+	uci_set_confdir(ctx, buf);
+//	snprintf(buf, 255, "%s%s", vpath, (state)?("/var/state"):("/tmp/.uci"));
+//	uci_add_delta_path(ctx, buf);
 	if(uci_load(ctx, config_file, NULL) != UCI_OK)
 	{
-		printf("%s/%s is missing or corrupt\n", ctx->savedir, config_file);
+		printf("%s/%s is missing or corrupt\n", ctx->confdir, config_file);
 		return NULL;
 	}
 	return ctx;
 }
 
-void ucix_cleanup(struct uci_context *ctx)
+int ucix_get_option_list(struct uci_context *ctx, const char *p,
+	const char *s, const char *o, struct list_head *l)
 {
-	uci_free_context(ctx);
+	struct uci_element *e = NULL;
+	if(ucix_get_ptr(ctx, p, s, o, NULL))
+		return 1;
+	if (!(uci_ptr.flags & UCI_LOOKUP_COMPLETE))
+		return 1;
+	e = uci_ptr.last;
+	switch (e->type)
+	{
+	case UCI_TYPE_OPTION:
+		switch(uci_ptr.o->type) {
+			case UCI_TYPE_LIST:
+				uci_foreach_element(&uci_ptr.o->v.list, e)
+				{
+					struct ucilist *ul = malloc(sizeof(struct ucilist));
+					ul->val = strdup((e->name)?(e->name):(""));
+					list_add_tail(&ul->list, l);
+				}
+				break;
+			default:
+				break;
+		}
+		break;
+	default:
+		return 1;
+	}
+
+	return 0;
 }
 
-void ucix_save(struct uci_context *ctx)
-{
-	uci_set_savedir(ctx, "/tmp/.uci/");
-	uci_save(ctx, NULL);
-}
-
-void ucix_save_state(struct uci_context *ctx)
-{
-	uci_set_savedir(ctx, "/var/state/");
-	uci_save(ctx, NULL);
-}
-
-const char* ucix_get_option(struct uci_context *ctx, const char *p, const char *s, const char *o)
+char* ucix_get_option(struct uci_context *ctx, const char *p, const char *s, const char *o)
 {
 	struct uci_element *e = NULL;
 	const char *value = NULL;
 	if(ucix_get_ptr(ctx, p, s, o, NULL))
 		return NULL;
-	if (!(ptr.flags & UCI_LOOKUP_COMPLETE))
+	if (!(uci_ptr.flags & UCI_LOOKUP_COMPLETE))
 		return NULL;
-	e = ptr.last;
+	e = uci_ptr.last;
 	switch (e->type)
 	{
 	case UCI_TYPE_SECTION:
 		value = uci_to_section(e)->type;
 		break;
 	case UCI_TYPE_OPTION:
-		switch(ptr.o->type) {
+		switch(uci_ptr.o->type) {
 			case UCI_TYPE_STRING:
-				value = ptr.o->v.string;
+				value = uci_ptr.o->v.string;
 				break;
 			default:
 				value = NULL;
@@ -105,50 +132,19 @@ const char* ucix_get_option(struct uci_context *ctx, const char *p, const char *
 		return 0;
 	}
 
-	return value;
+	return (value) ? (strdup(value)):(NULL);
 }
 
-int ucix_get_option_int(struct uci_context *ctx, const char *p, const char *s, const char *o, int def)
+void ucix_add_list(struct uci_context *ctx, const char *p, const char *s, const char *o, struct list_head *vals)
 {
-	const char *tmp = ucix_get_option(ctx, p, s, o);
-	int ret = def;
-
-	if (tmp)
-		ret = atoi(tmp);
-	return ret;
-}
-
-void ucix_add_section(struct uci_context *ctx, const char *p, const char *s, const char *t)
-{
-	if(ucix_get_ptr(ctx, p, s, NULL, t))
-		return;
-	uci_set(ctx, &ptr);
-}
-
-void ucix_add_option(struct uci_context *ctx, const char *p, const char *s, const char *o, const char *t)
-{
-	if(ucix_get_ptr(ctx, p, s, o, (t)?(t):("")))
-		return;
-	uci_set(ctx, &ptr);
-}
-
-void ucix_add_option_int(struct uci_context *ctx, const char *p, const char *s, const char *o, int t)
-{
-	char tmp[64];
-	snprintf(tmp, 64, "%d", t);
-	ucix_add_option(ctx, p, s, o, tmp);
-}
-
-void ucix_del(struct uci_context *ctx, const char *p, const char *s, const char *o)
-{
-	if(!ucix_get_ptr(ctx, p, s, o, NULL))
-		uci_delete(ctx, &ptr);
-}
-
-void ucix_revert(struct uci_context *ctx, const char *p, const char *s, const char *o)
-{
-	if(!ucix_get_ptr(ctx, p, s, o, NULL))
-		uci_revert(ctx, &ptr);
+	struct list_head *q;
+	list_for_each(q, vals)
+	{
+		struct ucilist *ul = container_of(q, struct ucilist, list);
+		if(ucix_get_ptr(ctx, p, s, o, (ul->val)?(ul->val):("")))
+			return;
+		uci_add_list(ctx, &uci_ptr);
+	}
 }
 
 void ucix_for_each_section_type(struct uci_context *ctx,
@@ -158,15 +154,23 @@ void ucix_for_each_section_type(struct uci_context *ctx,
 	struct uci_element *e;
 	if(ucix_get_ptr(ctx, p, NULL, NULL, NULL))
 		return;
-	uci_foreach_element(&ptr.p->sections, e)
+	uci_foreach_element(&uci_ptr.p->sections, e)
 		if (!strcmp(t, uci_to_section(e)->type))
 			cb(e->name, priv);
 }
 
-int ucix_commit(struct uci_context *ctx, const char *p)
+void ucix_for_each_section_option(struct uci_context *ctx,
+	const char *p, const char *s,
+	void (*cb)(const char*, const char*, void*), void *priv)
 {
-	if(ucix_get_ptr(ctx, p, NULL, NULL, NULL))
-		return 1;
-	return uci_commit(ctx, &ptr.p, false);
+	struct uci_element *e;
+	if(ucix_get_ptr(ctx, p, s, NULL, NULL))
+		return;
+	uci_foreach_element(&uci_ptr.s->options, e)
+	{
+		struct uci_option *o = uci_to_option(e);
+		cb(o->e.name, o->v.string, priv);
+	}
 }
+
 
