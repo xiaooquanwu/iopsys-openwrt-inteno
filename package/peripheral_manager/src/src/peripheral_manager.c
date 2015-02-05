@@ -9,11 +9,14 @@
 #include "ucix.h"
 
 #include <libubox/uloop.h>
+#include <libubus.h>
 
 int debug_level = 0;
 
 static char *config_path = "/lib/db/config";
 static char *config_file = "hw";
+
+static char *ubus_socket;
 
 void print_usage(char *prg_name) {
         printf("Usage: %s -h -f\n", prg_name);
@@ -21,6 +24,7 @@ void print_usage(char *prg_name) {
         printf("      -f, --foreground\tDon't fork off as a daemon.\n");
         printf("      -d, --debug=NUM\tSet debug level. Higher = more output\n");
         printf("      -c, --config=FILE\tConfig file to use. default = %s/%s\n", config_path, config_file);
+        printf("      -s, --socket=FILE\tSet the unix domain socket to connect to for ubus\n");
         printf("      -h\t\tShow this help screen.\n");
         printf("\n");
 }
@@ -31,6 +35,7 @@ int main(int argc, char **argv)
 	int daemon = 1;
 	pid_t pid, sid;
 	struct uci_context *uci_ctx = NULL;
+	static struct ubus_context *ubus_ctx = NULL;
 
 	while (1) {
 		int option_index = 0;
@@ -39,10 +44,11 @@ int main(int argc, char **argv)
                         {"verbose",     no_argument, 0, 'v'},
                         {"debug", required_argument, 0, 'd'},
                         {"config",required_argument, 0, 'c'},
+                        {"socket",required_argument, 0, 's'},
                         {0, 0, 0, 0}
                 };
 
-                ch = getopt_long(argc, argv, "vfhd:c:",
+                ch = getopt_long(argc, argv, "vfhd:c:s:",
                                 long_options, &option_index);
 
 		if (ch == -1)
@@ -60,6 +66,10 @@ int main(int argc, char **argv)
 			config_file = basename(optarg);
 			config_path = dirname(optarg);
 			break;
+                case 's':
+			ubus_socket = optarg;
+			break;
+
 		case 'h':
                 default:
 			print_usage(argv[0]);
@@ -132,8 +142,19 @@ int main(int argc, char **argv)
 
 	if (uloop_init() != 0) {
 		syslog(LOG_ERR,"Could not init event loop, Can't continue.\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
+
+	ubus_ctx = ubus_connect(ubus_socket);
+
+	if (!ubus_ctx) {
+		syslog(LOG_ERR,"Failed to connect to ubus. Can't continue.\n");
+		exit(EXIT_FAILURE);
+	}
+
+	ubus_add_uloop(ubus_ctx);
+
+	ubus_free(ubus_ctx);
 
 	DBG(1,"testing\n");
 	syslog(LOG_INFO, "%s exiting", PACKAGE);
