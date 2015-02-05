@@ -8,6 +8,7 @@
 #include "led.h"
 #include "log.h"
 #include "server.h"
+#include "gpio.h"
 
 
 void gpio_led_init(struct server_ctx *s_ctx);
@@ -35,36 +36,6 @@ struct gpio_data {
 
 #define SR_MAX 16
 static int shift_register_state[SR_MAX];
-
-static int brcmboard = -1;
-
-void gpio_open_ioctl(void);
-int board_ioctl(int ioctl_id, int action, int hex, char* string_buf, int string_buf_len, int offset);
-
-void gpio_open_ioctl() {
-
-	brcmboard = open("/dev/brcmboard", O_RDWR);
-	if ( brcmboard == -1 ) {
-		DBG(1,"failed to open: /dev/brcmboard\n");
-		return;
-	}
-	DBG(1, "fd %d allocated\n", brcmboard);
-	return;
-}
-
-int board_ioctl(int ioctl_id, int action, int hex, char* string_buf, int string_buf_len, int offset) {
-	BOARD_IOCTL_PARMS IoctlParms = {0};
-	IoctlParms.string = string_buf;
-	IoctlParms.strLen = string_buf_len;
-	IoctlParms.offset = offset;
-	IoctlParms.action = action;
-	IoctlParms.buf    = "";
-	if ( ioctl(brcmboard, ioctl_id, &IoctlParms) < 0 ) {
-		syslog(LOG_INFO, "ioctl: %d failed", ioctl_id);
-		exit(1);
-	}
-	return IoctlParms.result;
-}
 
 static void shift_register3_set(int address, int bit_val) {
 	int i;

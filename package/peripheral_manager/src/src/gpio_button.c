@@ -3,11 +3,8 @@
 #include "button.h"
 #include "log.h"
 #include "server.h"
-#include <sys/ioctl.h>
+#include "gpio.h"
 #include <board.h>
-
-void open_ioctl(void);
-int board_ioctl(int ioctl_id, int action, int hex, char* string_buf, int string_buf_len, int offset);
 
 void gpio_button_init(struct server_ctx *s_ctx);
 

@@ -28,7 +28,9 @@ peripheral_manager_SOURCES = \
 	src/gpio_led.c \
 	src/gpio_led.h \
 	src/gpio_button.c \
-	src/gpio_button.h 
+	src/gpio_button.h \
+	src/gpio.c \
+	src/gpio.h 
 
 peripheral_manager_LDADD = $(UCI_LIB) $(UBOX_LIB) $(UBUS_LIB) -lm
 
