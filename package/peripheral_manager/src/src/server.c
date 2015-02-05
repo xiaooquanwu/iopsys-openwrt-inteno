@@ -11,6 +11,8 @@ struct server_ctx server;
 void sim_led_init(struct server_ctx *);
 void sim_button_init(struct server_ctx *);
 
+void gpio_led_init(struct server_ctx *);
+
 struct catv_handler *catv_h;
 struct sfp_handler *sfp_h;
 
@@ -25,6 +27,9 @@ void server_start(struct uci_context *uci_ctx, struct ubus_context *ubus_ctx)
 
 	sim_led_init(&server);
 	sim_button_init(&server);
+
+	gpio_led_init(&server);
+
 //	sim_touch_init(&server);
 //	sim_gpio_init(&server);
 

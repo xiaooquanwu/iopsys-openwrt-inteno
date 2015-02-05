@@ -93,7 +93,7 @@ void sim_led_init(struct server_ctx *s_ctx) {
 				data->breading = 1;
 		}
 		data->led.func = &func;
-		data->led.priv = &data;
+		data->led.priv = data;
 		led_add(&data->led);
 	}
 }

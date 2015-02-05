@@ -244,8 +244,8 @@ static void set_function_led(const char* fn_name, const char* action) {
 				led->drv->func->set_state(led->drv, led->state);
 			}
 		}
-	}
-	syslog(LOG_WARNING, "led set on [%s] has no valid [%s] handler registered.", fn_name, action);
+	}else
+		syslog(LOG_WARNING, "led set on [%s] has no valid [%s] handler registered.", fn_name, action);
 }
 
 enum {

@@ -24,8 +24,12 @@ peripheral_manager_SOURCES = \
 	src/i2c.c \
 	src/i2c.h \
 	src/sfp.c \
-	src/sfp.h
+	src/sfp.h \
+	src/gpio_led.c \
+	src/gpio_led.h
 
 peripheral_manager_LDADD = $(UCI_LIB) $(UBOX_LIB) $(UBUS_LIB) -lm
 
-peripheral_manager_CFLAGS =  $(AM_CFLAGS) -DPRG_VERSION=\"$(PRG_VERSION)\"
+peripheral_manager_CFLAGS =  $(AM_CFLAGS) -DPRG_VERSION=\"$(PRG_VERSION)\" \
+	-I$(STAGING_DIR)/usr/include/bcm963xx/shared/opensource/include/bcm963xx/ \
+	-I$(STAGING_DIR)/usr/include/bcm963xx/bcmdrivers/opensource/include/bcm963xx/	

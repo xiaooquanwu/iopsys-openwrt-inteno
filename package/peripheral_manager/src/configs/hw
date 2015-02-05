@@ -232,6 +232,42 @@ config sim_led sim_led_C
 
 ###############################################################################
 #
+#   gpio leds
+#
+config gpio_led gpio_leds
+        list leds Status_green
+	list leds Status_red
+	list leds Wireless_green
+	list leds Wireless_blue
+	list leds WAN_green
+	list leds WAN_yellow
+
+config gpio_led Status_green
+       option addr     39
+       option active   low
+
+config gpio_led Status_red
+       option addr     38
+       option active   low
+
+config gpio_led Wireless_green
+       option addr     37
+       option active   low
+
+config gpio_led Wireless_blue
+       option addr     36
+       option active   low
+
+config gpio_led WAN_green
+       option addr     9
+       option active   low
+
+config gpio_led WAN_yellow
+       option addr     10
+       option active   low
+
+###############################################################################
+#
 # example mapping sim leds to system leds. 
 #
 # the led_action list can be from one entry and up.
@@ -242,6 +278,27 @@ config sim_led sim_led_C
 # 
 
 config led_map led_map
+
+
+config led_map status_ok
+			list led_action	Status_green=ON
+			list led_action	Status_red=OFF
+
+config led_map status_off
+			list led_action	Status_green=OFF
+			list led_action	Status_red=OFF
+config led_map status_notice
+			list led_action	Status_green=FLASH_SLOW
+			list led_action	Status_red=OFF
+
+config led_map status_alert
+			list led_action	Status_green=
+			list led_action	Status_red=FLASH_SLOW
+
+config led_map status_error
+			list led_action	Status_green=OFF
+			list led_action	Status_red=FLASH_FAST
+
 
 config led_map wifi_ok
 			list led_action sim_led_A=ON
