@@ -17,8 +17,10 @@ struct function_button {
 	struct list_head list;
         char *name;
         int minpress;
-        int longpress;
-	struct list_head drv_list;             /* list of all driver button that is needed to activate this button function */
+        int longpress;                          /* negative value means valid if  mintime < time < abs(longpress ) */
+                                                /* positive value means valid if time > longpreass */
+                                                /* zero value means valid if time > mintime */
+	struct list_head drv_list;              /* list of all driver button that is needed to activate this button function */
 };
 
 /* PUT every button from drivers into a list */
@@ -27,9 +29,10 @@ struct drv_button_list{
 	struct button_drv *drv;
 };
 
+/* list of all driver buttons added by drivers. */
 static LIST_HEAD(drv_buttons_list);
 
-/* list containing all function buttons */
+/* list containing all function buttons read from config file */
 static LIST_HEAD(buttons);
 
 static struct button_drv *get_drv_button(char *name);
@@ -114,7 +117,7 @@ static void timer_stop(struct button_drv_list *button_drv)
         button_drv->pressed_time.tv_nsec = 0;
 }
 
-static int timer_valid(struct button_drv_list *button_drv, int mtimeout)
+static int timer_valid(struct button_drv_list *button_drv, int mtimeout, int longpress)
 {
         struct timespec now;
         int sec;
@@ -125,7 +128,22 @@ static int timer_valid(struct button_drv_list *button_drv, int mtimeout)
                 sec =  now.tv_sec  - button_drv->pressed_time.tv_sec;
                 nsec = now.tv_nsec - button_drv->pressed_time.tv_nsec;
                 if ( mtimeout < (sec*1000 + nsec/1000000)) {
-                        return 1;
+                        if (longpress == 0)
+                                return 1;
+
+                        if (longpress < 0) {
+                                longpress = -1 * longpress;
+                                if ( longpress > (sec*1000 + nsec/1000000)) {
+                                        return 1;
+
+                                } else {
+                                        return 0;
+                                }
+                        }
+
+                        if ( longpress < (sec*1000 + nsec/1000000)) {
+                                return 1;
+                        }
                 }
         }
         return 0;
@@ -134,6 +152,7 @@ static int timer_valid(struct button_drv_list *button_drv, int mtimeout)
 #define BUTTON_TIMEOUT 100
 static void button_handler(struct uloop_timeout *timeout);
 static struct uloop_timeout button_inform_timer = { .cb = button_handler };
+
 
 static void button_handler(struct uloop_timeout *timeout)
 {
@@ -158,9 +177,9 @@ static void button_handler(struct uloop_timeout *timeout)
                                         if (timer_started(drv_node)) {
                                                 DBG(1, " %s released\n", drv_node->drv->name);
 
-                                                if ( timer_valid(drv_node, node->minpress) ) {
+                                                if ( timer_valid(drv_node, node->minpress, node->longpress) ) {
                                                         DBG(1, "send key %s to system\n", node->name);
-                                                }else {
+                                                } else {
 //                                                DBG(1, " %s not valid\n", drv_node->drv->name);
                                                 }
                                         }
@@ -171,6 +190,55 @@ static void button_handler(struct uloop_timeout *timeout)
                 }
         }
 	uloop_timeout_set(&button_inform_timer, BUTTON_TIMEOUT);
+}
+
+/* in order to support long press there is a need to go over every function button
+   and find any driver button that is part of a longpress function.
+   if found then the longpress time for that button needs to be filled in (but negative)
+   on any other function button that has the same driver button. This to prevent two
+   function buttons to trigger on one driver button release.
+*/
+
+/* Find functions that use driver (drv) that has a zero longpress time and set it to time */
+static void longpress_set(int time,struct button_drv *drv) {
+	struct list_head *i;
+	list_for_each(i, &buttons) {
+		struct function_button *node = list_entry(i, struct function_button, list);
+                {
+                        struct list_head *j;
+                        list_for_each(j, &node->drv_list) {
+                                struct button_drv_list *drv_node = list_entry(j, struct button_drv_list, list);
+                                if(drv_node->drv == drv){
+                                        if (node->longpress == 0) {
+                                                node->longpress = time;
+                                        }
+                                }
+                        }
+                }
+	}
+}
+
+/* find any use of longpress and set all other to negative longpress time to indicate min max time
+   for a valid press
+*/
+static void longpress_find(void) {
+	struct list_head *i;
+	list_for_each(i, &buttons) {
+		struct function_button *node = list_entry(i, struct function_button, list);
+                {
+                        struct list_head *j;
+                        list_for_each(j, &node->drv_list) {
+                                struct button_drv_list *drv_node = list_entry(j, struct button_drv_list, list);
+                                if(drv_node->drv != NULL){
+                                        if (node->longpress > 0) {
+                                                DBG(1,"%13s drv button name = [%s]\n","",drv_node->drv->name);
+                                                DBG(1,"%13s longpress = %d\n","",node->longpress);
+                                                longpress_set(node->longpress * -1, drv_node->drv);
+                                        }
+                                }
+                        }
+                }
+	}
 }
 
 void button_init( struct server_ctx *s_ctx)
@@ -251,6 +319,7 @@ void button_init( struct server_ctx *s_ctx)
 
 	uloop_timeout_set(&button_inform_timer, BUTTON_TIMEOUT);
 
+        longpress_find();
 	dump_drv_list();
         dump_buttons_list();
 }
