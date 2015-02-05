@@ -1,7 +1,10 @@
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #include <libgen.h>
 #include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <syslog.h>
 #include <config.h>
 #include <getopt.h>
@@ -13,10 +16,12 @@
 
 int debug_level = 0;
 
-static char *config_path = "/lib/db/config";
-static char *config_file = "hw";
+static const char *config_path = "/lib/db/config";
+static const char *config_file = "hw";
 
 static char *ubus_socket;
+
+void print_usage(char *prg_name);
 
 void print_usage(char *prg_name) {
         printf("Usage: %s -h -f\n", prg_name);
