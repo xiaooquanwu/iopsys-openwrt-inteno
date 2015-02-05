@@ -401,14 +401,14 @@ static struct uloop_timeout flash_inform_timer = { .cb = flash_handler };
 
 static void flash_handler(struct uloop_timeout *timeout)
 {
-	static int counter = 1; /* bit 0 is fast flash bit 1 is slow flash */
+	static int counter = 1; /* bit 0 is fast flash bit 2 is slow flash */
 	int i;
 	led_state_t slow=OFF,fast=OFF;
 	counter++;
 
 	if (counter & 1 )
 		fast = ON;
-	if (counter & 2 )
+	if (counter & 4 )
 		slow = ON;
 
 	if (global_state == LEDS_NORMAL) {
