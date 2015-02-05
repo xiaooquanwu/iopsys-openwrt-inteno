@@ -38,10 +38,10 @@ static int shift_register_state[SR_MAX];
 
 static int brcmboard = -1;
 
-void open_ioctl(void);
+void gpio_open_ioctl(void);
 int board_ioctl(int ioctl_id, int action, int hex, char* string_buf, int string_buf_len, int offset);
 
-void open_ioctl() {
+void gpio_open_ioctl() {
 
 	brcmboard = open("/dev/brcmboard", O_RDWR);
 	if ( brcmboard == -1 ) {
@@ -194,5 +194,5 @@ void gpio_led_init(struct server_ctx *s_ctx) {
 		data->led.priv = data;
 		led_add(&data->led);
 	}
-	open_ioctl();
+	gpio_open_ioctl();
 }
