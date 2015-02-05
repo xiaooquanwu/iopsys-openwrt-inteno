@@ -511,5 +511,6 @@ void led_init( struct server_ctx *s_ctx)
 	uloop_timeout_set(&flash_inform_timer, FLASH_TIMEOUT);
 
 	dump_led();
+	all_leds_off();
 }
 
