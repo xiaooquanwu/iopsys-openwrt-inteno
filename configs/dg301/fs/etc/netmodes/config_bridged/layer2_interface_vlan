@@ -1,0 +1,18 @@
+
+
+config 'vlan_interface'
+	option name 'eth_tv'
+	option ifname 'eth0.101'
+	option baseifname 'eth0'
+	option vlan8021q '101'
+	option vlan8021p '0'
+	option bridge '1'
+
+config 'vlan_interface'
+	option name 'vdsl_tv'
+	option ifname 'ptm0.101'
+	option baseifname 'ptm0'
+	option vlan8021q '101'
+	option vlan8021p '0'
+	option bridge '1'
+

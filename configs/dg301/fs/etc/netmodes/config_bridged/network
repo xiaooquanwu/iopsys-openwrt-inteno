@@ -1,0 +1,39 @@
+
+config interface 'loopback'
+	option is_lan '1'
+	option ifname 'lo'
+	option proto 'static'
+	option ipaddr '127.0.0.1'
+	option netmask '255.0.0.0'
+
+config interface 'lan'
+	option is_lan '1'
+	option type 'bridge'
+	option proto 'static'
+	option ipaddr '192.168.1.1'
+	option netmask '255.255.255.0'
+	option ifname 'eth4 eth3 eth1'
+	option ip6assign '60'
+	
+config interface 'wan'
+	option type 'anywan'
+	option proto 'dhcp'
+	option vendorid '$HARDWAREID-INTENO'
+	option hostname 'Inteno_$MAC4'
+	option ifname 'ptm0.1 atm0.1 eth0.1'
+	option ipv6 '1'
+
+config interface 'iptv'
+	option type 'bridge'
+	option proto 'dhcp'
+	option gateway '0.0.0.0'
+	option reqopts 'staticroutes'
+	option ifname 'ptm0.101 atm1.1 eth0.101 eth2'
+	option defaultroute '0'
+
+config interface 'wan6'
+	option proto 'dhcpv6'
+	option ifname '@wan'
+
+
+

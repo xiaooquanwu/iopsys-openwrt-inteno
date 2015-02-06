@@ -1,0 +1,17 @@
+config mode 'setup'
+        option dir '/etc/netmodes'
+        option detail ''
+        option curmode 'routed'
+
+config netmode 'routed'
+        option desc 'Fully Routed (NAT)'
+        option conf 'config_routed'
+        option exp ''
+
+config netmode 'bridged'
+        option desc 'Bridged IPTV'
+        option conf 'config_bridged'
+        option exp 'LAN4 port is bridged with IPTV VLAN'
+
+
+
