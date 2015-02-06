@@ -31,10 +31,10 @@ typedef enum {
 static const char * const fn_actions[LED_ACTION_MAX] =
 { "off", "ok", "notice", "alert", "error", "custom"};
 
-#define LED_FUNCTIONS 14
+#define LED_FUNCTIONS 15
 static const char* const led_functions[LED_FUNCTIONS] =
 { "dsl", "wifi", "wps", "lan", "status", "dect", "tv", "usb",
-  "wan", "internet", "voice1", "voice2", "eco", "gbe"};
+  "wan", "internet", "voice1", "voice2", "eco", "gbe", "ext" };
 
 /* Names for led_state_t */
 static const char* const led_states[LED_STATES_MAX] =
