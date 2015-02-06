@@ -3,6 +3,7 @@
 #include <time.h>
 #include "log.h"
 #include "button.h"
+#include "led.h"
 
 
 /* used to map in the driver buttons to a function button */
@@ -167,6 +168,9 @@ static void button_handler(struct uloop_timeout *timeout)
         /* so call it once at beginning of scanning inputs  */
         sx9512_check();
 
+        /* clean out indicator status, set by any valid press again if we find it */
+        led_pressindicator_clear();
+
 	list_for_each(i, &buttons) {
                 struct list_head *j;
 		struct function_button *node = list_entry(i, struct function_button, list);
@@ -180,6 +184,10 @@ static void button_handler(struct uloop_timeout *timeout)
                                         if (! timer_started(drv_node)) {
                                                 timer_start(drv_node);
                                                 DBG(1, " %s pressed", drv_node->drv->name);
+                                        }
+
+                                        if ( timer_valid(drv_node, node->minpress, 0)) {
+                                                        led_pressindicator_set();
                                         }
                                 }
 

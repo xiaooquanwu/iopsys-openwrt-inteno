@@ -41,4 +41,7 @@ struct led_drv {
 void led_add( struct led_drv *);
 void led_init(struct server_ctx *);
 
+void led_pressindicator_set(void);
+void led_pressindicator_clear(void);
+
 #endif /* LED_H */

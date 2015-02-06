@@ -62,12 +62,14 @@ struct function_action {
 struct function_led {
 	const char *name;		/* If name is set this led function is in use by the board.        */
 	led_action_t state;		/* state of the function led. contain what action is currently set */
+	int press_indicator;		/* record if this is part of press indictor */
 	struct function_action actions[LED_ACTION_MAX];
 };
 
 struct function_led leds[LED_FUNCTIONS];
 
 static leds_state_t global_state;	/* global state for the leds,overrids individual states */
+static leds_state_t press_state;	/* global state for the press indicator */
 
 int get_index_by_name(const char *const*array, int max, const char *name);
 struct led_drv *get_drv_led(char *name);
@@ -415,18 +417,38 @@ static void flash_handler(struct uloop_timeout *timeout)
 		/* BUG we should check if the driver support flash in hardware and only do this on simple on/off leds */
 		for (i = 0; i < LED_FUNCTIONS ; i++) {
 			struct led *led;
-			list_for_each_entry(led, &leds[i].actions[leds[i].state].led_list, list) {
-				if (led->state == FLASH_FAST){
+			if (leds[i].press_indicator & press_state) {
+//				DBG(1,"INDICATE_PRESS on %s",leds[i].name);
+				list_for_each_entry(led, &leds[i].actions[leds[i].state].led_list, list) {
 					if (led->drv)
 						led->drv->func->set_state(led->drv, fast);
-				}else if (led->state == FLASH_SLOW){
-					if (led->drv)
-						led->drv->func->set_state(led->drv, slow);
+				}
+				/* normal operation, flash else reset state */
+			} else {
+				list_for_each_entry(led, &leds[i].actions[leds[i].state].led_list, list) {
+					if (led->state == FLASH_FAST){
+						if (led->drv)
+							led->drv->func->set_state(led->drv, fast);
+					}else if (led->state == FLASH_SLOW){
+						if (led->drv)
+							led->drv->func->set_state(led->drv, slow);
+					}else{
+						if (led->drv)
+							led->drv->func->set_state(led->drv, led->state);
+					}
 				}
 			}
 		}
 	}
 	uloop_timeout_set(&flash_inform_timer, FLASH_TIMEOUT);
+}
+
+void led_pressindicator_set(void){
+	press_state = 1;
+}
+
+void led_pressindicator_clear(void){
+	press_state = 0;
 }
 
 void led_init( struct server_ctx *s_ctx)
@@ -507,7 +529,25 @@ void led_init( struct server_ctx *s_ctx)
 			}
 		}
 	}
+	{
+		struct ucilist *node;
+		/* read function buttons from section button_map */
+		LIST_HEAD(press_indicator);
 
+		/* read in generic configuration. press indicator list, dimm list default params..... */
+
+		ucix_get_option_list(s_ctx->uci_ctx, "hw" ,"led_map", "press_indicator", &press_indicator);
+		list_for_each_entry(node, &press_indicator, list) {
+			char *s;
+			int ix;
+			s = node->val;
+			s +=4;	/*remove 'led_' from string */
+			DBG(1,"press indicator %s [%s]",node->val, s);
+			ix  = get_index_by_name(led_functions,LED_FUNCTIONS, s);
+//			DBG(1,"press indicator %s [%s]->%d",node->val, s, ix);
+			leds[ix].press_indicator = 1;
+		}
+	}
 	uloop_timeout_set(&flash_inform_timer, FLASH_TIMEOUT);
 
 	dump_led();
