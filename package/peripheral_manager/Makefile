@@ -38,12 +38,18 @@ endef
 define Build/Prepare
 	mkdir -p $(PKG_BUILD_DIR)
 	$(CP) ./src/* $(PKG_BUILD_DIR)/
-#	$(CP) ./files/* $(PKG_BUILD_DIR)/
+	$(CP) ./files/* $(PKG_BUILD_DIR)/
 endef
 
 define Package/peripheral_manager/install
-	$(INSTALL_DIR) $(1)/usr/bin
-	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/peripheral_manager $(1)/usr/bin
+
+	$(INSTALL_DIR) $(1)/etc/
+	$(INSTALL_DIR) $(1)/etc/init.d/
+
+	$(INSTALL_DIR) $(1)/sbin
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/peripheral_manager $(1)/sbin/
+
+	$(INSTALL_BIN)  $(PKG_BUILD_DIR)/etc/init.d/* $(1)/etc/init.d/
 endef
 
 $(eval $(call BuildPackage,peripheral_manager))
