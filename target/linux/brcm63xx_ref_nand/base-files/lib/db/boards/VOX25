@@ -15,8 +15,6 @@ config board 'board'
 	option ethernetWanPort 'eth4'
 	option adslWanPort 'atm0'
 	option vdslWanPort 'ptm0'
-	option lednames 'MMB WiFi VoIP DSL PowerLED'
-	option buttonnames 'RESET WPS TOUCH_NEAR TOUCH_FAR'
 	option hasBrcmAvs '1'
 	option i2cGpioCustom 'bus0=0,14,9'
 
@@ -26,91 +24,179 @@ config wifi-chip '435f'
 config wifi-chip '4360'
 	option bands 'a'
 
-config buttons 'buttons'
-	option RESET 'gpio 35 al resetbutton'
-	option WPS 'gpio 34 al wpsbutton'
-	option TOUCH_NEAR 'i2c 0 ah touch_near'
-	option TOUCH_FAR 'i2c 1 ah touch_far'
+###############################################################################
+#
+#		Button config, start
+#
 
-config leds 'leds'
-	option MMB_red 'spi 1 ah'
-	option MMB_green 'spi 2 ah'
-	option MMB_blue 'spi 3 ah'
-	option WiFi_green 'spi 7 ah'
-	option VoIP_red 'spi 5 ah'
-	option VoIP_green 'spi 6 ah'
-	option DSL_red 'spi 4 ah'
-	option DSL_green 'spi 9 ah'
-	option PowerLED_red 'spi 8 ah'
+############### gpio buttons, driver config
+config gpio_button gpio_buttons
+	list buttons gpio_reset
+	list buttons gpio_wps
 
-config led_map 'led_map'
-	option dsl_ok 'DSL_green=ON DSL_red=OFF'
-	option dsl_off 'DSL_green=OFF DSL_red=OFF'
-	option dsl_notice 'DSL_green=BLINK_SLOW DSL_red=OFF'
-	option dsl_alert 'DSL_green=OFF DSL_red=BLINK_SLOW'
-	option dsl_error 'DSL_green=OFF DSL_red=ON'
-	option wifi_ok 'WiFi_green=ON'
-	option wifi_off 'WiFi_green=OFF'
-	option wifi_notice 'WiFi_green=BLINK_SLOW'
-	option wifi_alert 'WiFi_green=BLINK_SLOW'
-	option wifi_error 'WiFi_green=BLINK_FAST'
-	option wps_ok ''
-	option wps_off ''
-	option wps_notice ''
-	option wps_alert ''
-	option wps_error ''
-	option lan_ok ''
-	option lan_off ''
-	option lan_notice ''
-	option lan_alert ''
-	option lan_error ''
-	option status_ok 'PowerLED_red=ON'
-	option status_off 'PowerLED_red=OFF'
-	option status_notice 'PowerLED_red=BLINK_SLOW'
-	option status_alert 'PowerLED_red=BLINK_SLOW'
-	option status_error 'PowerLED_red=BLINK_FAST'
-	option dect_ok ''
-	option dect_off ''
-	option dect_notice ''
-	option dect_alert ''
-	option dect_error ''
-	option tv_ok ''
-	option tv_off ''
-	option tv_notice ''
-	option tv_alert ''
-	option tv_error ''
-	option usb_ok ''
-	option usb_off ''
-	option usb_notice ''
-	option usb_alert ''
-	option usb_error ''
-	option wan_ok ''
-	option wan_off ''
-	option wan_notice ''
-	option wan_alert ''
-	option wan_error ''
-	option internet_ok 'MMB_green=ON'
-	option internet_off 'MMB_green=OFF'
-	option internet_notice 'MMB_green=BLINK_SLOW'
-	option internet_alert 'MMB_green=BLINK_SLOW'
-	option internet_error 'MMB_green=BLINK_FAST'
-	option voice1_ok 'VoIP_green=ON VoIP_red=OFF'
-	option voice1_off 'VoIP_green=OFF VoIP_red=OFF'
-	option voice1_notice 'VoIP_green=BLINK_SLOW VoIP_red=OFF'
-	option voice1_alert 'VoIP_green=OFF VoIP_red=BLINK_SLOW'
-	option voice1_error 'VoIP_green=OFF VoIP_red=ON'
-	option voice2_ok ''
-	option voice2_off ''
-	option voice2_notice ''
-	option voice2_alert ''
-	option voice2_error ''
-	option eco_ok ''
-	option eco_off ''
-	option eco_notice ''
-	option eco_alert ''
-	option eco_error ''
-	option gbe_ok ''
-	option gbe_off ''
-	option gbe_notice ''
-	option gbe_alert ''
-	option gbe_error ''
+config gpio_button gpio_reset
+	option addr 35
+	option active low
+
+config gpio_button gpio_wps
+	option addr 34
+	option active low
+
+############### px3220, i2c buttons, driver config
+
+config 3220_button 3220_buttons
+	list buttons 3220_touch_near
+	list buttons 3220_touch_far
+
+config 3220_button 3220_touch_near
+	option addr   0
+
+config 3220_button 3220_touch_far
+	option addr   1
+
+############### function buttons used on board.
+config button_map button_map
+	list buttonnames RESET
+	list buttonnames WPS
+	list buttonnames TOUCH_NEAR
+	list buttonnames TOUCH_FAR
+	option minpress 100
+
+
+############### mapping function button to driver button
+config button_map RESET
+	list button gpio_reset
+	option minpress 5000
+	option hotplug resetbutton
+
+config button_map WPS
+	list button gpio_wps
+	option hotplug wpsbutton
+
+config button_map TOUCH_NEAR
+	list button 3220_touch_near
+	option hotplug touch_near
+
+config button_map TOUCH_FAR
+	list button 3220_touch_far
+	option hotplug touch_far
+
+#
+#		Button config , end
+#
+###############################################################################
+
+###############################################################################
+#
+#		Led config, start
+#
+
+############### gpio led, driver config
+config gpio_led gpio_leds
+	list leds MMB_red
+	list leds MMB_green
+	list leds MMB_blue
+        list leds WiFi_green
+	list leds VoIP_red
+	list leds VoIP_green
+	list leds DSL_red
+	list leds DSL_green
+	list leds PowerLED_red
+
+config gpio_led MMB_red
+	option addr     1
+	option active   hi
+	option mode     spi
+
+config gpio_led MMB_green
+	option addr     2
+	option active   hi
+	option mode     spi
+
+config gpio_led MMB_blue
+	option addr     3
+	option active   hi
+	option mode     spi
+
+config gpio_led WiFi_green
+	option addr     7
+	option active   hi
+	option mode     spi
+
+config gpio_led VoIP_red
+	option addr     5
+	option active   hi
+	option mode     spi
+
+config gpio_led VoIP_green
+	option addr     6
+	option active   hi
+	option mode     spi
+
+config gpio_led DSL_red
+	option addr     4
+	option active   hi
+	option mode     spi
+
+config gpio_led DSL_green
+	option addr     9
+	option active   hi
+	option mode     spi
+
+config gpio_led PowerLED_red
+	option addr     8
+	option active   hi
+	option mode     spi
+
+############### mapping led function to driver led
+
+config led_map led_dsl
+	list led_action_ok     'DSL_green = ON'
+	list led_action_ok     'DSL_red   = OFF'
+	list led_action_off    'DSL_green = OFF'
+	list led_action_off    'DSL_red   = OFF'
+	list led_action_notice 'DSL_green = FLASH_SLOW'
+	list led_action_notice 'DSL_red   = OFF'
+	list led_action_alert  'DSL_green = OFF'
+	list led_action_alert  'DSL_red   = FLASH_SLOW'
+	list led_action_error  'DSL_green = OFF'
+	list led_action_error  'DSL_red   = FLASH_FAST'
+
+config led_map led_wifi
+	list led_action_ok     WiFi_green=ON
+	list led_action_off    WiFi_green=OFF
+	list led_action_notice WiFi_green=FLASH_SLOW
+	list led_action_alert  WiFi_green=FLASH_SLOW
+	list led_action_error  WiFi_green=FLASH_FAST
+
+config led_map led_status
+	list led_action_ok     PowerLED_red=ON
+	list led_action_off    PowerLED_red=OFF
+	list led_action_notice PowerLED_red=FLASH_SLOW
+	list led_action_alert  PowerLED_red=FLASH_SLOW
+	list led_action_error  PowerLED_red=FLASH_FAST
+
+config led_map led_internet
+	list led_action_ok     MMB_green=ON
+	list led_action_off    MMB_green=OFF
+	list led_action_notice MMB_green=FLASH_SLOW
+	list led_action_alert  MMB_green=FLASH_SLOW
+	list led_action_error  MMB_green=FLASH_FAST
+
+config led_map led_voice1
+	list led_action_ok     'VoIP_green = ON'
+	list led_action_ok     'VoIP_red   = OFF'
+	list led_action_off    'VoIP_green = OFF'
+	list led_action_off    'VoIP_red   = OFF'
+	list led_action_notice 'VoIP_green = FLASH_SLOW'
+	list led_action_notice 'VoIP_red   = OFF'
+	list led_action_alert  'VoIP_green = OFF'
+	list led_action_alert  'VoIP_red   = FLASH_SLOW'
+	list led_action_error  'VoIP_green = OFF'
+	list led_action_error  'VoIP_red   = FLASH_FAST'
+
+#
+#		Led config , end
+#
+###############################################################################
+
