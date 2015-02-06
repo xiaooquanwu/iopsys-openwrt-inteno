@@ -5,6 +5,7 @@
 #include "button.h"
 #include "catv.h"
 #include "sfp.h"
+#include "touch_sx9512.h"
 
 struct server_ctx server;
 
@@ -32,13 +33,15 @@ void server_start(struct uci_context *uci_ctx, struct ubus_context *ubus_ctx)
 	gpio_led_init(&server);
 	gpio_button_init(&server);
 
+	sx9512_init(&server);
+
 //	sim_touch_init(&server);
 //	sim_gpio_init(&server);
+
 
 	DBG(1, "connect generic buttons/leds to hardware drivers.");
 	led_init(&server);
 	button_init(&server);
-
 
 	sfp_h = sfp_init(uci_ctx);
 	if (sfp_h) {

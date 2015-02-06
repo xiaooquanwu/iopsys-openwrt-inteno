@@ -462,7 +462,7 @@ void led_init( struct server_ctx *s_ctx)
 			snprintf(led_action, 256, "led_action_%s", fn_actions[j]);
 			ucix_get_option_list( s_ctx->uci_ctx, "hw", led_fn_name, led_action , &led_action_list);
 
-			DBG(2,"ken: hw %s %s",led_fn_name, led_action);
+//			DBG(2,"ken: hw %s %s",led_fn_name, led_action);
 
 			INIT_LIST_HEAD( &leds[i].actions[j].led_list );
 

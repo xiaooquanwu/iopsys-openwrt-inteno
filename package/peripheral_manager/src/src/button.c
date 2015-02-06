@@ -156,11 +156,17 @@ static int timer_valid(struct button_drv_list *button_drv, int mtimeout, int lon
 static void button_handler(struct uloop_timeout *timeout);
 static struct uloop_timeout button_inform_timer = { .cb = button_handler };
 
+void sx9512_check(void);
 
 static void button_handler(struct uloop_timeout *timeout)
 {
  	struct list_head *i;
 //        DBG(1, "");
+
+        /* sx9512 driver needs to read out all buttons at once */
+        /* so call it once at beginning of scanning inputs  */
+        sx9512_check();
+
 	list_for_each(i, &buttons) {
                 struct list_head *j;
 		struct function_button *node = list_entry(i, struct function_button, list);

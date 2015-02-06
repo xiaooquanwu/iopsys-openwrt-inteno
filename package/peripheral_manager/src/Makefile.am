@@ -30,7 +30,9 @@ peripheral_manager_SOURCES = \
 	src/gpio_button.c \
 	src/gpio_button.h \
 	src/gpio.c \
-	src/gpio.h 
+	src/gpio.h \
+	src/touch_sx9512.c \
+	src/touch_sx9512.h
 
 peripheral_manager_LDADD = $(UCI_LIB) $(UBOX_LIB) $(UBUS_LIB) -lm
 
