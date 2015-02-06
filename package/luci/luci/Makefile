@@ -2,8 +2,8 @@ include $(TOPDIR)/rules.mk
 
 PKG_BRANCH:=svn-0.11
 PKG_NAME:=luci
-PKG_VERSION:=inteno-1.0.153
-PKG_SOURCE_VERSION:=813ba1de1a99ec80dac5e222a8b994d3ce0886d4
+PKG_VERSION:=inteno-1.0.164
+PKG_SOURCE_VERSION:=ff15deb179ebf468042df25c209b1a1d35e6fb03
 
 PKG_SOURCE_PROTO:=git
 ifeq ($(CONFIG_PACKAGE_bcmkernel),y)
@@ -517,6 +517,8 @@ endef
 $(eval $(call voice_module,pbx,Voice PBX,\
 	+asterisk18-mod-app-queue \
 	+asterisk18-mod-voicemail \
+	+asterisk18-mod-app-meetme \
+	+asterisk18-mod-app-read \
 	+asterisk18-mod-app-record \
 	+asterisk18-mod-res-musiconhold))
 define Package/luci-app-voice-pbx/install

@@ -37,13 +37,58 @@ static struct ubus_context *ctx = NULL;
 static struct blob_buf bb;
 static const char *ubus_path;
 
+static Wireless wireless[MAX_VIF];
 static Network network[MAX_NETWORK];
 static Client clients[MAX_CLIENT], clients_old[MAX_CLIENT], clients_new[MAX_CLIENT];
+static Client6 clients6[MAX_CLIENT];
 static Router router;
 static Memory memory;
 static Key keys;
 static Spec spec;
 static USB usb[MAX_USB];
+
+
+/* POLICIES */
+enum {
+	QUEST_NAME,
+	__QUEST_MAX,
+};
+
+static const struct blobmsg_policy quest_policy[__QUEST_MAX] = {
+	[QUEST_NAME] = { .name = "info", .type = BLOBMSG_TYPE_STRING },
+};
+
+enum {
+	NETWORK_NAME,
+	__NETWORK_MAX,
+};
+
+static const struct blobmsg_policy network_policy[__NETWORK_MAX] = {
+	[NETWORK_NAME] = { .name = "network", .type = BLOBMSG_TYPE_STRING },
+};
+
+enum {
+	RADIO_NAME,
+	VIF_NAME,
+	__WL_MAX,
+};
+
+static const struct blobmsg_policy wl_policy[__WL_MAX] = {
+	[RADIO_NAME] = { .name = "radio", .type = BLOBMSG_TYPE_STRING },
+	[VIF_NAME] = { .name = "vif", .type = BLOBMSG_TYPE_STRING },
+};
+
+enum {
+	IP_ADDR,
+	MAC_ADDR,
+	__HOST_MAX,
+};
+
+static const struct blobmsg_policy host_policy[__HOST_MAX] = {
+	[IP_ADDR] = { .name = "ipaddr", .type = BLOBMSG_TYPE_STRING },
+	[MAC_ADDR] = { .name = "macaddr", .type = BLOBMSG_TYPE_STRING },
+};
+/* END POLICIES */
 
 pthread_t tid[1];
 static long sleep_time = DEFAULT_SLEEP;
@@ -129,7 +174,7 @@ get_wifs(char *netname, const char *ifname, char **wifs)
 			vif = 0;
 			uci_foreach_element(&uci_wireless->sections, e) {
 				struct uci_section *s = uci_to_section(e);
-	
+
 				if (!strcmp(s->type, "wifi-iface")) {
 					device = uci_lookup_option_string(uci_ctx, s, "device");
 					if(!device || strcmp(device, wdevs[wno]))
@@ -209,6 +254,56 @@ load_networks()
 }
 
 static void
+load_wireless()
+{
+	struct uci_element *e;
+	const char *device = NULL;
+	const char *network = NULL;
+	const char *ssid = NULL;
+	char wdev[16];
+	int wno = 0;
+	int vif;
+	int vif0 = 0;
+	int vif1 = 0;
+
+	memset(wireless, '\0', sizeof(wireless));
+
+	if((uci_wireless = init_package("wireless"))) {
+		uci_foreach_element(&uci_wireless->sections, e) {
+			struct uci_section *s = uci_to_section(e);
+
+			if (!strcmp(s->type, "wifi-iface")) {
+				device = uci_lookup_option_string(uci_ctx, s, "device");
+				network = uci_lookup_option_string(uci_ctx, s, "network");
+				ssid = uci_lookup_option_string(uci_ctx, s, "ssid");
+				if (network && device) {
+					wireless[wno].device = device;
+					wireless[wno].network = network;
+					(ssid) ? (wireless[wno].ssid = ssid) : (wireless[wno].ssid = "");
+					if (!strcmp(device, "wl0"))
+						vif = vif0;
+					else
+						vif = vif1;
+
+					if (vif > 0)
+						sprintf(wdev, "%s.%d", device, vif);
+					else
+						strcpy(wdev, device);
+
+					wireless[wno].vif = strdup(wdev);
+
+					wno++;
+				}
+				if (!strcmp(device, "wl0"))
+					vif0++;
+				else
+					vif1++;
+			}
+		}
+	}
+}
+
+static void
 match_client_to_network(Network *lan, char *hostaddr, bool *local, char **net, char **dev)
 {
 
@@ -249,6 +344,30 @@ handle_client(Client *clnt)
 	}
 }
 
+static bool
+wireless_sta(Client *clnt)
+{
+	FILE *stainfo;
+	char cmnd[64];
+	char line[128];
+	int i = 0;
+	bool there = false;
+
+	for (i = 0; wireless[i].device; i++) {
+		sprintf(cmnd, "wlctl -i %s sta_info %s 2>/dev/null", wireless[i].vif, clnt->macaddr);
+		if ((stainfo = popen(cmnd, "r"))) {
+			if(fgets(line, sizeof(line), stainfo) != NULL) {
+				there = true;
+				strncpy(clnt->wdev, wireless[i].vif, sizeof(clnt->wdev));
+			}
+			pclose(stainfo);
+		}
+		if (there)
+			break;
+	}
+	return there;
+}
+
 static void
 populate_clients()
 {
@@ -269,11 +388,15 @@ populate_clients()
 		{
 			remove_newline(line);
 			clients[cno].exists = false;
+			clients[cno].wireless = false;
 			if (sscanf(line, "%s %s %s %s %s", clients[cno].leaseno, clients[cno].macaddr, clients[cno].hostaddr, clients[cno].hostname, mask) == 5) {
 				clients[cno].exists = true;
 				clients[cno].dhcp = true;
 				handle_client(&clients[cno]);
-				clients[cno].connected = arping(clients[cno].hostaddr, clients[cno].device);
+				if((clients[cno].connected = wireless_sta(&clients[cno])))
+					clients[cno].wireless = true;
+				else
+					clients[cno].connected = arping(clients[cno].hostaddr, clients[cno].device);
 				cno++;
 			}
 		}
@@ -286,6 +409,7 @@ populate_clients()
 			remove_newline(line);
 			nothere = true;
 			clients[cno].exists = false;
+			clients[cno].wireless = false;
 			if ((lno > 0) && sscanf(line, "%s 0x%d 0x%d %s %s %s", clients[cno].hostaddr, &hw, &flag, clients[cno].macaddr, mask, clients[cno].device)) {
 				for (i=0; i < cno; i++) {
 					if (!strcmp(clients[cno].hostaddr, clients[i].hostaddr)) {
@@ -298,7 +422,10 @@ populate_clients()
 					if(clients[cno].local) {
 						clients[cno].exists = true;
 						clients[cno].dhcp = false;
-						clients[cno].connected = arping(clients[cno].hostaddr, clients[cno].device);
+						if((clients[cno].connected = wireless_sta(&clients[cno])))
+							clients[cno].wireless = true;
+						else
+							clients[cno].connected = arping(clients[cno].hostaddr, clients[cno].device);
 						cno++;
 					}
 				}
@@ -317,6 +444,34 @@ populate_clients()
 	if(memcmp(&clients_new, &clients_old, sizeof(clients)))
 		system("ubus send client");
 	memcpy(&clients_old, &clients_new, sizeof(clients));
+}
+
+static void
+populate_clients6()
+{
+	FILE *hosts6;
+	char line[512];
+	int cno = 0;
+	int iaid, ts, id, length;
+
+	if ((hosts6 = fopen("/tmp/hosts/6relayd", "r"))) {
+		while(fgets(line, sizeof(line), hosts6) != NULL)
+		{
+			remove_newline(line);
+			clients6[cno].exists = false;
+			clients6[cno].wireless = false;
+			if (sscanf(line, "# %s %s %d %s %d %x %d %s", clients6[cno].device, clients6[cno].duid, &iaid, clients6[cno].hostname, &ts, &id, &length, clients6[cno].ip6addr)) {
+				clients6[cno].exists = true;
+				if(!(clients6[cno].connected = ndisc (clients6[cno].hostname, clients6[cno].device, 0x8, 1, 500)))
+					recalc_sleep_time(true, 500000);
+				sprintf(clients6[cno].macaddr, get_macaddr());
+				if((clients6[cno].connected = wireless_sta(&clients[cno])))
+					clients6[cno].wireless = true;
+				cno++;
+			}
+		}
+		fclose(hosts6);
+	}
 }
 
 static void
@@ -471,13 +626,14 @@ static void
 router_dump_clients(struct blob_buf *b)
 {
 	void *t;
-	char clientnum[16];
+	char clientnum[10];
+	int num = 1;
 	int i;
 
 	for (i = 0; i < MAX_CLIENT; i++) {
 		if (!clients[i].exists)
 			break;
-		sprintf(clientnum, "client-%d", i + 1);
+		sprintf(clientnum, "client-%d", num);
 		t = blobmsg_open_table(b, clientnum);
 		blobmsg_add_string(b, "hostname", clients[i].hostname);
 		blobmsg_add_string(b, "ipaddr", clients[i].hostaddr);
@@ -486,7 +642,198 @@ router_dump_clients(struct blob_buf *b)
 		blobmsg_add_string(b, "device", clients[i].device);
 		blobmsg_add_u8(b, "dhcp", clients[i].dhcp);
 		blobmsg_add_u8(b, "connected", clients[i].connected);
+		blobmsg_add_u8(b, "wireless", clients[i].wireless);
+		if(clients[i].wireless) {
+			blobmsg_add_string(b, "wdev", clients[i].wdev);
+		}
 		blobmsg_close_table(b, t);
+		num++;
+	}
+}
+
+static void
+router_dump_connected_clients(struct blob_buf *b)
+{
+	void *t;
+	char clientnum[10];
+	int num = 1;
+	int i;
+
+	for (i = 0; i < MAX_CLIENT; i++) {
+		if (!clients[i].exists)
+			break;
+		if (!(clients[i].connected))
+			continue;
+		sprintf(clientnum, "client-%d", num);
+		t = blobmsg_open_table(b, clientnum);
+		blobmsg_add_string(b, "hostname", clients[i].hostname);
+		blobmsg_add_string(b, "ipaddr", clients[i].hostaddr);
+		blobmsg_add_string(b, "macaddr", clients[i].macaddr);
+		blobmsg_add_string(b, "network", clients[i].network);
+		blobmsg_add_string(b, "device", clients[i].device);
+		blobmsg_add_u8(b, "dhcp", clients[i].dhcp);
+		blobmsg_add_u8(b, "wireless", clients[i].wireless);
+		if(clients[i].wireless) {
+			blobmsg_add_string(b, "wdev", clients[i].wdev);
+		}
+		blobmsg_close_table(b, t);
+		num++;
+	}
+}
+
+static void
+router_dump_network_clients(struct blob_buf *b, char *net)
+{
+	void *t;
+	char clientnum[10];
+	int num = 1;
+	int i;
+
+	for (i = 0; i < MAX_CLIENT; i++) {
+		if (!clients[i].exists)
+			break;
+		if (strcmp(clients[i].network, net))
+			continue;
+		sprintf(clientnum, "client-%d", num);
+		t = blobmsg_open_table(b, clientnum);
+		blobmsg_add_string(b, "hostname", clients[i].hostname);
+		blobmsg_add_string(b, "ipaddr", clients[i].hostaddr);
+		blobmsg_add_string(b, "macaddr", clients[i].macaddr);
+		blobmsg_add_string(b, "network", clients[i].network);
+		blobmsg_add_string(b, "device", clients[i].device);
+		blobmsg_add_u8(b, "dhcp", clients[i].dhcp);
+		blobmsg_add_u8(b, "connected", clients[i].connected);
+		blobmsg_add_u8(b, "wireless", clients[i].wireless);
+		if(clients[i].wireless) {
+			blobmsg_add_string(b, "wdev", clients[i].wdev);
+		}
+		blobmsg_close_table(b, t);
+		num++;
+	}
+}
+
+static void
+router_dump_connected_clients6(struct blob_buf *b)
+{
+	void *t;
+	char clientnum[10];
+	int num = 1;
+	int i;
+
+	for (i = 0; i < MAX_CLIENT; i++) {
+		if (!clients6[i].exists)
+			break;
+		if (!(clients6[i].connected))
+			continue;
+		sprintf(clientnum, "client-%d", num);
+		t = blobmsg_open_table(b, clientnum);
+		blobmsg_add_string(b, "hostname", clients6[i].hostname);
+		blobmsg_add_string(b, "ip6addr", clients6[i].ip6addr);
+		blobmsg_add_string(b, "macaddr", clients[i].macaddr);
+		blobmsg_add_string(b, "duid", clients6[i].duid);
+		blobmsg_add_string(b, "device", clients6[i].device);
+		blobmsg_add_u8(b, "wireless", clients6[i].wireless);
+		if(clients6[i].wireless) {
+			blobmsg_add_string(b, "wdev", clients6[i].wdev);
+		}
+		blobmsg_close_table(b, t);
+		num++;
+	}
+}
+
+static void
+router_dump_clients6(struct blob_buf *b)
+{
+	void *t;
+	char clientnum[10];
+	int num = 1;
+	int i;
+
+	for (i = 0; i < MAX_CLIENT; i++) {
+		if (!clients6[i].exists)
+			break;
+		sprintf(clientnum, "client-%d", num);
+		t = blobmsg_open_table(b, clientnum);
+		blobmsg_add_string(b, "hostname", clients6[i].hostname);
+		blobmsg_add_string(b, "ip6addr", clients6[i].ip6addr);
+		blobmsg_add_string(b, "macaddr", clients[i].macaddr);
+		blobmsg_add_string(b, "duid", clients6[i].duid);
+		blobmsg_add_string(b, "device", clients6[i].device);
+		blobmsg_add_u8(b, "connected", clients6[i].connected);
+		blobmsg_add_u8(b, "wireless", clients6[i].wireless);
+		if(clients6[i].wireless) {
+			blobmsg_add_string(b, "wdev", clients6[i].wdev);
+		}
+		blobmsg_close_table(b, t);
+		num++;
+	}
+}
+
+static void
+router_dump_stas(struct blob_buf *b)
+{
+	void *t;
+	char stanum[8];
+	int num = 1;
+	int i;
+
+	for (i = 0; i < MAX_CLIENT; i++) {
+		if (!clients[i].exists)
+			break;
+		if (!(clients[i].wireless))
+			continue;
+		sprintf(stanum, "sta-%d", num);
+		t = blobmsg_open_table(b, stanum);
+		blobmsg_add_string(b, "hostname", clients[i].hostname);
+		blobmsg_add_string(b, "ipaddr", clients[i].hostaddr);
+		blobmsg_add_string(b, "macaddr", clients[i].macaddr);
+		blobmsg_add_string(b, "network", clients[i].network);
+		blobmsg_add_u8(b, "dhcp", clients[i].dhcp);
+		if(strstr(clients[i].device, "br-"))
+			blobmsg_add_string(b, "bridge", clients[i].device);
+		blobmsg_add_string(b, "wdev", clients[i].wdev);
+		blobmsg_close_table(b, t);
+		num++;
+	}
+}
+
+static void
+router_dump_wireless_stas(struct blob_buf *b, char *wname, bool vif)
+{
+	void *t;
+	char stanum[8];
+	char compare[8];
+	int num = 1;
+	int i;
+
+	for (i = 0; i < MAX_CLIENT; i++) {
+		if (!clients[i].exists)
+			break;
+		if(!(clients[i].wireless))
+			continue;
+
+		memset(compare, '\0', 8);
+		if (vif)
+			strcpy(compare, clients[i].wdev);
+		else
+			strncpy(compare, clients[i].wdev, 3);
+
+		if (strcmp(compare, wname))
+			continue;
+
+		sprintf(stanum, "sta-%d", num);
+		t = blobmsg_open_table(b, stanum);
+		blobmsg_add_string(b, "hostname", clients[i].hostname);
+		blobmsg_add_string(b, "ipaddr", clients[i].hostaddr);
+		blobmsg_add_string(b, "macaddr", clients[i].macaddr);
+		blobmsg_add_string(b, "network", clients[i].network);
+		blobmsg_add_u8(b, "dhcp", clients[i].dhcp);
+		if(strstr(clients[i].device, "br-"))
+			blobmsg_add_string(b, "bridge", clients[i].device);
+		if(!vif)
+			blobmsg_add_string(b, "wdev", clients[i].wdev);
+		blobmsg_close_table(b, t);
+		num++;
 	}
 }
 
@@ -645,15 +992,6 @@ host_dump_status(struct blob_buf *b, char *addr, bool byIP)
 	}
 }
 
-enum {
-	QUEST_NAME,
-	__QUEST_MAX,
-};
-
-static const struct blobmsg_policy quest_policy[__QUEST_MAX] = {
-	[QUEST_NAME] = { .name = "info", .type = BLOBMSG_TYPE_STRING },
-};
-
 static int
 quest_router_specific(struct ubus_context *ctx, struct ubus_object *obj,
 		  struct ubus_request_data *req, const char *method,
@@ -735,6 +1073,144 @@ quest_router_clients(struct ubus_context *ctx, struct ubus_object *obj,
 }
 
 static int
+quest_router_connected_clients(struct ubus_context *ctx, struct ubus_object *obj,
+		  struct ubus_request_data *req, const char *method,
+		  struct blob_attr *msg)
+{
+	struct blob_attr *tb[__QUEST_MAX];
+
+	blobmsg_parse(quest_policy, __QUEST_MAX, tb, blob_data(msg), blob_len(msg));
+
+	blob_buf_init(&bb, 0);
+	router_dump_connected_clients(&bb);
+	ubus_send_reply(ctx, req, bb.head);
+
+	return 0;
+}
+
+static int
+quest_router_network_clients(struct ubus_context *ctx, struct ubus_object *obj,
+		  struct ubus_request_data *req, const char *method,
+		  struct blob_attr *msg)
+{
+	struct blob_attr *tb[__NETWORK_MAX];
+	bool nthere = false;
+	int i;
+
+	blobmsg_parse(network_policy, __NETWORK_MAX, tb, blob_data(msg), blob_len(msg));
+
+	if (!(tb[NETWORK_NAME]))
+		return UBUS_STATUS_INVALID_ARGUMENT;
+
+	for (i=0; network[i].is_lan; i++)
+		if(!strcmp(network[i].name, blobmsg_data(tb[NETWORK_NAME]))) {
+			nthere = true;
+			break;
+		}
+
+	if (!(nthere))
+		return UBUS_STATUS_INVALID_ARGUMENT;
+
+	blob_buf_init(&bb, 0);
+	router_dump_network_clients(&bb, blobmsg_data(tb[NETWORK_NAME]));
+	ubus_send_reply(ctx, req, bb.head);
+
+	return 0;
+}
+
+static int
+quest_router_connected_clients6(struct ubus_context *ctx, struct ubus_object *obj,
+		  struct ubus_request_data *req, const char *method,
+		  struct blob_attr *msg)
+{
+	struct blob_attr *tb[__QUEST_MAX];
+
+	blobmsg_parse(quest_policy, __QUEST_MAX, tb, blob_data(msg), blob_len(msg));
+
+	blob_buf_init(&bb, 0);
+	router_dump_connected_clients6(&bb);
+	ubus_send_reply(ctx, req, bb.head);
+
+	return 0;
+}
+
+static int
+quest_router_clients6(struct ubus_context *ctx, struct ubus_object *obj,
+		  struct ubus_request_data *req, const char *method,
+		  struct blob_attr *msg)
+{
+	struct blob_attr *tb[__QUEST_MAX];
+
+	blobmsg_parse(quest_policy, __QUEST_MAX, tb, blob_data(msg), blob_len(msg));
+
+	blob_buf_init(&bb, 0);
+	router_dump_clients6(&bb);
+	ubus_send_reply(ctx, req, bb.head);
+
+	return 0;
+}
+
+static int
+quest_router_stas(struct ubus_context *ctx, struct ubus_object *obj,
+		  struct ubus_request_data *req, const char *method,
+		  struct blob_attr *msg)
+{
+	struct blob_attr *tb[__QUEST_MAX];
+
+	blobmsg_parse(quest_policy, __QUEST_MAX, tb, blob_data(msg), blob_len(msg));
+
+	blob_buf_init(&bb, 0);
+	router_dump_stas(&bb);
+	ubus_send_reply(ctx, req, bb.head);
+
+	return 0;
+}
+
+static int
+quest_router_wireless_stas(struct ubus_context *ctx, struct ubus_object *obj,
+		  struct ubus_request_data *req, const char *method,
+		  struct blob_attr *msg)
+{
+	struct blob_attr *tb[__WL_MAX];
+	char lookup[8];
+	bool nthere = false;
+	int i;
+
+	blobmsg_parse(wl_policy, __WL_MAX, tb, blob_data(msg), blob_len(msg));
+
+	if (!(tb[RADIO_NAME]) && !(tb[VIF_NAME]))
+		return UBUS_STATUS_INVALID_ARGUMENT;
+
+	if (tb[RADIO_NAME] && strchr(blobmsg_data(tb[RADIO_NAME]), '.'))
+		return UBUS_STATUS_INVALID_ARGUMENT;
+
+	memset(lookup, '\0', 8);
+	if (tb[VIF_NAME])
+		strcpy(lookup, blobmsg_data(tb[VIF_NAME]));
+	else
+		strcpy(lookup, blobmsg_data(tb[RADIO_NAME]));
+
+	for (i=0; wireless[i].device; i++)
+		if(!strcmp(wireless[i].vif, lookup)) {
+			nthere = true;
+			break;
+		}
+
+	if (!(nthere))
+		return UBUS_STATUS_INVALID_ARGUMENT;
+
+
+	blob_buf_init(&bb, 0);
+	if (tb[RADIO_NAME])
+		router_dump_wireless_stas(&bb, blobmsg_data(tb[RADIO_NAME]), false);
+	else
+		router_dump_wireless_stas(&bb, blobmsg_data(tb[VIF_NAME]), true);
+	ubus_send_reply(ctx, req, bb.head);
+
+	return 0;
+}
+
+static int
 quest_router_usbs(struct ubus_context *ctx, struct ubus_object *obj,
 		  struct ubus_request_data *req, const char *method,
 		  struct blob_attr *msg)
@@ -749,16 +1225,6 @@ quest_router_usbs(struct ubus_context *ctx, struct ubus_object *obj,
 
 	return 0;
 }
-
-
-enum {
-	NETWORK_NAME,
-	__NETWORK_MAX,
-};
-
-static const struct blobmsg_policy network_policy[__NETWORK_MAX] = {
-	[NETWORK_NAME] = { .name = "network", .type = BLOBMSG_TYPE_STRING },
-};
 
 static int
 quest_network_leases(struct ubus_context *ctx, struct ubus_object *obj,
@@ -804,8 +1270,10 @@ quest_router_ports(struct ubus_context *ctx, struct ubus_object *obj,
 		
 	for (i=0; network[i].exists; i++) {
 		if(!strcmp(network[i].name, blobmsg_data(tb[NETWORK_NAME])))
-			if(!strcmp(network[i].type, "bridge"))
-				nthere = true;
+			if(!strcmp(network[i].type, "bridge")) {
+			nthere = true;
+			break;
+		}
 	}
 
 	if (!(nthere))
@@ -817,17 +1285,6 @@ quest_router_ports(struct ubus_context *ctx, struct ubus_object *obj,
 
 	return 0;
 }
-
-enum {
-	IP_ADDR,
-	MAC_ADDR,
-	__HOST_MAX,
-};
-
-static const struct blobmsg_policy host_policy[__HOST_MAX] = {
-	[IP_ADDR] = { .name = "ipaddr", .type = BLOBMSG_TYPE_STRING },
-	[MAC_ADDR] = { .name = "macaddr", .type = BLOBMSG_TYPE_STRING },
-};
 
 static int
 quest_host_status(struct ubus_context *ctx, struct ubus_object *obj,
@@ -858,6 +1315,7 @@ quest_reload(struct ubus_context *ctx, struct ubus_object *obj,
 {
 	dump_hostname(&router);
 	load_networks();
+	load_wireless();
 	return 0;
 }
 
@@ -865,7 +1323,13 @@ static struct ubus_method router_object_methods[] = {
 	{ .name = "info", .handler = quest_router_info },
 	UBUS_METHOD("quest", quest_router_specific, quest_policy),
 	{ .name = "networks", .handler = quest_router_networks },
+	UBUS_METHOD("client", quest_router_network_clients, network_policy),
 	{ .name = "clients", .handler = quest_router_clients },
+	{ .name = "clients6", .handler = quest_router_clients6 },
+	{ .name = "connected", .handler = quest_router_connected_clients },
+	{ .name = "connected6", .handler = quest_router_connected_clients6 },
+	UBUS_METHOD("sta", quest_router_wireless_stas, wl_policy),
+	{ .name = "stas", .handler = quest_router_stas },
 	UBUS_METHOD("ports", quest_router_ports, network_policy),
 	UBUS_METHOD("leases", quest_network_leases, network_policy),
 	UBUS_METHOD("host", quest_host_status, host_policy),
@@ -950,6 +1414,7 @@ void *dump_router_info(void *arg)
 
 	init_db_hw_config();
 	load_networks();
+	load_wireless();
 	dump_keys(&keys);
 	dump_specs(&spec);
 	dump_static_router_info(&router);
@@ -958,6 +1423,7 @@ void *dump_router_info(void *arg)
 		dump_sysinfo(&router, &memory);
 		dump_cpuinfo(&router, &prev_jif, &cur_jif);
 		populate_clients();
+		populate_clients6();
 		get_jif_val(&prev_jif);
 		usleep(sleep_time);
 		recalc_sleep_time(false, 0);
@@ -966,6 +1432,7 @@ void *dump_router_info(void *arg)
 		if (lpcnt == 20) {
 			lpcnt = 0;
 			memset(clients, '\0', sizeof(clients));
+			memset(clients6, '\0', sizeof(clients6));
 		}
 	}
 

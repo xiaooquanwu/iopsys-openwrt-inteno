@@ -12,10 +12,18 @@
 
 #include <uci.h>
 
-#define MAX_NETWORK	32
+#define MAX_VIF		8
+#define MAX_NETWORK	16
 #define MAX_CLIENT	128
 #define MAX_PORT	8
 #define MAX_USB		18
+
+typedef struct {
+	const char *vif;
+	const char *device;
+	const char *ssid;
+	const char *network;
+} Wireless;
 
 typedef struct {
 	bool exists;
@@ -27,8 +35,22 @@ typedef struct {
 	char hostname[64];
 	char network[32];
 	char device[32];
+	bool wireless;
+	char wdev[8];
 	bool connected;
 } Client;
+
+typedef struct {
+	bool exists;
+	char ip6addr[128];
+	char macaddr[24];
+	char hostname[32];
+	char duid[64];
+	char device[32];
+	bool wireless;
+	char wdev[8];
+	bool connected;
+} Client6;
 
 typedef struct {
         unsigned long rx_bytes;
