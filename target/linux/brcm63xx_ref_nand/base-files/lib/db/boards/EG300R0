@@ -16,8 +16,6 @@ config board 'board'
 	option adslWanPort ''
 	option vdslWanPort ''
 	option ifacechain 'eth2 eth1'
-#	option lednames 'Status WAN Internet Wireless Ethernet WPS Voice DECT EXT'
-#	option buttonnames 'RESET Wireless WPS DECT TOUCH_NEAR TOUCH_FAR'
 	option wpsButtonGpio '0'
 	option hasBrcmAvs '1'
 	option i2cGpioCustom 'bus0=0,23,22 bus1=1,9,8'
@@ -199,6 +197,7 @@ config led_map led_map
        list press_indicator led_wan       
        list press_indicator led_internet
        list press_indicator led_voice1
+       list press_indicator led_dect
        list press_indicator led_ext
 
 config led_map led_wifi
