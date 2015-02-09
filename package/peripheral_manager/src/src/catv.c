@@ -1314,7 +1314,7 @@ again:
         int fd;
 
         syslog(LOG_INFO,"CATV config file not found /etc/config/catv\n");
-        fd = open("/etc/config/catv",O_RDWR | O_CREAT | O_TRUNC);
+        fd = open("/etc/config/catv",O_RDWR | O_CREAT | O_TRUNC, 0644);
         close(fd);
         if (loop++ < 10)
             goto again;
