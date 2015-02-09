@@ -3,7 +3,7 @@
 # Copyright (C) 2009 OpenWrt.org
 #
 
-START=24
+START=20
 
 start() {
 	sleep 1
