@@ -6,7 +6,5 @@
 START=20
 
 start() {
-	sleep 1
         swmdk &
-	sleep 1
 }
