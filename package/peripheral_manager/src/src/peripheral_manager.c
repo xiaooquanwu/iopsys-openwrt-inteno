@@ -39,7 +39,7 @@ void print_usage(char *prg_name) {
 int main(int argc, char **argv)
 {
 	int ch;
-	int daemon = 1;
+	int daemonize = 1;
 	pid_t pid, sid;
 	struct uci_context *uci_ctx = NULL;
 	static struct ubus_context *ubus_ctx = NULL;
@@ -64,7 +64,7 @@ int main(int argc, char **argv)
 
                 switch (ch) {
                 case 'f':
-                        daemon = 0;
+                        daemonize = 0;
                         break;
                 case 'd':
                         debug_level = strtol(optarg, 0, 0);
@@ -94,7 +94,7 @@ int main(int argc, char **argv)
 
 
 	/* Setup logging */
-	if (daemon) {
+	if (daemonize) {
 		setlogmask(LOG_UPTO(LOG_INFO));
 		openlog(PACKAGE, LOG_CONS, LOG_USER);
 
@@ -107,7 +107,7 @@ int main(int argc, char **argv)
 	}
 
 	/* daemonize */
-	if (daemon) {
+	if (daemonize) {
 		syslog(LOG_INFO, "starting the daemonizing process");
 
 		/* Fork off the parent process */

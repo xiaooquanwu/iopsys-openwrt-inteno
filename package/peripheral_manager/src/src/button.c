@@ -1,10 +1,11 @@
 /*-*- Mode: C; c-basic-offset: 8; indent-tabs-mode: nil -*-*/
+#include "config.h"
 #include <syslog.h>
 #include <time.h>
 #include "log.h"
 #include "button.h"
 #include "led.h"
-
+#include "touch_sx9512.h"
 
 /* used to map in the driver buttons to a function button */
 struct button_drv_list {
@@ -157,16 +158,17 @@ static int timer_valid(struct button_drv_list *button_drv, int mtimeout, int lon
 static void button_handler(struct uloop_timeout *timeout);
 static struct uloop_timeout button_inform_timer = { .cb = button_handler };
 
-void sx9512_check(void);
-
 static void button_handler(struct uloop_timeout *timeout)
 {
  	struct list_head *i;
 //        DBG(1, "");
 
+#ifdef HAVE_BOARD_H
+
         /* sx9512 driver needs to read out all buttons at once */
         /* so call it once at beginning of scanning inputs  */
         sx9512_check();
+#endif
 
         /* clean out indicator status, set by any valid press again if we find it */
         led_pressindicator_clear();
@@ -225,7 +227,7 @@ static void button_handler(struct uloop_timeout *timeout)
 */
 
 /* Find functions that use driver (drv) that has a zero longpress time and set it to time */
-static void longpress_set(int time,struct button_drv *drv) {
+static void longpress_set(int max_time,struct button_drv *drv) {
 	struct list_head *i;
 	list_for_each(i, &buttons) {
 		struct function_button *node = list_entry(i, struct function_button, list);
@@ -234,7 +236,7 @@ static void longpress_set(int time,struct button_drv *drv) {
                         struct button_drv_list *drv_node = list_entry(j, struct button_drv_list, list);
                         if(drv_node->drv == drv){
                                 if (node->longpress == 0) {
-                                        node->longpress = time;
+                                        node->longpress = max_time;
                                 }
                         }
                 }

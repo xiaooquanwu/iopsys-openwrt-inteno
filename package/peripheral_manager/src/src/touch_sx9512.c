@@ -67,7 +67,7 @@ struct i2c_touch{
 
 struct led_data {
 	int addr;
-	int state;
+	led_state_t state;
 	struct led_drv led;
 };
 
@@ -82,11 +82,12 @@ static LIST_HEAD(sx9512_leds);
 static struct i2c_touch *i2c_touch_current;	/* pointer to current active table */
 
 static void do_init_tab( struct i2c_touch *i2c_touch);
-static struct i2c_touch * i2c_init(struct uci_context *uci_ctx, char* i2c_dev_name, struct i2c_touch* i2c_touch_list, int len);
+static struct i2c_touch * i2c_init(struct uci_context *uci_ctx, const char* i2c_dev_name, struct i2c_touch* i2c_touch_list, int len);
 
 static int sx9512_led_set_state(struct led_drv *drv, led_state_t state);
 static led_state_t sx9512_led_get_state(struct led_drv *drv);
 static int sx9512_set_state(struct led_data *p, led_state_t state);
+
 
 /*addr,value,range*/
 static const struct i2c_reg_tab i2c_init_tab_cg300[]={
@@ -292,7 +293,7 @@ static void do_init_tab( struct i2c_touch *i2c_touch)
 }
 
 
-static struct i2c_touch * i2c_init(struct uci_context *uci_ctx, char* i2c_dev_name, struct i2c_touch* touch_list, int len)
+static struct i2c_touch * i2c_init(struct uci_context *uci_ctx, const char* i2c_dev_name, struct i2c_touch* touch_list, int len)
 {
 	const char *p;
 	int i;
@@ -373,15 +374,17 @@ static int sx9512_set_state(struct led_data *p, led_state_t state)
 		ret = ret & ~bit;
 	else{
 		syslog(LOG_ERR,"Led %s: Set to not supported state %d\n",p->led.name, state);
-		return;
+		return -1;
 	}
 
 	p->state = state;
 
 	ret = i2c_smbus_write_byte_data(i2c_touch_current->dev, SX9512_LEDMAP2, ret);
-	if (ret < 0 )
-		syslog(LOG_ERR, "Could not read from i2c device, LedMap2 register\n");
-
+	if (ret < 0 ) {
+		syslog(LOG_ERR, "Could not write to i2c device, LedMap2 register\n");
+		return -1;
+	}
+	return state;
 }
 
 /* set state if not same as current state  */
@@ -390,11 +393,11 @@ static int sx9512_led_set_state(struct led_drv *drv, led_state_t state)
 	struct led_data *p = (struct led_data *)drv->priv;
 
 	if (!i2c_touch_current || !i2c_touch_current->dev)
-		return;
+		return -1;
 
 	if (p->addr > 7){
 		DBG(1,"Led %s:with address %d outside range 0-7\n",drv->name, p->addr);
-		return;
+		return -1;
 	}
 
 	if (state == p->state ) {
@@ -551,7 +554,6 @@ static struct button_drv_func button_func = {
 
 static void sx9512_button_init(struct server_ctx *s_ctx)
 {
-	int i,ret;
 	struct ucilist *node;
 	LIST_HEAD(buttons);
 

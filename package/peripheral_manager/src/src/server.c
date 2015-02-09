@@ -1,3 +1,4 @@
+#include "config.h"
 #include <syslog.h>
 #include "log.h"
 #include "server.h"
@@ -30,14 +31,12 @@ void server_start(struct uci_context *uci_ctx, struct ubus_context *ubus_ctx)
 	sim_led_init(&server);
 	sim_button_init(&server);
 
+#ifdef HAVE_BOARD_H
 	gpio_led_init(&server);
 	gpio_button_init(&server);
 
 	sx9512_init(&server);
-
-//	sim_touch_init(&server);
-//	sim_gpio_init(&server);
-
+#endif
 
 	DBG(1, "connect generic buttons/leds to hardware drivers.");
 	led_init(&server);

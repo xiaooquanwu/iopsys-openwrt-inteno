@@ -36,7 +36,7 @@ static struct catv_handler *pcatv;
 static int catv_get_type(struct blob_buf *b)
 {
     int type;
-    char *s;
+    const char *s;
 
     type = i2c_smbus_read_byte_data(pcatv->i2c_a0,32);
 
@@ -270,7 +270,7 @@ static int catv_get_serial_method(struct ubus_context *ubus_ctx, struct ubus_obj
 static int catv_get_interface(struct blob_buf *b)
 {
     int type;
-    char *s;
+    const char *s;
 
     type = i2c_smbus_read_byte_data(pcatv->i2c_a0,81);
 
@@ -315,7 +315,7 @@ static int catv_get_interface_method(struct ubus_context *ubus_ctx, struct ubus_
 static int catv_get_bandwidth(struct blob_buf *b)
 {
     int type;
-    char *s;
+    const char *s;
 
     type = i2c_smbus_read_byte_data(pcatv->i2c_a0,82);
 
@@ -1352,7 +1352,7 @@ again:
 
 }
 
-struct catv_handler * catv_init(struct uci_context *uci_ctx, char *i2c_bus,int a0_addr,int a2_addr)
+struct catv_handler * catv_init(struct uci_context *uci_ctx, const char *i2c_bus,int a0_addr,int a2_addr)
 {
     struct catv_handler *h;
     const char *p;

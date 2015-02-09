@@ -36,7 +36,6 @@ static struct button_drv_func func = {
 };
 
 void gpio_button_init(struct server_ctx *s_ctx) {
-	int i,ret;
 	struct ucilist *node;
 	LIST_HEAD(buttons);
 
