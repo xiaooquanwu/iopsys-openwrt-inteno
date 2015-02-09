@@ -34,6 +34,11 @@ define Package/peripheral_manager/description
 	Application handling peripheral
 endef
 
+TARGET_CPPFLAGS := \
+	-I$(STAGING_DIR)/usr/include/bcm963xx/shared/opensource/include/bcm963xx \
+        -I$(STAGING_DIR)/usr/include/bcm963xx/bcmdrivers/opensource/include/bcm963xx \
+        $(TARGET_CPPFLAGS)
+
 # In future get the git. unpack it in src.
 define Build/Prepare
 	mkdir -p $(PKG_BUILD_DIR)

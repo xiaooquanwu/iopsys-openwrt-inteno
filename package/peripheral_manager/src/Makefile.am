@@ -24,7 +24,10 @@ peripheral_manager_SOURCES = \
 	src/i2c.c \
 	src/i2c.h \
 	src/sfp.c \
-	src/sfp.h \
+	src/sfp.h 
+
+if BRCM_BOARD
+peripheral_manager_SOURCES += \
 	src/gpio_led.c \
 	src/gpio_led.h \
 	src/gpio_button.c \
@@ -33,9 +36,8 @@ peripheral_manager_SOURCES = \
 	src/gpio.h \
 	src/touch_sx9512.c \
 	src/touch_sx9512.h
+endif
 
 peripheral_manager_LDADD = $(UCI_LIB) $(UBOX_LIB) $(UBUS_LIB) -lm
 
-peripheral_manager_CFLAGS =  $(AM_CFLAGS) -DPRG_VERSION=\"$(PRG_VERSION)\" \
-	-I$(STAGING_DIR)/usr/include/bcm963xx/shared/opensource/include/bcm963xx/ \
-	-I$(STAGING_DIR)/usr/include/bcm963xx/bcmdrivers/opensource/include/bcm963xx/	
+peripheral_manager_CFLAGS =  $(AM_CFLAGS) -DPRG_VERSION=\"$(PRG_VERSION)\" 

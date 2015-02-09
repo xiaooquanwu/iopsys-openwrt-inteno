@@ -64,6 +64,9 @@ AC_SEARCH_LIBS([uloop_init], [ubox], [], [AC_MSG_ERROR([*** UBOX library not fou
 dnl chek ubus  , its manadatory
 AC_SEARCH_LIBS([ubus_connect], [ubus], [], [AC_MSG_ERROR([*** UBUS library not found])])
 
+dnl check for board.h file 
+AC_CHECK_HEADERS(board.h, AM_CONDITIONAL(BRCM_BOARD, true), AM_CONDITIONAL(BRCM_BOARD, false))
+
 AC_OUTPUT
 
 AC_MSG_RESULT([
