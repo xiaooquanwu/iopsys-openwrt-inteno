@@ -65,15 +65,28 @@ struct i2c_touch{
 	const char *name;
 };
 
+struct led_data {
+	int addr;
+	int state;
+	struct led_drv led;
+};
+
+struct sx9512_list{
+	struct list_head list;
+	struct led_data *drv;
+};
+
+/* holds all leds that is configured to be used. needed for reset */
+static LIST_HEAD(sx9512_leds);
+
 static struct i2c_touch *i2c_touch_current;	/* pointer to current active table */
 
 static void do_init_tab( struct i2c_touch *i2c_touch);
 static struct i2c_touch * i2c_init(struct uci_context *uci_ctx, char* i2c_dev_name, struct i2c_touch* i2c_touch_list, int len);
-static void sx9512_reset(struct i2c_touch *i2c_touch);
 
 static int sx9512_led_set_state(struct led_drv *drv, led_state_t state);
 static led_state_t sx9512_led_get_state(struct led_drv *drv);
-
+static int sx9512_set_state(struct led_data *p, led_state_t state);
 
 /*addr,value,range*/
 static const struct i2c_reg_tab i2c_init_tab_cg300[]={
@@ -325,50 +338,30 @@ static struct i2c_touch * i2c_init(struct uci_context *uci_ctx, char* i2c_dev_na
 
 extern struct uloop_timeout i2c_touch_reset_timer;
 
-static void sx9512_reset(struct i2c_touch *i2c_touch)
-{
-    do_init_tab(i2c_touch);
-}
 
 /* sx9512 needs a reset every 30 minutes. to recalibrate the touch detection */
 #define I2C_RESET_TIME (1000 * 60 * 30) /* 30 min in ms */
 static void sx9512_reset_handler(struct uloop_timeout *timeout);
 struct uloop_timeout i2c_touch_reset_timer = { .cb = sx9512_reset_handler };
+
 static void sx9512_reset_handler(struct uloop_timeout *timeout)
 {
-	int i;
+	struct list_head *i;
+	do_init_tab(i2c_touch_current);
 
-	sx9512_reset(i2c_touch_current);
-
-	/*BUG: need to restore leds */
-#if 0
-	for (i=0 ; i<led_cfg->leds_nr ; i++)
-		if (led_cfg->leds[i]->type == I2C)
-			led_set(led_cfg, i, -1);
-#endif
+	list_for_each(i, &sx9512_leds) {
+		struct sx9512_list *node = list_entry(i, struct sx9512_list, list);
+		sx9512_set_state(node->drv, node->drv->state);
+	}
 
 	uloop_timeout_set(&i2c_touch_reset_timer, I2C_RESET_TIME);
 }
 
-struct led_data {
-	int addr;
-	int state;
-	struct led_drv led;
-};
-
-static int sx9512_led_set_state(struct led_drv *drv, led_state_t state)
+/* set state regardless of previous state */
+static int sx9512_set_state(struct led_data *p, led_state_t state)
 {
-	struct led_data *p = (struct led_data *)drv->priv;
 	int ret;
 	int bit = 1 << p->addr;
-
-	if (!i2c_touch_current || !i2c_touch_current->dev)
-		return;
-
-	if (p->addr > 7){
-		DBG(1,"Led %s:with address %d outside range 0-7\n",drv->name, p->addr);
-		return;
-	}
 
 	ret = i2c_smbus_read_byte_data(i2c_touch_current->dev, SX9512_LEDMAP2);
 	if (ret < 0 )
@@ -379,7 +372,7 @@ static int sx9512_led_set_state(struct led_drv *drv, led_state_t state)
 	else if (state == OFF)
 		ret = ret & ~bit;
 	else{
-		syslog(LOG_ERR,"Led %s: Set to not supported state %d\n",drv->name, state);
+		syslog(LOG_ERR,"Led %s: Set to not supported state %d\n",p->led.name, state);
 		return;
 	}
 
@@ -389,7 +382,27 @@ static int sx9512_led_set_state(struct led_drv *drv, led_state_t state)
 	if (ret < 0 )
 		syslog(LOG_ERR, "Could not read from i2c device, LedMap2 register\n");
 
-	return p->state;
+}
+
+/* set state if not same as current state  */
+static int sx9512_led_set_state(struct led_drv *drv, led_state_t state)
+{
+	struct led_data *p = (struct led_data *)drv->priv;
+
+	if (!i2c_touch_current || !i2c_touch_current->dev)
+		return;
+
+	if (p->addr > 7){
+		DBG(1,"Led %s:with address %d outside range 0-7\n",drv->name, p->addr);
+		return;
+	}
+
+	if (state == p->state ) {
+		DBG(3,"skipping set");
+		return state;
+	}
+
+	return sx9512_set_state(p, state);
 }
 
 static led_state_t sx9512_led_get_state(struct led_drv *drv)
@@ -597,11 +610,21 @@ static void sx9512_led_init(struct server_ctx *s_ctx) {
 		data->led.func = &led_func;
 		data->led.priv = data;
 		led_add(&data->led);
+
+		{ /* save leds in internal list, we need this for handling reset, we need to restore state */
+			struct sx9512_list *ll = malloc(sizeof(struct sx9512_list));
+			memset(ll, 0, sizeof( struct sx9512_list));
+			ll->drv = data;
+			list_add(&ll->list, &sx9512_leds);
+		}
+
+
 	}
 }
 
 void sx9512_init(struct server_ctx *s_ctx) {
 
+	struct list_head *i;
 
 	DBG(1, "");
 
@@ -610,10 +633,17 @@ void sx9512_init(struct server_ctx *s_ctx) {
 			     i2c_touch_list,
 			     sizeof(i2c_touch_list)/sizeof(i2c_touch_list[0]));
 
-	/* start reset timer */
-        uloop_timeout_set(&i2c_touch_reset_timer, I2C_RESET_TIME);
 
 	sx9512_button_init(s_ctx);
 	sx9512_led_init(s_ctx);
+
+	/* Force set of initial state for leds. */
+	list_for_each(i, &sx9512_leds) {
+		struct sx9512_list *node = list_entry(i, struct sx9512_list, list);
+		sx9512_set_state(node->drv, node->drv->state);
+	}
+
+	/* start reset timer */
+        uloop_timeout_set(&i2c_touch_reset_timer, I2C_RESET_TIME);
 }
 
