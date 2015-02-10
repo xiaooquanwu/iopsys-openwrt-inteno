@@ -385,6 +385,7 @@ wif_wps_settings() {
 			nvram set wps_pbc_method="2"
 			[ "$mode" == "sta" ] && nvram set wps_pbc_sta_ifname="$iface" || nvram set wps_pbc_ap_ifname="$iface"
 		fi
+		nvram set wps_oob_configured="1"
 		nvram set wps_config="DONE"
 		_enWps=$((_enWps+1))
 	else
