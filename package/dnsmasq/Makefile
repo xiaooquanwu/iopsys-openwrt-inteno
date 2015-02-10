@@ -8,12 +8,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=dnsmasq
-PKG_VERSION:=2.66
+#http://mirror2.openwrt.org/sources/dnsmasq-2.72.tar.gz
+PKG_VERSION:=2.72
 PKG_RELEASE:=2
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=http://thekelleys.org.uk/dnsmasq
-PKG_MD5SUM:=c5eb8fb88847a5e9bf18db67c74efd47
+PKG_MD5SUM:=cf82f81cf09ad3d47612985012240483
 
 PKG_LICENSE:=GPLv2
 PKG_LICENSE_FILES:=COPYING
