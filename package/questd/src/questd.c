@@ -379,7 +379,7 @@ populate_clients()
 	int flag;
 	char mask[64];
 	int i;
-	bool nothere;
+	bool there;
 
 	memset(clients_new, '\0', sizeof(clients));
 
@@ -389,6 +389,7 @@ populate_clients()
 			remove_newline(line);
 			clients[cno].exists = false;
 			clients[cno].wireless = false;
+			memset(clients[cno].hostname, '\0', 64);
 			if (sscanf(line, "%s %s %s %s %s", clients[cno].leaseno, clients[cno].macaddr, clients[cno].hostaddr, clients[cno].hostname, mask) == 5) {
 				clients[cno].exists = true;
 				clients[cno].dhcp = true;
@@ -407,17 +408,26 @@ populate_clients()
 		while(fgets(line, sizeof(line), arpt) != NULL)
 		{
 			remove_newline(line);
-			nothere = true;
+			there = false;
 			clients[cno].exists = false;
 			clients[cno].wireless = false;
+			memset(clients[cno].hostname, '\0', 64);
 			if ((lno > 0) && sscanf(line, "%s 0x%d 0x%d %s %s %s", clients[cno].hostaddr, &hw, &flag, clients[cno].macaddr, mask, clients[cno].device)) {
 				for (i=0; i < cno; i++) {
+					if (!strcmp(clients[cno].macaddr, clients[i].macaddr)) {
+						if (clients[i].connected) {
+							there = true;
+							break;
+						} else {
+							strcpy(clients[cno].hostname, clients[i].hostname);
+						}
+					}
 					if (!strcmp(clients[cno].hostaddr, clients[i].hostaddr)) {
-						nothere = false;
+						there = true;
 						break;
 					}
 				}
-				if (nothere) {
+				if (!there) {
 					handle_client(&clients[cno]);
 					if(clients[cno].local) {
 						clients[cno].exists = true;
@@ -433,11 +443,6 @@ populate_clients()
 			lno++;
 		}
 		fclose(arpt);
-	}
-
-	for (i=0; i < cno-1; i++) {
-		if (clients[i].dhcp && !strcmp(clients[cno-1].macaddr, clients[i].macaddr))
-			strcpy(clients[cno-1].hostname, clients[i].hostname);
 	}
 
 	memcpy(&clients_new, &clients, sizeof(clients));
@@ -460,6 +465,7 @@ populate_clients6()
 			remove_newline(line);
 			clients6[cno].exists = false;
 			clients6[cno].wireless = false;
+			memset(clients6[cno].hostname, '\0', 64);
 			if (sscanf(line, "# %s %s %d %s %d %x %d %s", clients6[cno].device, clients6[cno].duid, &iaid, clients6[cno].hostname, &ts, &id, &length, clients6[cno].ip6addr)) {
 				clients6[cno].exists = true;
 				if(!(clients6[cno].connected = ndisc (clients6[cno].hostname, clients6[cno].device, 0x8, 1, 500)))
