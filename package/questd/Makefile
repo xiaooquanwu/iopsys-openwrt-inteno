@@ -17,7 +17,7 @@ LDFLAGS+= \
 		-Wl,-rpath-link=$(STAGING_DIR)/lib
 
 ifeq ($(CONFIG_PACKAGE_bcmkernel),y)
-BCMKERNEL_DIR:=$(BUILD_DIR)/bcmkernel-3.4-4.14/bcm963xx
+BCMKERNEL_DIR:=$(BUILD_DIR)/bcmkernel/bcm963xx
 else
 BCMKERNEL_DIR:=$(BUILD_DIR)/bcmopen-consumer/bcm963xx
 endif

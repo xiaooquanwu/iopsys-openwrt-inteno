@@ -157,7 +157,8 @@ define Package/bcmkernel/install
 	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/userspace/private/apps/vodsl/voip/inc/tpProfiles.h $(STAGING_DIR)/usr/include/bcm963xx/userspace/private/apps/vodsl/voip/inc
 	echo "#define BCM_SDK_VERSION $(BRCM_SDK_VERSION)" > $(STAGING_DIR)/usr/include/bcm_sdk_version.h
 
-	# create symlink for natali-dect
+	# create symlink to kernel build directory
+	rm -f $(BUILD_DIR)/bcmkernel
 	ln -sfn $(PKG_SOURCE_SUBDIR) $(BUILD_DIR)/bcmkernel
 
 	# Install binaries

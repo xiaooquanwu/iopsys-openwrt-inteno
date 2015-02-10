@@ -23,7 +23,7 @@ include $(INCLUDE_DIR)/kernel.mk
 
 
 
-BCM_KERNEL_VERSION=`cat $(TOPDIR)/package/bcmkernel/Makefile | grep BCM_KERNEL_VERSION:= | awk -F":=" '{print $$$$2}'`
+BCM_KERNEL_VERSION=`cat $(BUILD_DIR)/bcmkernel/bcm963xx/kernel/linux-*/include/config/kernel.release`
 
 export BUILD_DIR
 export BCM_KERNEL_VERSION
@@ -34,7 +34,7 @@ define Package/dahdi
   CATEGORY:=Base system
   TITLE:=Kernel timer for Asterisk meetme
   URL:=
-  DEPENDS:= +PACKAGE_bcmkernel:bcmkernel
+  DEPENDS:= +bcmkernel
 endef
 
 define Package/dahdi/description

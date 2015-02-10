@@ -20,7 +20,7 @@ define Package/brcminfo
   CATEGORY:=Utilities
   TITLE:=Broadcom voice driver info utility
   URL:=
-  DEPENDS:= +PACKAGE_bcmkernel:bcmkernel +PACKAGE_bcmopen:bcmopen
+  DEPENDS:= +bcmkernel
 endef
 
 define Package/brcminfo/description
