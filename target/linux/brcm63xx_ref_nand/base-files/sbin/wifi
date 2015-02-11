@@ -536,7 +536,15 @@ create_vif() {
 	wlctl -i $device bss -C $_cno up
 	wlctl -i $device ssid -C $_cno ""
 	wlctl -i $device bss -C $_cno down
-	[ $_cno -eq 0 ] && iface="$device" || iface="$device"."$_cno"
+	if [ $_cno -eq 0 ]; then
+		iface="$device"
+		# tag main interfaces
+		local mifs=$(nvram get wl_main_ifnames)
+		[ -n "$mifs" ] && mifs="$mifs $iface" || mifs="$iface"
+		nvram set wl_main_ifnames="$mifs"
+	else
+		iface="$device"."$_cno"
+	fi
 
 	# save uci config no for each virtual interface
 	nvram set "$iface"_cfgno="$vif"
@@ -631,6 +639,12 @@ wdev_bwcap_settings() {
 	config_get band "$device" band "b"
 	config_get bandwidth "$device" bandwidth
 	config_get obss_coex "$device" obss_coex "1"
+
+	if [ $band == "b" ]; then
+		nvram set wl_2g_radio="$device"
+	else
+		nvram set wl_5g_radio="$device"
+	fi
 
 	wlctl -i $device country $country
 	wlctl -i $device band $band
