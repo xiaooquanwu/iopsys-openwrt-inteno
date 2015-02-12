@@ -276,15 +276,17 @@ load_wireless()
 				device = uci_lookup_option_string(uci_ctx, s, "device");
 				network = uci_lookup_option_string(uci_ctx, s, "network");
 				ssid = uci_lookup_option_string(uci_ctx, s, "ssid");
-				if (network && device) {
+				if (device) {
 					wireless[wno].device = device;
-					wireless[wno].network = network;
+					(network) ? (wireless[wno].network = network) : (wireless[wno].network = "");
 					(ssid) ? (wireless[wno].ssid = ssid) : (wireless[wno].ssid = "");
-					if (!strcmp(device, "wl0"))
+					if (!strcmp(device, "wl0")) {
 						vif = vif0;
-					else
+						vif0++;
+					} else {
 						vif = vif1;
-
+						vif1++;
+					}
 					if (vif > 0)
 						sprintf(wdev, "%s.%d", device, vif);
 					else
@@ -294,10 +296,6 @@ load_wireless()
 
 					wno++;
 				}
-				if (!strcmp(device, "wl0"))
-					vif0++;
-				else
-					vif1++;
 			}
 		}
 	}
@@ -354,7 +352,7 @@ wireless_sta(Client *clnt)
 	bool there = false;
 
 	for (i = 0; wireless[i].device; i++) {
-		sprintf(cmnd, "wlctl -i %s sta_info %s 2>/dev/null", wireless[i].vif, clnt->macaddr);
+		sprintf(cmnd, "wlctl -i %s sta_info %s 2>/dev/null | grep ASSOCIATED", wireless[i].vif, clnt->macaddr);
 		if ((stainfo = popen(cmnd, "r"))) {
 			if(fgets(line, sizeof(line), stainfo) != NULL) {
 				there = true;
