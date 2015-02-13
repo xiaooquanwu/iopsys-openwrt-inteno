@@ -635,17 +635,19 @@ void sx9512_init(struct server_ctx *s_ctx) {
 			     i2c_touch_list,
 			     sizeof(i2c_touch_list)/sizeof(i2c_touch_list[0]));
 
+	if (i2c_touch_current != 0) {
 
-	sx9512_button_init(s_ctx);
-	sx9512_led_init(s_ctx);
+		sx9512_button_init(s_ctx);
+		sx9512_led_init(s_ctx);
 
-	/* Force set of initial state for leds. */
-	list_for_each(i, &sx9512_leds) {
-		struct sx9512_list *node = list_entry(i, struct sx9512_list, list);
-		sx9512_set_state(node->drv, node->drv->state);
+		/* Force set of initial state for leds. */
+		list_for_each(i, &sx9512_leds) {
+			struct sx9512_list *node = list_entry(i, struct sx9512_list, list);
+			sx9512_set_state(node->drv, node->drv->state);
+		}
+
+		/* start reset timer */
+		uloop_timeout_set(&i2c_touch_reset_timer, I2C_RESET_TIME);
 	}
-
-	/* start reset timer */
-        uloop_timeout_set(&i2c_touch_reset_timer, I2C_RESET_TIME);
 }
 
