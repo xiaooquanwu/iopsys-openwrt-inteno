@@ -2469,12 +2469,16 @@ CONFIG_PACKAGE_getopt=y
 # CONFIG_PACKAGE_i2c-tools is not set
 CONFIG_PACKAGE_ice-client=y
 # CONFIG_PACKAGE_ice-client-anyfi is not set
-# CONFIG_PACKAGE_ice-client-camerawatch is not set
+CONFIG_PACKAGE_ice-client-camerawatch=y
 # CONFIG_PACKAGE_ice-client-example is not set
-# CONFIG_PACKAGE_ice-client-guest is not set
-# CONFIG_PACKAGE_ice-client-logreader is not set
-# CONFIG_PACKAGE_ice-client-netrounds is not set
+CONFIG_PACKAGE_ice-client-guest=y
+CONFIG_PACKAGE_ice-client-iperf=y
+CONFIG_PACKAGE_ice-client-logreader=y
+CONFIG_PACKAGE_ice-client-monitor=y
+CONFIG_PACKAGE_ice-client-netrounds=y
 # CONFIG_PACKAGE_ice-client-openvpn is not set
+# CONFIG_PACKAGE_ice-client-rework is not set
+CONFIG_PACKAGE_ice-client-rshell=y
 # CONFIG_PACKAGE_ice-client-sip is not set
 # CONFIG_PACKAGE_ice-client-iperf is not set
 # CONFIG_PACKAGE_ice-client-rshell is not set
