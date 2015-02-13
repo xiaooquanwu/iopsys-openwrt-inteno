@@ -266,17 +266,16 @@ static int led_set_method(struct ubus_context *ubus_ctx, struct ubus_object *obj
 	struct blob_attr *tb[__LED_MAX];
 	char* state;
 
-	DBG(1,"led_set_method (%s)",method);
-
 	blobmsg_parse(led_policy, ARRAY_SIZE(led_policy), tb, blob_data(msg), blob_len(msg));
 
 	if (tb[LED_STATE]) {
 		char *fn_name = strchr(obj->name, '.') + 1;
 		state = blobmsg_data(tb[LED_STATE]);
+		DBG(1,"set led [%s]->[%s]", fn_name, state);
 //		syslog(LOG_INFO, "Led %s method: %s state %s", fn_name, method, state);
 		set_function_led(fn_name, state);
-	}
-
+	}else
+		DBG(1,"(%s) not implemented",method);
 	return 0;
 }
 
@@ -300,7 +299,6 @@ static int leds_set_method(struct ubus_context *ubus_ctx, struct ubus_object *ob
                            struct blob_attr *msg)
 {
 	struct blob_attr *tb[__LED_MAX];
-	DBG(1,"");
 
 	blobmsg_parse(led_policy, ARRAY_SIZE(led_policy), tb, blob_data(msg), blob_len(msg));
 
@@ -320,8 +318,6 @@ static int leds_set_method(struct ubus_context *ubus_ctx, struct ubus_object *ob
 
 		if (global_state == LEDS_INFO) {
 			all_leds_off();
-			set_function_led("eco", "off"); // KEN ??? what is this ?
-			set_function_led("eco", "ok");
 		}
 
 		if (global_state == LEDS_PROD) {
@@ -338,8 +334,10 @@ static int leds_set_method(struct ubus_context *ubus_ctx, struct ubus_object *ob
 		if (global_state == LEDS_ALLOFF) {
 			all_leds_off();
 		}
+
+		DBG(1,"led global state set to [%s] wanted [%s]", leds_states[global_state], state);
 	}else
-		syslog(LOG_WARNING, "leds_set_method: Unknown attribute.");
+		syslog(LOG_WARNING, "Unknown attribute [%s]", blob_data(msg));
 
 	return 0;
 }
@@ -348,11 +346,10 @@ static int leds_status_method(struct ubus_context *ubus_ctx, struct ubus_object 
                               struct ubus_request_data *req, const char *method,
                               struct blob_attr *msg)
 {
-	DBG(1,"");
 
 	blob_buf_init (&bblob, 0);
-//	blobmsg_add_string(&bblob, "state", leds_states[led_cfg->leds_state]);
-	blobmsg_add_string(&bblob, "state", "leds_fixme_state");
+	blobmsg_add_string(&bblob, "state", leds_states[global_state]);
+	DBG(1,"leds global state is [%s]",leds_states[global_state]);
 	ubus_send_reply(ubus_ctx, req, bblob.head);
 	return 0;
 }
@@ -413,7 +410,8 @@ static void flash_handler(struct uloop_timeout *timeout)
 	if (counter & 4 )
 		slow = ON;
 
-	if (global_state == LEDS_NORMAL) {
+	if (global_state == LEDS_NORMAL ||
+	    global_state == LEDS_INFO ) {
 		/* BUG we should check if the driver support flash in hardware and only do this on simple on/off leds */
 		for (i = 0; i < LED_FUNCTIONS ; i++) {
 			struct led *led;
@@ -423,9 +421,18 @@ static void flash_handler(struct uloop_timeout *timeout)
 					if (led->drv)
 						led->drv->func->set_state(led->drv, fast);
 				}
+
 				/* normal operation, flash else reset state */
 			} else {
-				list_for_each_entry(led, &leds[i].actions[leds[i].state].led_list, list) {
+				led_action_t action_state = leds[i].state;
+
+				/* in case of info mode suppress OK state. that is if OK -> turn it into OFF */
+				if (global_state == LEDS_INFO) {
+					if (action_state == LED_OK)
+						action_state = LED_OFF;
+				}
+
+				list_for_each_entry(led, &leds[i].actions[action_state].led_list, list) {
 					if (led->state == FLASH_FAST){
 						if (led->drv)
 							led->drv->func->set_state(led->drv, fast);

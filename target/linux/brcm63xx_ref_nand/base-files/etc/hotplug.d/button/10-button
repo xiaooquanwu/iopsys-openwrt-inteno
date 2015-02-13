@@ -53,8 +53,10 @@ case "$ACTION" in
 
                 [ "$ledstate" == "normal" ] && {
                         ubus call leds set '{ "state": "info"}'
+                        ubus call led.eco set '{ "state": "notice"}'
                 } || {
                         ubus call leds set '{ "state": "normal"}'
+                        ubus call led.eco set '{ "state": "off"}'
                 }
         }
 	[ "communicationbutton" == "$INTERFACE" ] && {

@@ -295,7 +295,7 @@ config led_map led_voice1
 config led_map led_eco
        list led_action_ok     Status_blue=ON
        list led_action_off    Status_blue=OFF
-       list led_action_notice Status_blue=FLASH_SLOW
+       list led_action_notice Status_blue=ON
        list led_action_alert  Status_blue=FLASH_SLOW
        list led_action_error  Status_blue=FLASH_FAST
 
