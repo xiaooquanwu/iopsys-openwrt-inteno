@@ -373,7 +373,7 @@ static int sx9512_set_state(struct led_data *p, led_state_t state)
 	else if (state == OFF)
 		ret = ret & ~bit;
 	else{
-		syslog(LOG_ERR,"Led %s: Set to not supported state %d\n",p->led.name, state);
+		syslog(LOG_ERR,"%s: Led %s: Set to not supported state %d\n",__func__, p->led.name, state);
 		return -1;
 	}
 
