@@ -91,11 +91,12 @@ static int sim_status_method(struct ubus_context *ubus_ctx, struct ubus_object *
                              struct ubus_request_data *req, const char *method,
                              struct blob_attr *msg)
 {
-	static struct blob_buf blob;
+	struct blob_buf blob;
 	struct list_head *i;
 
 	DBG(1, "");
 
+	memset(&blob,0,sizeof(struct blob_buf));
 	blob_buf_init(&blob, 0);
 
 	list_for_each(i, &sim_buttons) {
