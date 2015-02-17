@@ -31,10 +31,13 @@ typedef enum {
 static const char * const fn_actions[LED_ACTION_MAX] =
 { "off", "ok", "notice", "alert", "error", "custom"};
 
-#define LED_FUNCTIONS 15
+#define LED_FUNCTIONS 17
 static const char* const led_functions[LED_FUNCTIONS] =
-{ "dsl", "wifi", "wps", "lan", "status", "dect", "tv", "usb",
-  "wan", "internet", "voice1", "voice2", "eco", "gbe", "ext" };
+{ "dsl",	"wifi",		"wps",		"lan",
+  "status",	"dect",		"tv",		"usb",
+  "wan",	"internet",	"voice1",	"voice2",
+  "eco",	"gbe",		"ext",		"wan_phy_speed",
+  "wan_phy_link" };
 
 /* Names for led_state_t */
 static const char* const led_states[LED_STATES_MAX] =
@@ -373,8 +376,7 @@ static const struct ubus_method leds_methods[] = {
 static struct ubus_object_type leds_object_type =
 	UBUS_OBJECT_TYPE("leds", leds_methods);
 
-
-#define LED_OBJECTS 15
+#define LED_OBJECTS (LED_FUNCTIONS + 1)
 static struct ubus_object led_objects[LED_OBJECTS] = {
     { .name = "leds",	        .type = &leds_object_type, .methods = leds_methods, .n_methods = ARRAY_SIZE(leds_methods), },
     { .name = "led.dsl",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
@@ -391,6 +393,9 @@ static struct ubus_object led_objects[LED_OBJECTS] = {
     { .name = "led.voice2",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
     { .name = "led.eco",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
     { .name = "led.gbe",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
+    { .name = "led.ext",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
+    { .name = "led.wan_phy_speed",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
+    { .name = "led.wan_phy_link",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
 };
 
 
