@@ -165,7 +165,7 @@ config led_map led_dsl
 config led_map led_wifi
 	list led_action_ok     WiFi_green=ON
 	list led_action_off    WiFi_green=OFF
-	list led_action_notice WiFi_green=FLASH_SLOW
+	list led_action_notice WiFi_green=ON
 	list led_action_alert  WiFi_green=FLASH_SLOW
 	list led_action_error  WiFi_green=FLASH_FAST
 

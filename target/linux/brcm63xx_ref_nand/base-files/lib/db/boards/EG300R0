@@ -201,11 +201,20 @@ config led_map led_map
        list press_indicator led_ext
 
 config led_map led_wifi
-       list led_action_ok	'Wireless_green = ON'
-       list led_action_off	'Wireless_green = OFF'  
-       list led_action_notice	'Wireless_green = FLASH_SLOW'
-       list led_action_alert	'Wireless_green = FLASH_SLOW'  
-       list led_action_error	'Wireless_green = FLASH_FAST'  
+       list led_action_ok     'Wireless_green = ON'
+       list led_action_ok     'Wireless_blue  = OFF'
+
+       list led_action_off    'Wireless_green = OFF'
+       list led_action_off    'Wireless_blue  = OFF'
+
+       list led_action_notice 'Wireless_green = OFF'
+       list led_action_notice 'Wireless_blue  = ON'
+
+       list led_action_alert  'Wireless_green = OFF'
+       list led_action_alert  'Wireless_blue  = ON'
+
+       list led_action_error  'Wireless_green = OFF'
+       list led_action_error  'Wireless_blue  = FLASH_FAST'
 
 config led_map led_wps
        list led_action_ok	'WPS_green=ON'
