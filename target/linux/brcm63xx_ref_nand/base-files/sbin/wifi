@@ -486,10 +486,6 @@ wdev_wif_bringup() {
 	local vifs=$(nvram get "$device"_vifs)
 	local vif
 
-	# turn on wireless led
-	wlctl -i $device leddc 0
-	ledctl wireless on
-
 	bring_wif_up() {
 		local iface=$1
 		local network=$(nvram get "$iface"_network)
@@ -560,6 +556,7 @@ create_vif() {
 
 wdev_static_settings() {
 	local device=$1
+	wlctl -i $device leddc 0
 	wlctl -i $device msglevel 0
 	wlctl -i $device phy_watchdog 1
 	wlctl -i $device stbc_rx 0
@@ -949,7 +946,13 @@ wifi_updown() {
 	config_foreach set_wifi_down wifi-device $wdev
 	run_hooks wifi-device $DISABLE_HOOKS # ANYFI
 
-	[ "$action" == "disable" ] && return
+	# handle wireless led
+	ledctl wireless off
+	if [ "$action" == "disable" ]; then
+		[ -n "$(nvram get wl_2g_radio)" ] && ledctl wireless on
+		[ -n "$(nvram get wl_5g_radio)" ] && ledctl wireless notice
+		return
+	fi
 
 	# enable wireless device
 	configure_wep "init"
@@ -957,8 +960,15 @@ wifi_updown() {
 	configure_wep "set"
 	nvram set wlmngr=done
 
+	# handle wireless led
 	ledctl eco off
-	[ $_enWifi -le 0 ] && ledctl eco on && return
+	if [ $_enWifi -le 0 ]; then
+		ledctl eco on
+		return
+	else
+		[ -n "$(nvram get wl_2g_radio)" ] && ledctl wireless on
+		[ -n "$(nvram get wl_5g_radio)" ] && ledctl wireless notice
+	fi
 
 	map_networks
 	run_hooks wifi-device $ENABLE_HOOKS # ANYFI
