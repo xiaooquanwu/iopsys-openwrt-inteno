@@ -85,21 +85,6 @@ define Image/Prepare
 	#strip out unneeded files
 	rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.3.8
 	rm -rf $(BUILD_DIR_ROOT)/usr/lib/libvorbisenc*
-
-	#strip out ice-client service libraries
-	rm -f $(BUILD_DIR_ROOT)/usr/lib/camerawatch.so.*
-	rm -f $(BUILD_DIR_ROOT)/usr/lib/guestService.so.*
-	rm -f $(BUILD_DIR_ROOT)/usr/lib/ovpnService.so.*
-	rm -f $(BUILD_DIR_ROOT)/usr/lib/anyfiService.so.*
-	rm -f $(BUILD_DIR_ROOT)/usr/lib/netroundsService.so.*
-	rm -f $(BUILD_DIR_ROOT)/usr/lib/logService.so.*
-	rm -f $(BUILD_DIR_ROOT)/usr/lib/filemeService.so.*
-	rm -f $(BUILD_DIR_ROOT)/usr/lib/exampleService.so.*
-	rm -f $(BUILD_DIR_ROOT)/usr/lib/iperfService.so.*
-	rm -f $(BUILD_DIR_ROOT)/usr/lib/rshellService.so.*
-	rm -f $(BUILD_DIR_ROOT)/usr/lib/reworkService.so.*
-	rm -f $(BUILD_DIR_ROOT)/usr/lib/sipService.so.*
-	rm -f $(BUILD_DIR_ROOT)/usr/lib/monitorService.so.*
 endef
 
 define Image/Build
