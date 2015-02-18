@@ -7,6 +7,7 @@ static struct blob_buf bblob;
 typedef enum {
     LED_OFF,
     LED_OK,
+    LED_EOK,
     LED_NOTICE,
     LED_ALERT,
     LED_ERROR,
@@ -29,7 +30,7 @@ typedef enum {
 
 /* Names for led_action_t */
 static const char * const fn_actions[LED_ACTION_MAX] =
-{ "off", "ok", "notice", "alert", "error", "custom"};
+{ "off", "ok", "eok", "notice", "alert", "error", "custom"};
 
 #define LED_FUNCTIONS 17
 static const char* const led_functions[LED_FUNCTIONS] =
