@@ -44,7 +44,7 @@ typedef struct {
 	bool exists;
 	char ip6addr[128];
 	char macaddr[24];
-	char hostname[32];
+	char hostname[64];
 	char duid[64];
 	char device[32];
 	bool wireless;
