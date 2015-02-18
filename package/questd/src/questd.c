@@ -449,6 +449,30 @@ populate_clients()
 	memcpy(&clients_old, &clients_new, sizeof(clients));
 }
 
+static bool
+wireless_sta6(Client6 *clnt6)
+{
+	FILE *stainfo;
+	char cmnd[64];
+	char line[128];
+	int i = 0;
+	bool there = false;
+
+	for (i = 0; wireless[i].device; i++) {
+		sprintf(cmnd, "wlctl -i %s sta_info %s 2>/dev/null | grep ASSOCIATED", wireless[i].vif, clnt6->macaddr);
+		if ((stainfo = popen(cmnd, "r"))) {
+			if(fgets(line, sizeof(line), stainfo) != NULL) {
+				there = true;
+				strncpy(clnt6->wdev, wireless[i].vif, sizeof(clnt6->wdev));
+			}
+			pclose(stainfo);
+		}
+		if (there)
+			break;
+	}
+	return there;
+}
+
 static void
 populate_clients6()
 {
@@ -466,10 +490,11 @@ populate_clients6()
 			memset(clients6[cno].hostname, '\0', 64);
 			if (sscanf(line, "# %s %s %d %s %d %x %d %s", clients6[cno].device, clients6[cno].duid, &iaid, clients6[cno].hostname, &ts, &id, &length, clients6[cno].ip6addr)) {
 				clients6[cno].exists = true;
+				clear_macaddr();
 				if(!(clients6[cno].connected = ndisc (clients6[cno].hostname, clients6[cno].device, 0x8, 1, 500)))
 					recalc_sleep_time(true, 500000);
 				sprintf(clients6[cno].macaddr, get_macaddr());
-				if((clients6[cno].connected = wireless_sta(&clients[cno])))
+				if(clients6[cno].connected && wireless_sta6(&clients6[cno]))
 					clients6[cno].wireless = true;
 				cno++;
 			}
@@ -733,7 +758,7 @@ router_dump_connected_clients6(struct blob_buf *b)
 		t = blobmsg_open_table(b, clientnum);
 		blobmsg_add_string(b, "hostname", clients6[i].hostname);
 		blobmsg_add_string(b, "ip6addr", clients6[i].ip6addr);
-		blobmsg_add_string(b, "macaddr", clients[i].macaddr);
+		blobmsg_add_string(b, "macaddr", clients6[i].macaddr);
 		blobmsg_add_string(b, "duid", clients6[i].duid);
 		blobmsg_add_string(b, "device", clients6[i].device);
 		blobmsg_add_u8(b, "wireless", clients6[i].wireless);
@@ -760,7 +785,7 @@ router_dump_clients6(struct blob_buf *b)
 		t = blobmsg_open_table(b, clientnum);
 		blobmsg_add_string(b, "hostname", clients6[i].hostname);
 		blobmsg_add_string(b, "ip6addr", clients6[i].ip6addr);
-		blobmsg_add_string(b, "macaddr", clients[i].macaddr);
+		blobmsg_add_string(b, "macaddr", clients6[i].macaddr);
 		blobmsg_add_string(b, "duid", clients6[i].duid);
 		blobmsg_add_string(b, "device", clients6[i].device);
 		blobmsg_add_u8(b, "connected", clients6[i].connected);

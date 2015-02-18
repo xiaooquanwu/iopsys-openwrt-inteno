@@ -129,6 +129,11 @@ sethoplimit (int fd, int value)
 
 static char MACADDR[24];
 
+void
+clear_macaddr() {
+	memset(MACADDR, '\0', sizeof(MACADDR));
+}
+
 char *
 get_macaddr()
 {
@@ -139,17 +144,19 @@ get_macaddr()
 static void
 printmacaddress (const uint8_t *ptr, size_t len)
 {
-	int pnt = 0;
+	char mac[4];
 	while (len > 1)
 	{
-		sprintf (*(&MACADDR+pnt), "%02X:", *ptr);
+		sprintf(mac, "%02X:", *ptr);
+		strcat(MACADDR, mac);
 		ptr++;
 		len--;
-		pnt = pnt + 3;
 	}
 
-	if (len == 1)
-		sprintf (*(&MACADDR+pnt), "%02X\n", *ptr);
+	if (len == 1) {
+		sprintf(mac, "%02X", *ptr);
+		strcat(MACADDR, mac);
+	}
 }
 
 
