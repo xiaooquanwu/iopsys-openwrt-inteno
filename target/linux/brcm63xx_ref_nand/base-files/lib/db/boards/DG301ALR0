@@ -196,8 +196,8 @@ config led_map led_wps
        list led_action_off    'WPS_red   = OFF'
        list led_action_notice 'WPS_green = FLASH_SLOW'
        list led_action_notice 'WPS_red   = OFF'
-       list led_action_alert  'WPS_green = OFF'
-       list led_action_alert  'WPS_red   = FLASH_SLOW'
+       list led_action_alert  'WPS_green = FLASH_FAST'
+       list led_action_alert  'WPS_red   = OFF'
        list led_action_error  'WPS_green = OFF'
        list led_action_error  'WPS_red   = FLASH_FAST'
 

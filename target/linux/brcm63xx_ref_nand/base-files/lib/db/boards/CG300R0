@@ -210,7 +210,7 @@ config led_map led_wps
        list led_action_ok     WPS_green=ON
        list led_action_off    WPS_green=OFF
        list led_action_notice WPS_green=FLASH_SLOW
-       list led_action_alert  WPS_green=OFF
+       list led_action_alert  WPS_green=FLASH_FAST
        list led_action_error  WPS_green=OFF
 
 config led_map led_status
