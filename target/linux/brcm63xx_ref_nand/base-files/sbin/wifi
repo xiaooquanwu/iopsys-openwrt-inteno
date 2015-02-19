@@ -40,8 +40,7 @@ kill_related_daemons() {
 	killall -9 eapd 2>/dev/null
 	killall -9 nas 2>/dev/null
 	killall -9 acsd 2>/dev/null
-	killall -9 wps_monitor 2>/dev/null
-	rm -f /tmp/wps_monitor.pid
+	killall -SIGTERM wps_monitor 2>/dev/null
 }
 
 start_related_daemons() {
