@@ -45,7 +45,15 @@ kill_related_daemons() {
 }
 
 start_related_daemons() {
+	local wldev
 	[ -n "$(nvram get acs_ifnames)" ] && acsd
+	for wldev in $(nvram get acs_ifnames); do
+		[ $(nvram get $wldev"_acs_dfs") == "1" ] && continue
+		# finds appropriate channel candidates
+		acs_cli -i $wldev autochannel
+		# triggers an early channel switch
+		acs_cli -i $wldev autochannel
+	done
 	eapd
 	nas
 	[ $_enWps -gt 0 ] && wps_monitor &
@@ -595,21 +603,25 @@ wdev_radar_settings() {
 
 	case "$doth" in
 		1)
+			nvram set $device"_reg_mode"="h"
 			wlctl -i $device radar 1
 			wlctl -i $device regulatory 0
 			wlctl -i $device spect 1
 		;;
 		2)
+			nvram set $device"_reg_mode"="strict_h"
 			wlctl -i $device radar 1
 			wlctl -i $device regulatory 0
 			wlctl -i $device spect 2
 		;;
 		3)
+			nvram set $device"_reg_mode"=""
 			wlctl -i $device radar 1
 			wlctl -i $device regulatory 1
 			wlctl -i $device spect 0
 		;;
 		*)
+			nvram set $device"_reg_mode"=""
 			wlctl -i $device radar 0
 			wlctl -i $device regulatory 0
 			wlctl -i $device spect 0
@@ -715,7 +727,17 @@ wdev_hwmode_settings() {
 
 wdev_channel_settings() {
 	local device=$1
-	local channel scantimer acsifs
+	local apsta doth channel scantimer acsifs
+
+	# if device is in apsta mode, no need for channel settings
+	# as it will operate at the channel selected by its master
+	config_get apsta "$device" apsta "0"
+	if [ "$apsta" == "1" ]; then
+		wlctl -i $device chanim_mode 0
+		return
+	fi
+
+	config_get doth "$device" doth "1"
 	config_get channel "$device" channel "auto"
 	config_get scantimer "$device" scantimer "15"
 
@@ -732,15 +754,19 @@ wdev_channel_settings() {
 			nvram set "$device"_acs_ci_scan_timeout="300"
 			nvram set "$device"_acs_ci_scan_timer="4"
 			nvram set "$device"_acs_cs_scan_timer=$((scantimer * 60))
-			nvram set "$device"_acs_dfs="1"
-			nvram set "$device"_acs_dfsr_activity="30 10240"
-			nvram set "$device"_acs_dfsr_deferred="604800 5"
-			nvram set "$device"_acs_dfsr_immediate="300 3"
 			nvram set "$device"_acs_excl_chans=""
 			nvram set "$device"_acs_fcs_mode="1"
 			nvram set "$device"_acs_scan_entry_expire="3600"
 			nvram set "$device"_acs_tx_idle_cnt="5"
 			nvram set "$device"_acs_lowband_least_rssi="-75"
+			if [ "$doth" == "0" ]; then
+				nvram set "$device"_acs_dfs="0"
+			else
+				nvram set "$device"_acs_dfs="1"
+				nvram set "$device"_acs_dfsr_activity="30 10240"
+				nvram set "$device"_acs_dfsr_deferred="604800 5"
+				nvram set "$device"_acs_dfsr_immediate="300 3"
+			fi
 			wlctl -i $device chanim_mode 2
 		;;
 		*)
@@ -989,7 +1015,7 @@ wifi_reload() {
 wifi_detect() {
 	local WLDIR="/tmp/wireless"
 	local wls="wl0 wl1"
-	local bands band bwidth country hwmode pcid wl bno
+	local bands band bwidth country hwmode pcid wl bno doth
 	local BMAC=$(cat /proc/nvram/BaseMacAddr | tr '[a-z]' '[A-Z]')
 	BMAC=${BMAC// /}
 	local BSSID=$(printf "%X\n" $((0x$BMAC + 2)))
@@ -1024,11 +1050,13 @@ wifi_detect() {
 				band="a"
 				bwidth="40"
 				bno=5
+				doth="1"
 				$(isAC $pcid) && hwmode="11ac"
 			else
 				band="b"
 				bwidth="20"
 				bno=2
+				doth="0"
 			fi
 			populate_chanspecs $wl
 			if ! uci -q get wireless.$wl; then
@@ -1056,6 +1084,7 @@ config wifi-device '$wl'
 	option rifs '0'
 	option rifs_advert '0'
 	option maxassoc '16'
+	option doth '$doth'
 
 config wifi-iface
 	option device '$wl'
@@ -1072,6 +1101,10 @@ config wifi-iface
 	option bss_max '16'
 
 EOF
+			else
+				uci -q set wireless.$wl.band="$band"
+				uci -q set wireless.$wl.doth="$doth"
+				uci commit wireless
 			fi
 		fi
 	done
