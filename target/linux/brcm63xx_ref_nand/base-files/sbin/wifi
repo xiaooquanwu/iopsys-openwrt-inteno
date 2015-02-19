@@ -168,7 +168,7 @@ set_wifi_down() {
 			[ -n "$network" ] && ubus call network.interface."$network" remove_device "{ \"name\": \"$iface\" }" 2>/dev/null && uci_revert_state wireless "$iface"
 		}
 	done
-	ledctl wireless off
+	ubus call led.wifi  set '{"state" : "off"}'
 }
 
 wif_encryption_settings() {
@@ -947,10 +947,10 @@ wifi_updown() {
 	run_hooks wifi-device $DISABLE_HOOKS # ANYFI
 
 	# handle wireless led
-	ledctl wireless off
+	ubus call led.wifi  set '{"state" : "off"}'
 	if [ "$action" == "disable" ]; then
-		[ -n "$(nvram get wl_2g_radio)" ] && ledctl wireless on
-		[ -n "$(nvram get wl_5g_radio)" ] && ledctl wireless notice
+		[ -n "$(nvram get wl_2g_radio)" ] && ubus call led.wifi  set '{"state" : "ok"}'
+		[ -n "$(nvram get wl_5g_radio)" ] && ubus call led.wifi  set '{"state" : "eok"}'
 		return
 	fi
 
@@ -961,13 +961,13 @@ wifi_updown() {
 	nvram set wlmngr=done
 
 	# handle wireless led
-	ledctl eco off
+	ubus call led.eco set '{"state" : "off"}'
 	if [ $_enWifi -le 0 ]; then
-		ledctl eco on
-		return
+	    ubus call led.eco set '{"state" : "ok"}'
+	    return
 	else
-		[ -n "$(nvram get wl_2g_radio)" ] && ledctl wireless on
-		[ -n "$(nvram get wl_5g_radio)" ] && ledctl wireless notice
+		[ -n "$(nvram get wl_2g_radio)" ] && ubus call led.wifi  set '{"state" : "ok"}'
+		[ -n "$(nvram get wl_5g_radio)" ] && ubus call led.wifi  set '{"state" : "eok"}'
 	fi
 
 	map_networks

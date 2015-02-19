@@ -3,9 +3,9 @@
 [ -f /var/dectisregistering ] || {
 	touch /var/dectisregistering 2>/dev/null
 	/usr/bin/dectmngr -r
-	ledctl DECT blink
+	ubus call led.dect  set '{"state" : "notice"}'
 	sleep 20
 	rm /var/dectisregistering 2>/dev/null
 	/usr/bin/dectmngr -s
-	ledctl DECT on
+	ubus call led.dect  set '{"state" : "ok"}'
 }
