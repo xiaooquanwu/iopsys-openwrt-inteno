@@ -258,6 +258,22 @@ config led_map led_status
        list led_action_error  'Status_red   = FLASH_FAST'
        list led_action_error  'Status_blue  = OFF'
 
+config led_map led_dect
+       list led_action_ok     'DECT_green = ON'
+       list led_action_ok     'DECT_red   = OFF'
+
+       list led_action_off    'DECT_green = OFF'
+       list led_action_off    'DECT_red   = OFF'
+
+       list led_action_notice 'DECT_green = FLASH_SLOW'
+       list led_action_notice 'DECT_red   = OFF'
+
+       list led_action_alert  'DECT_green = OFF'
+       list led_action_alert  'DECT_red   = FLASH_SLOW'
+
+       list led_action_error  'DECT_green = OFF'
+       list led_action_error  'DECT_red   = FLASH_FAST'
+
 config led_map led_tv
        list led_action_ok     TV_green=ON
        list led_action_off    TV_green=OFF
