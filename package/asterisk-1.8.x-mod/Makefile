@@ -182,7 +182,7 @@ endef
 define Package/asterisk18-mod-chan-mobile
 $(call Package/asterisk18-mod/Default)
   TITLE:=Mobile channel support
-  DEPENDS:= asterisk18-mod +bluez-libs
+  DEPENDS:= asterisk18-mod +bluez
 endef
 
 define Package/asterisk18-mod-chan-mobile/description
