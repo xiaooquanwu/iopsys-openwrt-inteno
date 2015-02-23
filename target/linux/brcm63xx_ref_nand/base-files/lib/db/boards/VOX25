@@ -63,7 +63,6 @@ config 3220_button 3220_touch_far
 config button_map button_map
 	list buttonnames RESET
 	list buttonnames WPS
-	list buttonnames WIFI
 	list buttonnames TOUCH_NEAR
 	list buttonnames TOUCH_FAR
 	option minpress 100
@@ -78,23 +77,14 @@ config button_map RESET
 config button_map WPS
 	list button gpio_wps
 	option hotplug wpsbutton
-	option longpress 3000
-
-config button_map WIFI
-	list button gpio_wps
-	option hotplug wifibutton
-
 
 config button_map TOUCH_NEAR
 	list button 3220_touch_near
 	option hotplug touch_near
-	option minpress 0
-	option dimming	on
 
 config button_map TOUCH_FAR
 	list button 3220_touch_far
 	option hotplug touch_far
-	option minpress 0
 
 #
 #		Button config , end
@@ -106,8 +96,8 @@ config button_map TOUCH_FAR
 #		Led config, start
 #
 
-############### vox led, driver config
-config vox_led vox_leds
+############### gpio led, driver config
+config gpio_led gpio_leds
 	list leds MMB_red
 	list leds MMB_green
 	list leds MMB_blue
@@ -118,88 +108,54 @@ config vox_led vox_leds
 	list leds DSL_green
 	list leds PowerLED_red
 
-config vox_led MMB_red
+config gpio_led MMB_red
 	option addr     1
+	option active   hi
+	option mode     spi
 
-config vox_led MMB_green
+config gpio_led MMB_green
 	option addr     2
+	option active   hi
+	option mode     spi
 
-config vox_led MMB_blue
+config gpio_led MMB_blue
 	option addr     3
+	option active   hi
+	option mode     spi
 
-config vox_led WiFi_green
+config gpio_led WiFi_green
 	option addr     7
+	option active   hi
+	option mode     spi
 
-config vox_led VoIP_red
+config gpio_led VoIP_red
 	option addr     5
+	option active   hi
+	option mode     spi
 
-config vox_led VoIP_green
+config gpio_led VoIP_green
 	option addr     6
+	option active   hi
+	option mode     spi
 
-config vox_led DSL_red
+config gpio_led DSL_red
 	option addr     4
+	option active   hi
+	option mode     spi
 
-config vox_led DSL_green
+config gpio_led DSL_green
 	option addr     9
+	option active   hi
+	option mode     spi
 
-config vox_led PowerLED_red
+config gpio_led PowerLED_red
 	option addr     8
+	option active   hi
+	option mode     spi
 
 ############### mapping led function to driver led
-config led_map led_map
-#       list press_indicator led_wifi
-#       list press_indicator led_internet
-#       list press_indicator led_voice1
-#       list functions status
-       list functions voice1
-       list functions internet
-       list functions mobile
-       list functions power
-       list functions wifi
-       list functions wps
-       list functions wifi_wps
 
-# dimming turn leds off unless above cutof level
-#
-       option dimming_level	notice
-       option dimming_on	5
-       list dimming		mobile
-       list dimming		internet
-       list dimming		wifi
-       list dimming		wps
-       list dimming		voice1
-       list dimming 		wifi_wps
-
-config led_map led_mobile
-	
-        list led_action_off       MMB_blue=OFF 
-	list led_action_off       MMB_red=OFF 
-	list led_action_0ff       MMB_green=OFF
-
-	list led_action_ok        MMB_blue=ON 
-	list led_action_ok        MMB_red=OFF
-	list led_action_ok        MMB_green=OFF
-
-	list led_action_notice    MMB_blue=OFF 
-	list led_action_notice    MMB_red=OFF
-	list led_action_notice    MMB_green=ON
-
-	list led_action_alert     MMB_blue=OFF
-	list led_action_alert     MMB_red=ON
-	list led_action_alert     MMB_green=OFF
-
-	list led_action_error     MMB_blue=OFF
-	list led_action_error     MMB_red=FLASH_SLOW
-	list led_action_error     MMB_green=OFF
-
-config led_map led_power
-       list led_action_ok     PowerLED_red=ON
-       list led_action_off    PowerLED_red=OFF
-       list led_action_notice PowerLED_red=PULSING
-       list led_action_alert  PowerLED_red=FLASH_SLOW
-       list led_action_error  PowerLED_red=FLASH_FAST
-
-config led_map led_internet
+config led_map led_dsl
 	list led_action_ok     'DSL_green = ON'
 	list led_action_ok     'DSL_red   = OFF'
 	list led_action_off    'DSL_green = OFF'
@@ -209,29 +165,28 @@ config led_map led_internet
 	list led_action_alert  'DSL_green = OFF'
 	list led_action_alert  'DSL_red   = FLASH_SLOW'
 	list led_action_error  'DSL_green = OFF'
-	list led_action_error  'DSL_red   = FLASH_SLOW'
-
-config led_map led_wps
+	list led_action_error  'DSL_red   = FLASH_FAST'
 
 config led_map led_wifi
+	list led_action_ok     WiFi_green=ON
+	list led_action_off    WiFi_green=OFF
+	list led_action_notice WiFi_green=ON
+	list led_action_alert  WiFi_green=FLASH_SLOW
+	list led_action_error  WiFi_green=FLASH_FAST
 
-config led_map led_wifi_wps
-	list led_action_off     WiFi_green=OFF
-	list super_off	       'wifi_off'
-	
-	list led_action_ok      WiFi_green=ON 
-	list super_ok	       'wifi_ok'
+config led_map led_status
+	list led_action_ok     PowerLED_red=ON
+	list led_action_off    PowerLED_red=OFF
+	list led_action_notice PowerLED_red=FLASH_SLOW
+	list led_action_alert  PowerLED_red=FLASH_SLOW
+	list led_action_error  PowerLED_red=FLASH_FAST
 
-	list led_action_notice   WiFi_green=PULSING
-	list super_notice	'wifi_notice'
-		
-	list led_action_alert    WiFi_green=FLASH_SLOW
-	list super_alert	'wps_notice, wifi_ok'
-
-	list led_action_error    WiFi_green=FLASH_FAST
-	list super_error	'wifi_error'
-
-
+config led_map led_internet
+	list led_action_ok     MMB_green=ON
+	list led_action_off    MMB_green=OFF
+	list led_action_notice MMB_green=FLASH_SLOW
+	list led_action_alert  MMB_green=FLASH_SLOW
+	list led_action_error  MMB_green=FLASH_FAST
 
 config led_map led_voice1
 	list led_action_ok     'VoIP_green = ON'

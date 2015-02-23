@@ -15,14 +15,11 @@ config board 'board'
 	option ethernetWanPort 'eth0'
 	option adslWanPort ''
 	option vdslWanPort ''
+	option lednames 'Status Communication Service Pair Cancel WAN'
+	option buttonnames 'RESET Communication Service Pair Cancel TOUCH_NEAR TOUCH_FAR'
 	option wpsButtonGpio '0'
 	option fxsRelayGpio '0'
 	option i2cGpioCustom 'bus0=0,23,22'
-
-config pci_slot 'pci'
-        option 43a0 AC
-        option 43a2 AC
-        option 43bc AC
 
 config wifi-chip '435f'
 	option bands 'b'
@@ -39,256 +36,98 @@ config wifi-chip '43bc'
         option bands 'a'
         option is_ac '1'
 
-# BUG!! nothing reads this
-#config periph_ctrl 'periph_ctrl'
-#	option bt_en           'gpio 14 ah'
-#	option bt_power_ctrl   'gpio 19 ah'
-#	option usb1_power_ctrl 'gpio 36 ah'
-#	option usb2_power_ctrl 'gpio 37 ah'
+config periph_ctrl 'periph_ctrl'
+	option bt_en           'gpio 14 ah'
+	option bt_power_ctrl   'gpio 19 ah'
+	option usb1_power_ctrl 'gpio 36 ah'
+	option usb2_power_ctrl 'gpio 37 ah'
 
-###############################################################################
-#
-#		Button config, start
-#
+config buttons 'buttons'
+	option RESET         'gpio 32 al resetbutton Status_white'
+	option Communication 'i2c 5 ah communicationbutton Communication_white'
+	option Service       'i2c 1 ah servicebutton Service_white'
+	option Pair          'i2c 3 ah pairbutton Pair_white'
+	option Cancel        'i2c 4 ah cancelbutton Cancel_red'
+	option TOUCH_NEAR    'i2c 8 ah touch_near Service_red'
+	option TOUCH_FAR     'i2c 9 ah touch_far Communication_red'
 
-############### gpio buttons, driver config
-config gpio_button gpio_buttons
-       list buttons gpio_reset
+config leds 'leds'
+	option Status_green        'gpio 39 al'
+	option Status_red          'gpio 38 al'
+	option Status_white        'i2c 0 ah'
+	option Communication_white 'i2c 5 ah'
+	option Communication_red   'i2c 6 ah'
+	option Service_white       'i2c 1 ah'
+	option Service_red         'i2c 2 ah'
+	option Pair_white          'i2c 3 ah'
+	option Cancel_red          'i2c 4 ah'
+	option WAN_green           'gpio 9 al'
+	option WAN_yellow          'gpio 10 al'
 
-config gpio_button gpio_reset
-       option addr 32
-       option active low
-
-############### sx9512, i2c buttons, driver config
-config 9512_button 9512_buttons
-
-       list buttons 9512_communication
-       list buttons 9512_service
-       list buttons 9512_pair
-       list buttons 9512_cancel
-       list buttons 9512_touch_near
-       list buttons 9512_touch_far
-
-config 9512_button 9512_communication
-       option addr   5
-
-config 9512_button 9512_service
-       option addr   1
-
-config 9512_button 9512_pair
-       option addr   3
-
-config 9512_button 9512_cancel
-       option addr   4
-
-config 9512_button 9512_touch_near
-       option addr   8
-
-config 9512_button 9512_touch_far
-       option addr   9
-
-############### function buttons used on board.
-config button_map button_map
-	list buttonnames RESET
-	list buttonnames Communication
-	list buttonnames Service
-	list buttonnames Pair
-	list buttonnames Cancel
-	list buttonnames THOUCH_NEAR
-	list buttonnames THOUCH_FAR
-	option minpress 100
-
-############### mapping function button to driver button
-config button_map RESET
-       list button gpio_reset
-       option minpress 5000
-       option hotplug resetbutton
-
-config button_map Communication
-       list button 9512_communication
-       option hotplug communicationbutton
-       option minpress 1000
-
-config button_map Service
-       list button 9512_service
-       option hotplug servicebutton
-       option minpress 1000
-
-config button_map Pair
-       list button 9512_pair
-       option hotplug pairbutton
-       option minpress 1000
-
-config button_map Cancel
-       list button 9512_cancel
-       option hotplug cancelbutton
-       option minpress 1000
-
-config button_map THOUCH_NEAR
-       list button 9512_touch_near
-       option hotplug touch_near
-
-config button_map THOUCH_FAR
-       list button 9512_touch_far
-       option hotplug touch_far
-
-#
-#		Button config , end
-#
-###############################################################################
-
-
-###############################################################################
-#
-#		Led config, start
-#
-
-############### 9512 led, driver config
-config 9512_led 9512_leds
-	list leds Status_white
-	list leds Communication_white
-	list leds Communication_red
-	list leds Service_white
-	list leds Service_red
-	list leds Pair_white
-	list leds Cancel_red
-
-config 9512_led Status_white
-       option addr     0
-
-config 9512_led Communication_white
-       option addr     5
-
-config 9512_led Communication_red
-       option addr     6
-
-config 9512_led Service_white
-       option addr     1
-
-config 9512_led Service_red
-       option addr     2
-
-config 9512_led Pair_white
-       option addr     3
-
-config 9512_led Cancel_red
-       option addr     4
-
-
-############### gpio led, driver config
-config gpio_led gpio_leds
-        list leds Status_green
-        list leds Status_red
-        list leds wan_phy_green
-        list leds wan_phy_yellow
-
-config gpio_led Status_green
-       option addr	39
-       option active	low
-       option mode	direct
-
-config gpio_led Status_red
-       option addr	38
-       option active	low
-       option mode	direct
-
-config gpio_led wan_phy_green
-       option addr	9
-       option active	low
-       option mode	direct
-
-config gpio_led wan_phy_yellow
-       option addr	10
-       option active	low
-       option mode	direct
-
-############### mapping led function to driver led
-config led_map led_map
-       list press_indicator led_wifi
-       list press_indicator led_wps
-       list press_indicator led_internet
-       list press_indicator led_cancel
-	list functions wifi
-	list functions wps
-	list functions status
-	list functions dect
-	list functions wan_phy_link
-	list functions wan_phy_speed
-	list functions internet
-	list functions cancel	
-
-config led_map led_wifi
-       list led_action_ok     'Service_white = ON'
-       list led_action_ok     'Service_red   = OFF'
-       list led_action_off    'Service_white = OFF'
-       list led_action_off    'Service_red   = OFF'
-       list led_action_notice 'Service_white = OFF'
-       list led_action_notice 'Service_red   = ON'
-       list led_action_alert  'Service_white = OFF'
-       list led_action_alert  'Service_red   = ON'
-       list led_action_error  'Service_white = OFF'
-       list led_action_error  'Service_red   = FLASH_FAST'
-
-config led_map led_wps
-       list led_action_ok     'Pair_white=ON'
-       list led_action_off    'Pair_white=OFF'
-       list led_action_notice 'Pair_white=FLASH_SLOW'
-       list led_action_alert  'Pair_white=OFF'
-       list led_action_error  'Pair_white=OFF'
-
-
-config led_map led_status
-       list led_action_ok     'Status_green = OFF'
-       list led_action_ok     'Status_white = ON'
-       list led_action_ok     'Status_red   = OFF'
-
-       list led_action_off    'Status_green = OFF'
-       list led_action_off    'Status_white = OFF'
-       list led_action_off    'Status_red   = OFF'
-
-
-       list led_action_notice 'Status_green = OFF'
-       list led_action_notice 'Status_white = FLASH_SLOW'
-       list led_action_notice 'Status_red   = OFF'
-
-
-       list led_action_alert  'Status_green = OFF'
-       list led_action_alert  'Status_white = OFF'
-       list led_action_alert  'Status_red   = FLASH_SLOW'
-
-
-       list led_action_error  'Status_green = OFF'
-       list led_action_error  'Status_white = OFF'
-       list led_action_error  'Status_red   = FLASH_FAST'
-
-config led_map led_internet
-       list led_action_ok     'Communication_white = ON'
-       list led_action_ok     'Communication_red   = OFF'
-
-       list led_action_off    'Communication_white = OFF'
-       list led_action_off    'Communication_red   = OFF'
-
-       list led_action_notice 'Communication_white = FLASH_SLOW'
-       list led_action_notice 'Communication_red   = OFF'
-
-       list led_action_alert  'Communication_white = OFF'
-       list led_action_alert  'Communication_red   = FLASH_SLOW'
-
-       list led_action_error  'Communication_white = OFF'
-       list led_action_error  'Communication_red   = FLASH_FAST'
-
-config led_map led_cancel
-	list led_action_off     'Cancel_red = OFF'
-	list led_action_ok      'Cancel_red = OFF'
-	list led_action_notice  'Cancel_red = ON'
-	list led_action_alert   'Cancel_red = FLASH_SLOW'
-	list led_action_error   'Cancel_red = FLASH_FAST'
-
-config led_map led_wan_phy_link
-	list led_action_off    'wan_phy_green = OFF'
-	list led_action_ok     'wan_phy_green = ON'
-
-config led_map led_wan_phy_speed
-	list led_action_off    'wan_phy_yellow = OFF'
-	list led_action_ok     'wan_phy_yellow = ON'
+config led_map 'led_map'
+	option dsl_ok ''
+	option dsl_off ''
+	option dsl_notice ''
+	option dsl_alert ''
+	option dsl_error ''
+	option wifi_ok     'Service_white=ON  Service_red=OFF'
+	option wifi_off    'Service_white=OFF Service_red=OFF'
+	option wifi_notice 'Service_white=OFF Service_red=ON'
+	option wifi_alert  'Service_white=OFF Service_red=ON'
+	option wifi_error  'Service_white=OFF Service_red=BLINK_FAST'
+	option wps_ok      'Pair_white=ON'
+	option wps_off     'Pair_white=OFF'
+	option wps_notice  'Pair_white=BLINK_SLOW'
+	option wps_alert   'Pair_white=OFF'
+	option wps_error   'Pair_white=OFF'
+	option lan_ok ''
+	option lan_off ''
+	option lan_notice ''
+	option lan_alert ''
+	option lan_error ''
+	option status_ok     'Status_green=OFF Status_white=ON Status_red=OFF'
+	option status_off    'Status_green=OFF Status_white=OFF Status_red=OFF'
+	option status_notice 'Status_green=OFF Status_white=BLINK_SLOW Status_red=OFF'
+	option status_alert  'Status_green=OFF Status_white=OFF Status_red=BLINK_SLOW'
+	option status_error  'Status_green=OFF Status_white=OFF Status_red=BLINK_FAST'
+	option dect_ok ''
+	option dect_off ''
+	option dect_notice ''
+	option dect_alert ''
+	option dect_error ''
+	option tv_ok ''
+	option tv_off ''
+	option tv_notice ''
+	option tv_alert ''
+	option tv_error ''
+	option usb_ok ''
+	option usb_off ''
+	option usb_notice ''
+	option usb_alert ''
+	option usb_error ''
+	option wan_ok ''
+	option wan_off    'WAN_green=OFF WAN_yellow=OFF'
+	option wan_notice 'WAN_green=ON'
+	option wan_alert  'WAN_yellow=ON'
+	option wan_error ''
+	option internet_ok     'Communication_white=ON Communication_red=OFF'
+	option internet_off    'Communication_white=OFF Communication_red=OFF'
+	option internet_notice 'Communication_white=BLINK_SLOW Communication_red=OFF'
+	option internet_alert  'Communication_white=OFF Communication_red=BLINK_SLOW'
+	option internet_error  'Communication_white=OFF Communication_red=BLINK_FAST'
+	option voice1_ok ''
+	option voice1_off ''
+	option voice1_notice ''
+	option voice1_alert ''
+	option voice1_error ''
+	option voice2_ok ''
+	option voice2_off ''
+	option voice2_notice ''
+	option voice2_alert ''
+	option voice2_error ''
+	option eco_ok ''
+	option eco_off ''
+	option eco_notice ''
+	option eco_alert ''
+	option eco_error ''
 

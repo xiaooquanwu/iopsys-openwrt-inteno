@@ -77,8 +77,7 @@ config gpio_button gpio_eco
 ############### function buttons used on board.
 config button_map button_map
 	list buttonnames RESET
-	list buttonnames DECTS
-	list buttonnames DECTL
+	list buttonnames DECT
 	list buttonnames WPS
 	list buttonnames INFO
 	list buttonnames ECO
@@ -90,16 +89,9 @@ config button_map RESET
        option minpress 5000
        option hotplug resetbutton
 
-config button_map DECTS
+config button_map DECT
        list button gpio_dect
-       option hotplug dectshort
-       option minpress 200
-
-config button_map DECTL
-       list button gpio_dect
-       option hotplug dectlong
-       option minpress 8000
-       option longpress 8000
+       option hotplug dectbutton
 
 config button_map WPS
        list button gpio_wps
@@ -217,17 +209,6 @@ config gpio_led WAN_yellow
        option mode     direct
 
 ############### mapping led function to driver led
-config led_map led_map
-	list functions dsl
-	list functions wifi
-	list functions wps
-	list functions lan
-	list functions status
-	list functions dect	
-	list functions tv
-	list functions wan_phy_speed
-	list functions internet
-	list functions eco
 
 config led_map led_dsl
        list led_action_ok     Broadband_green=ON
@@ -306,9 +287,9 @@ config led_map led_tv
        list led_action_alert  TV_green=FLASH_SLOW
        list led_action_error  TV_green=FLASH_FAST
 
-config led_map led_wan_phy_speed
-	list led_action_off    'WAN_yellow = OFF'
-	list led_action_ok     'WAN_yellow = ON'
+config led_map led_wan
+       list led_action_off    WAN_yellow=OFF
+       list led_action_alert  WAN_yellow=ON
 
 config led_map led_internet
        list led_action_ok     'Internet_green = ON'

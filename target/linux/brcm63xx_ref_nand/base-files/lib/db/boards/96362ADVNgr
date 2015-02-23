@@ -155,17 +155,6 @@ config gpio_led Voice_green
 	option mode     direct
 
 ############### mapping led function to driver led
-config led_map led_map
-	list functions dsl
-	list functions wifi
-	list functions wps
-	list functions lan
-	list functions status
-	list functions wan
-	list functions internet
-	list functions voice1
-	list functions eco
-
 
 config led_map led_dsl
 	list led_action_ok     DSLWAN_yellow=ON

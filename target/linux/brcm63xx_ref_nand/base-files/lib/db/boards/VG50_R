@@ -92,7 +92,7 @@ config gpio_led gpio_leds
 	list leds GbE_yellow
 
 config gpio_led Status_green
-	option addr	4
+	option addr     4
 	option active   hi
 	option mode     sr
 
@@ -157,18 +157,6 @@ config gpio_led GbE_yellow
 	option mode     sr
 
 ############### mapping led function to driver led
-config led_map led_map
-	list functions dsl
-	list functions wifi
-	list functions wps
-	list functions lan
-	list functions status
-	list functions usb
-	list functions internet
-	list functions wan_phy_link
-	list functions wan_phy_speed
-	list functions gbe_phy_link
-	list functions gbe_phy_speed	
 
 config led_map led_dsl
 	list led_action_ok     DSL_red=ON
@@ -217,6 +205,12 @@ config led_map led_usb
 	list led_action_alert  USB_green=FLASH_SLOW
 	list led_action_error  USB_green=FLASH_FAST
 
+config led_map led_wan
+	list led_action_off    'WAN_green  = OFF'
+	list led_action_off    'WAN_yellow = OFF'
+	list led_action_notice 'WAN_green  = ON'
+	list led_action_alert  'WAN_yellow = ON'
+
 config led_map led_internet
 	list led_action_ok     'Internet_green = ON'
 	list led_action_ok     'Internet_red   = OFF'
@@ -229,21 +223,11 @@ config led_map led_internet
 	list led_action_error  'Internet_green = OFF'
 	list led_action_error  'Internet_red   = FLASH_FAST'
 
-config led_map led_wan_phy_link
-	list led_action_off    'WAN_green = OFF'
-	list led_action_ok     'WAN_green = ON'
-
-config led_map led_wan_phy_speed
-	list led_action_off    'WAN_yellow = OFF'
-	list led_action_ok     'WAN_yellow = ON'
-
-config led_map led_gbe_phy_link
+config led_map led_gbe
 	list led_action_off    'GbE_green  = OFF'
-	list led_action_ok     'GbE_green  = ON'
-
-config led_map led_gbe_phy_speed
 	list led_action_off    'GbE_yellow = OFF'
-	list led_action_ok     'GbE_yellow = ON'
+	list led_action_notice 'GbE_green  = ON'
+	list led_action_alert  'GbE_yellow = ON'
 
 #
 #		Led config , end
