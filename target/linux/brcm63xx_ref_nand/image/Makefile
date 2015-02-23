@@ -72,12 +72,12 @@ define Image/Prepare
 	echo -ne $(CONFIG_TARGET_CUSTOMER) >>$(KDIR)/jffs2_eof_marker_2048
 	cat $(KDIR)/jffs2_eof_marker_2048 $(KDIR)/file128k.tmp | head --bytes=131072 > $(KDIR)/jffs2_eof_marker_128k
 
-	# these files need to go in a set of erase blocks of their own to minimize the chance of relocation (.w)
+	#these files need to go in a set of erase blocks of their own to minimize the chance of relocation
 	echo "/cferam.001"    >  $(KDIR)/sortlist
 	echo "/vmlinux.lz"    >> $(KDIR)/sortlist
 
-	# add the files that should not be compressed (.w)
-	echo -e "/IOP3"       > $(KDIR)/nocomprlist
+	#add the files that should not be compressed
+	echo -e "/IOP3"       >> $(KDIR)/nocomprlist
 	echo -e "/cferam.001" >> $(KDIR)/nocomprlist
 	echo -e "/vmlinux.lz" >> $(KDIR)/nocomprlist
 
@@ -87,6 +87,7 @@ define Image/Prepare
 	# add kernel and cferam flag (.w)
 	touch $(TARGET_DIR)/cferam.001
 	cp $(KDIR)/vmlinux.lz $(TARGET_DIR)/
+	cp $(KDIR)/cferam.001 $(TARGET_DIR)/
 
 	# add/set version info (.w.x.y)
 	touch -c $(TOPDIR)/target/linux/brcm63xx_ref_nand/base-files/etc/banner
