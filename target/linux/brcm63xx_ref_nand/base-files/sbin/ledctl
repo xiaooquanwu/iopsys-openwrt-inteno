@@ -16,7 +16,7 @@ case $name in
 	production) ubus call leds set  '{"state" : "production"}' ;;
 
     broadband|ethernet|wireless|tel*|voice|video|power)
-	logger -s "FUCK FUCK FUCK!!!!!  [$name] is not a valid led name"
+	logger -s "ledctrl: [$name] is not a valid led name"
 	;;
 #	broadband) db get hw.board.lednames | grep -iq broadband && name="dsl" || exit ;;
 #	ethernet) name="lan" ;;
@@ -29,7 +29,7 @@ esac
 case $status in
 
     on|fail|blink)
-	logger -s "FUCK FUCK FUCK!!!!!  ledctrl status [$status] on [$name] not implemented anymore (off, ok, eok, notice, alert, error)"
+	logger -s "ledctrl: status [$status] on [$name] not implemented anymore (off, ok, eok, notice, alert, error)"
 	
 	;;
 #	on) status="ok" ;;
