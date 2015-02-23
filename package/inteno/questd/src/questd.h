@@ -12,16 +12,6 @@
 
 #include <uci.h>
 
-
-#include <libubox/blobmsg.h>
-#include <libubox/uloop.h>
-#include <libubox/ustream.h>
-#include <libubox/utils.h>
-
-#include <libubus.h>
-
-#include "dslstats.h"
-
 #define MAX_VIF		8
 #define MAX_NETWORK	16
 #define MAX_CLIENT	128
@@ -34,16 +24,6 @@ typedef struct {
 	const char *ssid;
 	const char *network;
 } Wireless;
-
-typedef struct {
-	int idle;
-	int in_network;
-	long tx_bytes;
-	long rx_bytes;
-	int tx_rate;
-	int rx_rate;
-	int rssi;
-} Detail;
 
 typedef struct {
 	bool exists;

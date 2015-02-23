@@ -10,7 +10,7 @@ include $(TOPDIR)/rules.mk
 PKG_NAME:=asterisk18-mod
 PKG_VERSION:=1.8.10.1
 
-PKG_SOURCE_VERSION:=e6a06b24a4e3d5ff786a4ad55a7c90de1defb49e
+PKG_SOURCE_VERSION:=5d132d039a72ca59c250873493f6657537fcf79f
 PKG_SOURCE_PROTO:=git
 ifeq ($(CONFIG_PACKAGE_bcmkernel),y)
 PKG_SOURCE_URL:=git@ihgsp.inteno.se:asterisk-aa
@@ -45,7 +45,7 @@ define Package/asterisk18-mod
 $(call Package/asterisk18-mod/Default)
   TITLE:=Complete open source PBX, v1.8x
   MENU:=1
-  DEPENDS:= +natalie-dect-h +PACKAGE_bcmkernel:bcmkernel +PACKAGE_bcmopen:bcmopen +libopenssl +libncurses +libpopt +libpthread +uci +ubus +zlib @!TARGET_avr32
+  DEPENDS:= +natalie-dect-h +bcmkernel +libopenssl +libncurses +libpopt +libpthread +zlib @!TARGET_avr32
 endef
 
 define Package/asterisk18-mod/description

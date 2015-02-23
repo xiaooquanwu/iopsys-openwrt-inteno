@@ -101,7 +101,6 @@ atm_inf_conf() {
 		xtmctl operate conn --addq 1.$vpi.$vci 0 wrr 1
 		xtmctl operate conn --createnetdev 1.$vpi.$vci ${ifname%%.*}
 		xtmctl operate intf --state 1 enable
-		ifconfig $baseifname up
 		
 		brcm_virtual_interface_rules "$baseifname" "$ifname" "$bridge"
 	fi

@@ -1,0 +1,32 @@
+#!/bin/sh
+
+name=$1
+status=$2
+
+
+name=$(echo $name | tr '[A-Z]' '[a-z]')
+status=$(echo $status | tr '[A-Z]' '[a-z]')
+
+case $name in
+	normal) ubus call leds set  '{"state":"normal"}' ;;
+	proximity) ubus call leds set  '{"state":"proximity"}' ;;
+	test) ubus call leds set  '{"state":"test"}' ;;
+	allon) ubus call leds set  '{"state":"allon"}' ;;
+	alloff) ubus call leds set  '{"state":"alloff"}' ;;
+	production) ubus call leds set  '{"state":"production"}' ;;
+	broadband) db get hw.board.lednames | grep -iq broadband && name="dsl" || exit ;;
+	ethernet) name="lan" ;;
+	wireless) name="wifi" ;;
+	tel*|voice) name="voice1" ;;
+	video) name="tv" ;;
+	power) name="status" ;;
+esac
+
+case $status in
+	on) status="ok" ;;
+	fail) status="error" ;;
+	blink) status="notice" ;;
+esac
+
+ubus -s /tmp/ubus.s call led.$name set '{"state":"'$status'"}' &
+

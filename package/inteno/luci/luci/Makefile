@@ -2,8 +2,8 @@ include $(TOPDIR)/rules.mk
 
 PKG_BRANCH:=svn-0.11
 PKG_NAME:=luci
-PKG_VERSION:=inteno-1.0.145
-PKG_SOURCE_VERSION:=5fcc60517dc95e128afa21d2de2a91ffa04e0d56
+PKG_VERSION:=inteno-1.0.169
+PKG_SOURCE_VERSION:=e5300da360d4ecfa050cc3fb3e3be8e962b36023
 
 PKG_SOURCE_PROTO:=git
 ifeq ($(CONFIG_PACKAGE_bcmkernel),y)
@@ -446,9 +446,6 @@ define Package/luci-app-voice/install
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/etc/config/voice_client $(1)/etc/config/
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/etc/config/voice_codecs $(1)/etc/config/
 
-	$(INSTALL_DIR) $(1)/etc
-	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/etc/idc_cc.cfg $(1)/etc
-
 	echo $(PKG_VERSION) > $(1)/etc/iop_luci_version.log
 	echo $(PKG_SOURCE_VERSION) >> $(1)/etc/iop_luci_version.log
 
@@ -583,10 +580,10 @@ $(eval $(call application,mcpd,LuCI Support for IGMP Proxy,\
 	+PACKAGE_luci-app-mcpd:mcpd))
 
 $(eval $(call application,sfp,LuCI Support for SFP status,\
-	+PACKAGE_luci-app-sfp:sfp))
+        +PACKAGE_luci-app-sfp:sfp))
 
 $(eval $(call application,catv,LuCI Support for CATV Module,\
-	+PACKAGE_luci-app-catv:catv))
+        +PACKAGE_luci-app-catv:catv))
 
 $(eval $(call application,mount,LuCI Support for Mount Management,\
 	+PACKAGE_luci-app-mount))

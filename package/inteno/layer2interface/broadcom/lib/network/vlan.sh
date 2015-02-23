@@ -2,7 +2,6 @@
 
 . /usr/share/libubox/jshn.sh
 . /lib/network/ebtables.sh
-. /lib/brcmaliases.sh
 
 removeall_vlandevices()
 {
@@ -126,6 +125,9 @@ brcm_virtual_interface_rules ()
 	local baseifname=$1
 	local ifname=$2
 	local bridge=$3
+	
+	echo '1' > /proc/sys/net/ipv6/conf/$baseifname/disable_ipv6
+	ifconfig $baseifname up
 	if [ "x$bridge" = "x" ]; then                                                                                                                         
 	  bridge=0                                                                                                                                              
         fi

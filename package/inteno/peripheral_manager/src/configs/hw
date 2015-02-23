@@ -1,0 +1,349 @@
+
+config board 'board'
+	option hardware 'CG300'
+	option hasAdsl '0'
+	option hasVdsl '0'
+	option hasVoice '0'
+	option hasDect '1'
+	option VoicePorts '0'
+	option VoiceLeds '0'
+	option hasWifi '1'
+	option ethernetPorts '2'
+	option ethernetPortNames 'LAN WAN'
+	option ethernetPortOrder 'eth1 eth0'
+	option ethernetLanPorts 'eth1'
+	option ethernetWanPort 'eth0'
+	option adslWanPort ''
+	option vdslWanPort ''
+#	option lednames 'Status Internet Wireless WPS DECT WAN'
+	option lednames 'Status Internet Wireless WPS DECT WAN'
+	option buttonnames 'RESET Wireless WPS DECT TOUCH_NEAR TOUCH_FAR'
+	option wpsButtonGpio '0'
+	option fxsRelayGpio '0'
+	option i2cGpioCustom 'bus0=0,23,22'
+
+config wifi-chip '435f'
+	option bands 'b'
+
+config wifi-chip '43a0'
+	option bands 'a'
+	option is_ac '1'
+
+config wifi-chip '43a2'
+	option bands 'a'
+	option is_ac '1'
+
+config wifi-chip '43bc'
+        option bands 'a'
+        option is_ac '1'
+	option radarthrs '0x6ae 0x30 0x6a8 0x30 0x6a4 0x30 0x6aa 0x30 0x6aa 0x30 0x6a4 0x30'
+
+config buttons 'buttons'
+	option RESET 'gpio 32 al resetbutton Status_green'
+	option DECT 'i2c 3 ah dectbutton WPS_green'
+	option WPS  'i2c 2 ah wpsbutton Wireless_green'
+	option Wireless 'i2c 1 ah ecobutton Internet_green'
+	option TOUCH_NEAR 'i2c 8 ah touch_near Wireless_blue'
+	option TOUCH_FAR  'i2c 9 ah touch_far Internet_red'
+
+config leds 'leds'
+	option Status_green 'gpio 39 al'
+	option Status_red 'gpio 38 al'
+	option Internet_green 'i2c 4 ah'
+	option Internet_red   'i2c 5 ah'      
+	option Wireless_green 'gpio 37 al'
+	option Wireless_blue 'gpio 36 al'
+	option WPS_green 'i2c 2 ah'       
+	option DECT_green 'i2c 3 ah'      
+	option WAN_green 'gpio 9 al'
+	option WAN_yellow 'gpio 10 al'
+
+# config led_map 'led_map'
+# 	option dsl_ok ''
+# 	option dsl_off ''
+# 	option dsl_notice ''
+# 	option dsl_alert ''
+# 	option dsl_error ''
+#         option wifi_ok     'Wireless_green=ON Wireless_blue=OFF'
+#         option wifi_off    'Wireless_green=OFF Wireless_blue=OFF'   
+#         option wifi_notice 'Wireless_green=OFF Wireless_blue=ON'
+#         option wifi_alert  'Wireless_green=OFF Wireless_blue=ON'
+#         option wifi_error  'Wireless_green=OFF Wireless_blue=BLINK_FAST'
+# 	option wps_ok      'WPS_green=ON'
+# 	option wps_off     'WPS_green=OFF'
+# 	option wps_notice  'WPS_green=BLINK_SLOW'
+# 	option wps_alert   'WPS_green=OFF'
+# 	option wps_error   'WPS_green=OFF'
+# 	option lan_ok ''
+# 	option lan_off ''
+# 	option lan_notice ''
+# 	option lan_alert ''
+# 	option lan_error ''
+# 	option status_ok 'Status_green=ON Status_red=OFF'
+# 	option status_off 'Status_green=OFF Status_red=OFF'
+# 	option status_notice 'Status_green=BLINK_SLOW Status_red=OFF'
+# 	option status_alert 'Status_green=OFF Status_red=BLINK_SLOW'
+# 	option status_error 'Status_green=OFF Status_red=BLINK_FAST'
+# 	option dect_ok 'DECT_green=ON'
+# 	option dect_off 'DECT_green=OFF'
+# 	option dect_notice 'DECT_green=BLINK_SLOW'
+# 	option dect_alert 'DECT_green=OFF'
+# 	option dect_error 'DECT_green=OFF'
+# 	option tv_ok ''
+# 	option tv_off ''
+# 	option tv_notice ''
+# 	option tv_alert ''
+# 	option tv_error ''
+# 	option usb_ok ''
+# 	option usb_off ''
+# 	option usb_notice ''
+# 	option usb_alert ''
+# 	option usb_error ''
+# 	option wan_ok ''
+# 	option wan_off 'WAN_green=OFF WAN_yellow=OFF'
+# 	option wan_notice 'WAN_green=ON'
+# 	option wan_alert 'WAN_yellow=ON'
+# 	option wan_error ''
+# 	option internet_ok 'Internet_green=ON Internet_red=OFF'
+# 	option internet_off 'Internet_green=OFF Internet_red=OFF'
+# 	option internet_notice 'Internet_green=BLINK_SLOW Internet_red=OFF'
+# 	option internet_alert 'Internet_green=OFF Internet_red=BLINK_SLOW'
+# 	option internet_error 'Internet_green=OFF Internet_red=BLINK_FAST'
+# 	option voice1_ok ''
+# 	option voice1_off ''
+# 	option voice1_notice ''
+# 	option voice1_alert ''
+# 	option voice1_error ''
+# 	option voice2_ok ''
+# 	option voice2_off ''
+# 	option voice2_notice ''
+# 	option voice2_alert ''
+# 	option voice2_error ''
+# 	option eco_ok ''
+# 	option eco_off ''
+# 	option eco_notice ''
+# 	option eco_alert ''
+# 	option eco_error ''
+
+###############################################################################
+#
+# example for low level button.
+#
+#
+
+config sim_button sim_buttons
+       list buttons sim_button_A
+       list buttons sim_button_B
+       list buttons sim_button_c
+       list buttons sim_button_d
+       list buttons sim_button_e
+
+config sim_button sim_button_A
+       option addr 10
+       option active hi
+
+config sim_button sim_button_B
+       option addr 11
+       option active low
+
+config sim_button sim_button_c
+       option addr 12
+       option active hi
+
+config sim_button sim_button_d
+       option addr 13
+       option active hi
+
+config sim_button sim_button_e
+       option addr 14
+       option active hi
+
+###############################################################################
+#
+# example for mapping system button to driver button.
+# 
+# mapping serveral "functions" buttons to one physical can be done with the long press option
+# if 
+#
+# this is a list of all button names. perifmanger will read this list then read out the specific button config
+
+config button_map button_map
+	list buttonnames RESET
+	list buttonnames Wireless
+	list buttonnames WPS
+	list buttonnames DECT
+	list buttonnames TOUCH_NEAR
+	list buttonnames TOUCH_FAR
+	option minpress 100	# default minimum time a button nedes to be pressed. 
+
+config button_map RESET
+#       list button gpio_reset
+       list button sim_button_A # driver that is used for this button
+       option minpress 5000	# don't allow button unless pressed for 5 seconds.
+       option hotplug resetbutton
+
+config button_map Wireless
+       list button sim_button_B # driver that is used for this button
+       list button sim_button_c # we support user having to press two at the same time to register a button event.
+       option minpress 1000
+       option hotplug ecobutton
+
+# long press example one or the other of touch_near or touch_far will trigger not booth.
+
+config button_map TOUCH_NEAR
+       list button gpio_reset
+#       list button sim_button_d # driver that is used for this button
+       option hotplug touch_near
+
+config button_map TOUCH_FAR
+       list button sim_button_d # driver that is used for this button
+       option longpress	3000    # this button has a long press option. 
+       option hotplug touch_far
+
+
+
+###############################################################################
+#
+# example for low level led driver.
+# here we list what the led can do and any info the driver needs to know to controll the led.
+#
+# would proably be smarter to name the leds as the color and not just A B C.
+# but this is an example to show there is no connection with the name and what it
+# does. 
+#
+config sim_led sim_leds
+        list leds sim_led_A
+	list leds sim_led_B
+	list leds sim_led_C
+
+config sim_led sim_led_A
+       option addr     1
+       option color    green
+       option breading no
+
+config sim_led sim_led_B
+       option addr	7
+       option color	red
+       option breading	no
+
+config sim_led sim_led_C
+       option addr	3
+       option color	blue
+       option breading	yes
+       option fadein    yes
+       option fadeout   yes
+
+###############################################################################
+#
+#   gpio leds
+#
+config gpio_led gpio_leds
+        list leds Status_green
+	list leds Status_red
+	list leds Wireless_green
+	list leds Wireless_blue
+	list leds WAN_green
+	list leds WAN_yellow
+
+config gpio_led Status_green
+       option addr     39
+       option active   low
+       option mode     direct
+
+config gpio_led Status_red
+       option addr     38
+       option active   low
+       option mode     direct
+
+config gpio_led Wireless_green
+       option addr     37
+       option active   low
+       option mode     direct
+
+config gpio_led Wireless_blue
+       option addr     36
+       option active   low
+       option mode     direct
+
+config gpio_led WAN_green
+       option addr     9
+       option active   low
+       option mode     direct
+
+config gpio_led WAN_yellow
+       option addr     10
+       option active   low
+       option mode     direct
+
+###############################################################################
+#
+#   gpio buttons
+#
+
+config gpio_button gpio_buttons
+       list buttons gpio_reset
+
+config gpio_button gpio_reset
+       option addr 32
+       option active low
+#       option feedback
+
+
+###############################################################################
+#
+# example mapping sim leds to system leds. 
+#
+# the led_action list can be from one entry and up.
+# 
+# led_action, list of leds to set. 
+# button_action. list of button events to send out 
+# effect_action, list of special effects to activate. (dim display.....)
+# 
+
+config led_map led_map
+
+
+config led_map status_ok
+			list led_action	Status_green=ON
+			list led_action	Status_red=OFF
+config led_map status_off
+			list led_action	Status_green=OFF
+			list led_action	Status_red=OFF
+config led_map status_notice
+			list led_action	Status_green=FLASH_SLOW
+			list led_action	Status_red=OFF
+config led_map status_alert
+			list led_action	Status_green=
+			list led_action	Status_red=FLASH_SLOW
+config led_map status_error
+			list led_action	Status_green=OFF
+			list led_action	Status_red=FLASH_FAST
+
+
+config led_map wifi_ok
+			list led_action sim_led_A=ON
+			list led_action sim_led_C=OFF	
+config led_map wifi_off
+			list led_action sim_led_A=OFF
+			list led_action sim_led_C=OFF
+config led_map wifi_notice
+			list led_action sim_led_A=OFF
+			list led_action sim_led_C=ON
+config led_map wifi_alert
+			list led_action sim_led_A=OFF
+			list led_action sim_led_C=ON
+config led_map wifi_error
+			list led_action sim_led_A=FLASH_SLOW
+			list led_action sim_led_C=FLASH_SLOW
+
+config led_map wps_ok
+			list led_action sim_led_B=ON
+config led_map wps_off
+			list led_action sim_led_B=OFF
+config led_map wps_notice
+			list led_action sim_led_B=ON
+config led_map wps_alert
+			list led_action sim_led_B=ON
+config led_map wps_error
+			list led_action sim_led_B=ON
+

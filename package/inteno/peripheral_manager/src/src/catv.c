@@ -36,7 +36,7 @@ static struct catv_handler *pcatv;
 static int catv_get_type(struct blob_buf *b)
 {
     int type;
-    char *s;
+    const char *s;
 
     type = i2c_smbus_read_byte_data(pcatv->i2c_a0,32);
 
@@ -270,7 +270,7 @@ static int catv_get_serial_method(struct ubus_context *ubus_ctx, struct ubus_obj
 static int catv_get_interface(struct blob_buf *b)
 {
     int type;
-    char *s;
+    const char *s;
 
     type = i2c_smbus_read_byte_data(pcatv->i2c_a0,81);
 
@@ -315,7 +315,7 @@ static int catv_get_interface_method(struct ubus_context *ubus_ctx, struct ubus_
 static int catv_get_bandwidth(struct blob_buf *b)
 {
     int type;
-    char *s;
+    const char *s;
 
     type = i2c_smbus_read_byte_data(pcatv->i2c_a0,82);
 
@@ -1200,7 +1200,7 @@ static int catv_save_method(struct ubus_context *ubus_ctx, struct ubus_object *o
         ucix_add_option(pcatv->ctx, "catv", "catv", "filter", "3");
 
 
-    ucix_save(pcatv->ctx);
+    ucix_save(pcatv->ctx,"/etc/config");
     ucix_commit(pcatv->ctx, "catv");
 
     blobmsg_add_string(&b, "Saved", "/etc/config/catv");
@@ -1308,13 +1308,13 @@ static void catv_config_open(struct catv_handler *h)
     /* open config file */
 again:
 
-    h->ctx = ucix_init_path("/etc/config", "catv");
+    h->ctx = ucix_init_path("/etc/config", "catv", 0);
 
     if (NULL == h->ctx) {
         int fd;
 
         syslog(LOG_INFO,"CATV config file not found /etc/config/catv\n");
-        fd = open("/etc/config/catv",O_RDWR | O_CREAT | O_TRUNC);
+        fd = open("/etc/config/catv",O_RDWR | O_CREAT | O_TRUNC, 0644);
         close(fd);
         if (loop++ < 10)
             goto again;
@@ -1336,7 +1336,7 @@ again:
         ucix_add_section(h->ctx,"catv","catv", "service");
         ucix_add_option(h->ctx,"catv", "catv", "enable","no");
         ucix_add_option(h->ctx,"catv", "catv", "filter","3");
-        ucix_save(h->ctx);
+        ucix_save(h->ctx,"/etc/config");
         ucix_commit(h->ctx,"catv");
         goto again;
     }
@@ -1352,7 +1352,7 @@ again:
 
 }
 
-struct catv_handler * catv_init(struct uci_context *uci_ctx, char *i2c_bus,int a0_addr,int a2_addr)
+struct catv_handler * catv_init(struct uci_context *uci_ctx, const char *i2c_bus,int a0_addr,int a2_addr)
 {
     struct catv_handler *h;
     const char *p;

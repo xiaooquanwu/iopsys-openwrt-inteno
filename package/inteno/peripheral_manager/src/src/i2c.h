@@ -1,4 +1,5 @@
 #ifndef I2C_H
+#define I2C_H
 
 struct i2c_reg_tab {
     char addr;
