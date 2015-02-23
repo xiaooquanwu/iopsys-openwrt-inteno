@@ -973,7 +973,7 @@ static int sfp_ddm_get_rx_pwr(struct blob_buf *b, int raw)
                 /* NOTE: There's only a single word to read. It's unclear how
                    to get several values. However, typically, rx_pwr[2,3,4]
                    are zero. */
-                if (sfp_ddm.rx_pwr[i] != 0.0) {
+                if (sfp_ddm.rx_pwr[i] > 0.0 || sfp_ddm.rx_pwr[i] < 0.0) { /* sfp_ddm.rx_pwr[i] != 0.0 */
                         if (!sfp_ddm_read_ui(&v, 104))
                                 return 0;
                         x += v*sfp_ddm.rx_pwr[i];

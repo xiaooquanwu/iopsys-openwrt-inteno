@@ -10,20 +10,20 @@ wantest() {
 
 if [ "$INTERFACE" == "led" ]; then
 	if [ "$ACTION" == "link_up" ]; then
-		ledctl dsl on
+		ubus call led.dsl set '{"state":"ok"}'
 	fi
 
 	if [ "$ACTION" == "link_down" ]; then
-		ledctl dsl off
-		$(wantest) && ledctl broadband on
+		ubus call led.dsl set '{"state":"off"}'
+#		$(wantest) && ubus call led.wan set '{"state":"ok"}'
 	fi
 
 	if [ "$ACTION" == "started_training" ]; then
-		ledctl dsl alert
+		ubus call led.dsl set '{"state":"alert"}'
 	fi
 
 	if [ "$ACTION" == "looking_for_carrier" ]; then
-		ledctl dsl notice
+		ubus call led.dsl set '{"state":"notice"}'
 	fi
 fi
 

@@ -281,9 +281,9 @@ config led_map led_tv
        list led_action_alert  TV_green=FLASH_SLOW
        list led_action_error  TV_green=FLASH_FAST
 
-config led_map led_wan
-       list led_action_off    WAN_yellow=OFF
-       list led_action_alert  WAN_yellow=ON
+config led_map led_wan_phy_speed
+	list led_action_off    'WAN_yellow = OFF'
+	list led_action_ok     'WAN_yellow = ON'
 
 config led_map led_internet
        list led_action_ok     'Internet_green = ON'
