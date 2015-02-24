@@ -8,16 +8,7 @@ wpsbutton_action () {
 }
 
 dectbutton_action () {
-        local parsed=$(ubus call led.dect status)
-        json_load "$parsed"
-        json_get_var ledstate state
 	/usr/bin/dect -r > /dev/null
-
-        [ "$ledstate" == "off" ] && {
-                ubus call led.dect set '{ "state": "notice"}'
-        } || {
-                ubus call led.dect set '{ "state": "off"}'
-        }
 }
 
 case "$ACTION" in
@@ -42,7 +33,6 @@ case "$ACTION" in
 		wpsbutton_action
         }
         [ "dectbutton" == "$INTERFACE" ] && {
-                printf "\n\nRegistering DECT\n\n" > /dev/console
 		dectbutton_action
         }
         [ "infobutton" == "$INTERFACE" ] && {
