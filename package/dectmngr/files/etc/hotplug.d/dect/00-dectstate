@@ -1,14 +1,15 @@
 #!/bin/sh
 
-if [ "$ACTION" == "reg_start" ]; then
+if [ "$ACTION" == "led_blink" ]; then
     ubus call led.dect set '{"state":"notice"}'
 fi
 
-if [ "$ACTION" == "reg_stop" ]; then
+if [ "$ACTION" == "led_on" ]; then
     ubus call led.dect set '{"state":"ok"}'
 fi
 
-if [ "$ACTION" == "dect_init" ]; then
-    ubus call led.dect set '{"state":"ok"}'
+if [ "$ACTION" == "led_off" ]; then
+    ubus call led.dect set '{"state":"off"}'
 fi
+
 
