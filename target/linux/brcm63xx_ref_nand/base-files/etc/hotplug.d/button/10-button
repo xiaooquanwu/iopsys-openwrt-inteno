@@ -8,7 +8,20 @@ wpsbutton_action () {
 }
 
 dectbutton_action () {
+
+    local parsed=$(ubus call led.dect status)
+    json_load "$parsed"
+    json_get_var ledstate state
+
+    [ "$ledstate" == "ok" ] && {
+	printf "\n\ndect: regmode\n\n" > /dev/console
 	/usr/bin/dect -r > /dev/null
+    } || {
+	printf "\n\ndect radio: on\n\n" > /dev/console
+	uci set dect.dect.radio=1
+	uci commit
+	/usr/bin/dect -c
+    }
 }
 
 case "$ACTION" in
