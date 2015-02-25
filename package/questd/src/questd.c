@@ -93,8 +93,9 @@ static const struct blobmsg_policy host_policy[__HOST_MAX] = {
 pthread_t tid[1];
 static long sleep_time = DEFAULT_SLEEP;
 
-void recalc_sleep_time(bool calc, long dec)
+void recalc_sleep_time(bool calc, int toms)
 {
+	long dec = toms * 1000;
 	if (!calc)
 		sleep_time = DEFAULT_SLEEP;
 	else if(sleep_time >= dec)
@@ -378,6 +379,7 @@ populate_clients()
 	char mask[64];
 	int i;
 	bool there;
+	int toms = 1000;
 
 	memset(clients_new, '\0', sizeof(clients));
 
@@ -394,8 +396,8 @@ populate_clients()
 				handle_client(&clients[cno]);
 				if((clients[cno].connected = wireless_sta(&clients[cno])))
 					clients[cno].wireless = true;
-				else
-					clients[cno].connected = arping(clients[cno].hostaddr, clients[cno].device);
+				else if(!(clients[cno].connected = arping(clients[cno].hostaddr, clients[cno].device, toms)))
+					recalc_sleep_time(true, toms);
 				cno++;
 			}
 		}
@@ -432,8 +434,8 @@ populate_clients()
 						clients[cno].dhcp = false;
 						if((clients[cno].connected = wireless_sta(&clients[cno])))
 							clients[cno].wireless = true;
-						else
-							clients[cno].connected = arping(clients[cno].hostaddr, clients[cno].device);
+						else if(!(clients[cno].connected = arping(clients[cno].hostaddr, clients[cno].device, toms)))
+							recalc_sleep_time(true, toms);
 						cno++;
 					}
 				}
@@ -480,6 +482,7 @@ populate_clients6()
 	char line[512];
 	int cno = 0;
 	int iaid, ts, id, length;
+	int toms = 500;
 
 	if ((hosts6 = fopen("/tmp/hosts/6relayd", "r"))) {
 		while(fgets(line, sizeof(line), hosts6) != NULL)
@@ -491,8 +494,8 @@ populate_clients6()
 			if (sscanf(line, "# %s %s %d %s %d %x %d %s", clients6[cno].device, clients6[cno].duid, &iaid, clients6[cno].hostname, &ts, &id, &length, clients6[cno].ip6addr)) {
 				clients6[cno].exists = true;
 				clear_macaddr();
-				if(!(clients6[cno].connected = ndisc (clients6[cno].hostname, clients6[cno].device, 0x8, 1, 500)))
-					recalc_sleep_time(true, 500000);
+				if(!(clients6[cno].connected = ndisc (clients6[cno].hostname, clients6[cno].device, 0x8, 1, toms)))
+					recalc_sleep_time(true, toms);
 				sprintf(clients6[cno].macaddr, get_macaddr());
 				if(clients6[cno].connected && wireless_sta6(&clients6[cno]))
 					clients6[cno].wireless = true;

@@ -132,7 +132,7 @@ arping(char *targetIP, char *device, long tmo)
 	struct sockaddr_ll from;
 	socklen_t alen = sizeof(from);
 	int connected = 0;
-	int cc;
+	int cc = -1;
 
 	fd_set read_fds, write_fds, except_fds;
 	FD_ZERO(&read_fds);
@@ -149,9 +149,7 @@ arping(char *targetIP, char *device, long tmo)
 		cc = recvfrom(sock_fd, packet, sizeof(packet), 0, (struct sockaddr *) &from, &alen);
 	}
 
-	if (cc < 0)
-		perror("recvfrom");
-	else
+	if (cc >= 0)
 		connected = recv_pack(packet, cc, &from);
 
 	close(sock_fd);
