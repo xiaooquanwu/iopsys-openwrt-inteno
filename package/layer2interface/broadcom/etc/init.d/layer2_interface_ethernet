@@ -5,6 +5,19 @@ include /lib/network
 
 START=21
 
+get_current_status() {
+        local port="$1"
+        local media="$(ethctl $port media-type 2>&1)"
+        if echo $media | grep "1000" >/dev/null; then
+                return 0
+        elif echo $media | grep "100" >/dev/null; then
+                return 1
+          elif echo $media | grep "10" >/dev/null; then
+                return 1
+        fi
+}
+
+
 removeethernet() {
 	config_get ifname $1 ifname
 	vlanctl --if-delete $ifname
@@ -38,12 +51,22 @@ boot() {
 	local $baseifname
 	config_load layer2_interface_ethernet
 	config_get baseifname Wan baseifname
+	
+	if [ "$(db get hw.board.hardware)" != "EG300" ]; then  
+	  get_current_status $baseifname
+	  local ret=$?
+	  if [ $ret -eq 1 ]; then                                                        
+	      ethctl $baseifname phy-power down
+	      ethctl $baseifname phy-power up    
+	  fi
+	fi  
 	for interf in `db get hw.board.ethernetPortOrder`; do ethswctl -c wan -i $interf -o disable ; done
 	ethswctl -c pause -p 8 -v 1
 	ethswctl -c hw-switching -o enable
 	if [ $baseifname ]; then
 		ethswctl -c wan -i $baseifname -o enable
 	fi
+					    
 	ifconfig $baseifname up
 }
 
