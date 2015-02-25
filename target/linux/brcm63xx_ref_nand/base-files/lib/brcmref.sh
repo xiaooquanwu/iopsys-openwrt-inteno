@@ -51,7 +51,7 @@ brcm_insmod() {
 	test -e /lib/modules/3.4.11-rt19/extra/endpointdd.ko   && insmod /lib/modules/3.4.11-rt19/extra/endpointdd.ko
 	test -e /lib/modules/3.4.11-rt19/extra/p8021ag.ko      && insmod /lib/modules/3.4.11-rt19/extra/p8021ag.ko
 	test -e /lib/modules/3.4.11-rt19/extra/bcmvlan.ko      && insmod /lib/modules/3.4.11-rt19/extra/bcmvlan.ko
-#	test -e /lib/modules/3.4.11-rt19/extra/pwrmngtd.ko     && insmod /lib/modules/3.4.11-rt19/extra/pwrmngtd.ko
+	test -e /lib/modules/3.4.11-rt19/extra/pwrmngtd.ko     && insmod /lib/modules/3.4.11-rt19/extra/pwrmngtd.ko
 	test -e /lib/modules/3.4.11-rt19/rng-core.ko           && insmod /lib/modules/3.4.11-rt19/rng-core.ko
 	test -e /lib/modules/3.4.11-rt19/extra/bcmtrng.ko      && insmod /lib/modules/3.4.11-rt19/extra/bcmtrng.ko
 	echo brcm modules loaded
