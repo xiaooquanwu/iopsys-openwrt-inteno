@@ -1,58 +1,77 @@
---- a/flash_eraseall.c	2009-03-14 02:09:35.000000000 +0100
-+++ b/flash_eraseall.c	2012-09-13 14:06:45.000000000 +0200
-@@ -47,6 +47,7 @@
- static const char *mtd_device;
- static int quiet;		/* true -- don't output progress */
- static int jffs2;		// format for jffs2 usage
-+static int broken_cfe;	// ignore oob layout and just write the cleanmarker at the start
+From 146fc0dd735595c7649c35e9750ee6717528a813 Mon Sep 17 00:00:00 2001
+From: Mats Karrman <mats@southpole.se>
+Date: Tue, 24 Feb 2015 17:29:13 +0100
+Subject: [PATCH] flash_erase: Add option for CFE broken oob handling
+
+Ported from Benjamin Larssons patch on Backfire.
+---
+ flash_erase.c | 18 ++++++++++++++++--
+ 1 file changed, 16 insertions(+), 2 deletions(-)
+
+diff --git a/flash_erase.c b/flash_erase.c
+index 933373a..b63cc04 100644
+--- a/flash_erase.c
++++ b/flash_erase.c
+@@ -46,6 +46,7 @@ static int quiet;		/* true -- don't output progress */
+ static int jffs2;		/* format for jffs2 usage */
+ static int noskipbad;		/* do not skip bad blocks */
+ static int unlock;		/* unlock sectors before erasing */
++static int broken_cfe;		/* ignore oob layout and just write the cleanmarker at the start */
  
- static void process_options (int argc, char *argv[]);
- void show_progress (mtd_info_t *meminfo, erase_info_t *erase);
-@@ -162,8 +163,13 @@
- 		if (isNAND) {
- 			struct mtd_oob_buf oob;
- 			oob.ptr = (unsigned char *) &cleanmarker;
--			oob.start = erase.start + clmpos;
--			oob.length = clmlen;
-+			if (broken_cfe) {
-+				oob.start = erase.start;
-+				oob.length = 8;
-+			} else {
-+				oob.start = erase.start + clmpos;
-+				oob.length = clmlen;
-+			}
- 			if (ioctl (fd, MEMWRITEOOB, &oob) != 0) {
- 				fprintf(stderr, "\n%s: %s: MTD writeoob failure: %s\n", exe_name, mtd_device, strerror(errno));
- 				continue;
-@@ -198,11 +204,12 @@
- 
+ static struct jffs2_unknown_node cleanmarker;
+ int target_endian = __BYTE_ORDER;
+@@ -67,6 +68,7 @@ static void display_help (void)
+ 			"  -j, --jffs2       format the device for jffs2\n"
+ 			"  -N, --noskipbad   don't skip bad blocks\n"
+ 			"  -u, --unlock      unlock sectors before erasing\n"
++			"  -b, --broken      don't respect oob layout, needed for some Broadcom cfe\n"
+ 			"  -q, --quiet       do not display progress messages\n"
+ 			"      --silent      same as --quiet\n"
+ 			"      --help        display this help and exit\n"
+@@ -105,7 +107,7 @@ int main(int argc, char *argv[])
+ 	 */
  	for (;;) {
  		int option_index = 0;
--		static const char *short_options = "jq";
-+		static const char *short_options = "jqb";
+-		static const char *short_options = "jNqu";
++		static const char *short_options = "jNqub";
  		static const struct option long_options[] = {
  			{"help", no_argument, 0, 0},
  			{"version", no_argument, 0, 0},
- 			{"jffs2", no_argument, 0, 'j'},
-+			{"broken", no_argument, 0, 'b'},			
+@@ -114,6 +116,7 @@ int main(int argc, char *argv[])
  			{"quiet", no_argument, 0, 'q'},
  			{"silent", no_argument, 0, 'q'},
+ 			{"unlock", no_argument, 0, 'u'},
++			{"broken", no_argument, 0, 'b'},
  
-@@ -229,6 +236,9 @@
- 			case 'q':
- 				quiet = 1;
- 				break;
-+			case 'b':
-+				broken_cfe = 1;
-+				break;
- 			case 'j':
- 				jffs2 = 1;
- 				break;
-@@ -264,6 +274,7 @@
- 			"Erases all of the specified MTD device.\n"
- 			"\n"
- 			"  -j, --jffs2    format the device for jffs2\n"
-+			"  -b, --broken   don't respect oob layout, needed for some Broadcom cfe\n"
- 			"  -q, --quiet    don't display progress messages\n"
- 			"      --silent   same as --quiet\n"
- 			"      --help     display this help and exit\n"
+ 			{0, 0, 0, 0},
+ 		};
+@@ -146,6 +149,9 @@ int main(int argc, char *argv[])
+ 		case 'u':
+ 			unlock = 1;
+ 			break;
++		case 'b':
++			broken_cfe = 1;
++			break;
+ 		case '?':
+ 			error = 1;
+ 			break;
+@@ -276,7 +282,15 @@ int main(int argc, char *argv[])
+ 
+ 		/* write cleanmarker */
+ 		if (isNAND) {
+-			if (mtd_write_oob(mtd_desc, &mtd, fd, (uint64_t)offset + clmpos, clmlen, &cleanmarker) != 0) {
++			uint64_t oob_start, oob_length;
++			if (broken_cfe) {
++				oob_start = (uint64_t)offset;
++				oob_length = 8;
++			} else {
++				oob_start = (uint64_t)offset + clmpos;
++				oob_length = clmlen;
++			}
++			if (mtd_write_oob(mtd_desc, &mtd, fd, oob_start, oob_length, &cleanmarker) != 0) {
+ 				sys_errmsg("%s: MTD writeoob failure", mtd_device);
+ 				continue;
+ 			}
+-- 
+1.9.1
+
