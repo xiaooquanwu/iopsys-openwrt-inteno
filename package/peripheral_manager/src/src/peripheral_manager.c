@@ -23,6 +23,8 @@ static const char *config_file = "hw";
 
 static char *ubus_socket;
 
+void catv_monitor_set_socket(char *);
+
 void print_usage(char *prg_name);
 
 void print_usage(char *prg_name) {
@@ -162,6 +164,8 @@ int main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 	ubus_add_uloop(ubus_ctx);
+
+	catv_monitor_set_socket(ubus_socket);
 
 	server_start(uci_ctx, ubus_ctx);
 
