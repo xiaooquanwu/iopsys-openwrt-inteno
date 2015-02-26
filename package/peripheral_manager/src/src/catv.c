@@ -996,7 +996,7 @@ static int catv_set_filter_method(struct ubus_context *ubus_ctx, struct ubus_obj
 enum {
     STATUS_RF_ENABLE
 };
-static const struct blobmsg_policy enable_policy[] = {
+static const struct blobmsg_policy set_enable_policy[] = {
     [STATUS_RF_ENABLE] = { .name = "enable", .type = BLOBMSG_TYPE_STRING },
 };
 
@@ -1020,9 +1020,9 @@ static int catv_set_enable_method(struct ubus_context *ubus_ctx, struct ubus_obj
                                   struct blob_attr *msg)
 {
     struct blob_buf b;
-    struct blob_attr *tb[ARRAY_SIZE(enable_policy)];
+    struct blob_attr *tb[ARRAY_SIZE(set_enable_policy)];
 
-    blobmsg_parse(enable_policy, ARRAY_SIZE(enable_policy) , tb, blob_data(msg), blob_len(msg));
+    blobmsg_parse(set_enable_policy, ARRAY_SIZE(set_enable_policy) , tb, blob_data(msg), blob_len(msg));
 
     if (tb[STATUS_RF_ENABLE]) {
 
@@ -1217,7 +1217,6 @@ static int catv_get_all_method(struct ubus_context *ubus_ctx, struct ubus_object
 {
     struct blob_buf b;
     int ret = 0;
-
     memset(&b, 0, sizeof(b));
     blob_buf_init (&b, 0);
 
@@ -1280,8 +1279,8 @@ static const struct ubus_method catv_methods[] = {
     { .name = "alarm", .handler = catv_get_alarm_method },
     { .name = "get-all",  .handler = catv_get_all_method },
 
-    { .name = "set-filter",  .handler = catv_set_filter_method },
-    { .name = "set-enable",  .handler = catv_set_enable_method },
+    UBUS_METHOD("set-filter", catv_set_filter_method, filter_policy),
+    UBUS_METHOD("set-enable", catv_set_enable_method, set_enable_policy),
 
     { .name = "save", .handler = catv_save_method },
 };
