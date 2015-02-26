@@ -16,6 +16,8 @@ typedef enum {
         STATE_ERROR,
 }state_t;
 
+state_t state;
+
 static struct ubus_context *ubus_ctx;
 static char *ubus_socket;
 
@@ -35,7 +37,7 @@ catv_status_cb(struct ubus_request *req, int type, struct blob_attr *msg)
 {
 	struct blob_attr *cur;
 	uint32_t rem;
-	const char *data = "-inf";
+	const char *data;
 
 	rem = blob_len(msg);
 
@@ -85,7 +87,7 @@ catv_vpd_cb(struct ubus_request *req, int type, struct blob_attr *msg)
 
         /* no response */
         if ( rem == 0 ) {
-                set_led(STATE_ERROR);
+                state = STATE_ERROR;
                 return;
         }
 
@@ -95,20 +97,66 @@ catv_vpd_cb(struct ubus_request *req, int type, struct blob_attr *msg)
                 }
         }
 
-        /* if no respons or -inf */
+        /* no cable */
         if (!strcmp("-inf", data)) {
-                set_led(STATE_ALERT);
-        } else {
-                set_led(STATE_OK);
+                state = STATE_ERROR;
         }
-        /*BUG: we should set state notice if the signal is low, but how do we detect that ? */
 }
+
+static void
+catv_alarm_cb(struct ubus_request *req, int type, struct blob_attr *msg)
+{
+	struct blob_attr *cur;
+	uint32_t rem;
+	const char *data = "-inf";
+
+	rem = blob_len(msg);
+
+        /* no response */
+        if ( rem == 0 ) {
+                state = STATE_ERROR;
+                return;
+        }
+
+	__blob_for_each_attr(cur, blob_data(msg), rem) {
+                if (!strcasecmp("Alarm VPD HI", blobmsg_name(cur))) {
+                        data = blobmsg_data(cur);
+                        /* if on  */
+                        if (!strcmp("on", data)) {
+                                state = STATE_ALERT;
+                        }
+                }else if (!strcasecmp("Alarm VPD LO", blobmsg_name(cur))) {
+                        data = blobmsg_data(cur);
+                        /* if on  */
+                        if (!strcmp("on", data)) {
+                                state = STATE_ALERT;
+                        }
+                }else if (!strcasecmp("Warning VPD HI", blobmsg_name(cur))) {
+                        data = blobmsg_data(cur);
+                        /* if on  */
+                        if (!strcmp("on", data)) {
+                                state = STATE_NOTICE;
+                        }
+                }else if (!strcasecmp("Warning VPD LO", blobmsg_name(cur))) {
+                        data = blobmsg_data(cur);
+                        /* if on  */
+                        if (!strcmp("on", data)) {
+                                state = STATE_NOTICE;
+                        }
+                }
+        }
+}
+
 
 static void catv_monitor_handler(struct uloop_timeout *timeout)
 {
 	uint32_t id;
         struct blob_buf b;
         int ret;
+
+        /* start to set new state to OK */
+        /* then checks turn on different errors */
+        state = STATE_OK;
 
         if (is_enabled()) {
 
@@ -120,25 +168,38 @@ static void catv_monitor_handler(struct uloop_timeout *timeout)
                 memset(&b, 0, sizeof(struct blob_buf));
                 blob_buf_init(&b, 0);
 
+                /* first check alarms, they set notice/alert if present */
+                ret = ubus_invoke(ubus_ctx, id, "alarm", b.head, catv_alarm_cb, 0, 3000);
+                if (ret)
+                        DBG(1,"ret = %s", ubus_strerror(ret));
+
+                /* then check cable in, it sets Error,*/
                 ret = ubus_invoke(ubus_ctx, id, "vpd", b.head, catv_vpd_cb, 0, 3000);
                 if (ret)
                         DBG(1,"ret = %s", ubus_strerror(ret));
         }else
-                set_led(STATE_OFF);
+                state = STATE_OFF;
+
+        set_led(state);
 
         uloop_timeout_set(&catv_monitor_timer, CATV_MONITOR_TIME);
 }
 
-static void set_led(state_t state)
+static void set_led(state_t lstate)
 {
 	uint32_t id;
         struct blob_buf b;
         int ret;
+        static state_t old_state = -1;
+
+        if ( lstate == old_state )
+                return;
+        old_state = lstate;
 
         memset(&b, 0, sizeof(struct blob_buf));
 	blob_buf_init(&b, 0);
 
-        switch (state) {
+        switch (lstate) {
         case STATE_OFF:
                 blobmsg_add_string(&b, "state", "off"); break;
         case STATE_OK:
