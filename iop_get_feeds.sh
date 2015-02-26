@@ -20,7 +20,6 @@
 ./scripts/feeds install iperf
 ./scripts/feeds install liblzo
 ./scripts/feeds install miniupnpd
-./scripts/feeds install minidlna
 ./scripts/feeds install tcpdump
 ./scripts/feeds install smap
 ./scripts/feeds install smap-to-devinfo
