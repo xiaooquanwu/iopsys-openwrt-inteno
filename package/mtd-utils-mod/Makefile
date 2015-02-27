@@ -61,6 +61,7 @@ FILES += \
 	ubimkvol \
 	ubinfo \
 	ubinize \
+	deubinize \
 	ubirename \
 	ubirmvol \
 	ubirsvol \
