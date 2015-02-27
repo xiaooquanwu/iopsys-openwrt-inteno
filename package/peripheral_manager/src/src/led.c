@@ -32,13 +32,13 @@ typedef enum {
 static const char * const fn_actions[LED_ACTION_MAX] =
 { "off", "ok", "eok", "notice", "alert", "error", "custom"};
 
-#define LED_FUNCTIONS 19
+#define LED_FUNCTIONS 20
 static const char* const led_functions[LED_FUNCTIONS] =
 { "dsl",	"wifi",		"wps",		"lan",
   "status",	"dect",		"tv",		"usb",
   "wan",	"internet",	"voice1",	"voice2",
   "eco",	"gbe",		"ext",		"wan_phy_speed",
-  "wan_phy_link","gbe_phy_speed","gbe_phy_link" };
+  "wan_phy_link","gbe_phy_speed","gbe_phy_link","cancel" };
 
 /* Names for led_state_t */
 static const char* const led_states[LED_STATES_MAX] =
@@ -409,6 +409,7 @@ static struct ubus_object led_objects[LED_OBJECTS] = {
     { .name = "led.wan_phy_link",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
     { .name = "led.gbe_phy_speed",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
     { .name = "led.gbe_phy_link",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
+    { .name = "led.cancel",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
 };
 
 
