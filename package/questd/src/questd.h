@@ -26,6 +26,16 @@ typedef struct {
 } Wireless;
 
 typedef struct {
+	int idle;
+	int in_network;
+	long tx_bytes;
+	long rx_bytes;
+	int tx_rate;
+	int rx_rate;
+	int rssi;
+} Detail;
+
+typedef struct {
 	bool exists;
 	bool local;
 	bool dhcp;
