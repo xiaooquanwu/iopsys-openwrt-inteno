@@ -52,6 +52,5 @@
 ./scripts/feeds install xxd
 ./scripts/feeds install xl2tpd
 ./scripts/feeds install screen
-
-
-
+./scripts/feeds install libiconv-full
+./scripts/feeds install libintl-full
