@@ -110,7 +110,8 @@ case "$ACTION" in
 		addif
 		local interfname=$(interfacename $INTERFACE)
 		local operstate=$(cat /sys/class/net/$INTERFACE/operstate)
-		if [ "$operstate" == "up" ]; then
+#		if [ "$operstate" == "up" ]; then
+		if true ; then
 			case "$interfname" in
 				GbE*)
 					ubus call led.lan           set '{"state" : "ok"}'
