@@ -139,9 +139,9 @@ int main(int argc, char **argv)
 			exit(EXIT_FAILURE);
 		}
 		/* Close out the standard file descriptors */
-		//close(STDIN_FILENO);
-		//close(STDOUT_FILENO);
-		//close(STDERR_FILENO);
+		close(STDIN_FILENO);
+		close(STDOUT_FILENO);
+		close(STDERR_FILENO);
 	}
 
 	/* open configuration file */
