@@ -1,0 +1,7 @@
+
+bootchart_rootfs_pivot()
+{
+	mount -o move /rom/lib/bootchart/tmpfs /lib/bootchart/tmpfs	
+}
+
+boot_hook_add preinit_mount_root bootchart_rootfs_pivot
