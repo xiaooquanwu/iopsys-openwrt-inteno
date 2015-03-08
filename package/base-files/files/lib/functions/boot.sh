@@ -62,6 +62,7 @@ boot_run_hook() {
 	while boot_hook_shift "$hook" func; do
 		local ran; eval "ran=\$PI_RAN_$func"
 		[ -n "$ran" ] || {
+		        echo -e "boot_run_hook: $1\t $2\t $func"
 			export -n "PI_RAN_$func=1"
 			$func "$1" "$2"
 		}

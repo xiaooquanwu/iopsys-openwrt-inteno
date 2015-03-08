@@ -3,8 +3,17 @@
 
 run_scripts() {
 	for i in /etc/rc.d/$1*; do
-		[ -x $i ] && $i $2 2>&1
-	done | $LOGGER
+		if [ -x $i ]
+		then
+		    logger -p 6 -t sysinit "Start $i"
+		    fifo="/tmp/$(basename $i)"
+		    mkfifo $fifo;
+		    ${LOGGER}_${i} < $fifo &
+		    $i $2  > $fifo 2>&1
+		    rm $fifo
+#		    echo "Done $i" | ${LOGGER}
+		fi
+	done | ${LOGGER}
 }
 
 system_config() {
