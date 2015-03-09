@@ -46,7 +46,6 @@ kill_related_daemons() {
 run_acsd() {
 	local wldev cchn fchn
 	for wldev in $(nvram get acs_ifnames); do
-		[ $(nvram get $wldev"_acs_dfs") == "0" ] || continue
 		[ $(nvram get wl_2g_radio) == "$wldev" ] && continue
 		# if initially on a dfs channel switch to first available channel
 		cchn=$(wlctl -i $wldev status | grep "Primary" | awk '{print$NF}')
@@ -59,7 +58,6 @@ run_acsd() {
 	done
 	[ -n "$(nvram get acs_ifnames)" ] && acsd
 	for wldev in $(nvram get acs_ifnames); do
-		[ $(nvram get $wldev"_acs_dfs") == "0" ] || continue
 		# finds appropriate channel candidates
 		acs_cli -i $wldev autochannel
 		# triggers an early channel switch
@@ -771,13 +769,14 @@ wdev_channel_settings() {
 			nvram set "$device"_acs_ci_scan_timer="4"
 			nvram set "$device"_acs_cs_scan_timer=$((scantimer * 60))
 			nvram set "$device"_acs_excl_chans=""
-			nvram set "$device"_acs_fcs_mode="1"
 			nvram set "$device"_acs_scan_entry_expire="3600"
 			nvram set "$device"_acs_tx_idle_cnt="5"
 			nvram set "$device"_acs_lowband_least_rssi="-75"
 			if [ "$doth" == "0" -o "$dfsc" == "0" ]; then
+				nvram set "$device"_acs_fcs_mode="1"
 				nvram set "$device"_acs_dfs="0"
 			else
+				nvram set "$device"_acs_fcs_mode="0"
 				nvram set "$device"_acs_dfs="1"
 				nvram set "$device"_acs_dfsr_activity="30 10240"
 				nvram set "$device"_acs_dfsr_deferred="604800 5"
