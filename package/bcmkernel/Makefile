@@ -40,5 +40,10 @@ PKG_VERSION:=none
 include $(INCLUDE_DIR)/package.mk
 endif
 
+# hack to be able to compile just the userspace part.
+# TOPDIR=$PWD  make -C package/bcmkernel userspace
+userspace:
+	$(call Build/Compile/Default, userspace)
+
 $(eval $(call BuildPackage,bcmkernel))
 
