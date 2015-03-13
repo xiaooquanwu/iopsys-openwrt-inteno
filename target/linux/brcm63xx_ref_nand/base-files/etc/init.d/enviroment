@@ -6,7 +6,7 @@ START=11
 handle_threads()
 {
 	local pid
-	local threads="wl0-kthrd wl0-tmr-kthrd wl1-kthrd wl1-tmr-kthrd"
+	local threads="wl0-kthrd wl0-tmr-kthrd wl1-kthrd wl1-tmr-kthrd wfd0-thrd wfd1-thrd"
 
 	# initialize kernel schedule priorities
 	smd -s
