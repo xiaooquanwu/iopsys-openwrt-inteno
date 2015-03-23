@@ -1030,13 +1030,19 @@ wifi_reload() {
 wifi_detect() {
 	local WLDIR="/tmp/wireless"
 	local wls="wl0 wl1"
-	local bands band bwidth country hwmode pcid wl bno doth
+	local vnos="0 1 2 3 4 5 6 7 8"
+	local bands band bwidth country hwmode pcid wl bno doth vdev vn
 	local BMAC=$(cat /proc/nvram/BaseMacAddr | tr '[a-z]' '[A-Z]')
 	BMAC=${BMAC// /}
 	local BSSID=$(printf "%X\n" $((0x$BMAC + 2)))
 	local BSSID4=${BSSID:6:4}
 	local WPAKEY=$(cat /proc/nvram/WpaKey)
 	WPAKEY="${WPAKEY:-1234567890}"
+	local SSID="$(uci -q get wireless.@wifi-iface[0].ssid)"
+	local ENCR="$(uci -q get wireless.@wifi-iface[0].encryption)"
+	local KEY="$(uci -q get wireless.@wifi-iface[0].key)"
+	local WPS="$(uci -q get wireless.@wifi-iface[0].wps_pbc)"
+	local NET="$(uci -q get wireless.@wifi-iface[0].network)"
 
 	pcID() {
 		wlctl -i $1 revinfo | awk 'FNR == 2 {print}' | cut -d'x' -f2
@@ -1103,15 +1109,15 @@ config wifi-device '$wl'
 
 config wifi-iface
 	option device '$wl'
-	option network 'lan'
+	option network '${NET:-lan}'
 	option mode 'ap'
-	option ssid 'Inteno-$BSSID4'
-	option encryption 'mixed-psk'
+	option ssid '${SSID:-Inteno-$BSSID4}'
+	option encryption '${ENCR:-mixed-psk}'
 	option cipher 'auto'
-	option key '$WPAKEY'
+	option key '${KEY:-$WPAKEY}'
 	option gtk_rekey '0'
 	option macfilter '0'
-	option wps_pbc '1'
+	option wps_pbc '${WPS:-1}'
 	option wmf_bss_enable '1'
 	option bss_max '16'
 
@@ -1121,6 +1127,15 @@ EOF
 				uci -q set wireless.$wl.doth="$doth"
 				uci commit wireless
 			fi
+		else
+			uci delete wireless.$wl
+			for vn in $vnos; do
+				vdev="$(uci get wireless.@wifi-iface[$vn].device)"
+				if [ $vdev == "$wl" ]; then
+					uci delete wireless.@wifi-iface[$vn]
+				fi
+			done
+			uci commit wireless
 		fi
 	done
 
