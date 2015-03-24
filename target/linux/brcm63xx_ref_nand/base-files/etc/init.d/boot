@@ -23,7 +23,7 @@ system_config() {
 	[ -n "$zonename" ] && [ -f "/usr/share/zoneinfo/$zonename" ] && ln -s "/usr/share/zoneinfo/$zonename" /tmp/localtime
 
 	# apply timezone to kernel
-	date -k
+	/bin/date -k
 
 	if [ -x /sbin/syslogd ]; then
 		local args log_ip log_size log_port log_type log_file

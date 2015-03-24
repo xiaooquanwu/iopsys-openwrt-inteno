@@ -95,8 +95,8 @@ mknod /dev/random c 1 8
 mknod /dev/hwrandom c 10 183
 mknod /dev/ptm c 128 1
 mkdir /dev/pts/ 
-mknod /dev/pts/0 c 136 0 
-mknod /dev/pts/1 c 136 1 nod /dev/ubi_ctrl c 10 63
+##mknod /dev/pts/0 c 136 0 
+##mknod /dev/pts/1 c 136 1 nod /dev/ubi_ctrl c 10 63
 
 # Create Broadcom specific devices                                                                            
 mknod /dev/dect c 197 0
