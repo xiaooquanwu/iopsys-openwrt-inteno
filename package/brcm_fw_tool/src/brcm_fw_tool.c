@@ -402,9 +402,10 @@ generate_image(const char *in_file, char *sequence_number)
 			pdir = (struct jffs2_raw_dirent *)p;
 			
 			if( pdir->magic == JFFS2_MAGIC_BITMASK ) {
+				/* Ignore current sequence number (-3) */
 				if( pdir->nodetype == JFFS2_NODETYPE_DIRENT &&
-                    strlen(VERSION_NAME) == pdir->nsize &&
-                    !memcmp(VERSION_NAME, pdir->name, strlen(VERSION_NAME)) ) {
+				    strlen(VERSION_NAME) == pdir->nsize &&
+				    !memcmp(VERSION_NAME, pdir->name, strlen(VERSION_NAME)-3) ) {
 					if( pdir->version > version ) {
 						if( pdir->ino != 0 ) {
 							if (verbose) {
@@ -419,11 +420,13 @@ generate_image(const char *in_file, char *sequence_number)
 						}
 					}
 				}
+				p += (pdir->totlen + 3) & ~0x03;
 			} else {
+				/* Skip the rest of this block */
+				p = &readbuf[BLOCKSIZE];
 				if (possibly_jffs2++ > 100)
 					goto error;
 			}
-			p += (pdir->totlen + 3) & ~0x03;
 		}
 	} while (rb > 0);
 
