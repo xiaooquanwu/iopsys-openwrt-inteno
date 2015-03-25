@@ -550,6 +550,7 @@ create_vif() {
 
 	[ "$2" == "$device" ] || continue
 	wlctl -i $device bss -C $_cno down
+	wlctl -i $device ssid -C $_cno "Inteno"
 	wlctl -i $device bss -C $_cno up
 	wlctl -i $device ssid -C $_cno ""
 	wlctl -i $device bss -C $_cno down
@@ -575,17 +576,22 @@ create_vif() {
 	_cno=$((_cno+1))
 }
 
-wdev_static_settings() {
+wdev_assured_settings() {
 	local device=$1
 	wlctl -i $device leddc 0
 	wlctl -i $device msglevel 0
 	wlctl -i $device phy_watchdog 1
+	wlctl -i $device ap 1
+	wlctl -i $device mbss 1
+}
+
+wdev_static_settings() {
+	local device=$1
 	wlctl -i $device stbc_rx 0
 	wlctl -i $device stbc_tx -1
 	wlctl -i $device fcache 1 || dhdctl -i $device fcache 1
 	wlctl -i $device pktc 1 || dhdctl -i $device pktc 1
 	wlctl -i $device wnm 0x103
-	wlctl -i $device ap 1
 	wlctl -i $device wet 0
 	wlctl -i $device mpc 0
 	wlctl -i $device infra 1
@@ -606,7 +612,6 @@ wdev_static_settings() {
 	wlctl -i $device noise_metric 1
 	wlctl -i $device rxchain_pwrsave_stas_assoc_check 1
 	wlctl -i $device radio_pwrsave_stas_assoc_check 1
-	wlctl -i $device mbss 1
 }
 
 wdev_radar_settings() {
@@ -900,8 +905,12 @@ setup_wifi_device() {
 	# bring down wireless device
 	wlctl -i $device down
 
+	wdev_assured_settings $device
+
 	# create virtual wireless interfaces
+	wlctl -i $device up
 	config_foreach create_vif wifi-iface "$device"
+	wlctl -i $device down
 	_cno=0
 
 	[ "$radio" == "off" ] && continue || _enWifi=$((_enWifi+1))
