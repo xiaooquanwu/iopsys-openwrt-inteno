@@ -937,10 +937,6 @@ setup_wifi_device() {
 	wdev_wif_bringup $device
 }
 
-set_processor_id() {
-	wlctl -i wl1 ap || wlctl -i wl0 tp_id 1
-}
-
 configure_wep() {
 	case "$1" in
 		init)
@@ -988,7 +984,6 @@ wifi_updown() {
 
 	cleanup $wdev
 	kill_related_daemons
-	set_processor_id
 
 	config_load wireless
 
