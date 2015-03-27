@@ -370,6 +370,7 @@ generate_image(const char *in_file, char *sequence_number)
 	int possibly_jffs2 = 0;
 	int sequence;
 	char fixed_sequence[16];
+	int ver_name_len = strlen(VERSION_NAME);
 
 	if ((in_fp = open(in_file, O_RDWR)) < 0){
 		fprintf(stderr, "failed to open: %s\n", in_file);
@@ -404,8 +405,8 @@ generate_image(const char *in_file, char *sequence_number)
 			if( pdir->magic == JFFS2_MAGIC_BITMASK ) {
 				/* Ignore current sequence number (-3) */
 				if( pdir->nodetype == JFFS2_NODETYPE_DIRENT &&
-				    strlen(VERSION_NAME) == pdir->nsize &&
-				    !memcmp(VERSION_NAME, pdir->name, strlen(VERSION_NAME)-3) ) {
+				    ver_name_len == pdir->nsize &&
+				    !memcmp(VERSION_NAME, pdir->name, ver_name_len-3) ) {
 					if( pdir->version > version ) {
 						if( pdir->ino != 0 ) {
 							if (verbose) {
@@ -434,6 +435,13 @@ end:
 	/* Set new values */
 	if (!pdir) goto error;
 
+	if(sequence == -1) {
+		memcpy(fixed_sequence, pdir->name + (ver_name_len-3), 3);
+		fixed_sequence[3] = '\0';
+		printf("%s\n", fixed_sequence);
+		goto out;
+	}
+
 	memcpy(pdir->name+7, fixed_sequence, 3); 
 	pdir->name_crc = crc32(0, pdir->name, strlen((char*)pdir->name));
 	if (verbose) {
@@ -447,7 +455,7 @@ end:
 	}
 	
 	write(in_fp, &readbuf, BLOCKSIZE);
-	
+out:
 	close(in_fp);
 	
 	return 0;
@@ -796,7 +804,8 @@ static void usage(void)
     "        info                        get information from the kernel board ioctl\n"
     "        set                         set information via the kernel board ioctl\n"
 	"Following options are available:\n"
-	"        -s <sequencenumber>         set new sequence number in output image <000-999>\n"
+	"        -s <sequencenumber>         set new sequence number in output image\n"
+	"                                    [000-999] or -1 to just read current value\n"
 	"        -d <mtddevice>              mtd device to compare input file against\n"
 	"        -b                          return block size from signature check\n"
 	"        -t                          return flash type from signature check\n"
