@@ -16,13 +16,14 @@ export PLATFORM_INCLUDE:=platforms/iopsys/build.mk
 export DATE:=$(shell date +%Y-%m-%d-%H-%M-%S)
 export LOGIN:=$(shell whoami)
 BASE_PKG_VERSION:=3.2.1
-PKG_RELEASE:=RC2
+PKG_RELEASE:=RC4
 PKG_VERSION:=$(BASE_PKG_VERSION)-$(PKG_RELEASE)_$(DATE)_$(LOGIN)
+export PKG_VERSION
 
 ###########################--RELEASE--################################
 
 PKG_SOURCE_URL:=ssh://git@iopsys.inteno.se/ice-client.git
-PKG_SOURCE_VERSION:=8ed1898741e5090a7cd8a5430572003756ee2fa5
+PKG_SOURCE_VERSION:=81bbd7d572337a47e4c997bd579c09e066bb69ed
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(BASE_PKG_VERSION)
 PKG_SOURCE:=$(PKG_NAME)-$(BASE_PKG_VERSION)-$(PKG_RELEASE).tar.gz
 
@@ -919,7 +920,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
 	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
-	  echo "system moduleRemove topic=torrent" > /tmp/cfin
+	  echo "system moduleRemove topic=torrentMgr" > /tmp/cfin
 	fi
 fi
 exit 0
@@ -933,7 +934,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
 	if [ -n "$$PROC_EXISTS" ]; then
 	  read -t 1 <>/tmp/cfout
-	  echo "system moduleRemove topic=torrent" > /tmp/cfin
+	  echo "system moduleRemove topic=torrentMgr" > /tmp/cfin
 	fi
 fi
 exit 0
