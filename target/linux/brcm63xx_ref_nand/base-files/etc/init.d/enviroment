@@ -21,8 +21,10 @@ handle_threads()
 	if [ -n "$pid_wl0" -a -n "$pid_wl1" ]; then
 		# bind to TP0
 		taskset -p $pid_wl0 1
+		taskset -p $pid_wfd1 1
 		# bind to TP1
 		taskset -p $pid_wl1 2
+		taskset -p $pid_wfd0 2
 	else
 		if [ $pid_wl0 == $pid_dhd0 ]; then
 			# bind to TP0
