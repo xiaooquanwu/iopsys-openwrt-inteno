@@ -587,6 +587,9 @@ wdev_assured_settings() {
 
 wdev_static_settings() {
 	local device=$1
+	wlctl -i $device txbf 0
+	wlctl -i $device txbf_bfr_cap 0
+	wlctl -i $device txbf_bfe_cap 0
 	wlctl -i $device stbc_rx 0
 	wlctl -i $device stbc_tx -1
 	wlctl -i $device fcache 1 || dhdctl -i $device fcache 1
