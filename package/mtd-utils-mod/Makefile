@@ -34,6 +34,7 @@ FILES:= \
 	flash_unlock \
 	ftl_check \
 	ftl_format \
+	imagewrite \
 	jffs2dump \
 	jffs2reader \
 	mkfs.jffs2 \
