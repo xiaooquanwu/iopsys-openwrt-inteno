@@ -24,7 +24,7 @@ include $(INCLUDE_DIR)/nls.mk
 define Package/bluez
   SECTION:=utils
   CATEGORY:=Utilities
-  DEPENDS:=+libpthread +libusb-compat +glib2 +dbus $(INTL_DEPENDS) $(ICONV_DEPENDS)
+  DEPENDS:=+libpthread +libusb-compat +glib2 +dbus $(INTL_DEPENDS) $(ICONV_DEPENDS) +libreadline +libncurses
   TITLE:=Bluetooth stack new version 
   URL:=http://www.bluez.org/
 endef
