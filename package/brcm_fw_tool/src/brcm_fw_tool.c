@@ -59,7 +59,8 @@ void          *mapped_base;
 #define IMAGETAG_CRC_START      0xFFFFFFFF
 
 int verbose                  = 0;
-int start_offset	     = 0;
+long start_offset	     = 0;
+long fsimg_size              = 0;
 #define BLOCKSIZE 131072
 #define VERSION_NAME "cferam.000"
 #define READ_BUF 1024
@@ -391,15 +392,27 @@ generate_image(const char *in_file, char *sequence_number)
 	if (verbose)
 		fprintf(stderr, "New sequence: %s\n",fixed_sequence);
 
-	if (start_offset)
-		lseek(in_fp, 0x00020000, SEEK_SET);
+	if (start_offset) {
+		lseek(in_fp, start_offset, SEEK_SET);
+		if (verbose)
+			fprintf(stderr, "Skipping %lu bytes\n", start_offset);
+	}
 
-	do {
+	if (fsimg_size && verbose)
+		fprintf(stderr, "Image size limited to %lu bytes\n", fsimg_size);
+
+	for (;;) {
 		rb = read(in_fp, &readbuf, sizeof(readbuf));
+		if (rb <= 0)
+			break;
+
+		if (fsimg_size && (read_bytes + rb) > fsimg_size)
+			rb = fsimg_size - read_bytes;
 		read_bytes += rb;
+
 		p = (uint8_t*)&readbuf;
 
-		while (p < (&readbuf[BLOCKSIZE-1])) {
+		while (p < (&readbuf[rb-1])) {
 			pdir = (struct jffs2_raw_dirent *)p;
 			
 			if( pdir->magic == JFFS2_MAGIC_BITMASK ) {
@@ -429,12 +442,16 @@ generate_image(const char *in_file, char *sequence_number)
 					goto error;
 			}
 		}
-	} while (rb > 0);
+
+		if (fsimg_size && read_bytes >= fsimg_size)
+			break;
+	}
+
+error:
+	printf("JFFS2 image corrupt or not JFFS2 image\n");
+	return 1;
 
 end:
-	/* Set new values */
-	if (!pdir) goto error;
-
 	if(sequence == -1) {
 		memcpy(fixed_sequence, pdir->name + (ver_name_len-3), 3);
 		fixed_sequence[3] = '\0';
@@ -459,10 +476,6 @@ out:
 	close(in_fp);
 	
 	return 0;
-	
-error:
-	printf("JFFS2 image corrupt or not JFFS2 image\n");
-	return 1;
 }
 
 static int
@@ -817,6 +830,8 @@ static void usage(void)
 	"        -r                          return iboard id\n"
 	"        -y                          return size check (determines if image size is appropriate)\n"
 	"        -w                          use this option if the input is a .w (image + cfe) file\n"
+	"        -W <start-offset>           set byte offset of fs image in file (use either -W or -w)\n"
+	"        -Z <fsimg-size>             limit number of bytes scanned during update\n"
     "---- info options ----\n"
     "        -g <hex addr>               get 32 bit memdump of addr\n"
     "        -k                          get the SoC model from the kernel\n"
@@ -898,7 +913,7 @@ int main (int argc, char **argv)
 
 	while ((ch = getopt(argc, argv,
 
-			"g:SIMlefriyqjbtkvwVzmoac:d:s:n:h:x:u:p:")) != -1)
+			"g:SIMlefriyqjbtkvwW:Z:Vzmoac:d:s:n:h:x:u:p:")) != -1)
 		switch (ch) {
             case 'I':
                 boot_mode = 1;
@@ -954,8 +969,14 @@ int main (int argc, char **argv)
 				offset = atoi(optarg);
 				break;
 			case 'w':
-				start_offset = 1;
+				start_offset = 0x20000;
                 wan_interfaces = 1;
+				break;
+			case 'W':
+				start_offset = strtol(optarg, NULL, 10);
+				break;
+			case 'Z':
+				fsimg_size = strtol(optarg, NULL, 10);
 				break;
 			case 'V':
 				verbose = 1;
