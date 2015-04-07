@@ -2477,6 +2477,7 @@ CONFIG_PACKAGE_blkid=y
 CONFIG_PACKAGE_swap-utils=y
 # CONFIG_PACKAGE_wipefs is not set
 CONFIG_PACKAGE_ami=y
+# CONFIG_PACKAGE_bluez is not set
 # CONFIG_PACKAGE_bluez-hcidump is not set
 # CONFIG_PACKAGE_bluez-utils is not set
 CONFIG_PACKAGE_brcminfo=y
