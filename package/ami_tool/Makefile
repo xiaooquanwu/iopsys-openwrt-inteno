@@ -24,7 +24,7 @@ MAKE_FLAGS += TARGET="$(target)"
 
 define Package/ami
   CATEGORY:=Utilities
-  DEPENDS:= +luci +libubox +ubus
+  DEPENDS:= +libuci +libubox +ubus
   TITLE:=Asterisk management interface listener
 endef
 
