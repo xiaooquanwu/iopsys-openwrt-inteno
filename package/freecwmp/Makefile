@@ -127,7 +127,6 @@ define Package/cwmp-$(BUILD_VARIANT)/install
 	$(CP) $(PKG_BUILD_DIR)/bin/cwmpd $(1)/usr/sbin
 	$(INSTALL_DIR) $(1)/etc/config
 	$(INSTALL_CONF) $(PKG_BUILD_DIR)/config/cwmp $(1)/etc/config
-	$(INSTALL_CONF) $(PKG_BUILD_DIR)/config/dmmap $(1)/etc/config
 	$(INSTALL_CONF) $(PKG_BUILD_DIR)/config/firewall.cwmp $(1)/etc/firewall.cwmp
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_DIR) $(1)/etc/uci-defaults
