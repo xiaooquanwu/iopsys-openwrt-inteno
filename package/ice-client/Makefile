@@ -16,14 +16,14 @@ export PLATFORM_INCLUDE:=platforms/iopsys/build.mk
 export DATE:=$(shell date +%Y-%m-%d-%H-%M-%S)
 export LOGIN:=$(shell whoami)
 BASE_PKG_VERSION:=3.2.1
-PKG_RELEASE:=RC4
+PKG_RELEASE:=RC5
 PKG_VERSION:=$(BASE_PKG_VERSION)-$(PKG_RELEASE)_$(DATE)_$(LOGIN)
 export PKG_VERSION
 
 ###########################--RELEASE--################################
 
 PKG_SOURCE_URL:=ssh://git@iopsys.inteno.se/ice-client.git
-PKG_SOURCE_VERSION:=81bbd7d572337a47e4c997bd579c09e066bb69ed
+PKG_SOURCE_VERSION:=3d30f42c057d2c120bce66c7c028a2238c7a5ccc
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(BASE_PKG_VERSION)
 PKG_SOURCE:=$(PKG_NAME)-$(BASE_PKG_VERSION)-$(PKG_RELEASE).tar.gz
 
@@ -116,7 +116,7 @@ define Package/ice-client/install
 	$(CP) $(PKG_BUILD_DIR)/core/ice $(1)/bin
 	$(CP) $(PKG_BUILD_DIR)/modules/system/ubusevent/obj/iopsys/ubusevent $(1)/bin
 	$(INSTALL_DIR) $(1)/usr/lib
-	$(CP) $(PKG_BUILD_DIR)/core/lib/{systemService.so.1.0.1,libconfStore.so.1,libjsoncpp.so.1,networkService.so.1.0.1,packageService.so.1.0.1} $(1)/usr/lib
+	$(CP) $(PKG_BUILD_DIR)/core/lib/{systemService.so.1.0.1,libconfStore.so.1,networkService.so.1.0.1,packageService.so.1.0.1} $(1)/usr/lib
 	$(INSTALL_DIR) $(1)/etc/config
 	$(CP) $(PKG_BUILD_DIR)/scripts/etc/config/ice $(1)/etc/config
 	$(INSTALL_DIR) $(1)/etc/cloudfriends
