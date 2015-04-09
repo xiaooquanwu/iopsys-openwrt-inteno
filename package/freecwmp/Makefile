@@ -8,7 +8,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=cwmp
-PKG_VERSION:=2.3-2015-03-24
+PKG_VERSION:=2.3-2015-04-09
 PKG_FIXUP:=autoreconf
 ifeq ($(CONFIG_PACKAGE_bcmkernel),y)
 PKG_SOURCE_URL:=ssh://git@iopsys.inteno.se/freecwmp.git
@@ -16,7 +16,7 @@ else
 PKG_SOURCE_URL:=http://ihgsp.inteno.se/git/freecwmp.git
 endif
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=46b290ab926aa202adad2aaa788c4545dcedeb52
+PKG_SOURCE_VERSION:=9f1a1bea5036bd4dd0de82bd65814c609fa2862d
 PKG_RELEASE=$(PKG_SOURCE_VERSION)
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
@@ -127,6 +127,7 @@ define Package/cwmp-$(BUILD_VARIANT)/install
 	$(CP) $(PKG_BUILD_DIR)/bin/cwmpd $(1)/usr/sbin
 	$(INSTALL_DIR) $(1)/etc/config
 	$(INSTALL_CONF) $(PKG_BUILD_DIR)/config/cwmp $(1)/etc/config
+	$(INSTALL_CONF) $(PKG_BUILD_DIR)/config/dmmap $(1)/etc/config
 	$(INSTALL_CONF) $(PKG_BUILD_DIR)/config/firewall.cwmp $(1)/etc/firewall.cwmp
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_DIR) $(1)/etc/uci-defaults
