@@ -15,7 +15,7 @@ PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=git@iopsys.inteno.se:bcmkernel-4.14L.04
 PKG_SOURCE_PROTO:=git
 
-PKG_SOURCE_VERSION:=8216815ced065e527681a079ad0e17fbb007baec
+PKG_SOURCE_VERSION:=275e823a892de98aa74d7841382b58ac4522e059
 
 # update this based on the Broadcom SDK version, 4.16L.02  -> 416020
 #                                                4.16L.02A -> 416021
