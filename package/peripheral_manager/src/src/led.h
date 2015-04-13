@@ -11,6 +11,7 @@ typedef enum {
 	BREADING,
 	FADEON,
 	FADEOFF,
+	NEED_INIT,		/* set on loading config */
 	LED_STATES_MAX,
 } led_state_t;
 

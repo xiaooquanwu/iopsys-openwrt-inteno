@@ -38,6 +38,8 @@ void server_start(struct uci_context *uci_ctx, struct ubus_context *ubus_ctx)
 	gpio_button_init(&server);
 
 	sx9512_init(&server);
+
+	vox_init(&server);
 #endif
 
 	DBG(1, "connect generic buttons/leds to hardware drivers.");

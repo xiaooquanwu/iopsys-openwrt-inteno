@@ -91,8 +91,8 @@ config button_map TOUCH_FAR
 #		Led config, start
 #
 
-############### gpio led, driver config
-config gpio_led gpio_leds
+############### vox led, driver config
+config vox_led vox_leds
 	list leds MMB_red
 	list leds MMB_green
 	list leds MMB_blue
@@ -103,50 +103,32 @@ config gpio_led gpio_leds
 	list leds DSL_green
 	list leds PowerLED_red
 
-config gpio_led MMB_red
+config vox_led MMB_red
 	option addr     1
-	option active   hi
-	option mode     spi
 
-config gpio_led MMB_green
+config vox_led MMB_green
 	option addr     2
-	option active   hi
-	option mode     spi
 
-config gpio_led MMB_blue
+config vox_led MMB_blue
 	option addr     3
-	option active   hi
-	option mode     spi
 
-config gpio_led WiFi_green
+config vox_led WiFi_green
 	option addr     7
-	option active   hi
-	option mode     spi
 
-config gpio_led VoIP_red
+config vox_led VoIP_red
 	option addr     5
-	option active   hi
-	option mode     spi
 
-config gpio_led VoIP_green
+config vox_led VoIP_green
 	option addr     6
-	option active   hi
-	option mode     spi
 
-config gpio_led DSL_red
+config vox_led DSL_red
 	option addr     4
-	option active   hi
-	option mode     spi
 
-config gpio_led DSL_green
+config vox_led DSL_green
 	option addr     9
-	option active   hi
-	option mode     spi
 
-config gpio_led PowerLED_red
+config vox_led PowerLED_red
 	option addr     8
-	option active   hi
-	option mode     spi
 
 ############### mapping led function to driver led
 

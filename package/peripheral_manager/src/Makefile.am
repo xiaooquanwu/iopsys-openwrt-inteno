@@ -25,7 +25,9 @@ peripheral_manager_SOURCES = \
 	src/i2c.c \
 	src/i2c.h \
 	src/sfp.c \
-	src/sfp.h 
+	src/sfp.h \
+	src/vox.h \
+	src/vox.c
 
 if BRCM_BOARD
 peripheral_manager_SOURCES += \
