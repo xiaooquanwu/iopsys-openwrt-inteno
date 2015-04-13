@@ -139,9 +139,26 @@ dump_keys(Key *keys)
 	get_db_hw_value("wpaKey", &keys->wpa);
 }
 
+
+static void
+get_file_contents(char *path, char **val) {
+	FILE *in;
+	char result[32];
+
+	*val = "";
+
+	if ((in = fopen(path, "r"))) {
+		fread(result, sizeof(result), 1, in);
+		remove_newline(result);
+		fclose(in);
+		*val = strdup(result);
+	}
+}
+
 void
 dump_static_router_info(Router *router)
 {
+	get_file_contents("/proc/nvram/BoardId", &router->nvramver); 
 	get_db_hw_value("hardwareVersion", &router->hardware);
 	get_db_hw_value("routerModel", &router->model);
 	get_db_hw_value("iopVersion", &router->firmware);

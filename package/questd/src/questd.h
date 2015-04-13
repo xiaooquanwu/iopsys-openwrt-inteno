@@ -96,6 +96,7 @@ typedef struct {
 	char name[64];
 	char *hardware;
 	char *model;
+	char *nvramver;
 	char *firmware;
 	char *brcmver;
 	char *socmod;
