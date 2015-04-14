@@ -32,9 +32,22 @@ static int vox_set_state(struct led_drv *drv, led_state_t state)
 
 	if (state == ON) {
                 spi_data[1] = 1;
+		spi_data[2] = 0x0;
+		spi_data[3] = 0x0;
+		spi_data[4] = 0x0;
+		spi_data[4] = 0x0;
+	} else if(state == BREADING) {
+                spi_data[1] = 3;
+		spi_data[2] = 0xa0;
+	} else if(state == FLASH_SLOW) {
+                spi_data[1] = 2;
+		spi_data[3] = 0x95;
+	} else if(state == FLASH_FAST) {
+                spi_data[1] = 2;
+		spi_data[3] = 0x20;
 	}
 
-        DBG(1,"vox_set_state %x %x ",spi_data[0],spi_data[1]);
+        DBG(1,"vox_set_state %x %x %x %x",spi_data[0],spi_data[1],spi_data[2],spi_data[3]);
 	board_ioctl(BOARD_IOCTL_SPI_WRITE, SPI_SLAVE_SELECT, 0, spi_data, 6, 0);
 
 	p->state = state;
@@ -47,9 +60,28 @@ static led_state_t vox_get_state(struct led_drv *drv)
 	return p->state;
 }
 
+static int vox_support(struct led_drv *drv, led_state_t state)
+{
+	switch (state) {
+
+	case OFF:
+	case ON:
+	case FLASH_SLOW:
+	case FLASH_FAST:
+	case BREADING:
+		return 1;
+		break;
+
+	default:
+		return 0;
+	}
+	return 0;
+}
+
 static struct led_drv_func func = {
 	.set_state = vox_set_state,
 	.get_state = vox_get_state,
+	.support = vox_support,
 };
 
 void vox_init(struct server_ctx *s_ctx) {

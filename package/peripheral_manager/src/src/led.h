@@ -31,6 +31,7 @@ struct led_drv_func{
 	led_state_t (*get_state)(struct led_drv *);			/* Get led state, on,off,flash ...	*/
 	int         (*set_color)(struct led_drv *, led_color_t);	/* Set led color			*/
 	led_color_t (*get_color)(struct led_drv *);			/* Get led color			*/
+	int         (*support)  (struct led_drv *, led_state_t);	/* do driver has hardware support for state */
 };
 
 struct led_drv {

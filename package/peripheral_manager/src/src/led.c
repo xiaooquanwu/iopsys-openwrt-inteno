@@ -431,7 +431,6 @@ static void flash_handler(struct uloop_timeout *timeout)
 
 	if (global_state == LEDS_NORMAL ||
 	    global_state == LEDS_INFO ) {
-		/* BUG we should check if the driver support flash in hardware and only do this on simple on/off leds */
 		for (i = 0; i < LED_FUNCTIONS ; i++) {
 			struct led *led;
 			if (leds[i].press_indicator & press_state) {
@@ -450,14 +449,32 @@ static void flash_handler(struct uloop_timeout *timeout)
 					if (action_state == LED_OK)
 						action_state = LED_OFF;
 				}
-
 				list_for_each_entry(led, &leds[i].actions[action_state].led_list, list) {
-					if (led->state == FLASH_FAST){
-						if (led->drv)
+
+					if (led->state == FLASH_FAST) {
+						if (led->drv) {
+							if (led->drv->func->support) {
+								if (led->drv->func->support(led->drv, FLASH_FAST)) {
+									/* hardware support flash */
+									led->drv->func->set_state(led->drv, FLASH_FAST);
+									continue;
+								}
+							}
+							/* emulate flash with on/off */
 							led->drv->func->set_state(led->drv, fast);
-					}else if (led->state == FLASH_SLOW){
-						if (led->drv)
+						}
+					}else if (led->state == FLASH_SLOW) {
+						if (led->drv) {
+							if (led->drv->func->support) {
+								if (led->drv->func->support(led->drv, FLASH_SLOW)) {
+									/* hardware support flash */
+									led->drv->func->set_state(led->drv, FLASH_SLOW);
+									continue;
+								}
+							}
+							/* emulate flash with on/off */
 							led->drv->func->set_state(led->drv, slow);
+						}
 					}else{
 						if (led->drv)
 							led->drv->func->set_state(led->drv, led->state);
