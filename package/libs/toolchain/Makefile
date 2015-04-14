@@ -346,9 +346,6 @@ else
 		$(TOOLCHAIN_DIR)/lib/libm-*.so \
 		$(TOOLCHAIN_DIR)/lib/libpthread-*.so \
 		$(PKG_BUILD_DIR)/
-
-	# required to get rpcd and luci2 to compile
-	$(CP) $(TOOLCHAIN_DIR)/lib/libcrypt-*.so $(STAGING_DIR)/lib/libcrypt.so
   endef
   ifneq ($(LIBGCC_SO),)
     define Build/Compile/libgcc
