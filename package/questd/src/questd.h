@@ -12,6 +12,8 @@
 
 #include <uci.h>
 
+#include "dslstats.h"
+
 #define MAX_VIF		8
 #define MAX_NETWORK	16
 #define MAX_CLIENT	128
@@ -108,6 +110,7 @@ typedef struct {
 	char uptime[64];
 	unsigned int procs;
 	unsigned int cpu;
+	DSLStats dslstats; 
 } Router;
 
 typedef struct {
