@@ -1,5 +1,5 @@
 /*
- *  dslstats.c - ICMPv6 neighbour discovery command line tool
+ *  dslstats.c - Quest U-bus daemon IOPSYS
  *
  *  Author: Martin K. Schröder, martin.schroder@inteno.se
  *
@@ -315,7 +315,7 @@ void dslstats_load(struct dsl_stats *self){
 }
 
 void dslstats_to_blob_buffer(struct dsl_stats *self, struct blob_buf *b){
-	void *t;
+	void *t, *array, *obj;
 	DSLBearer *bearer = &self->bearers[0]; 
 	DSLCounters *counter = &self->counters[DSLSTATS_COUNTER_TOTALS]; 
 	//dslstats_load(self); 
@@ -335,63 +335,69 @@ void dslstats_to_blob_buffer(struct dsl_stats *self, struct blob_buf *b){
 	blobmsg_add_u32(b, "attn_down_x100", self->attn.down * 100); 
 	
 	// add bearer data (currently only one bearer)
-	
-	blobmsg_add_u32(b, "max_rate_up", bearer->max_rate.up); 
-	blobmsg_add_u32(b, "max_rate_down", bearer->max_rate.down); 
-	blobmsg_add_u32(b, "rate_up", bearer->rate.up); 
-	blobmsg_add_u32(b, "rate_down", bearer->rate.down); 
-	blobmsg_add_u32(b, "msgc_up", bearer->msgc.up); 
-	blobmsg_add_u32(b, "msgc_down", bearer->msgc.down); 
-	blobmsg_add_u32(b, "b_down", bearer->b.down); 
-	blobmsg_add_u32(b, "b_up", bearer->b.up); 
-	blobmsg_add_u32(b, "m_down", bearer->m.down); 
-	blobmsg_add_u32(b, "m_up", bearer->m.up); 
-	blobmsg_add_u32(b, "t_down", bearer->t.down); 
-	blobmsg_add_u32(b, "t_up", bearer->t.up); 
-	blobmsg_add_u32(b, "r_down", bearer->r.down); 
-	blobmsg_add_u32(b, "r_up", bearer->r.up); 
-	blobmsg_add_u32(b, "s_down_x10000", bearer->s.down * 10000); 
-	blobmsg_add_u32(b, "s_up_x10000", bearer->s.up * 10000); 
-	blobmsg_add_u32(b, "l_down", bearer->l.down); 
-	blobmsg_add_u32(b, "l_up", bearer->l.up); 
-	blobmsg_add_u32(b, "d_down", bearer->d.down); 
-	blobmsg_add_u32(b, "d_up", bearer->d.up); 
-	blobmsg_add_u32(b, "delay_down", bearer->delay.down); 
-	blobmsg_add_u32(b, "delay_up", bearer->delay.up); 
-	blobmsg_add_u32(b, "inp_down_x100", bearer->inp.down * 100); 
-	blobmsg_add_u32(b, "inp_up_x100", bearer->inp.up * 100); 
-	blobmsg_add_u64(b, "sf_down", bearer->sf.down); 
-	blobmsg_add_u64(b, "sf_up", bearer->sf.up); 
-	blobmsg_add_u64(b, "sf_err_down", bearer->sf_err.down); 
-	blobmsg_add_u64(b, "sf_err_up", bearer->sf_err.up); 
-	blobmsg_add_u64(b, "rs_down", bearer->rs.down); 
-	blobmsg_add_u64(b, "rs_up", bearer->rs.up); 
-	blobmsg_add_u64(b, "rs_corr_down", bearer->rs_corr.down); 
-	blobmsg_add_u64(b, "rs_corr_up", bearer->rs_corr.up); 
-	blobmsg_add_u64(b, "rs_uncorr_down", bearer->rs_uncorr.down); 
-	blobmsg_add_u64(b, "rs_uncorr_up", bearer->rs_uncorr.up); 
-	blobmsg_add_u64(b, "hec_down", bearer->hec.down); 
-	blobmsg_add_u64(b, "hec_up", bearer->hec.up); 
-	blobmsg_add_u64(b, "ocd_down", bearer->ocd.down); 
-	blobmsg_add_u64(b, "ocd_up", bearer->ocd.up); 
-	blobmsg_add_u64(b, "lcd_down", bearer->lcd.down); 
-	blobmsg_add_u64(b, "lcd_up", bearer->lcd.up); 
-	blobmsg_add_u64(b, "total_cells_down", bearer->total_cells.down); 
-	blobmsg_add_u64(b, "total_cells_up", bearer->total_cells.up); 
-	blobmsg_add_u64(b, "data_cells_down", bearer->data_cells.down); 
-	blobmsg_add_u64(b, "data_cells_up", bearer->data_cells.up); 
-	blobmsg_add_u64(b, "bit_errors_down", bearer->bit_errors.down); 
-	blobmsg_add_u64(b, "bit_errors_up", bearer->bit_errors.up); 
+	array = blobmsg_open_array(b, "bearers"); 
+		obj = blobmsg_open_table(b, NULL); 
+			blobmsg_add_u32(b, "max_rate_up", bearer->max_rate.up); 
+			blobmsg_add_u32(b, "max_rate_down", bearer->max_rate.down); 
+			blobmsg_add_u32(b, "rate_up", bearer->rate.up); 
+			blobmsg_add_u32(b, "rate_down", bearer->rate.down); 
+			blobmsg_add_u32(b, "msgc_up", bearer->msgc.up); 
+			blobmsg_add_u32(b, "msgc_down", bearer->msgc.down); 
+			blobmsg_add_u32(b, "b_down", bearer->b.down); 
+			blobmsg_add_u32(b, "b_up", bearer->b.up); 
+			blobmsg_add_u32(b, "m_down", bearer->m.down); 
+			blobmsg_add_u32(b, "m_up", bearer->m.up); 
+			blobmsg_add_u32(b, "t_down", bearer->t.down); 
+			blobmsg_add_u32(b, "t_up", bearer->t.up); 
+			blobmsg_add_u32(b, "r_down", bearer->r.down); 
+			blobmsg_add_u32(b, "r_up", bearer->r.up); 
+			blobmsg_add_u32(b, "s_down_x10000", bearer->s.down * 10000); 
+			blobmsg_add_u32(b, "s_up_x10000", bearer->s.up * 10000); 
+			blobmsg_add_u32(b, "l_down", bearer->l.down); 
+			blobmsg_add_u32(b, "l_up", bearer->l.up); 
+			blobmsg_add_u32(b, "d_down", bearer->d.down); 
+			blobmsg_add_u32(b, "d_up", bearer->d.up); 
+			blobmsg_add_u32(b, "delay_down", bearer->delay.down); 
+			blobmsg_add_u32(b, "delay_up", bearer->delay.up); 
+			blobmsg_add_u32(b, "inp_down_x100", bearer->inp.down * 100); 
+			blobmsg_add_u32(b, "inp_up_x100", bearer->inp.up * 100); 
+			blobmsg_add_u64(b, "sf_down", bearer->sf.down); 
+			blobmsg_add_u64(b, "sf_up", bearer->sf.up); 
+			blobmsg_add_u64(b, "sf_err_down", bearer->sf_err.down); 
+			blobmsg_add_u64(b, "sf_err_up", bearer->sf_err.up); 
+			blobmsg_add_u64(b, "rs_down", bearer->rs.down); 
+			blobmsg_add_u64(b, "rs_up", bearer->rs.up); 
+			blobmsg_add_u64(b, "rs_corr_down", bearer->rs_corr.down); 
+			blobmsg_add_u64(b, "rs_corr_up", bearer->rs_corr.up); 
+			blobmsg_add_u64(b, "rs_uncorr_down", bearer->rs_uncorr.down); 
+			blobmsg_add_u64(b, "rs_uncorr_up", bearer->rs_uncorr.up); 
+			blobmsg_add_u64(b, "hec_down", bearer->hec.down); 
+			blobmsg_add_u64(b, "hec_up", bearer->hec.up); 
+			blobmsg_add_u64(b, "ocd_down", bearer->ocd.down); 
+			blobmsg_add_u64(b, "ocd_up", bearer->ocd.up); 
+			blobmsg_add_u64(b, "lcd_down", bearer->lcd.down); 
+			blobmsg_add_u64(b, "lcd_up", bearer->lcd.up); 
+			blobmsg_add_u64(b, "total_cells_down", bearer->total_cells.down); 
+			blobmsg_add_u64(b, "total_cells_up", bearer->total_cells.up); 
+			blobmsg_add_u64(b, "data_cells_down", bearer->data_cells.down); 
+			blobmsg_add_u64(b, "data_cells_up", bearer->data_cells.up); 
+			blobmsg_add_u64(b, "bit_errors_down", bearer->bit_errors.down); 
+			blobmsg_add_u64(b, "bit_errors_up", bearer->bit_errors.up); 
+		blobmsg_close_table(b, obj); 
+	blobmsg_close_array(b, array); 
 	
 	// add counter data (currently only totals)
 	//counter = &self->counters[DSLSTATS_COUNTER_TOTALS]; 
-	
-	blobmsg_add_u64(b, "es_down", counter->es.down); 
-	blobmsg_add_u64(b, "es_up", counter->es.up); 
-	blobmsg_add_u64(b, "ses_down", counter->ses.down); 
-	blobmsg_add_u64(b, "ses_up", counter->ses.up); 
-	blobmsg_add_u64(b, "uas_down", counter->uas.down); 
-	blobmsg_add_u64(b, "uas_up", counter->uas.up); 
+	array = blobmsg_open_table(b, "counters"); 
+		obj = blobmsg_open_table(b, "totals"); 
+			blobmsg_add_u64(b, "es_down", counter->es.down); 
+			blobmsg_add_u64(b, "es_up", counter->es.up); 
+			blobmsg_add_u64(b, "ses_down", counter->ses.down); 
+			blobmsg_add_u64(b, "ses_up", counter->ses.up); 
+			blobmsg_add_u64(b, "uas_down", counter->uas.down); 
+			blobmsg_add_u64(b, "uas_up", counter->uas.up); 
+		blobmsg_close_table(b, obj); 
+	blobmsg_close_array(b, array); 
 	
 	blobmsg_close_table(b, t);
 }

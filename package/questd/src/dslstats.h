@@ -1,5 +1,5 @@
 /*
- *  dslstats.c - ICMPv6 neighbour discovery command line tool
+ *  dslstats.c - Quest U-bus daemon IOPSYS
  *
  *  Author: Martin K. Schröder, martin.schroder@inteno.se
  *
