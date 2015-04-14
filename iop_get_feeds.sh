@@ -1,7 +1,6 @@
 ./scripts/feeds update
 ./scripts/feeds install asterisk18
 ./scripts/feeds uninstall asterisk18
-./scripts/feeds install luci2
 ./scripts/feeds install libexpat
 ./scripts/feeds install libflac
 ./scripts/feeds install libvorbis

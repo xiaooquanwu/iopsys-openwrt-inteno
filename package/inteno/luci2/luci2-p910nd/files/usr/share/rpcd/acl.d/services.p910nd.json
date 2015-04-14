@@ -1,0 +1,15 @@
+{
+	"p910nd": {
+		"description": "P910ND management",
+		"read": {
+			"uci": [
+				"p910nd"
+			]
+		},
+		"write": {
+			"uci": [
+				"p910nd"
+			]
+		}
+	}
+}

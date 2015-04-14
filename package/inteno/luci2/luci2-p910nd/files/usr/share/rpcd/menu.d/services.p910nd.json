@@ -1,0 +1,11 @@
+{
+	"services": {
+		"title": "Services",
+		"index": 40
+	},
+	"services/p910nd": {
+		"title": "p910nd",
+		"acls": [ "p910nd" ],
+		"view": "services/p910nd"
+	}
+}
