@@ -25,9 +25,7 @@ peripheral_manager_SOURCES = \
 	src/i2c.c \
 	src/i2c.h \
 	src/sfp.c \
-	src/sfp.h \
-	src/vox.h \
-	src/vox.c
+	src/sfp.h
 
 if BRCM_BOARD
 
@@ -41,7 +39,10 @@ peripheral_manager_SOURCES += \
 	src/gpio.c \
 	src/gpio.h \
 	src/touch_sx9512.c \
-	src/touch_sx9512.h
+	src/touch_sx9512.h \
+	src/vox.h \
+	src/vox.c \
+	src/prox_px3220.c
 
 vox_test_SOURCES = \
 	src/vox_test.c \

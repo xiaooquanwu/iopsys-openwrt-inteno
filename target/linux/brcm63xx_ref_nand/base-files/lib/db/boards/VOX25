@@ -76,11 +76,13 @@ config button_map WPS
 config button_map TOUCH_NEAR
 	list button 3220_touch_near
 	option hotplug touch_near
-
+	option minpress 0
+	
 config button_map TOUCH_FAR
 	list button 3220_touch_far
 	option hotplug touch_far
-
+	option minpress 0
+	
 #
 #		Button config , end
 #

@@ -7,6 +7,7 @@
 #include "catv.h"
 #include "sfp.h"
 #include "touch_sx9512.h"
+#include "prox_px3220.h"
 
 struct server_ctx server;
 
@@ -39,6 +40,8 @@ void server_start(struct uci_context *uci_ctx, struct ubus_context *ubus_ctx)
 	gpio_button_init(&server);
 
 	sx9512_init(&server);
+
+	px3220_init(&server);
 
 	vox_init(&server);
 #endif

@@ -6,6 +6,7 @@
 #include "button.h"
 #include "led.h"
 #include "touch_sx9512.h"
+#include "prox_px3220.h"
 
 /* used to map in the driver buttons to a function button */
 struct button_drv_list {
@@ -168,6 +169,8 @@ static void button_handler(struct uloop_timeout *timeout)
         /* sx9512 driver needs to read out all buttons at once */
         /* so call it once at beginning of scanning inputs  */
         sx9512_check();
+        /* same for px3220 */
+        px3220_check();
 #endif
 
         /* clean out indicator status, set by any valid press again if we find it */
