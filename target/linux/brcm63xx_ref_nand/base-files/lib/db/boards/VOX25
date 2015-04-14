@@ -154,7 +154,7 @@ config led_map led_wifi
 config led_map led_status
 	list led_action_ok     PowerLED_red=ON
 	list led_action_off    PowerLED_red=OFF
-	list led_action_notice PowerLED_red=FLASH_SLOW
+	list led_action_notice PowerLED_red=PULSING
 	list led_action_alert  PowerLED_red=FLASH_SLOW
 	list led_action_error  PowerLED_red=FLASH_FAST
 
