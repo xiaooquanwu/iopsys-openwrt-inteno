@@ -1162,6 +1162,7 @@ static int quest_router_dslstats(struct ubus_context *ctx, struct ubus_object *o
 	blobmsg_parse(quest_policy, __QUEST_MAX, tb, blob_data(msg), blob_len(msg)); 
 	blob_buf_init(&bb, 0); 
 	
+	dslstats_load(&router.dslstats);
 	dslstats_to_blob_buffer(&router.dslstats, &bb); 
 	
 	ubus_send_reply(ctx, req, bb.head); 
@@ -1535,7 +1536,6 @@ void *dump_router_info(void *arg)
 	dump_static_router_info(&router);
 	dump_hostname(&router);
 	while (true) {
-		dslstats_load(&router.dslstats); 
 		dump_sysinfo(&router, &memory);
 		dump_cpuinfo(&router, &prev_jif, &cur_jif);
 		populate_clients();
