@@ -48,7 +48,6 @@ static Key keys;
 static Spec spec;
 static USB usb[MAX_USB];
 
-
 /* POLICIES */
 enum {
 	QUEST_NAME,
@@ -1155,6 +1154,20 @@ quest_router_networks(struct ubus_context *ctx, struct ubus_object *obj,
 	return 0;
 }
 
+static int quest_router_dslstats(struct ubus_context *ctx, struct ubus_object *obj, 
+	struct ubus_request_data *req, const char *method, 
+	struct blob_attr *msg){
+	struct blob_attr *tb[__QUEST_MAX]; 
+	
+	blobmsg_parse(quest_policy, __QUEST_MAX, tb, blob_data(msg), blob_len(msg)); 
+	blob_buf_init(&bb, 0); 
+	
+	dslstats_to_blob_buffer(&router.dslstats, &bb); 
+	
+	ubus_send_reply(ctx, req, bb.head); 
+	return 0; 	
+}
+
 static int
 quest_router_clients(struct ubus_context *ctx, struct ubus_object *obj,
 		  struct ubus_request_data *req, const char *method,
@@ -1422,6 +1435,7 @@ static struct ubus_method router_object_methods[] = {
 	UBUS_METHOD_NOARG("info", quest_router_info),
 	UBUS_METHOD("quest", quest_router_specific, quest_policy),
 	{ .name = "networks", .handler = quest_router_networks },
+	{ .name = "dslstats", .handler = quest_router_dslstats }, 
 	UBUS_METHOD("client", quest_router_network_clients, network_policy),
 	{ .name = "clients", .handler = quest_router_clients },
 	{ .name = "clients6", .handler = quest_router_clients6 },
@@ -1511,6 +1525,7 @@ void *dump_router_info(void *arg)
 
 	jiffy_counts_t cur_jif, prev_jif;
 	
+	dslstats_init(&router.dslstats); 
 	
 	init_db_hw_config();
 	load_networks();
@@ -1520,6 +1535,7 @@ void *dump_router_info(void *arg)
 	dump_static_router_info(&router);
 	dump_hostname(&router);
 	while (true) {
+		dslstats_load(&router.dslstats); 
 		dump_sysinfo(&router, &memory);
 		dump_cpuinfo(&router, &prev_jif, &cur_jif);
 		populate_clients();
