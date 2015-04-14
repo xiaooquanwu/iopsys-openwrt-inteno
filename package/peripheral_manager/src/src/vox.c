@@ -20,6 +20,8 @@ struct vox_data {
 	struct led_drv led;
 };
 
+void vox_init(struct server_ctx *s_ctx);
+
 static int vox_set_state(struct led_drv *drv, led_state_t state)
 {
 	struct vox_data *p = (struct vox_data *)drv->priv;

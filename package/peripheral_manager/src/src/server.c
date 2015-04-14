@@ -17,6 +17,7 @@ void gpio_led_init(struct server_ctx *);
 void gpio_button_init(struct server_ctx *);
 
 void catv_monitor_init(struct server_ctx *);
+void vox_init(struct server_ctx *);
 
 struct catv_handler *catv_h;
 struct sfp_handler *sfp_h;

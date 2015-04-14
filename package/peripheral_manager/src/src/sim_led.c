@@ -45,7 +45,6 @@ struct sim_data {
 	struct led_drv led;
 };
 
-
 void sim_led_init(struct server_ctx *s_ctx) {
 
 	LIST_HEAD(leds);
