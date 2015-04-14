@@ -42,7 +42,7 @@ static const char* const led_functions[LED_FUNCTIONS] =
 
 /* Names for led_state_t */
 static const char* const led_states[LED_STATES_MAX] =
-{ "off", "on", "flash_slow", "flash_fast","breading", "fadeon", "fadeoff" };
+{ "off", "on", "flash_slow", "flash_fast","pulsing", "fadeon", "fadeoff" };
 
 /* Names for leds_state_t */
 static const char* const leds_states[LEDS_MAX] =

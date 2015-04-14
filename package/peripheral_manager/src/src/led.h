@@ -8,7 +8,7 @@ typedef enum {
 	ON,
 	FLASH_SLOW,
 	FLASH_FAST,
-	BREADING,
+	PULSING,
 	FADEON,
 	FADEOFF,
 	NEED_INIT,		/* set on loading config */

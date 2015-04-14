@@ -36,7 +36,7 @@ static int vox_set_state(struct led_drv *drv, led_state_t state)
 		spi_data[3] = 0x0;
 		spi_data[4] = 0x0;
 		spi_data[4] = 0x0;
-	} else if(state == BREADING) {
+	} else if(state == PULSING) {
                 spi_data[1] = 3;
 		spi_data[2] = 0xa0;
 	} else if(state == FLASH_SLOW) {
@@ -68,7 +68,7 @@ static int vox_support(struct led_drv *drv, led_state_t state)
 	case ON:
 	case FLASH_SLOW:
 	case FLASH_FAST:
-	case BREADING:
+	case PULSING:
 		return 1;
 		break;
 
