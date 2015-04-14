@@ -51,7 +51,7 @@ brcm_insmod() {
 	test -e /lib/modules/3.4.11-rt19/extra/endpointdd.ko   && insmod /lib/modules/3.4.11-rt19/extra/endpointdd.ko
 	test -e /lib/modules/3.4.11-rt19/extra/p8021ag.ko      && insmod /lib/modules/3.4.11-rt19/extra/p8021ag.ko
 	test -e /lib/modules/3.4.11-rt19/extra/bcmvlan.ko      && insmod /lib/modules/3.4.11-rt19/extra/bcmvlan.ko
-#	test -e /lib/modules/3.4.11-rt19/extra/pwrmngtd.ko     && insmod /lib/modules/3.4.11-rt19/extra/pwrmngtd.ko
+	test -e /lib/modules/3.4.11-rt19/extra/pwrmngtd.ko     && insmod /lib/modules/3.4.11-rt19/extra/pwrmngtd.ko
 	test -e /lib/modules/3.4.11-rt19/rng-core.ko           && insmod /lib/modules/3.4.11-rt19/rng-core.ko
 	test -e /lib/modules/3.4.11-rt19/extra/bcmtrng.ko      && insmod /lib/modules/3.4.11-rt19/extra/bcmtrng.ko
 	echo brcm modules loaded
@@ -95,8 +95,8 @@ mknod /dev/random c 1 8
 mknod /dev/hwrandom c 10 183
 mknod /dev/ptm c 128 1
 mkdir /dev/pts/ 
-mknod /dev/pts/0 c 136 0 
-mknod /dev/pts/1 c 136 1 nod /dev/ubi_ctrl c 10 63
+##mknod /dev/pts/0 c 136 0 
+##mknod /dev/pts/1 c 136 1 nod /dev/ubi_ctrl c 10 63
 
 # Create Broadcom specific devices                                                                            
 mknod /dev/dect c 197 0

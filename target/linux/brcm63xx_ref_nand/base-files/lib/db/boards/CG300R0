@@ -238,15 +238,16 @@ config led_map led_dect
        list led_action_ok     DECT_green=ON
        list led_action_off    DECT_green=OFF
        list led_action_notice DECT_green=FLASH_SLOW
-       list led_action_alert  DECT_green=OFF
-       list led_action_error  DECT_green=OFF
+       list led_action_alert  DECT_green=FLASH_FAST
+       list led_action_error  DECT_green=FLASH_FAST
 
-
-config led_map led_wan
+config led_map led_wan_phy_link
        list led_action_off    WAN_green=OFF
+       list led_action_ok     WAN_green=ON
+
+config led_map led_wan_phy_speed
        list led_action_off    WAN_yellow=OFF
-       list led_action_notice WAN_green=ON
-       list led_action_alert  WAN_yellow=ON
+       list led_action_ok     WAN_yellow=ON
 
 config led_map led_internet
        list led_action_ok     'Internet_green = ON'

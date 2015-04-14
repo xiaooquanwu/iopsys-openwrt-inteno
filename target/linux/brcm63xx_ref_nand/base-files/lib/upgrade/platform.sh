@@ -23,9 +23,9 @@ platform_check_image() {
 	}
 
 	if [ "$(get_image_type "$from")" == "CFE+FS" ]; then
-		nvram set cfe_fs=1
+		echo 1 > /tmp/CFE_FS
 	elif [ "$(get_image_type "$from")" == "FS" ]; then
-		nvram set cfe_fs=0
+		echo 0 > /tmp/CFE_FS
 	else
 		echo "Unknown image type" > /dev/console
 		return 1
@@ -33,9 +33,9 @@ platform_check_image() {
 	echo $img_type > /tmp/CFE_FS
 
 	if [ "$(get_flash_type "$from")" == "NAND" ]; then
-		nvram set is_nand=1
+		echo 1 > /tmp/IS_NAND
 	elif [ "$(get_flash_type "$from")" == "NOR" ]; then
-		nvram set is_nand=0
+		echo 0 > /tmp/IS_NAND
 	else
 		echo "Unknown flash type" > /dev/console
 		return 1

@@ -7,6 +7,7 @@ static struct blob_buf bblob;
 typedef enum {
     LED_OFF,
     LED_OK,
+    LED_EOK,
     LED_NOTICE,
     LED_ALERT,
     LED_ERROR,
@@ -29,15 +30,15 @@ typedef enum {
 
 /* Names for led_action_t */
 static const char * const fn_actions[LED_ACTION_MAX] =
-{ "off", "ok", "notice", "alert", "error", "custom"};
+{ "off", "ok", "eok", "notice", "alert", "error", "custom"};
 
-#define LED_FUNCTIONS 17
+#define LED_FUNCTIONS 20
 static const char* const led_functions[LED_FUNCTIONS] =
 { "dsl",	"wifi",		"wps",		"lan",
   "status",	"dect",		"tv",		"usb",
   "wan",	"internet",	"voice1",	"voice2",
   "eco",	"gbe",		"ext",		"wan_phy_speed",
-  "wan_phy_link" };
+  "wan_phy_link","gbe_phy_speed","gbe_phy_link","cancel" };
 
 /* Names for led_state_t */
 static const char* const led_states[LED_STATES_MAX] =
@@ -227,30 +228,36 @@ static void dump_led(void)
 					    led_states[led->state]);
 }}}}}
 
-static void set_function_led(const char* fn_name, const char* action) {
+/* return 0 = OK, -1 = error */
+static int set_function_led(const char* fn_name, const char* action) {
 	int led_idx = get_index_by_name(led_functions, LED_FUNCTIONS , fn_name);
 	int act_idx = get_index_by_name(fn_actions   , LED_ACTION_MAX, action );
 
 	if(led_idx == -1) {
 		syslog(LOG_WARNING, "called over ubus with non valid led name [%s]", fn_name);
-		return;
+		return -1;
 	}
 	if(act_idx == -1) {
 		syslog(LOG_WARNING, "called over ubus with non valid action [%s] for led [%s]", action, fn_name);
-		return;
+		return -1;
 	}
-
-	leds[led_idx].state = act_idx;
 
 	if ( leds[led_idx].actions[act_idx].name != NULL ) {
 		struct led *led;
+
+		leds[led_idx].state = act_idx;
+
 		list_for_each_entry(led, &leds[led_idx].actions[act_idx].led_list, list) {
 			if (led->drv){
 				led->drv->func->set_state(led->drv, led->state);
 			}
 		}
-	}else
+	}else {
 		syslog(LOG_WARNING, "led set on [%s] has no valid [%s] handler registered.", fn_name, action);
+		return -1;
+	}
+
+	return 0;
 }
 
 enum {
@@ -276,9 +283,13 @@ static int led_set_method(struct ubus_context *ubus_ctx, struct ubus_object *obj
 		state = blobmsg_data(tb[LED_STATE]);
 		DBG(1,"set led [%s]->[%s]", fn_name, state);
 //		syslog(LOG_INFO, "Led %s method: %s state %s", fn_name, method, state);
-		set_function_led(fn_name, state);
-	}else
+		if (set_function_led(fn_name, state) ){
+			return UBUS_STATUS_NO_DATA;
+		}
+	}else {
 		DBG(1,"(%s) not implemented",method);
+		return UBUS_STATUS_NO_DATA;
+	}
 	return 0;
 }
 
@@ -340,7 +351,7 @@ static int leds_set_method(struct ubus_context *ubus_ctx, struct ubus_object *ob
 
 		DBG(1,"led global state set to [%s] wanted [%s]", leds_states[global_state], state);
 	}else
-		syslog(LOG_WARNING, "Unknown attribute [%s]", blob_data(msg));
+		syslog(LOG_WARNING, "Unknown attribute [%s]", (char *)blob_data(msg));
 
 	return 0;
 }
@@ -396,6 +407,9 @@ static struct ubus_object led_objects[LED_OBJECTS] = {
     { .name = "led.ext",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
     { .name = "led.wan_phy_speed",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
     { .name = "led.wan_phy_link",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
+    { .name = "led.gbe_phy_speed",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
+    { .name = "led.gbe_phy_link",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
+    { .name = "led.cancel",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
 };
 
 

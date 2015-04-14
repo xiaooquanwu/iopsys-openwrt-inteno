@@ -1,0 +1,3 @@
+config dect 'dect'
+        option 'radio' '0'
+

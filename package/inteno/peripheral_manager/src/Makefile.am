@@ -18,6 +18,7 @@ peripheral_manager_SOURCES = \
 	src/button.c \
 	src/sim_button.c \
 	src/catv.c \
+	src/catv_monitor.c \
 	src/catv.h \
 	src/smbus.c \
 	src/smbus.h \

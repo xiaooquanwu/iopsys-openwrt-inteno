@@ -30,12 +30,12 @@ wan_have_ip() {
     if [ -n "$addr" ]
     then
 	wanip=1
-	ledctl wan on
+	ubus call led.wan  set '{"state" : "ok"}'
     fi
     # dont set wan here status is set from hotplug, only set when ip is detected.
 }
 
-wantest() {
+internet_test() {
 	local dest="$(uci get -q system.@system[0].netping_addr)"
 
 	test_connection $dest
@@ -68,7 +68,7 @@ do
 		break
 	else
 		[ $wanip -eq 0 ] && wan_have_ip
-		[ $netcon -eq 0 ] && wantest
+		[ $netcon -eq 0 ] && internet_test
 		[ $tvcon -eq 0 ] && iptvtest
 
 		sleep $tm

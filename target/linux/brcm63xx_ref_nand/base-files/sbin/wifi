@@ -44,16 +44,30 @@ kill_related_daemons() {
 	killall -SIGTERM wps_monitor 2>/dev/null
 }
 
-start_related_daemons() {
-	local wldev
+run_acsd() {
+	local wldev cchn fchn
+	for wldev in $(nvram get acs_ifnames); do
+		[ $(nvram get wl_2g_radio) == "$wldev" ] && continue
+		# if initially on a dfs channel switch to first available channel
+		cchn=$(wlctl -i $wldev status | grep "Primary" | awk '{print$NF}')
+		fchn=$(wlctl -i $wldev chanspecs | head -1 | awk '{print$1}')
+		if [ $cchn -ge 52 ]; then
+			wlctl -i $wldev down
+			wlctl -i $wldev channel $fchn
+			wlctl -i $wldev up
+		fi
+	done
 	[ -n "$(nvram get acs_ifnames)" ] && acsd
 	for wldev in $(nvram get acs_ifnames); do
-		[ $(nvram get $wldev"_acs_dfs") == "1" ] && continue
 		# finds appropriate channel candidates
 		acs_cli -i $wldev autochannel
 		# triggers an early channel switch
 		acs_cli -i $wldev autochannel
 	done
+}
+
+start_related_daemons() {
+	run_acsd
 	eapd
 	nas
 	[ $_enWps -gt 0 ] && wps_monitor &
@@ -537,6 +551,7 @@ create_vif() {
 
 	[ "$2" == "$device" ] || continue
 	wlctl -i $device bss -C $_cno down
+	wlctl -i $device ssid -C $_cno "Inteno"
 	wlctl -i $device bss -C $_cno up
 	wlctl -i $device ssid -C $_cno ""
 	wlctl -i $device bss -C $_cno down
@@ -562,17 +577,25 @@ create_vif() {
 	_cno=$((_cno+1))
 }
 
-wdev_static_settings() {
+wdev_assured_settings() {
 	local device=$1
 	wlctl -i $device leddc 0
 	wlctl -i $device msglevel 0
 	wlctl -i $device phy_watchdog 1
+	wlctl -i $device ap 1
+	wlctl -i $device mbss 1
+}
+
+wdev_static_settings() {
+	local device=$1
+	wlctl -i $device txbf 0
+	wlctl -i $device txbf_bfr_cap 0
+	wlctl -i $device txbf_bfe_cap 0
 	wlctl -i $device stbc_rx 0
 	wlctl -i $device stbc_tx -1
 	wlctl -i $device fcache 1 || dhdctl -i $device fcache 1
 	wlctl -i $device pktc 1 || dhdctl -i $device pktc 1
 	wlctl -i $device wnm 0x103
-	wlctl -i $device ap 1
 	wlctl -i $device wet 0
 	wlctl -i $device mpc 0
 	wlctl -i $device infra 1
@@ -593,7 +616,6 @@ wdev_static_settings() {
 	wlctl -i $device noise_metric 1
 	wlctl -i $device rxchain_pwrsave_stas_assoc_check 1
 	wlctl -i $device radio_pwrsave_stas_assoc_check 1
-	wlctl -i $device mbss 1
 }
 
 wdev_radar_settings() {
@@ -727,7 +749,7 @@ wdev_hwmode_settings() {
 
 wdev_channel_settings() {
 	local device=$1
-	local apsta doth channel scantimer acsifs
+	local apsta doth channel scantimer acsifs dfsc
 
 	# if device is in apsta mode, no need for channel settings
 	# as it will operate at the channel selected by its master
@@ -740,6 +762,7 @@ wdev_channel_settings() {
 	config_get doth "$device" doth "1"
 	config_get channel "$device" channel "auto"
 	config_get scantimer "$device" scantimer "15"
+	config_get dfsc "$device" dfsc "0"
 
 	case "$channel" in
 		auto)
@@ -774,13 +797,14 @@ wdev_channel_settings() {
 			nvram set "$device"_acs_ci_scan_timer="4"
 			nvram set "$device"_acs_cs_scan_timer=$((scantimer * 60))
 			nvram set "$device"_acs_excl_chans=""
-			nvram set "$device"_acs_fcs_mode="1"
 			nvram set "$device"_acs_scan_entry_expire="3600"
 			nvram set "$device"_acs_tx_idle_cnt="5"
 			nvram set "$device"_acs_lowband_least_rssi="-75"
-			if [ "$doth" == "0" ]; then
+			if [ "$doth" == "0" -o "$dfsc" == "0" ]; then
+				nvram set "$device"_acs_fcs_mode="1"
 				nvram set "$device"_acs_dfs="0"
 			else
+				nvram set "$device"_acs_fcs_mode="0"
 				nvram set "$device"_acs_dfs="1"
 				nvram set "$device"_acs_dfsr_activity="30 10240"
 				nvram set "$device"_acs_dfsr_deferred="604800 5"
@@ -914,8 +938,12 @@ setup_wifi_device() {
 	# bring down wireless device
 	wlctl -i $device down
 
+	wdev_assured_settings $device
+
 	# create virtual wireless interfaces
+	wlctl -i $device up
 	config_foreach create_vif wifi-iface "$device"
+	wlctl -i $device down
 	_cno=0
 
 	[ "$radio" == "off" ] && continue || _enWifi=$((_enWifi+1))
@@ -940,10 +968,6 @@ setup_wifi_device() {
 	_vno=0
 
 	wdev_wif_bringup $device
-}
-
-set_processor_id() {
-	wlctl -i wl1 ap || wlctl -i wl0 tp_id 1
 }
 
 configure_wep() {
@@ -993,7 +1017,6 @@ wifi_updown() {
 
 	cleanup $wdev
 	kill_related_daemons
-	set_processor_id
 
 	config_load wireless
 
@@ -1002,10 +1025,10 @@ wifi_updown() {
 	run_hooks wifi-device $DISABLE_HOOKS # ANYFI
 
 	# handle wireless led
-	ledctl wireless off
+	ubus call led.wifi  set '{"state" : "off"}'
 	if [ "$action" == "disable" ]; then
-		[ -n "$(nvram get wl_2g_radio)" ] && ledctl wireless on
-		[ -n "$(nvram get wl_5g_radio)" ] && ledctl wireless notice
+		[ -n "$(nvram get wl_2g_radio)" ] && ubus call led.wifi  set '{"state" : "ok"}'
+		[ -n "$(nvram get wl_5g_radio)" ] && ubus call led.wifi  set '{"state" : "eok"}'
 		return
 	fi
 
@@ -1016,13 +1039,13 @@ wifi_updown() {
 	nvram set wlmngr=done
 
 	# handle wireless led
-	ledctl eco off
+	ubus call led.eco set '{"state" : "off"}'
 	if [ $_enWifi -le 0 ]; then
-		ledctl eco on
-		return
+	    ubus call led.eco set '{"state" : "ok"}'
+	    return
 	else
-		[ -n "$(nvram get wl_2g_radio)" ] && ledctl wireless on
-		[ -n "$(nvram get wl_5g_radio)" ] && ledctl wireless notice
+		[ -n "$(nvram get wl_2g_radio)" ] && ubus call led.wifi  set '{"state" : "ok"}'
+		[ -n "$(nvram get wl_5g_radio)" ] && ubus call led.wifi  set '{"state" : "eok"}'
 	fi
 
 	map_networks
@@ -1044,7 +1067,8 @@ wifi_reload() {
 wifi_detect() {
 	local WLDIR="/tmp/wireless"
 	local wls="wl0 wl1"
-	local bands band bwidth country hwmode pcid wl bno doth
+	local vnos="0 1 2 3 4 5 6 7 8"
+	local bands band bwidth country hwmode pcid wl bno doth vdev vn
 	local BMAC=$(cat /proc/nvram/BaseMacAddr | tr '[a-z]' '[A-Z]')
 	BMAC=${BMAC// /}
 	local BSSID=$(printf "%X\n" $((0x$BMAC + 2)))
@@ -1057,35 +1081,8 @@ wifi_detect() {
 	local SSID="$(uci -q get wireless.@wifi-iface[0].ssid)"
 	local ENCR="$(uci -q get wireless.@wifi-iface[0].encryption)"
 	local KEY="$(uci -q get wireless.@wifi-iface[0].key)"
-	local GTK="$(uci -q get wireless.@wifi-iface[0].gtk_rekey)"
 	local WPS="$(uci -q get wireless.@wifi-iface[0].wps_pbc)"
 	local NET="$(uci -q get wireless.@wifi-iface[0].network)"
-
-	local PSID="$(uci -q get wireless.preferred.ssid)"
-	local PENC="$(uci -q get wireless.preferred.enc)"
-	local PKEY="$(uci -q get wireless.preferred.key)"
-	local PGTK="$(uci -q get wireless.preferred.gtk)"
-	local PWPS="$(uci -q get wireless.preferred.wpsb)"
-	local PHW5="$(uci -q get wireless.preferred.hw5g)"
-	local PHW2="$(uci -q get wireless.preferred.hw2g)"
-	local PBW5="$(uci -q get wireless.preferred.bw5g)"
-	local PBW2="$(uci -q get wireless.preferred.bw2g)"
-	local PCH5="$(uci -q get wireless.preferred.ch5g)"
-	local PCH2="$(uci -q get wireless.preferred.ch2g)"
-	local PDFS="$(uci -q get wireless.preferred.dfsc)"
-	local PCNT="$(uci -q get wireless.preferred.country)"
-	local PTMR="$(uci -q get wireless.preferred.scntmr)"
-	local PEXT="$(uci -q get wireless.preferred.extrassid)"
-	local PGST="$(uci -q get wireless.preferred.guest)"
-
-	[ -n "$SSID" ] || SSID="${PSID:-Inteno-$BSSID4}"
-	[ -n "$ENCR" ] || ENCR=$PENC
-	[ -n "$KEY" ] || KEY=$PKEY
-	[ -n "$GTK" ] || GTK=$PGTK
-	[ -n "$WPS" ] || WPS=$PWPS
-
-	# zero PEXT tag if not dual wifi
-	wlctl -i wl1 ap >/dev/null 2>&1 || PEXT="0"
 
 	pcID() {
 		wlctl -i $1 revinfo | awk 'FNR == 2 {print}' | cut -d'x' -f2
@@ -1112,7 +1109,7 @@ wifi_detect() {
 			hwmode="auto"
 			if $(is5G $pcid); then
 				band="a"
-				bwidth="40"
+				bwidth="80"
 				bno=5
 				doth="1"
 				$(isAC $pcid) && hwmode="11ac"
@@ -1156,15 +1153,15 @@ EOF
 					cat >> /etc/config/wireless <<EOF
 config wifi-iface
 	option device '$wl'
-	option network 'guest'
+	option network '${NET:-lan}'
 	option mode 'ap'
-	option ssid 'Inteno-$BSSID4'
-	option encryption 'mixed-psk'
+	option ssid '${SSID:-Inteno-$BSSID4}'
+	option encryption '${ENCR:-mixed-psk}'
 	option cipher 'auto'
-	option key '$WPAKEY'
+	option key '${KEY:-$WPAKEY}'
 	option gtk_rekey '0'
 	option macfilter '0'
-	option wps_pbc '0'
+	option wps_pbc '${WPS:-1}'
 	option wmf_bss_enable '1'
 	option bss_max '16'
 
@@ -1175,13 +1172,14 @@ EOF
 				uci commit wireless
 			fi
 		else
-			uci -q delete wireless.$wl
+			uci delete wireless.$wl
 			for vn in $vnos; do
 				vdev="$(uci get wireless.@wifi-iface[$vn].device)"
 				if [ $vdev == "$wl" ]; then
-					uci -q delete wireless.@wifi-iface[$vn]
+					uci delete wireless.@wifi-iface[$vn]
 				fi
 			done
+			uci commit wireless
 		fi
 	done
 	uci -q delete wireless.preferred

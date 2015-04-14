@@ -973,7 +973,7 @@ static int sfp_ddm_get_rx_pwr(struct blob_buf *b, int raw)
                 /* NOTE: There's only a single word to read. It's unclear how
                    to get several values. However, typically, rx_pwr[2,3,4]
                    are zero. */
-                if (sfp_ddm.rx_pwr[i] != 0.0) {
+                if (sfp_ddm.rx_pwr[i] > 0.0 || sfp_ddm.rx_pwr[i] < 0.0) { /* sfp_ddm.rx_pwr[i] != 0.0 */
                         if (!sfp_ddm_read_ui(&v, 104))
                                 return 0;
                         x += v*sfp_ddm.rx_pwr[i];
@@ -1011,7 +1011,7 @@ static int sfp_ddm_get_all_method(struct ubus_context *ubus_ctx, struct ubus_obj
         memset(&b, 0, sizeof(struct blob_buf));
 	blob_buf_init (&b, 0);
 
-	sfp_ddm_get_temperature(&b, 0);
+	//sfp_ddm_get_temperature(&b, 0);
 	sfp_ddm_get_voltage(&b, 0);
 	sfp_ddm_get_current(&b, 0);
 	sfp_ddm_get_tx_pwr(&b, 0);
@@ -1044,7 +1044,7 @@ static struct ubus_object_type sfp_rom_type =
 static const struct ubus_method sfp_ddm_methods[] = {
         { .name = "get-rx-pwr", .handler = sfp_ddm_get_rx_pwr_method },
         { .name = "get-tx-pwr", .handler = sfp_ddm_get_tx_pwr_method },
-        { .name = "get-temperature", .handler = sfp_ddm_get_temperature_method },
+        //{ .name = "get-temperature", .handler = sfp_ddm_get_temperature_method },
         { .name = "get-current", .handler = sfp_ddm_get_current_method },
         { .name = "get-voltage", .handler = sfp_ddm_get_voltage_method },
         { .name = "get-all", .handler = sfp_ddm_get_all_method },

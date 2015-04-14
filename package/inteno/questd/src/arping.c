@@ -102,7 +102,7 @@ recv_pack(char *buf, int len, struct sockaddr_ll *FROM)
 
 
 bool
-arping(char *targetIP, char *device)
+arping(char *targetIP, char *device, int toms)
 {
 	struct sockaddr_in saddr;
 	struct ifreq ifr;
@@ -150,7 +150,6 @@ arping(char *targetIP, char *device)
 	struct sockaddr_ll from;
 	socklen_t alen = sizeof(from);
 	bool connected = false;
-	long tmo = 500000;
 	int cc = -1;
 
 	fd_set read_fds, write_fds, except_fds;
@@ -161,7 +160,7 @@ arping(char *targetIP, char *device)
 
 	struct timeval timeout;
 	timeout.tv_sec = 0;
-	timeout.tv_usec = tmo;
+	timeout.tv_usec = toms * 1000;
 
 	if (select(sock_fd + 1, &read_fds, &write_fds, &except_fds, &timeout) == 1)
 	{
@@ -172,9 +171,6 @@ arping(char *targetIP, char *device)
 		connected = recv_pack(packet, cc, &from);
 
 	close(sock_fd);
-
-	if (!connected)
-		recalc_sleep_time(true, tmo);
 
 	return connected;
 }

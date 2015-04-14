@@ -15,15 +15,15 @@ export PLATFORM_INCLUDE:=platforms/iopsys/build.mk
 
 export DATE:=$(shell date +%Y-%m-%d-%H-%M-%S)
 export LOGIN:=$(shell whoami)
-BASE_PKG_VERSION:=3.2.0
-PKG_RELEASE:=RC1
+BASE_PKG_VERSION:=3.2.1
+PKG_RELEASE:=RC5
 PKG_VERSION:=$(BASE_PKG_VERSION)-$(PKG_RELEASE)_$(DATE)_$(LOGIN)
 export PKG_VERSION
 
 ###########################--RELEASE--################################
 
 PKG_SOURCE_URL:=ssh://git@iopsys.inteno.se/ice-client.git
-PKG_SOURCE_VERSION:=1f95ce3d1eff1b2403a2357d0fa45063e56ff5e2
+PKG_SOURCE_VERSION:=3d30f42c057d2c120bce66c7c028a2238c7a5ccc
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(BASE_PKG_VERSION)
 PKG_SOURCE:=$(PKG_NAME)-$(BASE_PKG_VERSION)-$(PKG_RELEASE).tar.gz
 
@@ -884,6 +884,78 @@ fi
 exit 0
 endef
 
+# torrent
+define Package/ice-client-torrent
+  $(call Package/ice-client/Default)
+  TITLE:=torrent
+  DEPENDS+= +boost-system
+#  boost                                   Boost C++ source libraries (header-only)
+#  boost-chrono                            Boost C++ source libraries (chrono)
+#  boost-date_time                         Boost C++ source libraries (date_time)
+#  boost-filesystem                        Boost C++ source libraries (filesystem)
+#  boost-graph                             Boost C++ source libraries (graph)
+#  boost-iostreams                         Boost C++ source libraries (iostreams)
+#  boost-locale                            Boost C++ source libraries (locale)
+#  boost-math                              Boost C++ source libraries (math)
+#  boost-program_options                   Boost C++ source libraries (program_options)
+#  boost-python                            Boost C++ source libraries (python)
+#  boost-random                            Boost C++ source libraries (random)
+#  boost-regex                             Boost C++ source libraries (regex)
+#  boost-serialization                     Boost C++ source libraries (serialization)
+#  boost-signals                           Boost C++ source libraries (signals)
+#  boost-timer                             Boost C++ source libraries (timer)
+#boost-wave                              Boost C++ source libraries (wave)
+
+endef
+
+define Package/ice-client-torrent/description
+torrent module for ice-client
+endef
+
+define Package/ice-client-torrent/prerm
+#!/bin/sh
+if [ -z "$${IPKG_INSTROOT}" ]; then
+	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
+	PROC_ID=$$(cat /tmp/ice.pid)
+	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
+	if [ -n "$$PROC_EXISTS" ]; then
+	  read -t 1 <>/tmp/cfout
+	  echo "system moduleRemove topic=torrentMgr" > /tmp/cfin
+	fi
+fi
+exit 0
+endef
+
+define Package/ice-client-torrent/preinst
+#!/bin/sh
+if [ -z "$${IPKG_INSTROOT}" ]; then
+	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
+	PROC_ID=$$(cat /tmp/ice.pid)
+	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
+	if [ -n "$$PROC_EXISTS" ]; then
+	  read -t 1 <>/tmp/cfout
+	  echo "system moduleRemove topic=torrentMgr" > /tmp/cfin
+	fi
+fi
+exit 0
+endef
+
+define Package/ice-client-torrent/install
+	$(INSTALL_DIR) $(1)/usr/lib
+	$(CP) $(PKG_BUILD_DIR)/core/lib/torrentService.so.1.0.1 $(1)/usr/lib
+endef
+
+define Package/ice-client-torrent/postinst
+#!/bin/sh
+if [ -z "$${IPKG_INSTROOT}" ]; then
+    read -t 1 <>/tmp/cfout
+	if [ -f /tmp/ice.pid  ]; then
+		echo "system moduleAdd file=torrentService.so.1.0.1" package="ice-client-torrent" > /tmp/cfin
+	fi
+fi
+exit 0
+endef
+
 # This line executes the necessary commands to compile our program.
 # The above define directives specify all the information needed, but this
 # line calls BuildPackage which in turn actually uses this information to
@@ -903,4 +975,3 @@ $(eval $(call BuildPackage,ice-client-rework))
 $(eval $(call BuildPackage,ice-client-sip))
 $(eval $(call BuildPackage,ice-client-monitor))
 $(eval $(call BuildPackage,ice-client-torrent))
-$(eval $(call BuildPackage,ice-client-gigaset))

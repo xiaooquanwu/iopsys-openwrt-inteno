@@ -94,15 +94,9 @@ change_to_vlan () {
 	for domain in $domain; do
 		proto_add_dns_search "$domain"
 	done
-
-	proto_add_data
-	[ -n "$ZONE" ] && json_add_string zone "$ZONE"
-	proto_close_data
-
 	proto_send_update "$INTERFACE"
 
-
-	if [ "$IFACE6RD" != 0 -a -n "$ip6rd" ]; then
+	if [ -n "$IFACE6RD" -a -n "$ip6rd" ]; then
 		local v4mask="${ip6rd%% *}"
 		ip6rd="${ip6rd#* }"
 		local ip6rdprefixlen="${ip6rd%% *}"
@@ -111,24 +105,19 @@ change_to_vlan () {
 		ip6rd="${ip6rd#* }"
 		local ip6rdbr="${ip6rd%% *}"
 
-		[ -n "$ZONE" ] || ZONE=$(fw3 -q network $INTERFACE)
-		[ -z "$IFACE6RD" -o "$IFACE6RD" = 1 ] && IFACE6RD=${INTERFACE}_6rd
+uci -q batch <<-EOF >/dev/null
+set network.$IFACE6RD.proto=6rd
+set network.$IFACE6RD.auto=0
+set network.$IFACE6RD.peeraddr=$ip6rdbr
+set network.$IFACE6RD.ip4prefixlen=$v4mask
+set network.$IFACE6RD.ip6prefix=$ip6rdprefix
+set network.$IFACE6RD.ip6prefixlen=$ip6rdprefixlen
+commit network
+EOF
 
-		json_init
-		json_add_string name "$IFACE6RD"
-		json_add_string ifname "@$INTERFACE"
-		json_add_string proto "6rd"
-		json_add_string peeraddr "$ip6rdbr"
-		json_add_int ip4prefixlen "$v4mask"
-		json_add_string ip6prefix "$ip6rdprefix"
-		json_add_int ip6prefixlen "$ip6rdprefixlen"
-		json_add_string tunlink "$INTERFACE"
-		[ -n "$IFACE6RD_DELEGATE" ] && json_add_boolean delegate "$IFACE6RD_DELEGATE"
-		[ -n "$ZONE6RD" ] || ZONE6RD=$ZONE
-		[ -n "$ZONE6RD" ] && json_add_string zone "$ZONE6RD"
-		json_close_object
-
-		ubus call network add_dynamic "$(json_dump)"
+		ifdown "$IFACE6RD"
+		/etc/init.d/network reload
+		ifup "$IFACE6RD"
 	fi
 
 	[ -f /etc/config/provisioning ] && iup
@@ -137,7 +126,7 @@ change_to_vlan () {
 	# [ -n "$ntpsrv" ] && 	change_state network "$ifc" lease_ntpsrv "$ntpsrv"
 	# [ -n "$timesvr" ] && 	change_state network "$ifc" lease_timesrv "$timesvr"
 	# [ -n "$hostname" ] &&	change_state network "$ifc" lease_hostname "$hostname"
-	# [ -n "$timezone" ] &&	change_state network "$ifc" lease_timezone "$timezone"
+	# [ -n "$timezone" ] && change_state network "$ifc" lease_timezone "$timezone"
 }
 
 iup() {
@@ -153,7 +142,7 @@ iup() {
 	elif [ $httpurl128 ]; then
 		uci_set_state provisioning iup url "$httpurl128"
 	elif [ $tftp ]; then
-		if [ ${bootfile:0:1} == '/' ]; then
+		if [ ${bootfile:0:1} == '/' ]; then 
 			uci_set_state provisioning iup url "tftp://$tftp$bootfile"
 		else
 			uci_set_state provisioning iup url "tftp://$tftp/$bootfile"

@@ -1,6 +1,7 @@
 #ifndef LOG_H
 #define LOG_H
 /* Use this */
+#include <syslog.h>
 
 extern int debug_level;
 
