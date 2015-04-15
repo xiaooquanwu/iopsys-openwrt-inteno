@@ -38,6 +38,9 @@
 					"assoclist",
 					"phyname"
 				],
+				"router": [
+					"dslstats"
+				],
 				"system": [
 					"info",
 					"board"
@@ -51,8 +54,7 @@
 					"dhcp6_leases",
 					"arp_table",
 					"routes",
-					"routes6",
-					"dslstats"
+					"routes6"
 				],
 				"luci2.system": [
 					"diskfree",

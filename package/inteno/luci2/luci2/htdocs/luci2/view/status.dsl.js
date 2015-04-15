@@ -3,18 +3,15 @@ L.ui.view.extend({
 	description: L.tr('Router ADSL status.'),
 
 	getDSLStatus: L.rpc.declare({
-		object: 'luci2.network',
+		object: 'router',
 		method: 'dslstats',
-		expect: { data: '' }
+		expect: { dslstats: {} }
 	}),
 
 	execute: function() {
-		return this.getDSLStatus().then(function(data){
-			var dslstats = {}; 
-			try { dslstats = JSON.parse(data); } catch(e){}
-			
+		return this.getDSLStatus().then(function(dslstats){
 			// todo fields
-			with({dslstats: dslstats.dslstats}){
+			with({dslstats: dslstats}){
 				dslstats.ip = "TODO"; 
 				dslstats.ipstate = "TODO"; 
 				dslstats.mode_details = "TODO"; 
@@ -54,7 +51,7 @@ L.ui.view.extend({
 				var model = $(this).attr("ng-model"); 
 				try {
 					if(model) { 
-						with({dslstats: dslstats.dslstats}) { 
+						with({dslstats: dslstats}) { 
 							$(this).html(eval(model)); 
 						}
 					}
