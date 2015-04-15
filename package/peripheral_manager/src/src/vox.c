@@ -89,6 +89,7 @@ static struct led_drv_func func = {
 void vox_init(struct server_ctx *s_ctx) {
  	LIST_HEAD(leds);
 	struct ucilist *node;
+	int register_spi = 0;
 
         DBG(1, "");
 
@@ -115,9 +116,12 @@ void vox_init(struct server_ctx *s_ctx) {
 		data->led.priv = data;
                 data->state = NEED_INIT;
 		led_add(&data->led);
+		register_spi = 1;
 	}
 
-        board_ioctl(BOARD_IOCTL_SPI_INIT, SPI_SLAVE_SELECT, 0, 0, 0, 391000);
-
-        gpio_open_ioctl();
+	/* if config entries for vox leds exist register the spi as used. */
+	if(register_spi) {
+		board_ioctl(BOARD_IOCTL_SPI_INIT, SPI_SLAVE_SELECT, 0, 0, 0, 391000);
+		gpio_open_ioctl();
+	}
 }
