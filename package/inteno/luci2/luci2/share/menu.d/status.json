@@ -32,5 +32,11 @@
         "acls": [ "status" ],
         "view": "status/processes",
         "index": 50
-    }
+    }, 
+    "status/dsl": {
+		"title": "ADSL Status", 
+		"acls": [ "status" ], 
+		"view": "status/dsl", 
+		"index": 60
+	}
 }

@@ -52,6 +52,7 @@ typedef struct dsl_bearer {
 
 typedef struct dsl_counters {
 	UpDown es, ses, uas; 
+	UpDown fec, crc; 
 } DSLCounters; 
 
 typedef struct dsl_stats {
@@ -59,6 +60,7 @@ typedef struct dsl_stats {
 	char *traffic;
 	char *status; 
 	char *link_power_state; 
+	char *line_status; 
 	char *vdsl2_profile; 
 	UpDown trellis; 
 	UpDown snr; 

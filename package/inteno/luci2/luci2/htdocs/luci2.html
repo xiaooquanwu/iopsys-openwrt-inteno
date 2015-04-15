@@ -15,7 +15,7 @@
         <script type="text/javascript" src="/luci2/jquery.peity.js"></script>
         <script type="text/javascript" src="/luci2/bootstrap.js"></script>
         <script type="text/javascript" src="/luci2/luci2.js"></script>
-
+        
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta http-equiv="content-type" content="text/html; charset=utf-8" />
 
@@ -28,8 +28,12 @@
                 });
             });
         </script>
+        <!-- not using angular right now. maybe later. -->
+        <!--<script type="text/javascript" src="/luci2/angular.js"></script>
+		<script type="text/javascript" src="/luci2/angular.app.js"></script>-->
+
     </head>
-    <body>
+    <body >
         <div class="navbar navbar-inverse navbar-fixed-top" role="banner">
             <div class="container">
                 <div class="navbar-header">
@@ -46,7 +50,7 @@
 
         <div id="viewmenu"></div>
 
-        <div id="maincontent" class="container">
+        <div id="maincontent" class="container" luci2dynamic ng-app="inteno" ng-controller="dslstats">
 
         </div>
 <!--

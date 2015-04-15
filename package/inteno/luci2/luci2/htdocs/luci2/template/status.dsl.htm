@@ -1,0 +1,74 @@
+<div id="dslstats">
+	<legend><span translate>DSL Connection</span></legend>
+	<table class="table table-condensed table-hover">
+		<tr>
+			<td class="col-md-6"><span ng-model="dslstats.ip"></span></td>
+			<td class="col-md-6"><span ng-model="dslstats.ipstate"></span></td>
+		</tr>
+	</table>
+	<legend><span translate>DSL Mode</span></legend>
+	<table class="table table-condensed table-hover">
+		<tr>
+			<td class="col-md-6"><span ng-model="dslstats.mode"></span></td>
+			<td class="col-md-6"><span ng-model="dslstats.mode_details"></span></td>
+		</tr>
+	</table>
+	<legend><span translate>DSL Status Information</span></legend>
+	<table class="table table-condensed table-hover">
+		<thead>
+			<tr>
+				<th class="col-md-4"></th>
+				<th class="col-md-4"><span translate>Configured</span></th>
+				<th class="col-md-4"><span translate>Current</span></th>
+			</tr>
+		</thead>
+		<tr><td><span translate>Line Status</span></td><td><span ng-model="dslstats.line_status_configured"></span></td><td><span ng-model="dslstats.status"></span></td></tr>
+		<tr><td><span translate>Link Type</span></td><td><span ng-model="dslstats.line_type_configured"></span></td><td><span ng-model="dslstats.line_type"></span></td></tr>
+	</table>
+	<legend><span translate>Bit Rate</span></legend>
+	<table class="table table-condensed table-hover">
+		<thead>
+			<tr>
+				<th class="col-md-4"></th>
+				<th class="col-md-4"><span translate>Downstream</span></th>
+				<th class="col-md-4"><span translate>Upstream</span></th>
+			</tr>
+		</thead>
+		<tr><td><span translate>Actual Data Rate</span></td><td><span ng-model="dslstats.bearers[0].rate_down"></span> (Kbps.)</td><td><span ng-model="dslstats.bearers[0].rate_up"></span> (Kbps.)</td></tr>
+	</table>
+	<legend><span translate>Operating Data</span></legend>
+	<table class="table table-condensed table-hover">
+		<thead>
+			<tr>
+				<th class="col-md-4"></th>
+				<th class="col-md-4"><span translate>Downstream</span></th>
+				<th class="col-md-4"><span translate>Upstream</span></th>
+			</tr>
+		</thead>
+		<tr><td><span translate>SNR Margin</span></td><td><span ng-model="dslstats.snr_down"></span> dB</td><td><span ng-model="dslstats.snr_up"></span> dB</td></tr>
+		<tr><td><span translate>Loop Attenuation</span></td><td><span ng-model="dslstats.attn_down"></span> dB</td><td><span ng-model="dslstats.attn_up"></span> dB</td></tr>
+	</table>
+	<legend><span translate>Error Counter</span></legend>
+	<table class="table table-condensed table-hover">
+		<thead>
+			<tr>
+				<th class="col-md-4"><span translate>Indicator Name</span></th>
+				<th class="col-md-4"><span translate>Downstream</span></th>
+				<th class="col-md-4"><span translate>Upstream</span></th>
+			</tr>
+		</thead>
+		<tr><td><span translate>FEC Corrections</span></td><td><span ng-model="dslstats.counters.totals.fec_down"></span></td><td><span ng-model="dslstats.counters.totals.fec_up"></span></td></tr>
+		<tr><td><span translate>CRC Errors</span></td><td><span ng-model="dslstats.counters.totals.crc_down"></span></td><td><span ng-model="dslstats.counters.totals.crc_up"></span></td></tr>
+	</table>
+	<legend><span translate>Statistics</span></legend>
+	<table class="table table-condensed table-hover">
+		<thead>
+			<tr>
+				<th class="col-md-4"></th>
+				<th class="col-md-4"><span translate>Transmitted Cells</span></th>
+				<th class="col-md-4"><span translate>Received Cells</span></th>
+			</tr>
+		</thead>
+		<tr><td><span translate>Cell Counter</span></td><td><span ng-model="dslstats.bearers[0].total_cells_down"></span></td><td><span ng-model="dslstats.bearers[0].total_cells_up"></span></td></tr>
+	</table>
+</div>

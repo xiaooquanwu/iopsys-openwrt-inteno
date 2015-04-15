@@ -1118,6 +1118,34 @@ backup_finish_list(struct blob_buf *blob, int status, void *priv)
 	return UBUS_STATUS_OK;
 }
 
+
+static int rpc_run_command(struct ubus_context *ctx, struct ubus_request_data *req, const char *cmd){
+	FILE *fd; 
+	int buffer_size = 4096; 
+	char *data = malloc(buffer_size);
+	char *pdata = data; 
+	int c; 
+	
+	blob_buf_init(&buf, 0);
+	if ((fd = popen("ubus call router dslstats", "r"))) {
+		while((c = fgetc(fd)) != EOF){
+			*pdata = c;
+			pdata++;  
+			if(pdata == (data + buffer_size)){
+				size_t size = buffer_size; 
+				buffer_size += 4096; 
+				data = realloc(data, buffer_size); 
+				pdata = data + size; 
+			}
+		}
+		pclose(fd);
+	}
+	blobmsg_add_string(&buf, "data", data);
+	free(data); 
+	ubus_send_reply(ctx, req, buf.head);
+	return 0; 
+}
+
 static int
 rpc_luci2_backup_list(struct ubus_context *ctx, struct ubus_object *obj,
                       struct ubus_request_data *req, const char *method,
@@ -1812,6 +1840,14 @@ rpc_luci2_network_sw_list(struct ubus_context *ctx, struct ubus_object *obj,
 
 	return ops->exec(cmd, NULL, swconfig_parse_list, NULL, swconfig_finish_list,
 	                 state, ctx, req);
+}
+
+static int
+rpc_luci2_network_dslstats(struct ubus_context *ctx, struct ubus_object *obj,
+                          struct ubus_request_data *req, const char *method,
+                          struct blob_attr *msg)
+{
+	return rpc_run_command(ctx, req, "ubus call router dslstats"); 
 }
 
 
@@ -2808,6 +2844,7 @@ rpc_luci2_api_init(const struct rpc_daemon_ops *o, struct ubus_context *ctx)
 		UBUS_METHOD_NOARG("routes",          rpc_luci2_network_routes),
 		UBUS_METHOD_NOARG("routes6",         rpc_luci2_network_routes6),
 		UBUS_METHOD_NOARG("switch_list",     rpc_luci2_network_sw_list),
+		UBUS_METHOD_NOARG("dslstats",     rpc_luci2_network_dslstats),
 		UBUS_METHOD("switch_info",           rpc_luci2_network_sw_info,
 		                                     rpc_switch_policy),
 		UBUS_METHOD("switch_status",         rpc_luci2_network_sw_status,

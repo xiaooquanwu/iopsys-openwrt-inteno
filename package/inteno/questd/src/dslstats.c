@@ -103,7 +103,8 @@ void dslstats_load(struct dsl_stats *self){
 						else self->trellis.up = 0; 
 					}
 				}
-				else if(strstr(name, "Status") == name) self->status = strdup(arg1); 
+				else if(strstr(name, "Training Status") == name) self->status = strdup(arg1); 
+				else if(strstr(name, "Line Status") == name) self->line_status = strdup(arg1); 
 				else if(strstr(name, "Bearer") == name){
 					unsigned long id, up, down, ret; 
 					if((ret = sscanf(arg1, "%d, Upstream rate = %lu Kbps, Downstream rate = %lu Kbps", &id, &up, &down)) == 3){
@@ -229,6 +230,14 @@ void dslstats_load(struct dsl_stats *self){
 					counters->uas.down = atoll(arg1); 
 					counters->uas.up = atoll(arg2); 
 				}
+				else if(strstr(name, "FEC:") == name){
+					counters->fec.down = atoll(arg1); 
+					counters->fec.up = atoll(arg2); 
+				}
+				else if(strstr(name, "CRC:") == name){
+					counters->crc.down = atoll(arg1); 
+					counters->crc.up = atoll(arg2); 
+				}
 				DSLDEBUG("PARSED: name:%s, arg1:%s, arg2:%s\n", name, arg1, arg2); 
 			} break; 
 			default: {
@@ -325,6 +334,7 @@ void dslstats_to_blob_buffer(struct dsl_stats *self, struct blob_buf *b){
 	blobmsg_add_string(b, "traffic", self->traffic);
 	blobmsg_add_string(b, "status", self->status);
 	blobmsg_add_string(b, "link_power_state", self->link_power_state);
+	blobmsg_add_string(b, "line_status", self->line_status);
 	blobmsg_add_u8(b, "trellis_up", self->trellis.up); 
 	blobmsg_add_u8(b, "trellis_down", self->trellis.down); 
 	blobmsg_add_u32(b, "snr_up_x100", self->snr.up * 100); 
@@ -390,6 +400,10 @@ void dslstats_to_blob_buffer(struct dsl_stats *self, struct blob_buf *b){
 	//counter = &self->counters[DSLSTATS_COUNTER_TOTALS]; 
 	array = blobmsg_open_table(b, "counters"); 
 		obj = blobmsg_open_table(b, "totals"); 
+			blobmsg_add_u64(b, "fec_down", counter->fec.down); 
+			blobmsg_add_u64(b, "fec_up", counter->fec.up); 
+			blobmsg_add_u64(b, "crc_down", counter->crc.down); 
+			blobmsg_add_u64(b, "crc_up", counter->crc.up); 
 			blobmsg_add_u64(b, "es_down", counter->es.down); 
 			blobmsg_add_u64(b, "es_up", counter->es.up); 
 			blobmsg_add_u64(b, "ses_down", counter->ses.down); 

@@ -51,7 +51,8 @@
 					"dhcp6_leases",
 					"arp_table",
 					"routes",
-					"routes6"
+					"routes6",
+					"dslstats"
 				],
 				"luci2.system": [
 					"diskfree",
@@ -325,7 +326,8 @@
 					"switch_list",
 					"switch_info",
 					"switch_status",
-					"device_list"
+					"device_list", 
+					"dslstats"
 				],
 				"luci2.network.bwmon": [
 					"devices",
