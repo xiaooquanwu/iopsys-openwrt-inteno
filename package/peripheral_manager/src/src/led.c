@@ -476,9 +476,8 @@ static void flash_handler(struct uloop_timeout *timeout)
 							led->drv->func->set_state(led->drv, slow);
 						}
 					}else{
-						;
-//						if (led->drv)
-//							led->drv->func->set_state(led->drv, led->state);
+						if (led->drv)
+							led->drv->func->set_state(led->drv, led->state);
 					}
 				}
 			}
