@@ -15,6 +15,7 @@ export CONF_BACKUP=
 export CONF_SELECTED_BACKUP=
 export CONF_UCI_BACKUP=
 export CONF_RESTORE=
+export CONF_PASSWORD=
 export NEED_IMAGE=
 export HELP=0
 export FORCE=0
@@ -36,7 +37,7 @@ while [ -n "$1" ]; do
 		-s|--create-backup-selected) export CONF_SELECTED_BACKUP="$2" NEED_IMAGE=1; shift;;
 		-u|--create-backup-uci) export CONF_UCI_BACKUP="$2" NEED_IMAGE=1; shift;;
 		-r|--restore-backup) export CONF_RESTORE="$2" NEED_IMAGE=1; shift;;
-		-p|--password) if [ "$2" = "" ]; then echo "Can not have empty password!"; exit 1; fi; export CONF_PASSWORD="$2"; shift;;
+		-p|--password) export CONF_PASSWORD="$2"; shift;;
 		-f) export CONF_IMAGE="$2"; shift;;
 		-F|--force) export FORCE=1;;
 		-h|--help) export HELP=1; break;;
@@ -349,6 +350,9 @@ do_save_conffiles_uci() {
 
 if [ -n "$CONF_BACKUP" ]; then
 	do_save_conffiles "$CONF_BACKUP"
+	if [ -n "$CONF_PASSWORD" ]; then 
+		openssl aes-256-cfb -a -salt -in "$CONF_BACKUP" -out "$CONF_BACKUP.enc" -pass pass:"$CONF_PASSWORD"
+	fi
 	exit $?
 fi
 
@@ -366,12 +370,12 @@ fi
 if [ -f "$CONF_RESTORE" ] || [ "$CONF_RESTORE" = "-" ]; then
 	[ "$VERBOSE" -gt 1 ] && TAR_V="v" || TAR_V=""
 	if [ -n "$CONF_PASSWORD" ]; then 
-		openssl des3 -d -in "$CONF_RESTORE" -out "$CONF_RESTORE.dec" -pass pass:"$CONF_PASSWORD"
+		openssl aes-256-cfb -a -d -in "$CONF_RESTORE" -out "$CONF_RESTORE.dec"  -pass pass:"$CONF_PASSWORD"
 		if [ $? -eq 0 ]; then
 			mv "$CONF_RESTORE.dec" "$CONF_RESTORE"
 		else 
 			echo "Could not decrypt backup!"
-			exit 1
+			exit $?
 		fi
 	fi
 	tar -C / -x${TAR_V}zf "$CONF_RESTORE"
