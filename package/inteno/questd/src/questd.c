@@ -1154,21 +1154,6 @@ quest_router_networks(struct ubus_context *ctx, struct ubus_object *obj,
 	return 0;
 }
 
-static int quest_router_dslstats(struct ubus_context *ctx, struct ubus_object *obj, 
-	struct ubus_request_data *req, const char *method, 
-	struct blob_attr *msg){
-	struct blob_attr *tb[__QUEST_MAX]; 
-	
-	blobmsg_parse(quest_policy, __QUEST_MAX, tb, blob_data(msg), blob_len(msg)); 
-	blob_buf_init(&bb, 0); 
-	
-	dslstats_load(&router.dslstats);
-	dslstats_to_blob_buffer(&router.dslstats, &bb); 
-	
-	ubus_send_reply(ctx, req, bb.head); 
-	return 0; 	
-}
-
 static int
 quest_router_clients(struct ubus_context *ctx, struct ubus_object *obj,
 		  struct ubus_request_data *req, const char *method,
@@ -1435,15 +1420,15 @@ quest_reload(struct ubus_context *ctx, struct ubus_object *obj,
 static struct ubus_method router_object_methods[] = {
 	UBUS_METHOD_NOARG("info", quest_router_info),
 	UBUS_METHOD("quest", quest_router_specific, quest_policy),
-	{ .name = "networks", .handler = quest_router_networks },
-	{ .name = "dslstats", .handler = quest_router_dslstats }, 
+	UBUS_METHOD_NOARG("networks", quest_router_networks),
+	UBUS_METHOD_NOARG("dslstats", dslstats_rpc), 
 	UBUS_METHOD("client", quest_router_network_clients, network_policy),
-	{ .name = "clients", .handler = quest_router_clients },
-	{ .name = "clients6", .handler = quest_router_clients6 },
-	{ .name = "connected", .handler = quest_router_connected_clients },
-	{ .name = "connected6", .handler = quest_router_connected_clients6 },
+	UBUS_METHOD_NOARG("clients", quest_router_clients),
+	UBUS_METHOD_NOARG("clients6", quest_router_clients6),
+	UBUS_METHOD_NOARG("connected", quest_router_connected_clients),
+	UBUS_METHOD_NOARG("connected6", quest_router_connected_clients6),
 	UBUS_METHOD("sta", quest_router_wireless_stas, wl_policy),
-	{ .name = "stas", .handler = quest_router_stas },
+	UBUS_METHOD_NOARG("stas", quest_router_stas),
 	UBUS_METHOD("ports", quest_router_ports, network_policy),
 	UBUS_METHOD("leases", quest_network_leases, network_policy),
 	UBUS_METHOD("host", quest_host_status, host_policy),
@@ -1526,7 +1511,6 @@ void *dump_router_info(void *arg)
 
 	jiffy_counts_t cur_jif, prev_jif;
 	
-	dslstats_init(&router.dslstats); 
 	
 	init_db_hw_config();
 	load_networks();

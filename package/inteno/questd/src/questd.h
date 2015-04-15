@@ -12,6 +12,14 @@
 
 #include <uci.h>
 
+
+#include <libubox/blobmsg.h>
+#include <libubox/uloop.h>
+#include <libubox/ustream.h>
+#include <libubox/utils.h>
+
+#include <libubus.h>
+
 #include "dslstats.h"
 
 #define MAX_VIF		8
@@ -110,7 +118,6 @@ typedef struct {
 	char uptime[64];
 	unsigned int procs;
 	unsigned int cpu;
-	DSLStats dslstats; 
 } Router;
 
 typedef struct {

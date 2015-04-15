@@ -73,3 +73,6 @@ typedef struct dsl_stats {
 void dslstats_init(struct dsl_stats *self); 
 void dslstats_load(struct dsl_stats *self); 
 void dslstats_to_blob_buffer(struct dsl_stats *self, struct blob_buf *b); 
+int dslstats_rpc(struct ubus_context *ctx, struct ubus_object *obj, 
+	struct ubus_request_data *req, const char *method, 
+	struct blob_attr *msg); 

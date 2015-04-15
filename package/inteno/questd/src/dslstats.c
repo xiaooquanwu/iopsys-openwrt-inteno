@@ -17,13 +17,6 @@
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <libubox/blobmsg.h>
-#include <libubox/uloop.h>
-#include <libubox/ustream.h>
-#include <libubox/utils.h>
-
-#include <libubus.h>
-
 #include "questd.h"
 
 #define DSLDEBUG(...) {} //printf(__VA_ARGS__)
@@ -335,4 +328,21 @@ void dslstats_to_blob_buffer(struct dsl_stats *self, struct blob_buf *b){
 	blobmsg_close_array(b, array); 
 	
 	blobmsg_close_table(b, t);
+}
+
+
+int dslstats_rpc(struct ubus_context *ctx, struct ubus_object *obj, 
+	struct ubus_request_data *req, const char *method, 
+	struct blob_attr *msg){
+	static struct blob_buf bb;
+	static struct dsl_stats dslstats;
+	
+	dslstats_init(&dslstats); 
+	blob_buf_init(&bb, 0); 
+	
+	dslstats_load(&dslstats);
+	dslstats_to_blob_buffer(&dslstats, &bb); 
+	
+	ubus_send_reply(ctx, req, bb.head); 
+	return 0; 	
 }
