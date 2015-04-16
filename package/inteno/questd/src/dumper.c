@@ -61,15 +61,6 @@ get_db_hw_value(char *opt, char **val)
 	*val = ptr.o->v.string;
 }
 
-void 
-remove_newline(char *buf)
-{
-	int len;
-	len = strlen(buf) - 1;
-	if (buf[len] == '\n') 
-		buf[len] = 0;
-}
-
 void
 get_jif_val(jiffy_counts_t *p_jif)
 {
