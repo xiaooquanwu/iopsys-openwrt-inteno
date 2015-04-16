@@ -223,6 +223,11 @@ pre.uci-changes del {
 	float: none;
 }
 
+.input-error {
+    border-color: #cf0000 !important;
+    box-shadow: 0 0 5px rgba(207, 0, 0, 0.4) !important;
+}
+
 @media (max-width: 767px) {
 	body {
 		font-size: 13px;

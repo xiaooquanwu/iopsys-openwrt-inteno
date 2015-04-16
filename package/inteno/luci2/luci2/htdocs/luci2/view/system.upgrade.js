@@ -209,10 +209,52 @@ L.ui.view.extend({
 	},
 
 	handleBackupDownload: function() {
-		var form = $('#btn_backup').parent();
-
-		form.find('[name=sessionid]').val(L.globals.sid);
-		form.submit();
+		L.ui.dialog(
+			L.tr('Save configuration to computer'), [
+				$('<label/>').text(L.tr("Please add a comment describing this configuration") + ": "),
+				$('<textarea>')
+					.addClass('form-control')
+					.attr("name", "comment")
+					.attr("placeholder", L.tr("Comments..")),
+				$('<label/>')
+					.text(L.tr("Create a password to protect your configuration: ")),
+				$('<br/>'), 
+				$('<label/>')
+					.text(L.tr("New password") + ": "),
+				$("<input/>")
+					.addClass("form-control") 
+					.attr("type", "password")
+					.attr("id", "backup_password"),
+				$('<label/>')
+					.text(L.tr("Re-type password") + ": "),
+				$("<input/>")
+					.addClass("form-control") 
+					.attr("type", "password")
+					.attr("id", "backup_password_repeat"),
+			], {
+				style: 'confirm',
+				confirm: function() {
+					var form = $('#btn_backup').parent();
+					var password = $('#backup_password').val(); 
+					var password2 = $('#backup_password_repeat').val(); 
+					
+					if(password != password2){
+						$("#backup_password").addClass("input-error"); 
+						$("#backup_password_repeat").addClass("input-error");
+						return 1; 
+					} else {
+						$("#backup_password").removeClass("input-error"); 
+						$("#backup_password_repeat").removeClass("input-error");
+					}
+					
+					form.find('[name=sessionid]').val(L.globals.sid);
+					form.find('[name=password]').val(password); 
+					form.find('[name=password2]').val(password2); 
+					form.submit();
+				}
+			}
+		);
+		
 	},
 
 	handleReset: function() {
