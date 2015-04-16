@@ -52,6 +52,7 @@ typedef struct dsl_bearer {
 
 typedef struct dsl_counters {
 	UpDown es, ses, uas; 
+	UpDown fec, crc; 
 } DSLCounters; 
 
 typedef struct dsl_stats {
@@ -59,6 +60,7 @@ typedef struct dsl_stats {
 	char *traffic;
 	char *status; 
 	char *link_power_state; 
+	char *line_status; 
 	char *vdsl2_profile; 
 	UpDown trellis; 
 	UpDown snr; 
@@ -71,3 +73,6 @@ typedef struct dsl_stats {
 void dslstats_init(struct dsl_stats *self); 
 void dslstats_load(struct dsl_stats *self); 
 void dslstats_to_blob_buffer(struct dsl_stats *self, struct blob_buf *b); 
+int dslstats_rpc(struct ubus_context *ctx, struct ubus_object *obj, 
+	struct ubus_request_data *req, const char *method, 
+	struct blob_attr *msg); 

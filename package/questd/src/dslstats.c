@@ -17,13 +17,6 @@
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <libubox/blobmsg.h>
-#include <libubox/uloop.h>
-#include <libubox/ustream.h>
-#include <libubox/utils.h>
-
-#include <libubus.h>
-
 #include "questd.h"
 
 #define DSLDEBUG(...) {} //printf(__VA_ARGS__)
@@ -34,13 +27,8 @@ void dslstats_init(struct dsl_stats *self){
 	self->traffic = ""; 
 	self->status = ""; 
 	self->link_power_state = ""; 
+	self->line_status = ""; 
 	self->vdsl2_profile = ""; 
-	/*self->snr = (UpDown){0,0}; 
-	self->pwr = (UpDown){0,0}; 
-	self->attn = (UpDown){0, 0}; 
-	self->max_rate = (UpDown){0,0}; 
-	self->msgc = (UpDown){0,0}; 
-	*/
 }
 
 void dslstats_load(struct dsl_stats *self){
@@ -103,7 +91,8 @@ void dslstats_load(struct dsl_stats *self){
 						else self->trellis.up = 0; 
 					}
 				}
-				else if(strstr(name, "Status") == name) self->status = strdup(arg1); 
+				else if(strstr(name, "Training Status") == name) self->status = strdup(arg1); 
+				else if(strstr(name, "Line Status") == name) self->line_status = strdup(arg1); 
 				else if(strstr(name, "Bearer") == name){
 					unsigned long id, up, down, ret; 
 					if((ret = sscanf(arg1, "%d, Upstream rate = %lu Kbps, Downstream rate = %lu Kbps", &id, &up, &down)) == 3){
@@ -229,6 +218,14 @@ void dslstats_load(struct dsl_stats *self){
 					counters->uas.down = atoll(arg1); 
 					counters->uas.up = atoll(arg2); 
 				}
+				else if(strstr(name, "FEC:") == name){
+					counters->fec.down = atoll(arg1); 
+					counters->fec.up = atoll(arg2); 
+				}
+				else if(strstr(name, "CRC:") == name){
+					counters->crc.down = atoll(arg1); 
+					counters->crc.up = atoll(arg2); 
+				}
 				DSLDEBUG("PARSED: name:%s, arg1:%s, arg2:%s\n", name, arg1, arg2); 
 			} break; 
 			default: {
@@ -238,80 +235,6 @@ void dslstats_load(struct dsl_stats *self){
 	}
 	
 	pclose(fp);
-	
-	/*
-	local xdsl = sys.exec("xdslctl info --stats")
-	local rv = { }
-
-	rv = {
-		mode	= xdsl:match("Mode:%s+(%S+%s+%S+%s+%S+)") or "",
-		traffic	= xdsl:match("TPS%S+:%s+(%S+)%s+%S+") or "",
-		status	= xdsl:match("Status:%s+(%S+)") or "",
-		lps	= xdsl:match("Link Power State:%s+(%S+)") or "",
-		trldn   = xdsl:match("Trellis:%s+%S+%s+/D:(%S+)%s+") or "",
-		trlup   = xdsl:match("Trellis:%s+U:(%S+)%s+%S+") or "",
-		snrdn   = xdsl:match("SNR%s+%S+%s+(%S+)%s+%S+") or 0,
-		snrup   = xdsl:match("SNR%s+%S+%s+%S+%s+(%S+)") or 0,
-		atndn   = xdsl:match("Attn%S+%s+(%S+)%s+%S+") or 0,
-		atnup   = xdsl:match("Attn%S+%s+%S+%s+(%S+)") or 0,
-		opwdn	= xdsl:match("Pwr%S+%s+(%S+)%s+%S+") or 0,
-		opwup	= xdsl:match("Pwr%S+%s+%S+%s+(%S+)") or 0,
-		artdn	= xdsl:match("Max:%s+%S+%s+%S+%s+%S+%s+%d+%s+%S+%s+Downstream rate = (%d+)%s+%S+") or 0,
-		artup	= xdsl:match("Max:%s+Upstream rate = (%d+)%s+") or 0,
-		rtedn	= xdsl:match("Bearer:%s+%d+%S+%s+%S+%s+%S+%s+%S+%s+%d+%s+%S+%s+Downstream rate = (%d+)%s+%S+") or 0,
-		rteup	= xdsl:match("Bearer:%s+%d+%S+%s+Upstream rate = (%d+)%s+") or 0,
-		msgdn   = xdsl:match("MSGc:%s+(%S+)%s+%S+") or 0,
-		msgup   = xdsl:match("MSGc:%s+%S+%s+(%S+)") or 0,
-		Bdn	= xdsl:match("B:%s+(%S+)%s+%S+") or 0,
-		Bup	= xdsl:match("B:%s+%S+%s+(%S+)") or 0,
-		Mdn	= xdsl:match("M:%s+(%S+)%s+%S+") or 0,
-		Mup	= xdsl:match("M:%s+%S+%s+(%S+)") or 0,
-		Tdn	= xdsl:match("T:%s+(%S+)%s+%S+") or 0,
-		Tup	= xdsl:match("T:%s+%S+%s+(%S+)") or 0,
-		Rdn	= xdsl:match("R:%s+(%S+)%s+%S+") or 0,
-		Rup	= xdsl:match("R:%s+%S+%s+(%S+)") or 0,
-		Sdn	= xdsl:match("S:%s+(%S+)%s+%S+") or 0,
-		Sup	= xdsl:match("S:%s+%S+%s+(%S+)") or 0,
-		Ldn	= xdsl:match("L:%s+(%S+)%s+%S+") or 0,
-		Lup	= xdsl:match("L:%s+%S+%s+(%S+)") or 0,
-		Ddn	= xdsl:match("D:%s+(%S+)%s+%S+") or 0,
-		Dup	= xdsl:match("D:%s+%S+%s+(%S+)") or 0,
-		dlydn	= xdsl:match("delay:%s+(%S+)%s+%S+") or 0,
-		dlyup	= xdsl:match("delay:%s+%S+%s+(%S+)") or 0,
-		inpdn	= xdsl:match("INP:%s+(%S+)%s+%S+") or 0,
-		inpup	= xdsl:match("INP:%s+%S+%s+(%S+)") or 0,
-		frmdn	= xdsl:match("SF:%s+(%S+)%s+%S+") or 0,
-		frmup	= xdsl:match("SF:%s+%S+%s+(%S+)") or 0,
-		sprdn	= xdsl:match("SFErr:%s+(%S+)%s+%S+") or 0,
-		sprup	= xdsl:match("SFErr:%s+%S+%s+(%S+)") or 0,
-		rswdn	= xdsl:match("RS:%s+(%S+)%s+%S+") or 0,
-		rswup	= xdsl:match("RS:%s+%S+%s+(%S+)") or 0,
-		rscdn	= xdsl:match("RSCorr:%s+(%S+)%s+%S+") or 0,
-		rscup	= xdsl:match("RSCorr:%s+%S+%s+(%S+)") or 0,
-		rsudn	= xdsl:match("RSUnCorr:%s+(%S+)%s+%S+") or 0,
-		rsuup	= xdsl:match("RSUnCorr:%s+%S+%s+(%S+)") or 0,
-		hecdn	= xdsl:match("HEC:%s+(%S+)%s+%S+") or 0,
-		hecup	= xdsl:match("HEC:%s+%S+%s+(%S+)") or 0,
-		ocddn	= xdsl:match("OCD:%s+(%S+)%s+%S+") or 0,
-		ocdup	= xdsl:match("OCD:%s+%S+%s+(%S+)") or 0,
-		lcddn	= xdsl:match("LCD:%s+(%S+)%s+%S+") or 0,
-		lcdup	= xdsl:match("LCD:%s+%S+%s+(%S+)") or 0,
-		tcldn	= xdsl:match("Total Cells:%s+(%S+)%s+%S+") or 0,
-		tclup	= xdsl:match("Total Cells:%s+%S+%s+(%S+)") or 0,
-		dcldn	= xdsl:match("Data Cells:%s+(%S+)%s+%S+") or 0,
-		dclup	= xdsl:match("Data Cells:%s+%S+%s+(%S+)") or 0,
-		berdn	= xdsl:match("Bit Errors:%s+(%S+)%s+%S+") or 0,
-		berup	= xdsl:match("Bit Errors:%s+%S+%s+(%S+)") or 0,
-		tesdn	= xdsl:match("ES:%s+(%S+)%s+%S+") or 0,
-		tesup	= xdsl:match("ES:%s+%S+%s+(%S+)") or 0,
-		tssdn	= xdsl:match("SES:%s+(%S+)%s+%S+") or 0,
-		tssup	= xdsl:match("SES:%s+%S+%s+(%S+)") or 0,
-		tuadn	= xdsl:match("UAS:%s+(%S+)%s+%S+") or 0,
-		tuaup	= xdsl:match("UAS:%s+%S+%s+(%S+)") or 0
-	}
-	
-	return rv
-	*/
 }
 
 void dslstats_to_blob_buffer(struct dsl_stats *self, struct blob_buf *b){
@@ -325,6 +248,7 @@ void dslstats_to_blob_buffer(struct dsl_stats *self, struct blob_buf *b){
 	blobmsg_add_string(b, "traffic", self->traffic);
 	blobmsg_add_string(b, "status", self->status);
 	blobmsg_add_string(b, "link_power_state", self->link_power_state);
+	blobmsg_add_string(b, "line_status", self->line_status);
 	blobmsg_add_u8(b, "trellis_up", self->trellis.up); 
 	blobmsg_add_u8(b, "trellis_down", self->trellis.down); 
 	blobmsg_add_u32(b, "snr_up_x100", self->snr.up * 100); 
@@ -390,6 +314,10 @@ void dslstats_to_blob_buffer(struct dsl_stats *self, struct blob_buf *b){
 	//counter = &self->counters[DSLSTATS_COUNTER_TOTALS]; 
 	array = blobmsg_open_table(b, "counters"); 
 		obj = blobmsg_open_table(b, "totals"); 
+			blobmsg_add_u64(b, "fec_down", counter->fec.down); 
+			blobmsg_add_u64(b, "fec_up", counter->fec.up); 
+			blobmsg_add_u64(b, "crc_down", counter->crc.down); 
+			blobmsg_add_u64(b, "crc_up", counter->crc.up); 
 			blobmsg_add_u64(b, "es_down", counter->es.down); 
 			blobmsg_add_u64(b, "es_up", counter->es.up); 
 			blobmsg_add_u64(b, "ses_down", counter->ses.down); 
@@ -400,4 +328,21 @@ void dslstats_to_blob_buffer(struct dsl_stats *self, struct blob_buf *b){
 	blobmsg_close_array(b, array); 
 	
 	blobmsg_close_table(b, t);
+}
+
+
+int dslstats_rpc(struct ubus_context *ctx, struct ubus_object *obj, 
+	struct ubus_request_data *req, const char *method, 
+	struct blob_attr *msg){
+	static struct blob_buf bb;
+	static struct dsl_stats dslstats;
+	
+	dslstats_init(&dslstats); 
+	blob_buf_init(&bb, 0); 
+	
+	dslstats_load(&dslstats);
+	dslstats_to_blob_buffer(&dslstats, &bb); 
+	
+	ubus_send_reply(ctx, req, bb.head); 
+	return 0; 	
 }
