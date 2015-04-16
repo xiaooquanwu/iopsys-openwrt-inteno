@@ -21,7 +21,7 @@ config board 'board'
 config wifi-chip '435f'
 	option bands 'b'
 
-config wifi-chip '4360'
+config wifi-chip '43a2'
 	option bands 'a'
 
 ###############################################################################
