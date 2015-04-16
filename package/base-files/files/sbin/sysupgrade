@@ -34,7 +34,7 @@ while [ -n "$1" ]; do
 		-s|--create-backup-selected) export CONF_SELECTED_BACKUP="$2" NEED_IMAGE=1; shift;;
 		-u|--create-backup-uci) export CONF_UCI_BACKUP="$2" NEED_IMAGE=1; shift;;
 		-r|--restore-backup) export CONF_RESTORE="$2" NEED_IMAGE=1; shift;;
-		-p|--password) export CONF_PASSWORD="$2"; shift;;
+		-p|--password) if [ "$2" = "" ]; then exit 1; fi; export CONF_PASSWORD="$2"; shift;;
 		-f) export CONF_IMAGE="$2"; shift;;
 		-F|--force) export FORCE=1;;
 		-h|--help) export HELP=1; break;;
