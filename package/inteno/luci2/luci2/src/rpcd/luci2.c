@@ -84,6 +84,15 @@ static const struct blobmsg_policy rpc_data_policy[__RPC_D_MAX] = {
 };
 
 enum {
+	RPC_BACKUP_PASSWORD,
+	__RPC_BACKUP_MAX
+};
+
+static const struct blobmsg_policy rpc_backup_policy[__RPC_BACKUP_MAX] = {
+	[RPC_BACKUP_PASSWORD]   = { .name = "password",  .type = BLOBMSG_TYPE_STRING },
+};
+
+enum {
 	RPC_K_KEYS,
 	__RPC_K_MAX
 };
@@ -1014,8 +1023,22 @@ rpc_luci2_backup_restore(struct ubus_context *ctx, struct ubus_object *obj,
                          struct ubus_request_data *req, const char *method,
                          struct blob_attr *msg)
 {
-	const char *cmd[4] = { "sysupgrade", "--restore-backup",
-	                       "/tmp/backup.tar.gz", NULL };
+	struct blob_attr *tb[__RPC_BACKUP_MAX];
+	
+	blobmsg_parse(rpc_backup_policy, __RPC_BACKUP_MAX, tb,
+	              blob_data(msg), blob_len(msg));
+	
+	struct blob_attr *pass = tb[RPC_BACKUP_PASSWORD]; 
+	
+	if (pass && blobmsg_data_len(pass) > 0 && blobmsg_data(pass) && strlen(blobmsg_data(pass)) > 0){
+		const char *cmd[] = { "sysupgrade", "--restore-backup",
+	                       "/tmp/backup.tar.gz", "--password", blobmsg_data(pass), NULL };
+
+		return ops->exec(cmd, NULL, NULL, NULL, NULL, NULL, ctx, req);
+	} 
+	
+	const char *cmd[] = { "sysupgrade", "--restore-backup",
+						   "/tmp/backup.tar.gz", NULL };
 
 	return ops->exec(cmd, NULL, NULL, NULL, NULL, NULL, ctx, req);
 }
@@ -2777,7 +2800,8 @@ rpc_luci2_api_init(const struct rpc_daemon_ops *o, struct ubus_context *ctx)
 		UBUS_METHOD("upgrade_start",      rpc_luci2_upgrade_start,
 		                                  rpc_upgrade_policy),
 		UBUS_METHOD_NOARG("upgrade_clean", rpc_luci2_upgrade_clean),
-		UBUS_METHOD_NOARG("backup_restore", rpc_luci2_backup_restore),
+		UBUS_METHOD("backup_restore", 		rpc_luci2_backup_restore, 
+											rpc_backup_policy),
 		UBUS_METHOD_NOARG("backup_clean", rpc_luci2_backup_clean),
 		UBUS_METHOD_NOARG("backup_config_get", rpc_luci2_backup_config_get),
 		UBUS_METHOD("backup_config_set",  rpc_luci2_backup_config_set,

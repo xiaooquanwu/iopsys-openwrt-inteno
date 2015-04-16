@@ -582,7 +582,7 @@ main_backup(int argc, char **argv)
 	char datestr[16] = { 0 };
 	char hostname[64] = { 0 };
 	char *fields[] = { "sessionid", NULL };
-
+	
 	if (!postdecode(fields, 1) || !session_access(fields[1], "backup", "read"))
 		return failure(0, "Backup permission denied");
 

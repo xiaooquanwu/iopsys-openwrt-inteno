@@ -20,7 +20,8 @@ L.ui.view.extend({
 
 	restoreBackup: L.rpc.declare({
 		object: 'luci2.system',
-		method: 'backup_restore'
+		method: 'backup_restore', 
+		params: [ 'password' ]
 	}),
 
 	cleanBackup: L.rpc.declare({
@@ -149,10 +150,13 @@ L.ui.view.extend({
 						.append(info.checksum))
 					.append($('<li />')
 						.append($('<strong />').text(L.tr('Size') + ': '))
-						.append('%1024mB'.format(info.size)))
+						.append('%1024mB'.format(info.size))),
+				$('<label/>').text(L.tr("Password") + ": ")
+						.append($("<input class='form-element' type='password' id='backup_password'/>"))
 			], {
 				style: 'confirm',
 				confirm: function() {
+					self.backup_password = $('#backup_password').val(); 
 					self.handleBackupRestore();
 				}
 			}
@@ -161,7 +165,7 @@ L.ui.view.extend({
 
 	handleBackupRestore: function() {
 		var self = this;
-		self.restoreBackup().then(function(res) {
+		self.restoreBackup(self.backup_password).then(function(res) {
 			if (res.code == 0)
 			{
 				L.ui.dialog(
