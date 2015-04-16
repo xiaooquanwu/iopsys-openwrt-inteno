@@ -249,9 +249,8 @@ L.ui.view.extend({
 					
 					form.find('[name=sessionid]').val(L.globals.sid);
 					form.find('[name=password]').val(password); 
+					form.find('[name=password2]').val(password2); 
 					form.submit();
-					
-					L.ui.dialog(false);
 				}
 			}
 		);
