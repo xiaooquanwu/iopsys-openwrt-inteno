@@ -34,7 +34,7 @@ while [ -n "$1" ]; do
 		-s|--create-backup-selected) export CONF_SELECTED_BACKUP="$2" NEED_IMAGE=1; shift;;
 		-u|--create-backup-uci) export CONF_UCI_BACKUP="$2" NEED_IMAGE=1; shift;;
 		-r|--restore-backup) export CONF_RESTORE="$2" NEED_IMAGE=1; shift;;
-		-p|--password) if [ "$2" = "" ]; then echo "Can not have empty password!"; exit 1; fi; export CONF_PASSWORD="$2"; shift;;
+		-p|--password) export CONF_PASSWORD="$2"; shift;;
 		-f) export CONF_IMAGE="$2"; shift;;
 		-F|--force) export FORCE=1;;
 		-h|--help) export HELP=1; break;;
@@ -223,22 +223,7 @@ do_save_conffiles() {
 
 	v "Saving config files ..."
 	[ "$VERBOSE" -gt 1 ] && TAR_V="v" || TAR_V=""
-	
-	# do special case for stdout target
-	if [ "$conf_tar" = "-" ]; then 
-		if [ -n "$CONF_PASSWORD" ]; then 
-			tar c${TAR_V}zf "$conf_tar" -T "$CONFFILES" | openssl aes-256-cfb -a -salt -pass pass:"$CONF_PASSWORD" 2>/dev/null
-		else 
-			tar c${TAR_V}zf "$conf_tar" -T "$CONFFILES" 2>/dev/null
-		fi
-	else # output is a file
-		tar c${TAR_V}zf "$conf_tar" -T "$CONFFILES" 2>/dev/null
-		
-		if [ -n "$CONF_PASSWORD" ]; then 
-			openssl aes-256-cfb -a -salt -in "$conf_tar" -out "$conf_tar.enc" -pass pass:"$CONF_PASSWORD"
-			mv "$conf_tar.enc" "$conf_tar"
-		fi
-	fi
+
 	handle_etc 0
 }
 
@@ -291,6 +276,10 @@ do_save_conffiles_uci() {
 
 if [ -n "$CONF_BACKUP" ]; then
 	do_save_conffiles "$CONF_BACKUP"
+	if [ -n "$CONF_PASSWORD" ]; then 
+		openssl aes-256-cfb -a -salt -in "$CONF_BACKUP" -out "$CONF_BACKUP.enc" -pass pass:"$CONF_PASSWORD"
+		mv "$CONF_BACKUP.enc" "$CONF_BACKUP"
+	fi
 	exit $?
 fi
 
@@ -312,7 +301,7 @@ if [ -f "$CONF_RESTORE" ] || [ "$CONF_RESTORE" = "-" ]; then
 			mv "$CONF_RESTORE.dec" "$CONF_RESTORE"
 		else 
 			echo "Could not decrypt backup!"
-			exit 1
+			exit $?
 		fi
 	fi
 	tar -C / -x${TAR_V}zf "$CONF_RESTORE"
