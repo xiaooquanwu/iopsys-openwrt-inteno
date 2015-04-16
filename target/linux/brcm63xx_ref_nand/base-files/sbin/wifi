@@ -1076,10 +1076,13 @@ wifi_detect() {
 			hwmode="auto"
 			if $(is5G $pcid); then
 				band="a"
-				bwidth="80"
+				bwidth="40"
 				bno=5
 				doth="1"
-				$(isAC $pcid) && hwmode="11ac"
+				$(isAC $pcid) && {
+					hwmode="11ac"
+					bwidth="80"
+				}
 			else
 				band="b"
 				bwidth="20"
