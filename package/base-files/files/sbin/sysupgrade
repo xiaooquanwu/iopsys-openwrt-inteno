@@ -1,27 +1,28 @@
 #!/bin/sh
 . /lib/functions.sh
-. /lib/functions/system.sh
 
 # initialize defaults
 RAMFS_COPY_BIN=""	# extra programs for temporary ramfs root
 RAMFS_COPY_DATA=""	# extra data files
-export MTD_CONFIG_ARGS=""
 export INTERACTIVE=0
 export VERBOSE=1
 export SAVE_CONFIG=1
 export SAVE_OVERLAY=0
 export DELAY=
 export CONF_IMAGE=
-export CONF_BACKUP_LIST=0
 export CONF_BACKUP=
+export CONF_SELECTED_BACKUP=
+export CONF_UCI_BACKUP=
 export CONF_RESTORE=
+export CONF_PASSWORD=
 export NEED_IMAGE=
 export HELP=0
 export FORCE=0
-export TEST=0
+export PROVFILE=provisioning.conf
+export TMPDIR=/tmp
 
 # parse options
-while [ -n "$1" ]; do
+while [ -n "$1" ]; do 
 	case "$1" in
 		-i) export INTERACTIVE=1;;
 		-d) export DELAY="$2"; shift;;
@@ -30,11 +31,12 @@ while [ -n "$1" ]; do
 		-n) export SAVE_CONFIG=0;;
 		-c) export SAVE_OVERLAY=1;;
 		-b|--create-backup) export CONF_BACKUP="$2" NEED_IMAGE=1; shift;;
+		-s|--create-backup-selected) export CONF_SELECTED_BACKUP="$2" NEED_IMAGE=1; shift;;
+		-u|--create-backup-uci) export CONF_UCI_BACKUP="$2" NEED_IMAGE=1; shift;;
 		-r|--restore-backup) export CONF_RESTORE="$2" NEED_IMAGE=1; shift;;
-		-l|--list-backup) export CONF_BACKUP_LIST=1; break;;
+		-p|--password) export CONF_PASSWORD="$2"; shift;;
 		-f) export CONF_IMAGE="$2"; shift;;
 		-F|--force) export FORCE=1;;
-		-T|--test) export TEST=1;;
 		-h|--help) export HELP=1; break;;
 		-*)
 			echo "Invalid option: $1"
@@ -50,6 +52,12 @@ export CONF_TAR=/tmp/sysupgrade.tgz
 
 export ARGV="$*"
 export ARGC="$#"
+##always add complete path to argument and move to / directory
+
+if [ $(dirname $ARGV) == "." ]; then 
+  ARGV="$PWD/`basename $ARGV`"
+fi
+cd /
 
 [ -z "$ARGV" -a -z "$NEED_IMAGE" -o $HELP -gt 0 ] && {
 	cat <<EOF
@@ -62,8 +70,6 @@ upgrade-option:
 	-i           interactive mode
 	-c           attempt to preserve all changed files in /etc/
 	-n           do not save configuration over reflash
-	-T | --test
-	             Verify image and config .tar.gz but do not actually flash.
 	-F | --force
 	             Flash image even if image checks fail, this is dangerous!
 	-q           less verbose
@@ -75,14 +81,18 @@ backup-command:
 	             create .tar.gz of files specified in sysupgrade.conf
 	             then exit. Does not flash an image. If file is '-',
 	             i.e. stdout, verbosity is set to 0 (i.e. quiet).
+	-s | --create-backup-selected <file>
+	             create .tar.gz of selected services/settings in /etc/config/backup
+	             then exit. Does not flash an image. If file is '-',
+	             i.e. stdout, verbosity is set to 0 (i.e. quiet).
 	-r | --restore-backup <file>
 	             restore a .tar.gz created with sysupgrade -b
 	             then exit. Does not flash an image. If file is '-',
 	             the archive is read from stdin.
-	-l | --list-backup
-	             list the files that would be backed up when calling
-	             sysupgrade -b. Does not create a backup file.
-
+	-u| --create-backup-uci <file>  create .tar.gz of uci export command
+	             then exit. Does not flash an image. If file is '-',
+	             i.e. stdout, verbosity is set to 0 (i.e. quiet).
+	-p| --password <pass> specify backup file password. 
 EOF
 	exit 1
 }
@@ -97,6 +107,7 @@ EOF
 
 # prevent messages from clobbering the tarball when using stdout
 [ "$CONF_BACKUP" = "-" ] && export VERBOSE=0
+[ "$CONF_SELECTED_BACKUP" = "-" ] && export VERBOSE=0
 
 add_uci_conffiles() {
 	local file="$1"
@@ -118,6 +129,24 @@ add_overlayfiles() {
 	return 0
 }
 
+save_selected() {
+	local config="$1"
+	config_get service services $config
+	if [ "$service" == "1" ]; then
+		config_get file "$config" file
+		for f in $file; do
+			echo $f >> /tmp/selected_backup_files
+		done
+	fi
+}
+
+add_selected_conffiles() {
+	local file="$1"
+	config_load backup
+	config_foreach save_selected service
+	return 0
+}
+
 # hooks
 sysupgrade_image_check="platform_check_image"
 [ $SAVE_OVERLAY = 0 -o ! -d /overlay/etc ] && \
@@ -126,10 +155,63 @@ sysupgrade_image_check="platform_check_image"
 
 include /lib/upgrade
 
-[ "$1" = "nand" ] && nand_upgrade_stage2 $@
+handle_etc() {
+	local BMAC=$(cat /proc/nvram/BaseMacAddr | tr '[a-z]' '[A-Z]')
+	BMAC=${BMAC// /}
+	local MAC=$(printf "%X\n" $((0x$BMAC)))
+	local BSSID=$(printf "%X\n" $((0x$BMAC + 2)))
+	local WPAKEY=$(cat /proc/nvram/WpaKey)
+        local SERIALNR=$(cat /proc/nvram/SerialNumber)
+        local HWVER=$(db get hw.board.hardwareVersion)
+        local RMODEL=$(db get hw.board.routerModel)
+        local DESKEY=$(db get hw.board.desKey)
+
+	local oid=${BMAC:0:6}
+	local mac=$BMAC
+	local mac2=${MAC:8:2}
+	local mac4=${MAC:6:4}
+	local mac6=${MAC:4:6}
+	local bssid=$BSSID
+	local bssid2=${BSSID:8:2}
+	local bssid4=${BSSID:6:4}
+	local bssid6=${BSSID:4:6}
+	local wpakey=$WPAKEY
+	local hardwareid=$HWVER-$(echo $RMODEL | sed -r 's;.+-(.+);\1;')
+
+	local configs="passwords network wireless system cwmp provisioning"
+
+	if [ "$1" == "1" ]; then
+		mv /etc/config/broadcom /tmp/etc_broadcom 2>/dev/null
+		for config in $configs; do
+			if [ -f /etc/config/$config ]; then
+				cp /etc/config/$config /tmp/etc_$config
+				sed -i "s/$mac6/\$MAC6/g" /etc/config/$config
+				sed -i "s/$mac4/\$MAC4/g" /etc/config/$config
+				#sed -i "s/$mac2/\$MAC2/g" /etc/config/$config
+				sed -i "s/$mac/\$MAC/g" /etc/config/$config
+				sed -i "s/$bssid6/\$BSSID6/g" /etc/config/$config
+				sed -i "s/$bssid4/\$BSSID4/g" /etc/config/$config
+				#sed -i "s/$bssid2/\$BSSID2/g" /etc/config/$config
+				sed -i "s/$bssid/\$BSSID/g" /etc/config/$config
+				sed -i "s/$wpakey/\$WPAKEY/g" /etc/config/$config
+				sed -i "s/$DESKEY/\$DESKEY/g" /etc/config/$config
+				sed -i "s/$SERIALNR/\$SER/g" /etc/config/$config
+				[ "$config" == "cwmp" ] && sed -i "s/$oid/\$OUI/g" /etc/config/$config
+				#sed -i "s/$hardwareid/\$HARDWAREID/g" /etc/config/$config
+			fi
+		done
+	else
+		for config in $configs; do
+			mv /tmp/etc_$config /etc/config/$config 2>/dev/null
+		done
+		mv /tmp/etc_broadcom /etc/config/broadcom 2>/dev/null
+	fi
+}
 
 do_save_conffiles() {
 	local conf_tar="${1:-$CONF_TAR}"
+
+	handle_etc 1
 
 	[ -z "$(rootfs_type)" ] && {
 		echo "Cannot save config while running from ramdisk."
@@ -139,32 +221,90 @@ do_save_conffiles() {
 	run_hooks "$CONFFILES" $sysupgrade_init_conffiles
 	ask_bool 0 "Edit config file list" && vi "$CONFFILES"
 
-	v "Saving config files..."
+	v "Saving config files ..."
 	[ "$VERBOSE" -gt 1 ] && TAR_V="v" || TAR_V=""
 	tar c${TAR_V}zf "$conf_tar" -T "$CONFFILES" 2>/dev/null
 
-	rm -f "$CONFFILES"
+	handle_etc 0
 }
 
-if [ $CONF_BACKUP_LIST -eq 1 ]; then
-	add_uci_conffiles "$CONFFILES"
-	cat "$CONFFILES"
-	rm -f "$CONFFILES"
-	exit 0
-fi
+do_save_selected_conffiles() {
+	local conf_tar="${1:-$CONF_TAR}"
+
+	handle_etc 1
+
+	add_selected_conffiles
+
+	v "Saving config files ..."
+	[ "$VERBOSE" -gt 1 ] && TAR_V="v" || TAR_V=""
+
+	if [ -f /tmp/backup_target_mntdir ]; then
+		local mntdir="$(cat /tmp/backup_target_mntdir)"
+		local btgz="backup-$(cat /proc/sys/kernel/hostname)-$(date +%Y-%m-%d).tar.gz"
+		if [ -n "$mntdir" ] && [ "$mntdir" != "/mnt/" ] && [ -d $mntdir ]; then
+			tar c${TAR_V}z "$conf_tar" -T /tmp/selected_backup_files -f $mntdir$btgz 2>/dev/null
+		fi
+		rm -f /tmp/backup_target_mntdir
+	else
+		tar c${TAR_V}zf "$conf_tar" -T /tmp/selected_backup_files 2>/dev/null
+	fi
+	rm -f /tmp/selected_backup_files
+
+	handle_etc 0
+}
+
+do_save_conffiles_uci() {
+	local conf_tar="${1:-$CONF_TAR}"
+
+	handle_etc 1
+
+	[ -z "$(rootfs_type)" ] && {
+		echo "Cannot save config while running from ramdisk."
+		ask_bool 0 "Abort" && exit
+		return 0
+	}
+	uci export > $TMPDIR/$PROVFILE
+	
+
+	v "Saving UCI export ..."
+	[ "$VERBOSE" -gt 1 ] && TAR_V="v" || TAR_V=""
+	tar c${TAR_V}zf "$conf_tar" -C $TMPDIR $PROVFILE 2>/dev/null
+	rm -rf $TMPDIR/$PROVFILE
+
+	handle_etc 0
+}
+
 
 if [ -n "$CONF_BACKUP" ]; then
 	do_save_conffiles "$CONF_BACKUP"
+	if [ -n "$CONF_PASSWORD" ]; then 
+		openssl aes-256-cfb -a -salt -in "$CONF_BACKUP" -out "$CONF_BACKUP.enc" -pass pass:"$CONF_PASSWORD"
+		mv "$CONF_BACKUP.enc" "$CONF_BACKUP"
+	fi
 	exit $?
 fi
 
-if [ -n "$CONF_RESTORE" ]; then
-	if [ "$CONF_RESTORE" != "-" ] && [ ! -f "$CONF_RESTORE" ]; then
-		echo "Backup archive '$CONF_RESTORE' not found."
-		exit 1
-	fi
+if [ -n "$CONF_SELECTED_BACKUP" ]; then
+	do_save_selected_conffiles "$CONF_SELECTED_BACKUP"
+	exit $?
+fi
 
+if [ -n "$CONF_UCI_BACKUP" ]; then
+	do_save_conffiles_uci "$CONF_UCI_BACKUP"
+	exit $?
+fi
+
+if [ -f "$CONF_RESTORE" ] || [ "$CONF_RESTORE" = "-" ]; then
 	[ "$VERBOSE" -gt 1 ] && TAR_V="v" || TAR_V=""
+	if [ -n "$CONF_PASSWORD" ]; then 
+		openssl aes-256-cfb -a -d -in "$CONF_RESTORE" -out "$CONF_RESTORE.dec"  -pass pass:"$CONF_PASSWORD"
+		if [ $? -eq 0 ]; then
+			mv "$CONF_RESTORE.dec" "$CONF_RESTORE"
+		else 
+			echo "Could not decrypt backup!"
+			exit $?
+		fi
+	fi
 	tar -C / -x${TAR_V}zf "$CONF_RESTORE"
 	exit $?
 fi
@@ -198,29 +338,20 @@ if [ -n "$CONF_IMAGE" ]; then
 	get_image "$CONF_IMAGE" "cat" > "$CONF_TAR"
 	export SAVE_CONFIG=1
 elif ask_bool $SAVE_CONFIG "Keep config files over reflash"; then
-	[ $TEST -eq 1 ] || do_save_conffiles
+	do_save_conffiles
 	export SAVE_CONFIG=1
 else
 	export SAVE_CONFIG=0
 fi
 
-if [ $TEST -eq 1 ]; then
-	exit 0
-fi
-
 run_hooks "" $sysupgrade_pre_upgrade
 
-ubus call system upgrade
-touch /tmp/sysupgrade
+kill_remaining TERM
+sleep 3
+kill_remaining KILL
 
-if [ ! -f /tmp/failsafe ] ; then
-	kill_remaining TERM
-	sleep 3
-	kill_remaining KILL
-fi
-
-if [ -n "$(rootfs_type)" ]; then
-	v "Switching to ramdisk..."
+if [[ $(cat /tmp/IS_NAND) -eq 0 && -n "$(rootfs_type)" ]]; then
+	v "Switching to ramdisk ..."
 	run_ramfs '. /lib/functions.sh; include /lib/upgrade; do_upgrade'
 else
 	do_upgrade
