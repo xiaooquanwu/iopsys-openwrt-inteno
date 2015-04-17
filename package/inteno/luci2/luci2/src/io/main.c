@@ -571,21 +571,77 @@ main_upload(int argc, char *argv[])
 	return 0;
 }
 
+
+static int exec_command(const char *cmd, char **out){
+	FILE *fd; 
+	int buffer_size = 4096; 
+	char *data = malloc(buffer_size);
+	char *pdata = data; 
+	int c; 
+	
+	if ((fd = popen(cmd, "r"))) {
+		while((c = fgetc(fd)) != EOF){
+			*pdata = c;
+			pdata++;  
+			if(pdata == (data + buffer_size)){
+				size_t size = buffer_size; 
+				buffer_size += 4096; 
+				data = realloc(data, buffer_size); 
+				pdata = data + size; 
+			}
+		}
+		pclose(fd);
+	}
+	*out = data; 
+	return (int)(pdata - data); 
+}
+
 static int
 main_backup(int argc, char **argv)
 {
-	pid_t pid;
+	//pid_t pid;
 	time_t now;
-	int len;
+	/*int len;
 	int fds[2];
-	char buf[4096];
+	char buf[4096];*/
 	char datestr[16] = { 0 };
 	char hostname[64] = { 0 };
-	char *fields[] = { "sessionid", NULL };
+	char *fields[] = { "sessionid", NULL, "password", NULL };
 	
-	if (!postdecode(fields, 1) || !session_access(fields[1], "backup", "read"))
+	if (!postdecode(fields, 2) || !session_access(fields[1], "backup", "read"))
 		return failure(0, "Backup permission denied");
+	
+	now = time(NULL);
+	strftime(datestr, sizeof(datestr) - 1, "%Y-%m-%d", localtime(&now));
 
+	if (gethostname(hostname, sizeof(hostname) - 1))
+		sprintf(hostname, "OpenWrt");
+
+	printf("Status: 200 OK\r\n");
+	
+	char cmd[256]; 
+	char *data; 
+	
+	if(fields[3]){
+		snprintf(cmd, sizeof(cmd), "sysupgrade --create-backup - --password %s", fields[3]);
+	} else {
+		snprintf(cmd, sizeof(cmd), "sysupgrade --create-backup -");
+	} 
+	int size = exec_command(cmd, &data); 
+	if(size){
+		printf("Content-Type: application/x-targz\r\n");
+		printf("Content-Disposition: attachment; "
+			   "filename=\"backup-%s-%s.tar.gz\"\r\n\r\n", hostname, datestr);
+		
+		fwrite(data, size, 1, stdout);
+		fflush(stdout); 
+		free(data);
+	} else {
+		// TODO: make sure that we return some kind of error code so we can show it in the gui. 
+		// otherwise the form post just silently fails without showing this message!
+		printf("No data!\n"); 
+	}
+	/*
 	if (pipe(fds))
 		return failure(errno, "Failed to spawn pipe");
 
@@ -603,10 +659,14 @@ main_backup(int argc, char **argv)
 		close(fds[1]);
 
 		chdir("/");
-
-		execl("/sbin/sysupgrade", "/sbin/sysupgrade",
-		      "--create-backup", "-", NULL);
-
+		
+		if(fields[3]){
+			execl("/sbin/sysupgrade", "/sbin/sysupgrade",
+				  "--create-backup", "-", "--password", fields[3]	, NULL);
+		} else {
+			execl("/sbin/sysupgrade", "/sbin/sysupgrade",
+				  "--create-backup", "-", NULL);
+		} 
 		return -1;
 
 	default:
@@ -630,7 +690,8 @@ main_backup(int argc, char **argv)
 		close(fds[1]);
 
 		return 0;
-	}
+	}*/
+	return 0; 
 }
 
 int main(int argc, char **argv)
