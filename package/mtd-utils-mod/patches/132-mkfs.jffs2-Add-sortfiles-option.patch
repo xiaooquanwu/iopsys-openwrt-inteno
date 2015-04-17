@@ -1,0 +1,477 @@
+From 3c099b0d53cc1d168c5ccc219fa7e4d928eb9b9a Mon Sep 17 00:00:00 2001
+From: Mats Karrman <mats@southpole.se>
+Date: Fri, 17 Apr 2015 11:50:51 +0200
+Subject: [PATCH 3/3] mkfs.jffs2: Add sortfiles option.
+
+Due to JFFS2 garbage collection and wear leveling, the kernel and cfe
+files may be relocated. This causes problems for cfe.
+
+This is a TEMPORARY fix that makes it possible to allocate specified
+files to their own erase blocks thus making them less likely for
+garbage collection (however eventually the files wil be moved so this
+only postpones the problem).
+---
+ mkfs.jffs2.c | 376 +++++++++++++++++++++++++++++++++++++++++++++--------------
+ 1 file changed, 291 insertions(+), 85 deletions(-)
+
+diff --git a/mkfs.jffs2.c b/mkfs.jffs2.c
+index bf9dbff..8ba82c8 100644
+--- a/mkfs.jffs2.c
++++ b/mkfs.jffs2.c
+@@ -100,6 +100,11 @@ struct filesystem_entry {
+ 	struct rb_node hardlink_rb;
+ };
+ 
++struct sortfile_entry {
++	struct sortfile_entry *next;
++	char fullname[0];
++};
++
+ struct rb_root hardlinks;
+ static int out_fd = -1;
+ static int in_fd = -1;
+@@ -112,6 +117,7 @@ static int fake_times = 0;
+ int target_endian = __BYTE_ORDER;
+ static char default_compression_name[16] = "priority";
+ static char donotcompress_filelist[256] = "";
++static struct sortfile_entry *sortfile_list = NULL;
+ 
+ uint32_t find_hardlink(struct filesystem_entry *e)
+ {
+@@ -567,6 +573,40 @@ static int parse_device_table(struct filesystem_entry *root, FILE * file)
+ 	return status;
+ }
+ 
++static struct sortfile_entry * parse_sort_filelist(const char *path)
++{
++	struct sortfile_entry *s = NULL, *e, *t;
++	char fullname[256];
++	FILE *fp;
++	int len;
++
++	fp = xfopen(path, "r");
++	while( fgets(fullname, sizeof(fullname), fp) )
++	{
++		len = strlen(fullname) - 1;  /* Assume end is '\n' */
++		if (len > 0) {
++			fullname[len] = '\0';
++
++			if (verbose)
++				printf("Adding sortfile-list entry: %s\n",
++				       fullname);
++
++			e = xmalloc(sizeof(*e) + len + 1);
++			strcpy(e->fullname, fullname);
++			e->next = NULL;
++
++			if (!s)
++				s = e;
++			else
++				t->next = e;
++			t = e;
++		}
++	}
++
++	fclose(fp);
++	return s;
++}
++
+ static void cleanup(struct filesystem_entry *dir)
+ {
+ 	struct filesystem_entry *e, *prev;
+@@ -888,6 +928,89 @@ static unsigned int write_regular_file(struct filesystem_entry *e)
+ 	return totcomp;
+ }
+ 
++static unsigned int write_block_padding_file(char * name,
++					      struct filesystem_entry *parent)
++{
++	uint32_t ver;
++	unsigned int offset;
++	unsigned char *buf;
++	struct filesystem_entry e;
++	struct jffs2_raw_inode ri;
++	unsigned int tot_space;
++	unsigned int pages;
++	unsigned int size;
++	unsigned int totcomp = 0;
++
++	/* Create a dummy filesystem entry */
++	memset(&e, 0, sizeof(e));
++	e.name = name;
++	e.ino = ++ino;
++	e.sb.st_mode = 0644 | S_IFREG;
++	e.parent = parent;
++
++	mkfs_debug_msg("writing file '%s'  ino=%lu  parent_ino=%lu",
++			e.name, (unsigned long) e.ino,
++			(unsigned long) (parent->ino) ? : 1);
++	write_dirent(&e);
++
++	tot_space = erase_block_size - (out_ofs % erase_block_size);
++	pages = tot_space / (page_size + sizeof(ri));
++	size = pages * page_size;
++	tot_space -= pages * (page_size + sizeof(ri));
++	if (tot_space > (sizeof(ri) + 3))
++		size += tot_space - (sizeof(ri) + 3);
++	e.sb.st_size = size;
++
++	buf = xmalloc(page_size);
++	memset(buf, 0xad, page_size);
++
++	ver = 0;
++	offset = 0;
++
++	memset(&ri, 0, sizeof(ri));
++	ri.magic = cpu_to_je16(JFFS2_MAGIC_BITMASK);
++	ri.nodetype = cpu_to_je16(JFFS2_NODETYPE_INODE);
++
++	ri.ino = cpu_to_je32(e.ino);
++	ri.mode = cpu_to_jemode(e.sb.st_mode);
++	ri.uid = cpu_to_je16(e.sb.st_uid);
++	ri.gid = cpu_to_je16(e.sb.st_gid);
++	ri.atime = cpu_to_je32(e.sb.st_atime);
++	ri.ctime = cpu_to_je32(e.sb.st_ctime);
++	ri.mtime = cpu_to_je32(e.sb.st_mtime);
++	ri.isize = cpu_to_je32(e.sb.st_size);
++	/*ri.compr = 0x00;*/
++
++	while (size) {
++		uint32_t space;
++
++		space = (size > page_size) ? page_size : size;
++		ri.totlen = cpu_to_je32(sizeof(ri) + space);
++		ri.hdr_crc = cpu_to_je32(mtd_crc32(0,
++					&ri, sizeof(struct jffs2_unknown_node) - 4));
++
++		ri.version = cpu_to_je32(++ver);
++		ri.offset = cpu_to_je32(offset);
++		ri.csize = cpu_to_je32(space);
++		ri.dsize = cpu_to_je32(space);
++		ri.node_crc = cpu_to_je32(mtd_crc32(0, &ri, sizeof(ri) - 8));
++		ri.data_crc = cpu_to_je32(mtd_crc32(0, buf, space));
++
++		full_write(out_fd, &ri, sizeof(ri));
++		totcomp += sizeof(ri);
++		full_write(out_fd, buf, space);
++		totcomp += space;
++		padword();
++
++		size -= space;
++		offset += space;
++	}
++
++	free(buf);
++
++	return totcomp;
++}
++
+ static void write_symlink(struct filesystem_entry *e)
+ {
+ 	int len;
+@@ -1253,104 +1376,180 @@ static void write_xattr_entry(struct filesystem_entry *e)
+ #define write_xattr_entry(x)
+ #endif
+ 
++static void write_entry(struct filesystem_entry *e)
++{
++	unsigned int wrote;
++
++	if (e->sb.st_nlink >= 1 &&
++	    (e->ino = find_hardlink(e))) {
++
++		write_dirent(e);
++		if (verbose) {
++			printf("\tL %04o %9lu             %5d:%-3d %s\n",
++			       e->sb.st_mode & ~S_IFMT, (unsigned long) e->ino,
++			       (int) (e->sb.st_uid), (int) (e->sb.st_gid),
++			       e->name);
++		}
++	} else switch (e->sb.st_mode & S_IFMT) {
++		case S_IFDIR:
++			if (verbose) {
++				printf("\td %04o %9" PRIu64 "             %5d:%-3d %s\n",
++						e->sb.st_mode & ~S_IFMT, e->sb.st_size,
++						(int) (e->sb.st_uid), (int) (e->sb.st_gid),
++						e->name);
++			}
++			write_pipe(e);
++			write_xattr_entry(e);
++			break;
++		case S_IFSOCK:
++			if (verbose) {
++				printf("\ts %04o %9" PRIu64 "             %5d:%-3d %s\n",
++						e->sb.st_mode & ~S_IFMT, e->sb.st_size,
++						(int) e->sb.st_uid, (int) e->sb.st_gid, e->name);
++			}
++			write_pipe(e);
++			write_xattr_entry(e);
++			break;
++		case S_IFIFO:
++			if (verbose) {
++				printf("\tp %04o %9" PRIu64 "             %5d:%-3d %s\n",
++						e->sb.st_mode & ~S_IFMT, e->sb.st_size,
++						(int) e->sb.st_uid, (int) e->sb.st_gid, e->name);
++			}
++			write_pipe(e);
++			write_xattr_entry(e);
++			break;
++		case S_IFCHR:
++			if (verbose) {
++				printf("\tc %04o %4d,%4d             %5d:%-3d %s\n",
++						e->sb.st_mode & ~S_IFMT, major(e->sb.st_rdev),
++						minor(e->sb.st_rdev), (int) e->sb.st_uid,
++						(int) e->sb.st_gid, e->name);
++			}
++			write_special_file(e);
++			write_xattr_entry(e);
++			break;
++		case S_IFBLK:
++			if (verbose) {
++				printf("\tb %04o %4d,%4d             %5d:%-3d %s\n",
++						e->sb.st_mode & ~S_IFMT, major(e->sb.st_rdev),
++						minor(e->sb.st_rdev), (int) e->sb.st_uid,
++						(int) e->sb.st_gid, e->name);
++			}
++			write_special_file(e);
++			write_xattr_entry(e);
++			break;
++		case S_IFLNK:
++			if (verbose) {
++				printf("\tl %04o %9" PRIu64 "             %5d:%-3d %s -> %s\n",
++						e->sb.st_mode & ~S_IFMT, e->sb.st_size,
++						(int) e->sb.st_uid, (int) e->sb.st_gid, e->name,
++						e->link);
++			}
++			write_symlink(e);
++			write_xattr_entry(e);
++			break;
++		case S_IFREG:
++			wrote = write_regular_file(e);
++			write_xattr_entry(e);
++			if (verbose) {
++				printf("\tf %04o %9" PRIu64 " (%9u) %5d:%-3d %s\n",
++						e->sb.st_mode & ~S_IFMT, e->sb.st_size, wrote,
++						(int) e->sb.st_uid, (int) e->sb.st_gid, e->name);
++			}
++			break;
++		default:
++			errmsg("Unknown mode %o for %s", e->sb.st_mode,
++					e->fullname);
++			break;
++	}
++}
++
+ static void recursive_populate_directory(struct filesystem_entry *dir)
+ {
+ 	struct filesystem_entry *e;
+-	unsigned int wrote;
++	struct filesystem_entry *s = NULL;
++	struct filesystem_entry *prev, *next;
++	int dir_is_root = !(dir->parent);
++	static char padding_file_name[] = ".padding";
+ 
+ 	if (verbose) {
+ 		printf("%s\n", dir->fullname);
+ 	}
+ 	write_xattr_entry(dir);		/* for '/' */
+ 
+-	e = dir->files;
+-	while (e) {
+-		if (e->sb.st_nlink >= 1 &&
+-		    (e->ino = find_hardlink(e))) {
++	if (sortfile_list) {
++		struct sortfile_entry *l;
+ 
+-			write_dirent(e);
+-			if (verbose) {
+-				printf("\tL %04o %9lu             %5d:%-3d %s\n",
+-				       e->sb.st_mode & ~S_IFMT, (unsigned long) e->ino,
+-				       (int) (e->sb.st_uid), (int) (e->sb.st_gid),
+-				       e->name);
+-			}
+-		} else switch (e->sb.st_mode & S_IFMT) {
+-			case S_IFDIR:
+-				if (verbose) {
+-					printf("\td %04o %9" PRIdoff_t "             %5d:%-3d %s\n",
+-							e->sb.st_mode & ~S_IFMT, e->sb.st_size,
+-							(int) (e->sb.st_uid), (int) (e->sb.st_gid),
+-							e->name);
+-				}
+-				write_pipe(e);
+-				write_xattr_entry(e);
+-				break;
+-			case S_IFSOCK:
+-				if (verbose) {
+-					printf("\ts %04o %9" PRIdoff_t "             %5d:%-3d %s\n",
+-							e->sb.st_mode & ~S_IFMT, e->sb.st_size,
+-							(int) e->sb.st_uid, (int) e->sb.st_gid, e->name);
+-				}
+-				write_pipe(e);
+-				write_xattr_entry(e);
+-				break;
+-			case S_IFIFO:
+-				if (verbose) {
+-					printf("\tp %04o %9" PRIdoff_t "             %5d:%-3d %s\n",
+-							e->sb.st_mode & ~S_IFMT, e->sb.st_size,
+-							(int) e->sb.st_uid, (int) e->sb.st_gid, e->name);
+-				}
+-				write_pipe(e);
+-				write_xattr_entry(e);
+-				break;
+-			case S_IFCHR:
+-				if (verbose) {
+-					printf("\tc %04o %4d,%4d             %5d:%-3d %s\n",
+-							e->sb.st_mode & ~S_IFMT, major(e->sb.st_rdev),
+-							minor(e->sb.st_rdev), (int) e->sb.st_uid,
+-							(int) e->sb.st_gid, e->name);
+-				}
+-				write_special_file(e);
+-				write_xattr_entry(e);
+-				break;
+-			case S_IFBLK:
+-				if (verbose) {
+-					printf("\tb %04o %4d,%4d             %5d:%-3d %s\n",
+-							e->sb.st_mode & ~S_IFMT, major(e->sb.st_rdev),
+-							minor(e->sb.st_rdev), (int) e->sb.st_uid,
+-							(int) e->sb.st_gid, e->name);
+-				}
+-				write_special_file(e);
+-				write_xattr_entry(e);
+-				break;
+-			case S_IFLNK:
+-				if (verbose) {
+-					printf("\tl %04o %9" PRIdoff_t "             %5d:%-3d %s -> %s\n",
+-							e->sb.st_mode & ~S_IFMT, e->sb.st_size,
+-							(int) e->sb.st_uid, (int) e->sb.st_gid, e->name,
+-							e->link);
+-				}
+-				write_symlink(e);
+-				write_xattr_entry(e);
+-				break;
+-			case S_IFREG:
+-				wrote = write_regular_file(e);
+-				write_xattr_entry(e);
+-				if (verbose) {
+-					printf("\tf %04o %9" PRIdoff_t " (%9u) %5d:%-3d %s\n",
+-							e->sb.st_mode & ~S_IFMT, e->sb.st_size, wrote,
+-							(int) e->sb.st_uid, (int) e->sb.st_gid, e->name);
++		/* Move sorted files in this dir to their own file list */
++		l = sortfile_list;
++		while (l) {
++			e = dir->files;
++			while (e) {
++				if (!strcmp(l->fullname, e->fullname)) {
++
++					if (dir->files == e)
++						dir->files = e->next;
++
++					prev = e->prev;
++					next = e->next;
++					e->next = NULL;
++
++					if (!s) {
++						s = e;
++						s->prev = e;
++					} else {
++						s->prev->next = e;
++						e->prev = s->prev;
++						s->prev = e;
++					}
++
++					if (prev)
++						prev->next = next;
++					if (next)
++						next->prev = prev;
++					break;
+ 				}
+-				break;
+-			default:
+-				errmsg("Unknown mode %o for %s", e->sb.st_mode,
+-						e->fullname);
+-				break;
++				e = e->next;
++			}
++			l = l->next;
+ 		}
++
++		if (s) {
++			if (!dir_is_root)
++				padblock();
++
++			/* Write sorted files first */
++			e = s;
++			while (e) {
++				write_entry(e);
++				e = e->next;
++			}
++
++			/* Fill remaining space of final sorted block with dummy file */
++			write_block_padding_file(padding_file_name, dir);
++			padblock();
++		}
++	}
++
++	/* Write not sorted files */
++	e = dir->files;
++	while (e) {
++		write_entry(e);
+ 		e = e->next;
+ 	}
+ 
++	if (sortfile_list && s) {
++		/* Return sorted files to directory file list */
++		e = dir->files;
++		dir->files = s;
++		if (e) {
++			s->prev->next = e;
++			e->prev = s->prev;
++			s->prev = NULL;
++		}
++	}
++
+ 	e = dir->files;
+ 	while (e) {
+ 		if (S_ISDIR(e->sb.st_mode)) {
+@@ -1445,6 +1644,7 @@ static struct option long_options[] = {
+ 	{"with-posix-acl", 0, NULL, 1002 },
+ #endif
+ 	{"donotcompress-filelist", 1, NULL, 'N'},
++	{"sortedfiles-list", 1, NULL, 'S'},
+ 	{NULL, 0, NULL, 0}
+ };
+ 
+@@ -1488,7 +1688,8 @@ static const char helptext[] =
+ "  -v, --verbose           Verbose operation\n"
+ "  -V, --version           Display version information\n"
+ "  -i, --incremental=FILE  Parse FILE and generate appendage output for it\n"
+-"  -N, --donotcompress-filelist=FILE  Do not compress files in FILE\n\n";
++"  -N, --donotcompress-filelist=FILE  Do not compress files in FILE\n"
++"  -S, --sortedfiles-list=FILE  Put files in FILE first in their directory\n\n";
+ 
+ static const char revtext[] = "1.60";
+ 
+@@ -1641,7 +1842,7 @@ int main(int argc, char **argv)
+ 	jffs2_compressors_init();
+ 
+ 	while ((opt = getopt_long(argc, argv,
+-			"D:d:r:s:o:qUPfh?vVe:lbp::nc:m:x:X:Lty:i:N:", long_options, &c)) >= 0)
++			"D:d:r:s:o:qUPfh?vVe:lbp::nc:m:x:X:Lty:i:N:S:", long_options, &c)) >= 0)
+ 	{
+ 		switch (opt) {
+ 			case 'D':
+@@ -1823,6 +2024,11 @@ int main(int argc, char **argv)
+ 			case 'N':
+ 					  strcpy(donotcompress_filelist, optarg);
+ 					  break;
++			case 'S':
++					  sortfile_list = parse_sort_filelist(optarg);
++					  if (!sortfile_list)
++						  errmsg_die("Error in sorted files list");
++					  break;
+ 		}
+ 	}
+ 	if (warn_page_size) {
+-- 
+1.9.1
+
