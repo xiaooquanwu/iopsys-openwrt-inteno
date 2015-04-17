@@ -571,7 +571,7 @@ main_upload(int argc, char *argv[])
 	return 0;
 }
 
-
+/*
 static int exec_command(const char *cmd, char **out){
 	FILE *fd; 
 	int buffer_size = 4096; 
@@ -594,6 +594,18 @@ static int exec_command(const char *cmd, char **out){
 	}
 	*out = data; 
 	return (int)(pdata - data); 
+}*/
+
+static void run_child(const char *cmd){
+	FILE *fd; 
+	int c; 
+	
+	if ((fd = popen(cmd, "r"))) {
+		while((c = fgetc(fd)) != EOF){
+			putc(c, stdout); 
+		}
+		pclose(fd);
+	}
 }
 
 static int
@@ -620,27 +632,19 @@ main_backup(int argc, char **argv)
 	printf("Status: 200 OK\r\n");
 	
 	char cmd[256]; 
-	char *data; 
 	
 	if(fields[3]){
 		snprintf(cmd, sizeof(cmd), "sysupgrade --create-backup - --password %s", fields[3]);
 	} else {
 		snprintf(cmd, sizeof(cmd), "sysupgrade --create-backup -");
 	} 
-	int size = exec_command(cmd, &data); 
-	if(size){
-		printf("Content-Type: application/x-targz\r\n");
-		printf("Content-Disposition: attachment; "
-			   "filename=\"backup-%s-%s.tar.gz\"\r\n\r\n", hostname, datestr);
+	
+	printf("Content-Type: application/x-targz\r\n");
+	printf("Content-Disposition: attachment; "
+		   "filename=\"backup-%s-%s.tar.gz\"\r\n\r\n", hostname, datestr);
 		
-		fwrite(data, size, 1, stdout);
-		fflush(stdout); 
-		free(data);
-	} else {
-		// TODO: make sure that we return some kind of error code so we can show it in the gui. 
-		// otherwise the form post just silently fails without showing this message!
-		printf("No data!\n"); 
-	}
+	run_child(cmd); 
+	
 	/*
 	if (pipe(fds))
 		return failure(errno, "Failed to spawn pipe");
