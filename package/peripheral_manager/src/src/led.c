@@ -513,8 +513,6 @@ void led_init( struct server_ctx *s_ctx)
 	/* every action contains led actions lists */
 	/* the led states is attached to the drv_leds lists */
 
-//	led_names = ucix_get_option(s_ctx->uci_ctx, "hw", "board", "lednames");
-
 	for (i = 0; i < LED_FUNCTIONS ; i++) {
 		for (j = 0 ; j < LED_ACTION_MAX; j++ ) {
 			char led_fn_name[256];
