@@ -39,7 +39,8 @@
 					"phyname"
 				],
 				"router": [
-					"dslstats"
+					"dslstats", 
+					"info"
 				],
 				"system": [
 					"info",
