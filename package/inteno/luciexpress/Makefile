@@ -5,6 +5,7 @@ PKG_NAME:=luciexpress
 PKG_VERSION:=master
 
 PKG_SOURCE_URL:=https://github.com/mkschreder/luci-express.git
+#PKG_SOURCE_URL:=/home/martin/luci-express
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_VERSION:=HEAD
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
@@ -22,6 +23,7 @@ PKG_INSTALL=1
 
 define Build/Configure
 	#(cd $(PKG_BUILD_DIR) && $(BASH) -x ./bootstrap)
+	$(CP) ./share ./htdocs $(PKG_BUILD_DIR)/
 	$(call Build/Configure/Default)
 endef
 

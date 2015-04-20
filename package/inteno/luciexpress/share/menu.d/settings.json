@@ -1,0 +1,37 @@
+{
+    "settings": {
+        "title": "Settings",
+        "view": "settings.password",
+        "index": 50
+    },
+    "settings/password": {
+        "title": "EasyBox Password",
+        "acls": [ "system" ],
+        "view": "settings.password",
+        "index": 10
+    },
+    "settings/upgrade": {
+        "title": "Firmware Upgrade",
+        "acls": [ "admin" ],
+        "view": "settings.upgrade",
+        "index": 20
+    },
+    "settings/energy": {
+        "title": "Energy Settings",
+        "acls": [ "users" ],
+        "view": "settings.energy",
+        "index": 30
+    },
+    "settings/configuration": {
+        "title": "Configuration",
+        "acls": [ "system" ],
+        "view": "settings.configuration",
+        "index": 40
+    },
+    "settings/network": {
+        "title": "Network",
+        "acls": [  ],
+        "view": "settings.network",
+        "index": 50
+    }
+}

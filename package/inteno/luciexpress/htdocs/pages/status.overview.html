@@ -1,0 +1,23 @@
+<luci-layout-with-sidebar>
+	<div ng-controller="StatsOverviewCtrl">
+		<h2>Status</h2>
+		<luci-table
+			title="'System'"
+			data="systemStatusTbl"></luci-table>
+		<luci-table
+			title="'Memory'"
+			data="systemMemoryTbl"></luci-table>
+		<luci-table
+			title="'Storage'"
+			data="systemStorageTbl"></luci-table>
+		<luci-table
+			title="'Connections'"
+			data="systemConnectionsTbl"></luci-table>
+		<luci-table
+			title="'DHCP Leases'"
+			data="systemDHCPLeasesTbl"></luci-table>
+		<luci-table
+			title="'Active Stations'"
+			data="systemStationsTbl"></luci-table>
+	</div>
+</luci-layout-with-sidebar>

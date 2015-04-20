@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en" ng-app="luci">
+<head>
+  <meta charset="utf-8">
+  <title>LuCi Express</title>
+  
+  <link href="/css/normalize.css" rel="stylesheet" type="text/css" />
+  <!--<link href="/bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css" />-->
+  <!--<link href="/bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+  --><!--<link href="/bootstrap/css/bootstrap-theme.min.css" rel="stylesheet" type="text/css" />
+  -->
+  <link href="/bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+  <link href="/bower_components/bootstrap-select/dist/css/bootstrap-select.min.css" rel="stylesheet" type="text/css" />
+  <link href="/bower_components/angular-ui/build/angular-ui.min.css" rel="stylesheet" type="text/css" />
+  
+  <link rel="stylesheet" href="css/app.css"/>
+</head>
+<body ng-controller="BodyCtrl" role="document" ng-cloak>
+	<div class="top-bar">
+		<div class="container">
+			<div class="row">
+				<span style="font-size: 28px; margin-top: 10px;">Router Configuration</span>
+				<div style="float: right; margin-top: 10px; ">
+					<select id="guiMode" class="selectpicker" >
+						<option value="basic">Basic Mode</option>
+						<option value="expert">Expert Mode</option>
+						<option value="logout">Logout</option>
+					</select>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div ui-view="content" ></div>
+	<!--<div class="container" role="main">
+		<div class="row">
+			<luci-navbar></luci-navbar>
+		</div>
+		<div ui-view="page"></div>
+		
+		<div class="row">
+			<div class="col-md-3">
+				<luci-nav></luci-nav>
+			</div>
+			<div class="col-md-9">
+				<div ui-view="content"></div>
+				<div id="loading-indicator">
+					<div class='text'> Loading ... </div>
+				</div>
+			</div>
+		</div>
+	</div>-->
+	<script src="/bower_components/jquery/dist/jquery.min.js"></script>
+	<script src="/bower_components/angular/angular.js"></script>
+	<script src="/bower_components/angular-ui/build/angular-ui.min.js"></script>
+	<script src="/bower_components/angular-ui-router/release/angular-ui-router.min.js"></script>
+	<script src="/bower_components/angular-gettext/dist/angular-gettext.min.js"></script>
+	<script src="/bower_components/bootstrap-select/dist/js/bootstrap-select.min.js"></script>
+	<script src="/lib/angular-ui-bootstrap-luci.min.js"></script>
+	<script src="/lib/jquery-jsonrpc.js"></script>
+	<script src="/lib/translations.js"></script>
+	<script src="/lib/luci-autogen.js"></script>
+	<!--<script src="/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>-->
+	<script src="/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+	<!--<script src="/lib/ui-bootstrap.min.js"></script>-->
+	<!--<script src="/lib/ui-bootstrap-tpls.min.js"></script>-->
+	<!--<script src="/lib/ui-bootstrap-angular.js"></script>-->
+	<!-- auto generated part -->
+	<!-- ###---### -->
+	<script src="js/app.js"></script>
+	<script src="js/config.js"></script>
+	<script src="js/navigation.js"></script>
+	<script src="js/rpc.js"></script>
+	<script src="js/session.js"></script>
+	<script src="pages/login.js"></script>
+	<script src="pages/overview.js"></script>
+	<script src="pages/internet.js"></script>
+	<script src="pages/internet.dns.js"></script>
+	<script src="pages/internet.exposed_host.js"></script>
+	<script src="pages/internet.firewall.js"></script>
+	<script src="pages/internet.port_mapping.js"></script>
+	<script src="pages/phone.js"></script>
+	<script src="pages/phone.call_log.js"></script>
+	<script src="pages/phone.number_blocking.js"></script>
+	<script src="pages/phone.numbers.js"></script>
+	<script src="pages/phone.ringing_schedule.js"></script>
+	<script src="pages/phone.speed_dialing.js"></script>
+	<script src="pages/settings.js"></script>
+	<script src="pages/settings.configuration.js"></script>
+	<script src="pages/settings.energy.js"></script>
+	<script src="pages/settings.network.js"></script>
+	<script src="pages/settings.password.js"></script>
+	<script src="pages/settings.upgrade.js"></script>
+	<script src="pages/status.js"></script>
+	<script src="pages/status.about.js"></script>
+	<script src="pages/status.diagnostics.js"></script>
+	<script src="pages/status.dsl.js"></script>
+	<script src="pages/status.events.js"></script>
+	<script src="pages/status.nat.js"></script>
+	<script src="pages/status.overview.js"></script>
+	<script src="pages/status.restart.js"></script>
+	<script src="pages/status.tv.js"></script>
+	<script src="pages/status.voice.js"></script>
+	<script src="pages/wifi.js"></script>
+	<script src="pages/wifi.general.js"></script>
+	<script src="pages/wifi.mac_filter.js"></script>
+	<script src="pages/wifi.schedule.js"></script>
+	<script src="pages/wifi.settings.js"></script>
+	<script src="pages/wifi.wps.js"></script>
+	<script src="widgets/luci.login.js"></script>
+	<script src="widgets/luci.navbar.js"></script>
+	<script src="widgets/luci.nav.js"></script>
+	<script src="widgets/luci.progress.js"></script>
+	<script src="widgets/luci.table.js"></script>
+	<script src="widgets/luci.layout.single_column.js"></script>
+	<script src="widgets/luci.layout.with_sidebar.js"></script>
+	<script src="widgets/luci.layout.naked.js"></script>
+	<!-- ###---### -->
+</body>
+</html>
