@@ -4,12 +4,11 @@ include $(TOPDIR)/rules.mk
 PKG_NAME:=luciexpress
 PKG_VERSION:=master
 
-
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://github.com/mkschreder/luci-express.git
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=b1a217561e1cad6fc9b03cebcf609af2e1cec3a5
+PKG_SOURCE_VERSION:=HEAD
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
 
 PKG_RELEASE:=3
 
