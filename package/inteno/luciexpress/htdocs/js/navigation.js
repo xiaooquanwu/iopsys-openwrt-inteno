@@ -55,12 +55,12 @@ angular.module("luci")
 			Object.assign(o.children, children); 
 			item = o; 
 		}
-		obj.children_list = Object.keys(obj.children).map(function(key) { obj.children[key]; });
+		obj.children_list = Object.keys(obj.children).map(key => obj.children[key]);
 		obj.children_list.sort(function(a, b){
 			return a.index - b.index; 
 		}); 
 		return item; 
-	}
+	} 
 	this.register = function(item){
 		if(!item.path) return; 
 		item = this.insertLeaf(item.path, item); 
