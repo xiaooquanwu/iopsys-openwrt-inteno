@@ -1,7 +1,7 @@
 {
     "status": {
         "title": "Status",
-				"view": "status.overview",
+				"redirect": "status.overview",
         "index": 60
     },
     "status/overview": {
@@ -36,6 +36,7 @@
     },
     "status/events": {
         "title": "Events",
+				"modes": [ "expert" ], 
         "acls": [ "status" ],
         "view": "status.events",
         "index": 50
@@ -54,6 +55,7 @@
 		},
     "status/nat": {
 			"title": "NAT", 
+			"modes": [ "expert" ], 	
 			"acls": [ "status" ], 
 			"view": "status.nat", 
 			"index": 80

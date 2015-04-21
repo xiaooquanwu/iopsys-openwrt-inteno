@@ -1,3 +1,4 @@
-angular.module("luci").controller("OverviewPageCtrl", function($scope){
+angular.module("luci")
+.controller("OverviewPageCtrl", function($scope){
 	$scope.themeUrl = ""; 
 }); 

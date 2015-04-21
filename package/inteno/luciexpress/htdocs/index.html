@@ -33,18 +33,7 @@
 		</div>
 	</div>
 	<div ui-view="content" style="min-height: 1000px;"></div>
-	<div class="container" >
-		<div class="row" style="color: #777">
-			<div class="col-md-1">	
-			</div>
-			<div class="col-md-6">
-			Turkish	German English	
-			</div>
-			<div class="col-md-5">
-				WAN IP Address: 217.34.98.17 | Firmware version: AT904X-03.01
-			</div>
-		</div>
-	</div>
+	
 	<div style="margin-bottom: 40px"></div>
 	<script src="/bower_components/async/lib/async.js"></script>
 	<script src="/bower_components/requirejs/require.js"></script>
@@ -58,7 +47,7 @@
 	<script src="/lib/angular-ui-bootstrap-luci.min.js"></script>
 	<script src="/lib/jquery-jsonrpc.js"></script>
 	<script src="/lib/translations.js"></script>
-	<script src="/lib/luci-autogen.js"></script>
+	<!--<script src="/lib/luci-autogen.js"></script>-->
 	<!--<script src="/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>-->
 	<script src="/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
 	<script src="/bower_components/angular-ui-switch/angular-ui-switch.min.js"></script>
@@ -73,6 +62,8 @@
 	<script src="js/navigation.js"></script>
 	<script src="js/rpc.js"></script>
 	<script src="js/session.js"></script>
+	<script src="js/tr.js"></script>
+	<script src="js/localStorage.js"></script>
 	<script src="pages/login.js"></script>
 	<script src="pages/overview.js"></script>
 	<script src="pages/internet.dns.js"></script>
@@ -110,6 +101,7 @@
 	<script src="widgets/luci.nav.js"></script>
 	<script src="widgets/luci.progress.js"></script>
 	<script src="widgets/luci.table.js"></script>
+	<script src="widgets/luci.footer.js"></script>
 	<script src="widgets/luci.layout.single_column.js"></script>
 	<script src="widgets/luci.layout.with_sidebar.js"></script>
 	<script src="widgets/luci.layout.naked.js"></script>

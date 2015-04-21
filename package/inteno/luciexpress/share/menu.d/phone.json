@@ -1,7 +1,7 @@
 {
 	"phone": {
 		"title": "Phone", 
-		"view": "phone.call_log",
+		"redirect": "phone.call_log",
 		"index": 20
 	}, 
 	"phone/call_log": {

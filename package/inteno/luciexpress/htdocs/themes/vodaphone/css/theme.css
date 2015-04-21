@@ -18,3 +18,13 @@ div.logo {
 .navbar-default {
 	box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.6);
 }
+
+.luci-nav a {
+	color: #444; 
+}
+.nav > li.open > a {
+	color: #ee0000 !important; 
+}
+.navbar .nav > li.open > a {
+	color: #fff !important; 
+}

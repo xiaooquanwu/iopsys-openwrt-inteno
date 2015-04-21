@@ -1,7 +1,7 @@
 {
     "wifi": {
         "title": "WiFi",
-        "view": "wifi.general",
+        "redirect": "wifi.general",
         "index": 40
     },
     "wifi/general": {

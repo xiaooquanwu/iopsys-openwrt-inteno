@@ -11,7 +11,7 @@ angular.module("luci")
 		controllerAs: "ctrl"
 	}; 
 })
-.controller("NavigationCtrl", function($scope, $navigation, $config, $rpc){
+.controller("NavigationCtrl", function($scope, $location, $navigation, $rootScope, $config, $rpc){
 	$scope.tree = $navigation.tree(); 
 	
 	$scope.hasChildren = function(menu){
@@ -36,8 +36,25 @@ angular.module("luci")
 			theme.attr('href',themeurl+"/css/theme.css");
 		});
 	});
+	
+	function activate(){
+		var path = $location.path().replace(/^\/+|\/+$/g, ''); 
+		var subtree = path.split(".")[0]; 
+		$scope.tree = $navigation.tree();
+		
+		setTimeout(function(){
+			
+			$("ul.nav li a").parent().removeClass("open"); 
+			$("ul.nav li a[href='#!"+subtree+"']").addClass("open"); 
+			$("ul.nav li a[href='#!"+subtree+"']").parent().addClass("open"); 
+		}, 0); 
+	}; 
+	$rootScope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams){
+		activate(); 
+  });
+	activate(); 
 }); 
-
+/*
 angular.module('autoActive', [])
 		.directive('autoActive', ['$location', function ($location) {
 		return {
@@ -63,5 +80,5 @@ angular.module('autoActive', [])
 						scope.$on('$locationChangeSuccess', setActive);
 				}
 		}
-}]);
+}]);*/
 

@@ -2,6 +2,21 @@ angular.module("luci")
 .factory('$config', function($rootScope){
 	return {
 		mode: "basic", // basic or expert supported
+		model: "Inteno DG301",
+		languages: {
+			"tr": {
+				title: "Turkish"
+			}, 
+			"en": {
+				title: "English"
+			},
+			"de": {
+				title: "German"
+			}, 
+			"se": {
+				title: "Swedish"
+			}
+		},
 		themes: {
 			"default": "/themes/default/",
 			"red" : "/themes/inteno-red/",
@@ -20,6 +35,7 @@ angular.module("luci")
 				"router.dslstats",
 				"router.info",
 				"router.clients", 
+				"network.interface.status", 
 				"system.info"
 			]
 		}

@@ -1,0 +1,11 @@
+<div class="row" style="color: #777">
+	<div class="col-md-4">
+		<span ng-repeat="lang in languages">
+			<a style="text-decoration: {{isActiveLanguage(lang)?'underline':'none'}}; color: inherit;" href="" ng-click="setLanguage(lang)">{{lang.title}}</a>
+			{{$last ? '' : ' | '}}
+		</span>
+	</div>
+	<div class="col-md-8" style="text-align: right;">
+		WAN IP Address: {{wanip}} | Firmware version: {{firmwareVersion}}
+	</div>
+</div>

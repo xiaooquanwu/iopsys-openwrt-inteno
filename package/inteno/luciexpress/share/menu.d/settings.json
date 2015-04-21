@@ -1,7 +1,7 @@
 {
     "settings": {
         "title": "Settings",
-        "view": "settings.password",
+        "redirect": "settings.password",
         "index": 50
     },
     "settings/password": {
@@ -30,6 +30,7 @@
     },
     "settings/network": {
         "title": "Network",
+				"modes": [ "expert" ], 
         "acls": [  ],
         "view": "settings.network",
         "index": 50

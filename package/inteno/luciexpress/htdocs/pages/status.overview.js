@@ -47,7 +47,7 @@ angular.module("luci").controller("StatsOverviewCtrl", function ($scope, $sessio
 			function (cb){$rpc.luci2.network.dhcp_leases().done(function(res){leases = res.leases || []; cb();}).fail(function(res){cb();});}
 		], function(err, next){
 			$scope.systemStatusTbl.rows = [
-				[tr("Hostname"), "N/A"],
+				[tr("Hostname"), info.system.name],
 				[tr("Model"), info.system.nvramver],
 				[tr("Firmware Version"), info.system.firmware],
 				[tr("Kernel Version"), info.system.kernel],

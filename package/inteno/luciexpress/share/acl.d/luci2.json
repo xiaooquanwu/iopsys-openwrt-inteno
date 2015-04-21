@@ -40,7 +40,8 @@
 				],
 				"router": [
 					"dslstats", 
-					"info"
+					"info", 
+					"clients"
 				],
 				"system": [
 					"info",

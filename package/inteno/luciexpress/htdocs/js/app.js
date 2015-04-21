@@ -66,21 +66,25 @@ angular.module("luci", [
 	})
 	.run(function($rootScope, $state, $session, gettextCatalog, $rpc, $navigation){
 		// set current language
-		gettextCatalog.currentLanguage = "se"; 
+		//gettextCatalog.currentLanguage = "se"; 
 		//gettextCatalog.debug = true; 
 		
 		// get the menu navigation
 		$rpc.luci2.ui.menu().done(function(data){
 			//console.log(JSON.stringify(data)); 
 			Object.keys(data.menu).map(function(key){
-				var view = data.menu[key].view; 
+				var menu = data.menu[key]; 
+				var view = menu.view; 
 				var path = key.replace("/", "."); 
 				var obj = {
 					path: path, 
 					modes: data.menu[key].modes || [ ], 
 					text: data.menu[key].title, 
-					index: data.menu[key].index || 0
+					index: data.menu[key].index || 0, 
 				}; 
+				if(menu.redirect){
+					obj.redirect = menu.redirect; 
+				}
 				if(view){
 					obj.page = "/pages/"+view.replace("/", ".")+".html"; 
 				}
