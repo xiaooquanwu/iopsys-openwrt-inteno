@@ -45,8 +45,10 @@ angular.module("luci")
 		var ncols = 0; 
 		if($scope.data.rows && $scope.data.rows[0]){
 			ncols = $scope.data.rows[0].length; 
-		} else {
+		} else if($scope.data.columns){
 			ncols = $scope.data.columns.length; 
+		} else {
+			ncols = 0; 
 		}
 		if(ncols){
 			// try to extend first column if the division is not whole number 

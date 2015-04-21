@@ -14,8 +14,12 @@ angular.module("luci")
 				"session.access", 
 				"session.destroy", 
 				"luci2.ui.menu", 
+				"luci2.network.conntrack_count",
+				"luci2.network.dhcp_leases",
+				"luci2.system.diskfree", 
 				"router.dslstats",
 				"router.info",
+				"router.clients", 
 				"system.info"
 			]
 		}

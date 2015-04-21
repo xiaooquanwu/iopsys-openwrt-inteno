@@ -19,5 +19,8 @@ angular.module("luci")
 	}; 
 })
 .controller("LuciProgressControl", function($scope, $navigation){
-	$scope.width = (Number($scope.value) / Number($scope.total)) * 100; 
+	if($scope.value && Number($scope.value) != 0)
+		$scope.width = Math.round((Number($scope.value) / Number($scope.total)) * 100); 
+	else
+		$scope.width = 0; 
 }); 

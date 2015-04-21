@@ -1,11 +1,16 @@
-angular.module("luci").controller("StatsCtrl", function($scope, $rpc, $session, gettext, gettextCatalog){
+angular.module("luci").controller("StatsCtrl", function($scope, $rpc, $session, gettextCatalog){
 		$scope.dslstats = {}; 
+		
+		function $tr(str){
+			return gettextCatalog.getString(str); 
+		}
+		
 		$scope.dslConnectionInfo = {
 			title: "test", 
-			rows: [["None", "None"]]
+			rows: [[$tr("None"), $tr("None")]]
 		}; 
 		$scope.dslModeInfo = {
-			rows: [[gettextCatalog.getString('None'), "None"]]
+			rows: [[$tr('None'), $tr("None")]]
 		}; 
 		$scope.dslStatusInfo = {
 			rows: []
@@ -23,7 +28,7 @@ angular.module("luci").controller("StatsCtrl", function($scope, $rpc, $session, 
 			rows: []
 		}; 
 		
-		$rpc.router.dslstats({}, function(dslstats){
+		$rpc.router.dslstats().done(function(dslstats){
 			dslstats = dslstats.dslstats; 
 			
 			// todo fields
@@ -67,8 +72,11 @@ angular.module("luci").controller("StatsCtrl", function($scope, $rpc, $session, 
 				[ dslstats.mode, dslstats.mode_details ]
 			]; 
 			$scope.dslStatusInfo.rows = [
-				[ gettext('Line Status'), dslstats.line_status_configured, dslstats.line_status ], 
-				[ gettext('Line Type'), dslstats.line_type_configured, dslstats.line_type ]
+				[ $tr('Line Status'), dslstats.line_status_configured, dslstats.line_status ], 
+				[ $tr('Line Type'), dslstats.line_type_configured, dslstats.line_type ]
+			]
+			$scope.dslStatusInfo.rows = [
+				[ $tr('Actual Data Rate'), dslstats.bearers[0].rate_down, dslstats.bearers[0].rate_up ]
 			]
 			$scope.dslstats = dslstats; 
 			$scope.$apply(); 
