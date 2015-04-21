@@ -31,24 +31,8 @@
 		</div>
 	</div>
 	<div ui-view="content" ></div>
-	<!--<div class="container" role="main">
-		<div class="row">
-			<luci-navbar></luci-navbar>
-		</div>
-		<div ui-view="page"></div>
-		
-		<div class="row">
-			<div class="col-md-3">
-				<luci-nav></luci-nav>
-			</div>
-			<div class="col-md-9">
-				<div ui-view="content"></div>
-				<div id="loading-indicator">
-					<div class='text'> Loading ... </div>
-				</div>
-			</div>
-		</div>
-	</div>-->
+
+	<script src="/bower_components/requirejs/require.js"></script>
 	<script src="/bower_components/jquery/dist/jquery.min.js"></script>
 	<script src="/bower_components/angular/angular.js"></script>
 	<script src="/bower_components/angular-ui/build/angular-ui.min.js"></script>
@@ -73,7 +57,6 @@
 	<script src="js/session.js"></script>
 	<script src="pages/login.js"></script>
 	<script src="pages/overview.js"></script>
-	<script src="pages/internet.js"></script>
 	<script src="pages/internet.dns.js"></script>
 	<script src="pages/internet.exposed_host.js"></script>
 	<script src="pages/internet.firewall.js"></script>
@@ -84,13 +67,11 @@
 	<script src="pages/phone.numbers.js"></script>
 	<script src="pages/phone.ringing_schedule.js"></script>
 	<script src="pages/phone.speed_dialing.js"></script>
-	<script src="pages/settings.js"></script>
 	<script src="pages/settings.configuration.js"></script>
 	<script src="pages/settings.energy.js"></script>
 	<script src="pages/settings.network.js"></script>
 	<script src="pages/settings.password.js"></script>
 	<script src="pages/settings.upgrade.js"></script>
-	<script src="pages/status.js"></script>
 	<script src="pages/status.about.js"></script>
 	<script src="pages/status.diagnostics.js"></script>
 	<script src="pages/status.dsl.js"></script>

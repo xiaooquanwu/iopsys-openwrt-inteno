@@ -1,0 +1,114 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: se\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.5.4\n"
+
+#: htdocs/views/about.html:2
+msgid "About"
+msgstr "Om"
+
+#: htdocs/views/status.dsl.html:38
+msgid "Actual Data Rate"
+msgstr "Nuvarande hastighet"
+
+#: htdocs/views/status.dsl.html:28
+msgid "Bit Rate"
+msgstr "Bithastighet"
+
+#: htdocs/views/status.dsl.html:65
+msgid "CRC Errors"
+msgstr "CRC fel"
+
+#: htdocs/views/status.dsl.html:76
+msgid "Cell Counter"
+msgstr "Cell räknare"
+
+#: htdocs/views/status.dsl.html:21
+msgid "Configured"
+msgstr "Konfigurerad"
+
+#: htdocs/views/status.dsl.html:22
+msgid "Current"
+msgstr "Nuvarande"
+
+#: htdocs/views/status.dsl.html:2
+msgid "DSL Connection"
+msgstr "DSL uppkoppling"
+
+#: htdocs/views/status.dsl.html:9
+msgid "DSL Mode"
+msgstr "DSL Mode"
+
+#: htdocs/views/status.dsl.html:16
+msgid "DSL Status Information"
+msgstr "DSL Status"
+
+#: htdocs/views/status.dsl.html:33 htdocs/views/status.dsl.html:48
+#: htdocs/views/status.dsl.html:60
+msgid "Downstream"
+msgstr "Ner"
+
+#: htdocs/views/status.dsl.html:55
+msgid "Error Counter"
+msgstr "Fel"
+
+#: htdocs/views/status.dsl.html:64
+msgid "FEC Corrections"
+msgstr "FEC rättelser"
+
+#: htdocs/views/status.overview.html:42
+msgid "Free"
+msgstr "Tillgänglig"
+
+#: htdocs/views/status.dsl.html:59
+msgid "Indicator Name"
+msgstr "Indikatornamn"
+
+#: htdocs/views/status.dsl.html:25
+msgid "Line Status"
+msgstr "Uppkopplingsstatus"
+
+#: htdocs/views/status.dsl.html:26
+msgid "Link Type"
+msgstr "Uppkopplingstyp"
+
+#: htdocs/views/status.dsl.html:53
+msgid "Loop Attenuation"
+msgstr "Loop attenuation"
+
+#: htdocs/views/status.dsl.html:43
+msgid "Operating Data"
+msgstr "Operationsdata"
+
+#: htdocs/views/status.dsl.html:73
+msgid "Received Cells"
+msgstr "Mottagna cells"
+
+#: htdocs/views/status.dsl.html:52
+msgid "SNR Margin"
+msgstr "SNR tolerans"
+
+#: htdocs/views/status.dsl.html:67
+msgid "Statistics"
+msgstr "Statistik"
+
+#: htdocs/views/about.html:3
+msgid "Test"
+msgstr "Jag testar"
+
+#: htdocs/views/status.dsl.html:72
+msgid "Transmitted Cells"
+msgstr "Celler sänt"
+
+#: htdocs/views/status.dsl.html:34 htdocs/views/status.dsl.html:49
+#: htdocs/views/status.dsl.html:61
+msgid "Upstream"
+msgstr "Upp"

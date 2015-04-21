@@ -7,7 +7,7 @@ angular.module("luci")
 			"red" : "/themes/inteno-red/"
 		}, 
 		rpc: {
-			host: "http://192.168.1.1", 
+			host: "", 
 			exposed_calls: [
 				"session.login", 
 				"session.access", 

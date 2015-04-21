@@ -1,0 +1,12 @@
+<nav>
+	<ul class="nav nav-pills nav-stacked span2">
+		<li class="dropdown" ng-repeat="item in tree.children_list" ng-show="itemVisible(item)">
+			<a href="#!{{item.path}}" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">{{item.text | translate}}</a>
+			<ul>
+				<li ng-repeat="item2 in item.children_list">
+					<a href="#!{{item2.path}}">{{item2.text | translate}}</a>
+				</li>
+			</ul>
+		</li>
+	</ul>
+</nav>

@@ -3,34 +3,35 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=luciexpress
 PKG_VERSION:=master
+PKG_MAINTAINER:=Martin K. Schröder <martin.schroder@inteno.se>
 
-PKG_SOURCE_URL:=https://github.com/mkschreder/luci-express.git
+#PKG_SOURCE_URL:=https://github.com/mkschreder/luci-express.git
 #PKG_SOURCE_URL:=/home/martin/luci-express
-PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=HEAD
-PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
+#PKG_SOURCE_PROTO:=git
+#PKG_SOURCE_VERSION:=HEAD
+#PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
+#PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
 
 PKG_RELEASE:=3
 
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/cmake.mk
 
-
-PKG_FIXUP:=autoreconf
-PKG_INSTALL=1
-
-
-define Build/Configure
+#define Build/Configure
 	#(cd $(PKG_BUILD_DIR) && $(BASH) -x ./bootstrap)
-	$(CP) ./share ./htdocs $(PKG_BUILD_DIR)/
-	$(call Build/Configure/Default)
+#	$(CP) ./share ./htdocs $(PKG_BUILD_DIR)/
+#	$(call Build/Configure/Default)
+#endef
+
+define Build/Prepare
+	$(INSTALL_DIR) $(PKG_BUILD_DIR)
+	$(CP) ./src/* $(PKG_BUILD_DIR)/
 endef
 
 define Package/luciexpress
   SECTION:=luciexpress
-  CATEGORY:=LuCIexpress
-  TITLE:=LuCIexpress UI
+  CATEGORY:=LuCiexpress
+  TITLE:=LuCiExpress UI
   DEPENDS:=+rpcd +rpcd-mod-iwinfo +uhttpd +uhttpd-mod-ubus +libubox +libubus
 endef
 
@@ -40,14 +41,14 @@ endef
 
 define Package/luciexpress/install
 	$(INSTALL_DIR) $(1)/www
-	$(CP) $(PKG_BUILD_DIR)/htdocs/* $(1)/www/
+	$(CP) ./htdocs/* $(1)/www/
 	$(INSTALL_DIR) $(1)/usr/share/rpcd
-	$(CP) $(PKG_BUILD_DIR)/share/* $(1)/usr/share/rpcd/
+	$(CP) ./share/* $(1)/usr/share/rpcd/
 	$(INSTALL_DIR) $(1)/usr/lib/rpcd
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/rpcd/luciexpress.so $(1)/usr/lib/rpcd/
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/rpcd/bwmon.so $(1)/usr/lib/rpcd/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/rpcd/luciexpress.so $(1)/usr/lib/rpcd/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/rpcd/bwmon.so $(1)/usr/lib/rpcd/
 	$(INSTALL_DIR) $(1)/usr/libexec $(1)/www/cgi-bin
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/io/luciexpress-io $(1)/usr/libexec/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/io/luciexpress-io $(1)/usr/libexec/
 	$(LN) /usr/libexec/luciexpress-io $(1)/www/cgi-bin/luci-upload
 	$(LN) /usr/libexec/luciexpress-io $(1)/www/cgi-bin/luci-backup
 endef
