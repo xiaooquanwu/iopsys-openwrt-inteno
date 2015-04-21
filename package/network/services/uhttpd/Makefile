@@ -45,8 +45,10 @@ define Package/uhttpd/config
   config PACKAGE_uhttpd_debug
     bool "Build with debug messages"
     default n
+  config PACKAGE_uhttpd_no_same_origin
+    bool "Build without same origin policy"
+    default n
 endef
-
 
 define Package/uhttpd-mod-tls
   $(Package/uhttpd/default)
@@ -109,6 +111,10 @@ endef
 TARGET_LDFLAGS += -lcrypt
 
 CMAKE_OPTIONS = -DTLS_SUPPORT=on
+
+ifeq ($(CONFIG_PACKAGE_uhttpd_no_same_origin),y)
+    TARGET_LDFLAGS += -DDISABLE_SAME_ORIGIN_POLICY
+endif
 
 define Package/uhttpd/install
 	$(INSTALL_DIR) $(1)/etc/init.d
