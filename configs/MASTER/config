@@ -2541,7 +2541,49 @@ CONFIG_PACKAGE_peripheral_manager=y
 # CONFIG_PACKAGE_mcookie is not set
 # CONFIG_PACKAGE_mount-utils is not set
 # CONFIG_PACKAGE_mountd is not set
-# CONFIG_PACKAGE_mtd-utils is not set
+CONFIG_PACKAGE_mtd-utils=y
+# CONFIG_PACKAGE_mtd-utils-deubinize is not set
+# CONFIG_PACKAGE_mtd-utils-doc-loadbios is not set
+# CONFIG_PACKAGE_mtd-utils-docfdisk is not set
+# CONFIG_PACKAGE_mtd-utils-flash-erase is not set
+# CONFIG_PACKAGE_mtd-utils-flash-lock is not set
+# CONFIG_PACKAGE_mtd-utils-flash-otp-dump is not set
+# CONFIG_PACKAGE_mtd-utils-flash-otp-info is not set
+# CONFIG_PACKAGE_mtd-utils-flash-otp-lock is not set
+# CONFIG_PACKAGE_mtd-utils-flash-otp-write is not set
+# CONFIG_PACKAGE_mtd-utils-flash-unlock is not set
+# CONFIG_PACKAGE_mtd-utils-flashcp is not set
+# CONFIG_PACKAGE_mtd-utils-ftl-check is not set
+# CONFIG_PACKAGE_mtd-utils-ftl-format is not set
+CONFIG_PACKAGE_mtd-utils-imagewrite=y
+# CONFIG_PACKAGE_mtd-utils-jffs2dump is not set
+# CONFIG_PACKAGE_mtd-utils-jffs2reader is not set
+CONFIG_PACKAGE_mtd-utils-mkfs.jffs2=y
+# CONFIG_PACKAGE_mtd-utils-mkfs.ubifs is not set
+# CONFIG_PACKAGE_mtd-utils-mtd-debug is not set
+# CONFIG_PACKAGE_mtd-utils-mtdinfo is not set
+# CONFIG_PACKAGE_mtd-utils-nanddump is not set
+# CONFIG_PACKAGE_mtd-utils-nandtest is not set
+# CONFIG_PACKAGE_mtd-utils-nandwrite is not set
+# CONFIG_PACKAGE_mtd-utils-nftl-format is not set
+# CONFIG_PACKAGE_mtd-utils-nftldump is not set
+# CONFIG_PACKAGE_mtd-utils-recv-image is not set
+# CONFIG_PACKAGE_mtd-utils-rfddump is not set
+# CONFIG_PACKAGE_mtd-utils-rfdformat is not set
+# CONFIG_PACKAGE_mtd-utils-serve-image is not set
+# CONFIG_PACKAGE_mtd-utils-sumtool is not set
+CONFIG_PACKAGE_mtd-utils-ubiattach=y
+# CONFIG_PACKAGE_mtd-utils-ubiblock is not set
+# CONFIG_PACKAGE_mtd-utils-ubicrc32 is not set
+CONFIG_PACKAGE_mtd-utils-ubidetach=y
+# CONFIG_PACKAGE_mtd-utils-ubiformat is not set
+CONFIG_PACKAGE_mtd-utils-ubimkvol=y
+CONFIG_PACKAGE_mtd-utils-ubinfo=y
+# CONFIG_PACKAGE_mtd-utils-ubinize is not set
+# CONFIG_PACKAGE_mtd-utils-ubirename is not set
+CONFIG_PACKAGE_mtd-utils-ubirmvol=y
+CONFIG_PACKAGE_mtd-utils-ubirsvol=y
+CONFIG_PACKAGE_mtd-utils-ubiupdatevol=y
 # CONFIG_PACKAGE_namei is not set
 CONFIG_PACKAGE_netcheck=y
 # CONFIG_PACKAGE_ocf-crypto-headers is not set
