@@ -4,10 +4,11 @@ angular.module("luci")
 		mode: "basic", // basic or expert supported
 		themes: {
 			"default": "/themes/default/",
-			"red" : "/themes/inteno-red/"
+			"red" : "/themes/inteno-red/",
+			"vodaphone" : "/themes/vodaphone/"
 		}, 
 		rpc: {
-			host: "", 
+			host: "http://192.168.1.1", 
 			exposed_calls: [
 				"session.login", 
 				"session.access", 

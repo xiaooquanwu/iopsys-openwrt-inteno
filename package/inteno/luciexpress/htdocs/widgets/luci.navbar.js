@@ -13,36 +13,7 @@ angular.module("luci")
 })
 .controller("NavigationCtrl", function($scope, $navigation, $config, $rpc){
 	$scope.tree = $navigation.tree(); 
-	/*$rpc.luci2.ui.menu().done(function(data){
-		console.log(JSON.stringify(data)); 
-		var tree = {children_list: []}; 
-		Object.keys(data.menu).map(function(key){
-			var parts = key.split("/"); 
-			var obj = tree; 
-			var parent = tree; 
-			var insert = {
-				path: (data.menu[key].view || "").replace("/", "."), 
-				text: data.menu[key].title,
-				children_list: []
-			}; 
-			// find the leaf and the parent of the leaf
-			parts.map(function(part){
-				if(obj.hasOwnProperty(part)) {
-					parent = obj; 
-					obj = obj[part]; 
-				} else {
-					obj[part] = {children_list: []}; 
-					parent = obj; 
-					obj = obj[part]; 
-				}
-			}); 
-			Object.assign(obj, insert); 
-			parent.children_list.push(obj); 
-		}); 
-		console.log(); 
-		$scope.tree = tree; 
-		$scope.$apply(); 
-	}); */
+	
 	$scope.hasChildren = function(menu){
 		return menu.children_list > 0; 
 	}
@@ -51,12 +22,16 @@ angular.module("luci")
 	};
 	$(function(){
 		var themes = $config.themes; 
-		var bootstrap = $('<link href="'+themes['default']+'/css/bootstrap.min.css" rel="stylesheet" />');
-		var theme = $('<link href="'+themes['default']+'/css/theme.css" rel="stylesheet" />');
+		$config.theme = localStorage.getItem("theme") || "default"; 
+		var bootstrap = $('<link href="'+themes[$config.theme]+'/css/bootstrap.min.css" rel="stylesheet" />');
+		var theme = $('<link href="'+themes[$config.theme]+'/css/theme.css" rel="stylesheet" />');
 		bootstrap.appendTo('head');
 		theme.appendTo('head'); 
 		$('.theme-link').click(function(){
-			var themeurl = themes[$(this).attr('data-theme')]; 
+			var themename = $(this).attr('data-theme'); 
+			var themeurl = themes[themename]; 
+			$config.theme = themename; 
+			localStorage.setItem("theme", themename); 
 			bootstrap.attr('href',themeurl+"/css/bootstrap.min.css");
 			theme.attr('href',themeurl+"/css/theme.css");
 		});

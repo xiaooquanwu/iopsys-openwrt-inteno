@@ -12,18 +12,21 @@
     },
     "internet/port_mapping": {
         "title": "Port Mapping",
+				"modes": [ "expert" ], 
         "acls": [ "network" ],
         "view": "internet.port_mapping",
         "index": 20
     },
     "internet/exposed_host": {
         "title": "Exposed Host",
+				"modes": [ "expert" ], 
         "acls": [ "network" ],
         "view": "internet.exposed_host",
         "index": 30
     },
     "internet/dns": {
         "title": "DNS",
+				"modes": [ "expert" ], 
         "acls": [ "hostnames" ],
         "view": "internet.dns",
         "index": 50

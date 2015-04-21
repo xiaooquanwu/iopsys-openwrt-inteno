@@ -2,7 +2,7 @@
 	<h3>{{ title | translate}}</h3>
 	<table class="table" >
 		<thead>
-			<th ng-repeat="label in data.columns  track by $index" class="{{ cellClass($index) }}" >{{ label | translate }}</th>
+			<th style="text-align: center;" ng-repeat="label in data.columns  track by $index" class="{{ cellClass($index) }}" >{{ label | translate }}</th>
 		</thead>
 		<tr ng-repeat="row in data.rows ">
 			<td ng-repeat="cell in row track by $index" class="{{ cellClass($index) }}"  dynamic="cell">

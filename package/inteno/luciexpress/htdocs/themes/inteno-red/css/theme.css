@@ -1,3 +1,7 @@
+body {
+	font-size: 16px;
+}
+
 div.logo {
 	background-image: url('../img/inteno_white.png'); 
 	background-size: 100% auto; 

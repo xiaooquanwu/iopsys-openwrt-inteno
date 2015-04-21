@@ -1,3 +1,7 @@
+body {
+	font-size: 16px;
+}
+
 div.logo {
 	background-image: url('../img/luci_default.png'); 
 	background-size: 100% auto; 

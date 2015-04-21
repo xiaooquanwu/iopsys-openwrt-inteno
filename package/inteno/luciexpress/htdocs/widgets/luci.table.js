@@ -17,7 +17,8 @@ angular.module("luci")
 			scope: {
 				data: "=", 
 				columns: "=", 
-				title: "="
+				title: "=", 
+				noequalize: "="
 			}, 
 			templateUrl: "widgets/luci.table.html", 
 			replace: true, 

@@ -27,6 +27,8 @@ require([
 angular.module("luci", [
 	"ui.bootstrap",
 	"ui.router", 
+	'ui.select',
+	"uiSwitch",
 	"gettext"
 	])
 	.config(function ($stateProvider, $locationProvider, $urlRouterProvider) {
@@ -82,6 +84,8 @@ angular.module("luci").controller("BodyCtrl", function ($scope, $state, $session
 	}]; 
 	
 	$config.mode = localStorage.getItem("mode") || "basic"; 
+	$config.theme = localStorage.getItem("theme") || "default"; 
+	
 	/*setTimeout(function(){
 		$("#guiMode").selectpicker('val', $config.mode || "basic"); 
 	}, 100); */
@@ -109,5 +113,6 @@ angular.module("luci").controller("BodyCtrl", function ($scope, $state, $session
 })
 
 $(document).ready(function(){
+	          
 	$("#loading-indicator").hide(); 
 }); 

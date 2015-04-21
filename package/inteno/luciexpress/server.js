@@ -21,10 +21,6 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
 
 app.use(express.static(__dirname + '/htdocs'));
 
-app.get('/', function (req, res) {
-  res.send('Hello World!');
-});
-
 // RPC end point
 app.post('/ubus', function(req, res) {
   res.header('Content-Type', 'application/json');
@@ -45,7 +41,7 @@ app.post('/ubus', function(req, res) {
 	
 	if(data.params[1] == "luci2.ui" && data.params[2] == "menu"){
 		console.log("luci2.ui.menu"); 
-		res.send(JSON.stringify({
+		res.write(JSON.stringify({
 			jsonrpc: "2.0", 
 			result: [0, {
 				menu: JSON.parse(fs.readFileSync("share/menu.d/overview.json"))
@@ -53,14 +49,14 @@ app.post('/ubus', function(req, res) {
 		})); 
 	} if(data.params[1] == "session" && data.params[2] == "access"){
 		console.log("luci2.ui.menu"); 
-		res.send(JSON.stringify({
+		res.write(JSON.stringify({
 			jsonrpc: "2.0", 
 			result: [0, {
 				"access-group": [ "a", "b" ]
 			}]
 		})); 
 	} else {
-		res.send(JSON.stringify({
+		res.write(JSON.stringify({
 			jsonrpc: "2.0",
 			result: {}
 		})); 
