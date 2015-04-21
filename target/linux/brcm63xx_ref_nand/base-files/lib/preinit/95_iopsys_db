@@ -1,5 +1,12 @@
 #!/bin/sh
 
+pci_modelchange(){
+for i in `lspci | cut -d':' -f4 `; do
+  db -q get hw.pci.$i | xargs echo -n
+  done
+}
+
+
 iopsys_initialize_db() {
 	echo "Initializing iopsys db"
 	OLDCFERAM="`uci -q get /lib/db/config/hw.board.cferam`"
@@ -31,7 +38,8 @@ iopsys_initialize_db() {
 		BASEMAC="`cat /proc/nvram/BaseMacAddr | tr ' ' ':' | sed 's/:$//' | tr [a-z] [A-Z]`"
 		HWMODEL="`cat /lib/db/version/iop_version | cut -d'_' -f1 | cut -d'-' -f2`"
 		[ "$(uci get /lib/db/config/hw.board.hasDect)" == "1" ] && DECT="D"
-		ROUTERMODEL="$HARDWARE$DSLANNEX-$HWMODEL$DECT"
+		PCI=$(pci_modelchange)
+		ROUTERMODEL="$HARDWARE$DSLANNEX-$HWMODEL$DECT$PCI"
 		BRCMVERSION="`cat /etc/banner | grep BrcmRef | awk '{print$3}'`"
 		SOCMODEL="`brcm_fw_tool info -k`"
 		SOCREVISION="`brcm_fw_tool info -e`"

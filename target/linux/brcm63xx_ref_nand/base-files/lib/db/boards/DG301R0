@@ -19,6 +19,12 @@ config board 'board'
 	option fxsRelayGpio '8'
 	option hasBrcmAvs '0'
 
+config pci_slot 'pci'
+        option 43a0 AC
+        option 43a2 AC
+        option 43bc AC
+        
+
 config wifi-chip '435f'
 	option bands 'b'
 
