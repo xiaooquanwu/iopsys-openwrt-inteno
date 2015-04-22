@@ -22,8 +22,11 @@ angular.module("luci")
 			"red" : "/themes/inteno-red/",
 			"vodaphone" : "/themes/vodaphone/"
 		}, 
+		plugins: [
+			"hello_world"
+		], 
 		rpc: {
-			host: "http://192.168.1.1", 
+			host: "", 
 			exposed_calls: [
 				"session.login", 
 				"session.access", 

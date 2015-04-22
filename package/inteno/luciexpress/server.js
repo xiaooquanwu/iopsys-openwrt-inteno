@@ -21,6 +21,34 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
 
 app.use(express.static(__dirname + '/htdocs'));
 
+var rpc_calls = {
+	"luci2.ui.menu": function(params, next){
+		var menu = {}; 
+		[
+			"share/menu.d/overview.json", 
+			"share/menu.d/settings.json",
+			"share/menu.d/phone.json",
+			"share/menu.d/internet.json",
+			"share/menu.d/status.json",
+			"share/menu.d/status.vodaphone.json",
+			"share/menu.d/wifi.json"
+		].map(function(file){
+			var obj = JSON.parse(fs.readFileSync(file)); 
+			Object.keys(obj).map(function(k){
+				menu[k] = obj[k]; 
+			});  
+		}); 
+		next({
+			menu: menu
+		}); 
+	}, 
+	"session.access": function(params, next){
+		next({
+			"access-group": [ "a", "b" ]
+		}); 
+	}
+}; 
+
 // RPC end point
 app.post('/ubus', function(req, res) {
   res.header('Content-Type', 'application/json');
@@ -38,30 +66,20 @@ app.post('/ubus', function(req, res) {
   }
 	
 	//console.log("Call: "+data.method+" "+JSON.stringify(data.params)); 
-	
-	if(data.params[1] == "luci2.ui" && data.params[2] == "menu"){
-		console.log("luci2.ui.menu"); 
-		res.write(JSON.stringify({
-			jsonrpc: "2.0", 
-			result: [0, {
-				menu: JSON.parse(fs.readFileSync("share/menu.d/overview.json"))
-			}]
-		})); 
-	} if(data.params[1] == "session" && data.params[2] == "access"){
-		console.log("luci2.ui.menu"); 
-		res.write(JSON.stringify({
-			jsonrpc: "2.0", 
-			result: [0, {
-				"access-group": [ "a", "b" ]
-			}]
-		})); 
+	var name = data.params[1]+"."+data.params[2]; 
+	if(name in rpc_calls){
+		rpc_calls[name](null, function(resp){
+			res.write(JSON.stringify({
+				jsonrpc: "2.0", 
+				result: [0, resp]
+			}));
+			
+			res.end(); 
+		}); 
 	} else {
-		res.write(JSON.stringify({
-			jsonrpc: "2.0",
-			result: {}
-		})); 
+		console.log("Unknown RPC call "+name); 
+		res.end(); 
 	}
-	res.end(); 
 });
 
 var server = app.listen(3000, function () {
