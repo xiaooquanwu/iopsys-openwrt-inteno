@@ -23,10 +23,14 @@ angular.module("luci")
 			"vodaphone" : "/themes/vodaphone/"
 		}, 
 		plugins: [
-			"hello_world"
+			"hello_world", 
+			"core", 
+			"phone", 
+			"router", 
+			"wifi"
 		], 
 		rpc: {
-			host: "", 
+			host: "http://192.168.1.1", 
 			exposed_calls: [
 				"session.login", 
 				"session.access", 

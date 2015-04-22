@@ -64,10 +64,11 @@ angular.module("luci")
 	this.register = function(item){
 		if(!item.path) return; 
 		item = this.insertLeaf(item.path, item); 
-				
+		
+		
 		// now also register with the routing service 
 		//if(item.page){
-			(function(item){
+		/*	(function(item){
 				var lazyPromise = null; 
 				$stateProvider.state(item.path.replace(".", "_"), {
 					url: "/"+item.path, 
@@ -82,7 +83,7 @@ angular.module("luci")
 					},
 					luci_config: item
 				}); 
-			})(item); 
+			})(item); */
 		//}
 		//alert(JSON.stringify(data)); 
 		return data; 

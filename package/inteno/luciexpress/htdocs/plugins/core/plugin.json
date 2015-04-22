@@ -1,0 +1,21 @@
+{
+	"scripts": [
+		"widgets/luci.footer",
+		"widgets/luci.layout.naked",
+		"widgets/luci.layout.single_column",
+		"widgets/luci.layout.with_sidebar",
+		"widgets/luci.login",
+		"widgets/luci.nav",
+		"widgets/luci.navbar",
+		"widgets/luci.progress",
+		"widgets/luci.table"
+	],
+	"pages": {
+		"overview": {
+			"view": "pages/overview"
+		}, 
+		"login": {
+			"view": "pages/login"
+		}
+	}
+}
