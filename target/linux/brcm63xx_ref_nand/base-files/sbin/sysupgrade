@@ -94,7 +94,7 @@ download_image_file () {
 
     if [ "${image}" != "${current_sw_version}" ]; then
 	#echo "upgrade to: ${image}"
-	    wget -q -O "/tmp/${image}" "http://inteno:wave jeep snake@iopsys.inteno.se/iopsys/software/RELEASE/IOP3/DG301/${image}"
+	    wget -q -O "/tmp/${image}" "${fwpath}/${image}"
         ARGV="/tmp/${image}"
     else
 	#echo "keep current version: ${current_sw_version}"
