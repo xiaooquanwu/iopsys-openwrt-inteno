@@ -1,9 +1,12 @@
-<div id="language-info" >
-	<div id="language-switcher-list" ng-repeat="lang in languages">
-		<a style="text-decoration: {{isActiveLanguage(lang)?'underline':'none'}}; color: inherit;" href="" ng-click="setLanguage(lang)">{{lang.title}}</a>
-		{{$last ? '' : ' | '}}
-	</div>
-	<div id="info">
-		WAN IP Address: {{wanip}} | Firmware version: {{firmwareVersion}}
+<div class="container">
+	<div id="language-info" >
+		<div id="language-switcher-list" >
+			<span ng-repeat="lang in languages">
+				<a style="text-decoration: {{isActiveLanguage(lang)?'underline':'none'}}; color: inherit;" href="" ng-click="setLanguage(lang)">{{lang.title}}</a>{{$last ? '' : ' | '}}
+			</span>
+		</div>
+		<div id="info">
+			WAN IP Address: {{wanip}} | Firmware version: {{firmwareVersion}}
+		</div>
 	</div>
 </div>
