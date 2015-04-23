@@ -1,27 +1,53 @@
 <!doctype html>
 <html lang="en" ng-app="luci">
 <head>
-  <meta charset="utf-8">
-  <title >LuCi Express</title><!--ng-bind="title"-->
-  
-  <link href="/css/normalize.css" rel="stylesheet" type="text/css" />
-  <!--<link href="/bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css" />-->
-  <!--<link href="/bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
-  --><!--<link href="/bootstrap/css/bootstrap-theme.min.css" rel="stylesheet" type="text/css" />
-  -->
-  <link href="/bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
-  <link href="/bower_components/bootstrap-select/dist/css/bootstrap-select.min.css" rel="stylesheet" type="text/css" />
-  <link href="/bower_components/fontawesome/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
-  <link href="/bower_components/angular-ui/build/angular-ui.min.css" rel="stylesheet" type="text/css" />
-  <link href="/bower_components/angular-ui-select/dist/select.min.css" rel="stylesheet" type="text/css" />
-  <link href="/bower_components/angular-ui-switch/angular-ui-switch.min.css" rel="stylesheet" type="text/css" />
-  <link rel="stylesheet" href="css/app.css"/>
+	<meta charset="utf-8">
+	<title>LuCi Express</title>
+
+	<link href="/css/normalize.css" rel="stylesheet" type="text/css" />
+	<!--<link href="/bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css" />-->
+	<!--<link href="/bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+	--><!--<link href="/bootstrap/css/bootstrap-theme.min.css" rel="stylesheet" type="text/css" />
+	-->
+	<link href="/bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+	<link href="/bower_components/bootstrap-select/dist/css/bootstrap-select.min.css" rel="stylesheet" type="text/css" />
+	<link href="/bower_components/fontawesome/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+	<link href="/bower_components/angular-ui/build/angular-ui.min.css" rel="stylesheet" type="text/css" />
+	<link href="/bower_components/angular-ui-select/dist/select.min.css" rel="stylesheet" type="text/css" />
+	<link href="/bower_components/angular-ui-switch/angular-ui-switch.min.css" rel="stylesheet" type="text/css" />
+	<link rel="stylesheet" href="css/app.css"/>
+	<link rel="stylesheet" href="themes/vodaphone/css/theme.css"/>
 </head>
-<body role="document" ng-cloak >
-	<div ng-controller="BodyCtrl">
-		<div ng-include="theme_index"></div>
-		
+<body ng-controller="BodyCtrl" role="document" ng-cloak >
+	<div id="top-bar">
+		<div id="top-bar-content">
+			<div class="rel">
+				<a href="#">
+					<div id="logo">
+                        <img src="themes/vodaphone/img/logo/easybox-804-reskin.png" alt="">
+					</div>
+				</a>
+				<div id="top-info" class="clearfix">
+					<div id="top-info-mode" class="rel">
+						<select id="guiMode" class="selectpicker" >
+							<option value="basic">Basic Mode</option>
+							<option value="expert">Expert Mode</option>
+							<option value="logout">Logout</option>
+						</select>
+					</div>
+				</div>
+			</div>
+		</div>
 	</div>
+	<div ui-view="content" style="min-height: 1000px;"></div>
+    <div id="language-info" class="clearfix">
+        <div id="language-switcher-list">
+        Turkish	German English
+        </div>
+        <div id="info">
+            WAN IP Address: 217.34.98.17 | Firmware version: AT904X-03.01
+        </div>
+    </div>
 	<div style="margin-bottom: 40px"></div>
 	<script src="/bower_components/async/lib/async.js"></script>
 	<script src="/bower_components/requirejs/require.js"></script>

@@ -46,16 +46,16 @@ $juci.module("core")
 	$(function(){
 		var themes = $config.themes; 
 		$config.theme = localStorage.getItem("theme") || "default"; 
-		var bootstrap = $('<link href="'+themes[$config.theme]+'/css/bootstrap.min.css" rel="stylesheet" />');
+		//var bootstrap = $('<link href="'+themes[$config.theme]+'/css/bootstrap.min.css" rel="stylesheet" />');
 		var theme = $('<link href="'+themes[$config.theme]+'/css/theme.css" rel="stylesheet" />');
-		bootstrap.appendTo('head');
+		//bootstrap.appendTo('head');
 		theme.appendTo('head'); 
 		$('.theme-link').click(function(){
-			var themename = $(this).attr('data-theme'); 
-			var themeurl = themes[themename]; 
-			$config.theme = themename; 
-			localStorage.setItem("theme", themename); 
-			bootstrap.attr('href',themeurl+"/css/bootstrap.min.css");
+			var themename = $(this).attr('data-theme');
+			var themeurl = themes[themename];
+			$config.theme = themename;
+			localStorage.setItem("theme", themename);
+			//bootstrap.attr('href',themeurl+"/css/bootstrap.min.css");
 			theme.attr('href',themeurl+"/css/theme.css");
 		});
 	});
