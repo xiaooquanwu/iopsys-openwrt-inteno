@@ -32,7 +32,7 @@ $juci.module("core")
 		controller: "luciFooterController"
 	}; 
 })
-.controller("luciFooterController", function($scope, $rpc, $languages, gettextCatalog){
+.controller("luciFooterController", function($scope, $rpc, $config, $languages, gettextCatalog){
 	// TODO: move this into a higher level controller maybe? 
 	$scope.languages = $languages.getLanguages(); 
 	$scope.isActiveLanguage = function(lang){
@@ -50,4 +50,23 @@ $juci.module("core")
 			$scope.$apply(); 
 		}); 
 	}); 
+	
+	// TODO: remove the theme switches when done developing
+	$(function(){
+		var themes = $config.themes; 
+		$config.theme = localStorage.getItem("theme") || "default"; 
+		var bootstrap = $('<link href="'+themes[$config.theme]+'/css/bootstrap.min.css" rel="stylesheet" />');
+		var theme = $('<link href="'+themes[$config.theme]+'/css/theme.css" rel="stylesheet" />');
+		bootstrap.appendTo('head');
+		theme.appendTo('head'); 
+		$('.theme-link').click(function(){
+			var themename = $(this).attr('data-theme');
+			var themeurl = themes[themename];
+			$config.theme = themename;
+			localStorage.setItem("theme", themename);
+			bootstrap.attr('href',themeurl+"/css/bootstrap.min.css");
+			theme.attr('href',themeurl+"/css/theme.css");
+			window.location.reload(); 
+		});
+	});
 }); 

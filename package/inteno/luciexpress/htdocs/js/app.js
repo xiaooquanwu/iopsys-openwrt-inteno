@@ -159,27 +159,21 @@ angular.module("luci").controller("BodyCtrl", function ($scope, $templateCache, 
 	}]; 
 	
 	$config.mode = $localStorage.getItem("mode") || "basic"; 
-	$config.theme = $localStorage.getItem("theme") || "vodaphone"; // TODO: change to default inteno
+	$config.theme = $localStorage.getItem("theme") || $config.theme || "default"; 
 	
-	$scope.theme_index = "themes/"+$config.theme+"/index.html"; 
 	
-	/*setTimeout(function(){
-		$("#guiMode").selectpicker('val', $config.mode || "basic"); 
-	}, 100); */
-	/*$("#guiMode").on("change", function(){
-		var selected = $(this).find("option:selected").val();
-		console.log(selected); 
-		if(selected == "logout") {
-			$session.logout().always(function(){
-				$window.location.href="/"; 
-			}); 
-		} else {
-			$config.mode = selected; 
-			$state.reload(); 
-		}
-		localStorage.setItem("mode", selected); 
-	}); */
-	
+	if($config.theme in $config.themes){
+		var th = $config.themes[$config.theme]; 
+		$scope.theme_index = th+"/index.html"; 
+		var theme = $('<link href="'+th+'/css/theme.css" rel="stylesheet" />');
+		theme.appendTo('head'); 
+	} else {
+		alert("Could not load theme "+$config.theme+"!"); 
+		var th = $config.themes["default"]; 
+		$scope.theme_index = th+"/index.html"; 
+		var theme = $('<link href="'+th+'/css/theme.css" rel="stylesheet" />');
+		theme.appendTo('head'); 
+	}
 }); 
 
 

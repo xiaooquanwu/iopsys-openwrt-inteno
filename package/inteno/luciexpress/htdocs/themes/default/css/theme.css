@@ -10,11 +10,38 @@ div.logo {
 	margin-left: 20px;
 }
 
-.top-bar { 
-	margin-bottom: 20px; 
-	background-color: #EBEBEB;
-	border-bottom: 1px solid #ccc;
-	padding-bottom: 10px; 
+
+/* ==========================================================================
+   Header
+   ========================================================================== */
+#logo {
+	float: left;
+}
+#top-bar {
+	background-color: #ebebeb;
+	border-bottom: 1px solid #bbb;
+	height: 50px;
+	margin-bottom: 20px;
+	position: relative;
+	font-size: 14px;
+	line-height: 50px;
+}
+#top-bar-content {
+	width: 950px;
+	margin: 0 auto;
+	padding-left: 80px;
+}
+#top-info-mode {
+	float: right;
+}
+#top-info-logged-user {
+	float: right;
+	margin-right: 15px;
+}
+#top-info-mode .chosen-container {
+	background-color: #fff;
+	display: block;
+	margin-top: 5px;
 }
 
 .navbar-default {

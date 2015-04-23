@@ -4,9 +4,13 @@
 			<span ng-repeat="lang in languages">
 				<a style="text-decoration: {{isActiveLanguage(lang)?'underline':'none'}}; color: inherit;" href="" ng-click="setLanguage(lang)">{{lang.title}}</a>{{$last ? '' : ' | '}}
 			</span>
+			| Theme: <a href="" data-theme="default" class="theme-link">Default</a>
+			<a href="" data-theme="vodaphone" class="theme-link">Vodaphone</a>
+			<a href="" data-theme="red" class="theme-link">Inteno</a>
 		</div>
 		<div id="info">
 			WAN IP Address: {{wanip}} | Firmware version: {{firmwareVersion}}
 		</div>
+		
 	</div>
 </div>

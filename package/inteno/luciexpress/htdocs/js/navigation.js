@@ -87,27 +87,6 @@ angular.module("luci")
 		if(!item.path) return; 
 		item = this.insertLeaf(item.path, item); 
 		
-		
-		// now also register with the routing service 
-		//if(item.page){
-		/*	(function(item){
-				var lazyPromise = null; 
-				$stateProvider.state(item.path.replace(".", "_"), {
-					url: "/"+item.path, 
-					views: {
-						"content": {
-							templateUrl: item.page || "/pages/default.html"
-						}
-					},
-					onEnter: function($window){
-						// TODO: all these redirects seem to load page multiple times. 
-						if(item.redirect) $window.location.href = "#!"+item.redirect; 
-					},
-					luci_config: item
-				}); 
-			})(item); */
-		//}
-		//alert(JSON.stringify(data)); 
 		return data; 
 	}; 
 	this.$get = function() {

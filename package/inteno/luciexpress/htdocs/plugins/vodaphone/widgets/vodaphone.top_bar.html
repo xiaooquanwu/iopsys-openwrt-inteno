@@ -1,0 +1,27 @@
+<div id="top-bar" ng-controller="luciTopBarController">
+	<div id="top-bar-content">
+		<div class="rel">
+			<a href="#">
+				<div id="logo">
+						{{ model }} <!--<img src="themes/vodaphone/img/logo/easybox-804-reskin.png" alt="">-->
+				</div>
+			</a>
+			<div id="top-info" class="clearfix">
+				<div id="top-info-mode" class="rel">
+					<ui-select ng-model="selectedMode"
+							 theme="bootstrap"
+							 search-enabled="false"
+							 on-select="onChangeMode($item, $model)"
+							 style="width: 150px;"
+					>
+							<ui-select-match placeholder="Basic">{{$select.selected.label}}</ui-select-match>
+							<ui-select-choices repeat="mode in guiModes"
+											 refresh-delay="0">
+								<div >{{mode.label}}</div>
+							</ui-select-choices>
+					</ui-select>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

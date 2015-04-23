@@ -17,6 +17,9 @@
 		}, 
 		"login": {
 			"view": "pages/login"
+		}, 
+		"bootstrap": {
+			"view": "pages/bootstrap"
 		}
 	}
 }

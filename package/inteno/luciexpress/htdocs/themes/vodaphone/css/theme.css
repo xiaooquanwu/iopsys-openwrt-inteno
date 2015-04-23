@@ -1,3 +1,4 @@
+
 html {
 	box-sizing: border-box;
 }
@@ -43,6 +44,9 @@ a {
 	color: inherit;
 }
 
+.luci-content {
+	
+}
 /* ==========================================================================
    Font
    ========================================================================== */
@@ -475,6 +479,12 @@ body {
 	width: 100%;
 	margin: 0;
 }
+/* 
+	Please make selectors specific, otherwise you override them everywhere.
+	This is important because for instance bootstrap panel is also using 
+	h3 tags and they look messed up if global h3 tag is overridden here!
+*/
+/*
 h1 {
 	color: #e60000;
 	font-family: "VodafoneRgRegular";
@@ -533,8 +543,8 @@ h3.margin-top {
 
 
 }
+
 .row {
-	/*font-weight: bold;*/
 	display: table-row;
 	line-height: 24px;
 	width: 100%;
@@ -543,15 +553,6 @@ h3.margin-top {
 	padding-top: 20px;
 	padding-bottom: 20px;
 }
-/*.row:not(.description) .left {
-    width: 70%;
-}
-.row:not(.description) .leftHasRight {
-    width: 22%;
-}
-.row:not(.description) .left + .right {
-    width: 30%;
-}*/
 .h3-content .row + .row > div,
 .h3-wrapper-content .row + .row > div {
 	border-top: solid 1px #e6e6e6;
@@ -657,7 +658,7 @@ input.max2-network {
 	text-align: center;
 	padding: 7px 0px !important;
 }
-
+*/
 /*
     Text box input error
  */

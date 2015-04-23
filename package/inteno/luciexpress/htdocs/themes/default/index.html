@@ -1,27 +1,2 @@
-	<div class="top-bar">
-		<div class="container">
-			<div class="row">
-				<div class="col-md-5" style="font-size: 28px; padding-top: 10px;">{{ config.model }}</div>
-				<div style="float: right; margin-top: 10px; ">
-					<ui-select ng-model="selectedMode"
-							 theme="bootstrap"
-							 search-enabled="false"
-							 on-select="onChangeMode($item, $model)"
-							 style="width: 150px;"
-					>
-							<ui-select-match placeholder="Basic">{{$select.selected.label}}</ui-select-match>
-							<ui-select-choices repeat="mode in guiModes"
-											 refresh-delay="0">
-								<div >{{mode.label}}</div>
-							</ui-select-choices>
-					</ui-select>
-					<!--<select id="guiMode" class="selectpicker" >
-						<option value="basic">Basic Mode</option>
-						<option value="expert">Expert Mode</option>
-						<option value="logout">Logout</option>
-					</select>-->
-				</div>
-			</div>
-		</div>
-	</div>
+	
 	<div ui-view="content" style="min-height: 1000px;"></div>

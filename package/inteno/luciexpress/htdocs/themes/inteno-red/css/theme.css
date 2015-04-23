@@ -18,3 +18,34 @@ div.logo {
 .navbar-default {
 	box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.6);
 }
+
+.luci-nav a {
+	color: #444; 
+}
+.nav > li.open > a {
+	color: #ee0000 !important; 
+}
+.navbar .nav > li.open > a {
+	color: #fff !important; 
+}
+
+
+.animate-show {
+  line-height: 20px;
+  opacity: 1;
+  padding: 10px;
+  border: 1px solid black;
+  background: white;
+}
+
+.animate-show.ng-hide-add.ng-hide-add-active,
+.animate-show.ng-hide-remove.ng-hide-remove-active {
+  -webkit-transition: all linear 0.5s;
+  transition: all linear 0.5s;
+}
+
+.animate-show.ng-hide {
+  line-height: 0;
+  opacity: 0;
+  padding: 0 10px;
+}
