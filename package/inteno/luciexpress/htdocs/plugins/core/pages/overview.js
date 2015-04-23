@@ -20,10 +20,10 @@ $juci.module("core")
 				//alert(JSON.stringify(Object.keys(clients).map(function(x) { return clients[x]; }))); 
 				var all = Object.keys(clients).map(function(x) { return clients[x]; }); 
 				$scope.wireless.clients = all.filter(function(x){
-					return x.wireless == true; 
+					return x.connected && x.wireless == true; 
 				}); 
 				$scope.network.clients = all.filter(function(x){
-					return x.wireless == false; 
+					return x.connected && x.wireless == false; 
 				}); 
 				$scope.$apply(); 
 			}); 

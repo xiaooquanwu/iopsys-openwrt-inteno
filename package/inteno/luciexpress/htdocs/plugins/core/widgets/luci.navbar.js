@@ -25,13 +25,9 @@ $juci.module("core")
 .directive("luciNavbar", function(){
 	var plugin_root = $juci.module("core").plugin_root; 
 	return {
-		// accepted parameters for this tag
-		scope: {
-		}, 
+		restrict: 'E', 
 		templateUrl: plugin_root+"/widgets/luci.navbar.html", 
-		replace: true, 
-		controller: "NavigationCtrl",
-		controllerAs: "ctrl"
+		replace: true
 	}; 
 })
 .controller("NavigationCtrl", function($scope, $location, $navigation, $rootScope, $config, $rpc){
@@ -77,31 +73,3 @@ $juci.module("core")
   });
 	activate(); 
 }); 
-/*
-angular.module('autoActive', [])
-		.directive('autoActive', ['$location', function ($location) {
-		return {
-				restrict: 'A',
-				scope: false,
-				link: function (scope, element) {
-						function setActive() {
-								var path = $location.path();
-								if (path) {
-										angular.forEach(element.find('li'), function (li) {
-												var anchor = li.querySelector('a');
-												if (anchor.href.match('#' + path + '(?=\\?|$)')) {
-														angular.element(li).addClass('active');
-												} else {
-														angular.element(li).removeClass('active');
-												}
-										});
-								}
-						}
-
-						setActive();
-
-						scope.$on('$locationChangeSuccess', setActive);
-				}
-		}
-}]);*/
-

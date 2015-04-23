@@ -1,0 +1,19 @@
+<div id="header" ng-controller="NavigationCtrl">
+	<div class="rel">
+			<div id="rhombus-navigation" class="clearfix">
+					<div class="rel">
+							<div id="rhombus-wrap">
+									<div id="rhombus-logo"> </div>
+									<div id="rhombus"> </div>
+							</div>
+							<div id="navigation">
+									<ul class="clearfix">
+											<li class="dropdown" ng-repeat="item in tree.children_list">
+													<a href="#!{{item.path}}" role="button" >{{item.text | translate}} </a>
+											</li>
+									</ul>
+							</div>
+					</div>
+			</div>
+	</div>
+</div>

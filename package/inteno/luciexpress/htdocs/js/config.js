@@ -49,7 +49,8 @@ angular.module("luci")
 			"core", 
 			"phone", 
 			"router", 
-			"wifi"
+			"wifi", 
+			"vodaphone"
 		], 
 		rpc: {
 			//host: "", not used anymore because we now instead do rpc forwarding in server.js!

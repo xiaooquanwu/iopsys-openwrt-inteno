@@ -41,10 +41,7 @@ $juci = {
 			return {
 				plugin_root: plugin.plugin_root, 
 				directive: function(name, fn){
-					return juci.directive(name, fn); 
-					var dir = fn(); 
-					if(dir.templateUrl && plugin.plugin_root) dir.templateUrl = plugin.plugin_root + "/" + dir.templateUrl; 
-					return juci.directive(name, dir); 
+					return juci.directive(name, fn);
 				}, 
 				controller: function(name, fn){
 					return juci.controller(name, fn); 
@@ -151,7 +148,7 @@ angular.module("luci", [
 
 window.app = angular.module("luci"); 
 
-angular.module("luci").controller("BodyCtrl", function ($scope, $localStorage, $state, $session, $location, $window, $rootScope, $config) {
+angular.module("luci").controller("BodyCtrl", function ($scope, $templateCache, $localStorage, $state, $session, $location, $window, $rootScope, $config) {
 	$scope.menuClass = function(page) {
 		var current = $location.path().substring(1);
 		return page === current ? "active" : "";
