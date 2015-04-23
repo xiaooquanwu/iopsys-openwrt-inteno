@@ -2,14 +2,20 @@
 
 START=14
 
-SERVICE_DAEMONIZE=1
-SERVICE_WRITE_PID=1
+USE_PROCD=1
+NAME=questd
+PROG=/sbin/questd
 
-start() {
-        service_start /sbin/questd
+start_service() {
+	procd_open_instance
+	procd_set_param command "$PROG"
+	procd_close_instance
 }
 
 stop() {
-        service_stop /sbin/questd
+	service_stop /sbin/questd
 }
 
+reload() {
+	service_reload /sbin/questd
+}
