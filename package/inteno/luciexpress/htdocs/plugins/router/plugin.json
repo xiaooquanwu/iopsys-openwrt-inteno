@@ -30,6 +30,9 @@
 		"settings.upgrade": {
 			"view": "pages/settings.upgrade"
 		},
+		"settings.uci": {
+			"view": "pages/settings.uci"
+		},
 		"status.about": {
 			"view": "pages/status.about"
 		},

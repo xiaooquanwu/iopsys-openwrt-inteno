@@ -34,5 +34,12 @@
         "acls": [  ],
         "view": "settings.network",
         "index": 50
+    },
+    "settings/uci": {
+        "title": "Advanced",
+				"modes": [ "expert" ], 
+        "acls": [  ],
+        "view": "settings.uci",
+        "index": 60
     }
 }

@@ -1,9 +1,9 @@
-$juci.module("core")
+$juci.module("wifi")
 .state("wifi", {
 	url: "/wifi", 
 	views: {
 		"content": {
-			templateUrl: "pages/default.html", 
+			templateUrl: "pages/wifi.html", 
 		}
 	}, 
 	onEnter: function($state){

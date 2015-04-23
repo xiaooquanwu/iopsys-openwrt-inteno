@@ -2,17 +2,13 @@ var express = require('express');
 var app = express();
 var JSON = require("JSON"); 
 var fs = require("fs"); 
+var request = require("request"); 
 
 var bodyParser = require('body-parser')
 
-/* 
-Cross origin requests
-To allow cross origin requests from your local setup to your router, 
-add the following lines into target* -> uhttpd -> client -> uh_http_header() 
-
-ustream_printf(cl->us, "Access-Control-Allow-Origin: *\r\n"); 
-ustream_printf(cl->us, "Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept\r\n");  
-*/
+var config = {
+	ubus_uri: "http://192.168.1.1/ubus" // <-- your router uri
+}; 
 
 app.use( bodyParser.json() );       // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
@@ -24,27 +20,22 @@ app.use(express.static(__dirname + '/htdocs'));
 var rpc_calls = {
 	"luci2.ui.menu": function(params, next){
 		var menu = {}; 
-		[
-			"share/menu.d/overview.json", 
-			"share/menu.d/settings.json",
-			"share/menu.d/phone.json",
-			"share/menu.d/internet.json",
-			"share/menu.d/status.json",
-			"share/menu.d/status.vodaphone.json",
-			"share/menu.d/wifi.json"
-		].map(function(file){
-			var obj = JSON.parse(fs.readFileSync(file)); 
-			Object.keys(obj).map(function(k){
-				menu[k] = obj[k]; 
-			});  
-		}); 
-		next({
-			menu: menu
+		// combine all menu files we have locally
+		fs.readdir("share/menu.d", function(err, files){
+			files.map(function(file){
+				var obj = JSON.parse(fs.readFileSync(file)); 
+				Object.keys(obj).map(function(k){
+					menu[k] = obj[k]; 
+				});  
+			}); 
+			next({
+				menu: menu
+			}); 
 		}); 
 	}, 
 	"session.access": function(params, next){
 		next({
-			"access-group": [ "a", "b" ]
+			"access-group": [ "a", "b" ] // just bogus access groups
 		}); 
 	}
 }; 
@@ -52,34 +43,57 @@ var rpc_calls = {
 // RPC end point
 app.post('/ubus', function(req, res) {
   res.header('Content-Type', 'application/json');
+  
   var data = req.body, err = null, rpcMethod;
+  
+	console.log("JSON_CALL (-> "+config.ubus_uri+"): "+JSON.stringify(data)); 
 	
+	function doLocalRPC(){
+		if (!err && data.jsonrpc !== '2.0') {
+			onError({
+				code: -32600,
+				message: 'Bad Request. JSON RPC version is invalid or missing',
+				data: null
+			}, 400);
+			return;
+		}
+		
+		//console.log("Call: "+data.method+" "+JSON.stringify(data.params)); 
+		var name = data.params[1]+"."+data.params[2]; 
+		if(name in rpc_calls){
+			rpc_calls[name](null, function(resp){
+				res.write(JSON.stringify({
+					jsonrpc: "2.0", 
+					result: [0, resp]
+				}));
+				
+				res.end(); 
+			}); 
+		} else {
+			console.log("Unknown RPC call "+name); 
+			res.end(); 
+		}
+	}
+	
+  request({
+    url: config.ubus_uri,
+    method: "POST",
+    json: true,   // <--Very important!!!
+    body: data
+	}, function (error, response, body) {
+		if(error){ 
+			doLocalRPC(); 
+			return; 
+		}
+		var json = JSON.stringify(body); 
+		console.log("JSON_RESP: "+json); 
+		res.write(json); 
+		res.end(); 
+	});
+/*
 	console.log(JSON.stringify(data)); 
 	
-  if (!err && data.jsonrpc !== '2.0') {
-    onError({
-      code: -32600,
-      message: 'Bad Request. JSON RPC version is invalid or missing',
-      data: null
-    }, 400);
-    return;
-  }
-	
-	//console.log("Call: "+data.method+" "+JSON.stringify(data.params)); 
-	var name = data.params[1]+"."+data.params[2]; 
-	if(name in rpc_calls){
-		rpc_calls[name](null, function(resp){
-			res.write(JSON.stringify({
-				jsonrpc: "2.0", 
-				result: [0, resp]
-			}));
-			
-			res.end(); 
-		}); 
-	} else {
-		console.log("Unknown RPC call "+name); 
-		res.end(); 
-	}
+  */
 });
 
 var server = app.listen(3000, function () {

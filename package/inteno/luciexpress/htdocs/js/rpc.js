@@ -1,3 +1,25 @@
+/*
+ * juci - javascript universal client interface
+ *
+ * Project Author: Martin K. Schröder <mkschreder.uk@gmail.com>
+ * 
+ * Copyright (C) 2012-2013 Inteno Broadband Technology AB. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA
+ */
+ 
 // luci rpc module for communicating with the server
 angular.module("luci")
 .factory('$rpc', function($rootScope, $config){
@@ -31,8 +53,10 @@ angular.module("luci")
 										if(result && result.result) {
 											if(result.result[0] != 0) {
 												console.log("RPC succeeded, but returned error: "+JSON.stringify(result));
-												deferred.reject(result.result[1]); 
-											} else deferred.resolve(result.result[1]); 
+												deferred.reject(result.result[0]); 
+											} else {
+												deferred.resolve(result.result[1]);
+											}
 										}
 									}, 
 									error: function(result){

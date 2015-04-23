@@ -1,6 +1,7 @@
 $juci.module("wifi")
 .controller("WifiGeneralPageCtrl", function($scope){
 	$scope.wifiEnabled = 1; 
+	$scope.mainWifiEnabled = 1; 
 	$scope.wifiButtonEnabled = 1; 
 	$scope.guestWifiEnabled = 0; 
 	$scope.allFreqs = [{

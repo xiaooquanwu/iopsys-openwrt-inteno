@@ -1,7 +1,9 @@
 /*
  * juci - javascript universal client interface
  *
- * Author: Martin K. Schröder <martin.schroder@inteno.se>
+ * Project Author: Martin K. Schröder <mkschreder.uk@gmail.com>
+ * 
+ * Copyright (C) 2012-2013 Inteno Broadband Technology AB. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -85,6 +87,7 @@ angular.module("luci", [
 		$juci.directive = $compileProvider.directive; 
 		$juci.state = $stateProvider.state; 
 		$juci.$stateProvider = $stateProvider; 
+		$juci.$urlRouterProvider = $urlRouterProvider; 
 		$juci.redirect = function(page){
 			window.location.href = "#!"+page; 
 		}
@@ -107,7 +110,7 @@ angular.module("luci", [
 			url: "/404", 
 			views: {
 				"content": {
-					templateUrl: "plugins/core/pages/404.html"
+					templateUrl: "/html/404.html"
 				}
 			},
 			onEnter: function(){
@@ -121,7 +124,7 @@ angular.module("luci", [
 			url: "/init/:redirect", 
 			views: {
 				"content": {
-					templateUrl: "plugins/core/pages/loading.html"
+					templateUrl: "/html/init.html"
 				}
 			}, 
 			onEnter: function($state, $stateParams, $config, $session, $rpc, $navigation, $location, $rootScope, $http){
@@ -129,115 +132,7 @@ angular.module("luci", [
 					$juci.redirect($stateParams.redirect || "overview"); 
 					return;
 				}
-				console.log("INIT"); 
-				async.series([
-					
-					function(next){
-						console.log("Getting config.."); 
-						// TODO: use rpc
-						next(); 
-					},
-					function(next){
-						console.log("Loading plugins.."); 
-						async.eachSeries($config.plugins, function(id, next){
-							console.log(".."+id); 
-							var plugin_root = "plugins/"+id; 
-							$http.get(plugin_root + "/plugin.json")
-							.success(function(data){
-								var scripts = []; 
-								data.plugin_root = plugin_root; 
-								$juci.plugins[id] = data; 
-								if(data && data.scripts){
-									data.scripts.map(function(x){scripts.push(plugin_root + "/" + x); });
-								} 
-								// load page controllers
-								if(data.pages) {
-									Object.keys(data.pages).map(function(k){
-										var page = data.pages[k]; 
-										if(page.view){
-											scripts.push(plugin_root + "/" + page.view); 
-											$stateProvider.state(k.replace(".", "_"), {
-												url: "/"+k, 
-												views: {
-													"content": {
-														templateUrl: (page.view)?(plugin_root + "/" + page.view + ".html"):"plugins/core/pages/default.html", 
-													}
-												},
-												onEnter: function($window){
-													// TODO: all these redirects seem to load page multiple times. 
-													//if(item.redirect) $window.location.href = "#!"+item.redirect; 
-												},
-												//luci_config: item
-											}); 
-										}
-									}); 
-								} 
-								async.eachSeries(scripts, function(script, next){
-									require([script], function(module){
-										next(); 
-									}); 
-								}, function(){
-									
-									// goto next plugin
-									next(); 
-								}); 
-							}).error(function(data){
-								
-								next(); 
-							}); 
-						}, function(){
-							
-							next(); 
-						});
-					}, 
-					function(next){
-						console.log("Validating session.."); 
-						$session.init().done(function(){
-							next(); 
-						}).fail(function(){
-							console.log("Failed to verify session."); 
-							$state.go("login"); 
-						}); 
-					}, 
-					function(next){
-						console.log("Getting navigation.."); 
-						
-						// get the menu navigation
-						$rpc.luci2.ui.menu().done(function(data){
-							//console.log(JSON.stringify(data)); 
-							Object.keys(data.menu).map(function(key){
-								var menu = data.menu[key]; 
-								var view = menu.view; 
-								var path = key.replace("/", "."); 
-								var obj = {
-									path: path, 
-									modes: data.menu[key].modes || [ ], 
-									text: data.menu[key].title, 
-									index: data.menu[key].index || 0, 
-								}; 
-								if(menu.redirect){
-									obj.redirect = menu.redirect; 
-								}
-								if(view){
-									obj.page = "/pages/"+view.replace("/", ".")+".html"; 
-								}
-								$navigation.register(obj); 
-								
-							}); 
-							//$rootScope.$apply(); 
-							next(); 
-						}); 
-					}
-				], function(err){
-					if(err) $state.go("error"); 
-					$juci._initialized = true; 
-					
-					// add this here to avoid being redirected to the 404 page from the start
-					$urlRouterProvider.otherwise("/init/404"); 
-		
-					console.log("redirecting -> "+$stateParams.redirect); 
-					$state.go($stateParams.redirect || "overview"); 
-				}); 
+				
 			},
 			luci_config: {}
 		}); 
@@ -271,28 +166,6 @@ angular.module("luci").controller("BodyCtrl", function ($scope, $localStorage, $
 	
 	$scope.theme_index = "themes/"+$config.theme+"/index.html"; 
 	
-	$scope.guiModes = [
-		{id: "basic", label: "Basic Mode"},
-		{id: "expert", label: "Expert Mode"},
-		{id: "logout", label: "Log out"}
-	]; 
-	Object.keys($scope.guiModes).map(function(k){
-		var m = $scope.guiModes[k]; 
-		if(m.id == $config.mode) $scope.selectedMode = m;
-	});  
-	$scope.onChangeMode = function(item){
-		var selected = item.id; 
-		console.log(selected); 
-		if(selected == "logout") {
-			$session.logout().always(function(){
-				$window.location.href="/"; 
-			}); 
-		} else {
-			$config.mode = selected; 
-			$state.reload(); 
-		}
-		$localStorage.setItem("mode", selected); 
-	};
 	/*setTimeout(function(){
 		$("#guiMode").selectpicker('val', $config.mode || "basic"); 
 	}, 100); */

@@ -16,14 +16,14 @@
 				</td>
 			</tr>
 		</table>
-		<h2>Setup</h2>
-		<div class="row">
+		<div class="row" ng-show="wifiEnabled">
+			<h2>Setup</h2>
 			<div class="col-md-6">
 				<table class="table">
 					<tr>
 						<td>
 								<div class="col-md-6"><strong style="font-size: 1.2em">Main Wifi</strong></div>
-								<div class="col-md-6"><switch id="enabled" name="enabled" ng-model="wifiEnabled" class="green"></switch></div>
+								<div class="col-md-6"><switch id="enabled" name="enabled" ng-model="mainWifiEnabled" class="green"></switch></div>
 						</td>
 					</tr>
 				</table>

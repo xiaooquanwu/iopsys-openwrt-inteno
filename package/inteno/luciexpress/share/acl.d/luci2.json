@@ -112,7 +112,11 @@
 				]
 			},
 			"uci": [
-				"dropbear"
+				"dropbear", 
+				"set",
+				"get", 
+				"commit", 
+				"state"
 			]
 		},
 		"write": {
@@ -123,7 +127,11 @@
 				]
 			},
 			"uci": [
-				"dropbear"
+				"dropbear", 
+				"set",
+				"get", 
+				"commit", 
+				"state"
 			]
 		}
 	},
