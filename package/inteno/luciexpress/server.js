@@ -23,7 +23,7 @@ var rpc_calls = {
 		// combine all menu files we have locally
 		fs.readdir("share/menu.d", function(err, files){
 			files.map(function(file){
-				var obj = JSON.parse(fs.readFileSync(file)); 
+				var obj = JSON.parse(fs.readFileSync("share/menu.d/"+file)); 
 				Object.keys(obj).map(function(k){
 					menu[k] = obj[k]; 
 				});  
