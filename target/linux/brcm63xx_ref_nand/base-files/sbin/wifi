@@ -1038,7 +1038,7 @@ wifi_detect() {
 	local WLDIR="/tmp/wireless"
 	local wls="wl0 wl1"
 	local vnos="0 1 2 3 4 5 6 7 8"
-	local bands band bwidth country hwmode pcid wl bno doth vdev vn
+	local bands band bwidth country hwmode pcid wl bno doth dfsc ch vdev vn
 	local BMAC=$(cat /proc/nvram/BaseMacAddr | tr '[a-z]' '[A-Z]')
 	BMAC=${BMAC// /}
 	local BSSID=$(printf "%X\n" $((0x$BMAC + 2)))
@@ -1050,6 +1050,24 @@ wifi_detect() {
 	local KEY="$(uci -q get wireless.@wifi-iface[0].key)"
 	local WPS="$(uci -q get wireless.@wifi-iface[0].wps_pbc)"
 	local NET="$(uci -q get wireless.@wifi-iface[0].network)"
+
+	local PSID="$(uci -q get wireless.preferred.sid)"
+	local PENC="$(uci -q get wireless.preferred.enc)"
+	local PKEY="$(uci -q get wireless.preferred.key)"
+	local PWPS="$(uci -q get wireless.preferred.wpsb)"
+	local PHW5="$(uci -q get wireless.preferred.hw5g)"
+	local PHW2="$(uci -q get wireless.preferred.hw2g)"
+	local PBW5="$(uci -q get wireless.preferred.bw5g)"
+	local PBW2="$(uci -q get wireless.preferred.bw2g)"
+	local PCH5="$(uci -q get wireless.preferred.ch5g)"
+	local PCH2="$(uci -q get wireless.preferred.ch2g)"
+	local PDFS="$(uci -q get wireless.preferred.dfsc)"
+	local PCNT="$(uci -q get wireless.preferred.country)"
+
+	[ -n "$SSID" ] || SSID="${PSID:-Inteno}"-$BSSID4
+	[ -n "$ENCR" ] || ENCR=$PENC
+	[ -n "$KEY" ] || KEY=$PKEY
+	[ -n "$WPS" ] || WPS=$PWPS
 
 	pcID() {
 		wlctl -i $1 revinfo | awk 'FNR == 2 {print}' | cut -d'x' -f2
@@ -1072,22 +1090,24 @@ wifi_detect() {
 	for wl in $wls; do
 		if wlctl -i $wl ap >/dev/null 2>&1; then
 			pcid=$(pcID $wl)
-			country="EU/13"
-			hwmode="auto"
+			country="${PCNT:-EU/13}"
 			if $(is5G $pcid); then
+				hwmode="${PHW5:-auto}"
 				band="a"
-				bwidth="40"
+				bwidth="${PBW5:-80}"
+				ch="${PCH5:-auto}"
 				bno=5
 				doth="1"
-				$(isAC $pcid) && {
-					hwmode="11ac"
-					bwidth="80"
-				}
+				dfsc="${PDFS:-0}"
+				$(isAC $pcid) && hwmode="${PHW5:-11ac}"
 			else
+				hwmode="${PHW2:-auto}"
 				band="b"
-				bwidth="20"
+				bwidth="${PBW2:-20}"
+				ch="${PCH2:-auto}"
 				bno=2
 				doth="0"
+				dfsc=""
 			fi
 			populate_chanspecs $wl
 			if ! uci -q get wireless.$wl; then
@@ -1098,7 +1118,7 @@ config wifi-device '$wl'
 	option band '$band'
 	option bandwidth '$bwidth'
 	option hwmode '$hwmode'
-	option channel 'auto'
+	option channel '$ch'
 	option scantimer '15'
 	option wmm '1'
 	option wmm_noack '0'
@@ -1114,7 +1134,7 @@ config wifi-device '$wl'
 	option rxchainps_pps '10'
 	option rifs '0'
 	option rifs_advert '0'
-	option maxassoc '16'
+	option maxassoc '32'
 	option doth '$doth'
 
 config wifi-iface
@@ -1131,24 +1151,57 @@ config wifi-iface
 	option wmf_bss_enable '1'
 	option bss_max '16'
 
+config wifi-iface
+	option device '$wl'
+	option network 'guest'
+	option mode 'ap'
+	option ssid '${SSID:-Inteno-$BSSID4}-Guest'
+	option encryption 'none'
+	option macfilter '0'
+	option wps_pbc '0'
+	option wmf_bss_enable '1'
+	option bss_max '16'
+
 EOF
+				uci -q set wireless.$wl.dfsc="$dfsc"
 			else
 				uci -q set wireless.$wl.band="$band"
 				uci -q set wireless.$wl.doth="$doth"
-				uci commit wireless
+				uci -q set wireless.$wl.dfsc="$dfsc"
 			fi
 		else
-			uci delete wireless.$wl
+			uci -q delete wireless.$wl
 			for vn in $vnos; do
 				vdev="$(uci get wireless.@wifi-iface[$vn].device)"
 				if [ $vdev == "$wl" ]; then
-					uci delete wireless.@wifi-iface[$vn]
+					uci -q delete wireless.@wifi-iface[$vn]
 				fi
 			done
-			uci commit wireless
 		fi
 	done
+	uci -q delete wireless.preferred
+	uci commit wireless
+}
 
+wifi_onoff() {
+	local status="$1"
+	local dualwf="$(uci -q get wireless.wl1)"
+	local wl0sta="$(uci -q get wireless.wl0.radio)"
+	local wl1sta="$(uci -q get wireless.wl1.radio)"
+	[ -n "$dualwf" ] || wl1sta="$wl0sta"
+	[ -n "$wl0sta" ] || wl0sta="on"
+	[ -n "$wl1sta" ] || wl1sta="on"
+
+	if [ "$wl0sta" == "$wl1sta" -a "$status" == "$wl0sta" ]; then
+		return
+	fi
+
+	uci -q set wireless.wl0.radio="$status"
+	uci -q set wireless.wl1.radio="$status"
+	uci commit wireless
+
+	wifi_updown "disable"
+	[ "$status" == "on" ] && wifi_updown "enable"
 }
 
 wifi_toggle_iface() {
@@ -1165,6 +1218,7 @@ wifi_toggle_iface() {
 }
 
 case "$1" in
+	on|off) wifi_onoff "$1" ;;
 	disable|enable) wifi_toggle_iface "$1" "$2" ;;
 	detect) wifi_detect ;;
 	down) wifi_updown "disable" "$2" ;;
