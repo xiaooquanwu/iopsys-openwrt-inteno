@@ -1,0 +1,11 @@
+{
+	"title": "Vodaphone", 
+	"index": "index.html", 
+	"styles": [
+		"css/theme.css"
+	], 
+	"scripts": [
+		"widgets/vodaphone.navbar",
+		"widgets/vodaphone.top_bar"
+	]
+}

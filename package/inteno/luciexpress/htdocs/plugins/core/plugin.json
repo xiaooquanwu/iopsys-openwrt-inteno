@@ -1,5 +1,6 @@
 {
 	"scripts": [
+		"widgets/theme_picker",
 		"widgets/luci.footer",
 		"widgets/luci.layout.naked",
 		"widgets/luci.layout.single_column",

@@ -39,18 +39,17 @@ angular.module("luci")
 				title: "Swedish"
 			}
 		},
-		themes: {
-			"default": "/themes/default/",
-			"red" : "/themes/inteno-red/",
-			"vodaphone" : "/themes/vodaphone/"
-		}, 
+		themes: [
+			"default", 
+			"inteno-red", 
+			"vodaphone"
+		], 
 		plugins: [
 			"hello_world", 
 			"core", 
 			"phone", 
 			"router", 
-			"wifi", 
-			"vodaphone"
+			"wifi"
 		], 
 		rpc: {
 			//host: "", not used anymore because we now instead do rpc forwarding in server.js!

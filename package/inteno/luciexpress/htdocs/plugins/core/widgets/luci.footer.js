@@ -25,9 +25,6 @@ $juci.module("core")
 	var plugin_root = $juci.module("core").plugin_root; 
 	
 	return {
-		// accepted parameters for this tag
-		scope: {
-		}, 
 		templateUrl: plugin_root+"/widgets/luci.footer.html", 
 		controller: "luciFooterController"
 	}; 
@@ -51,22 +48,5 @@ $juci.module("core")
 		}); 
 	}); 
 	
-	// TODO: remove the theme switches when done developing
-	$(function(){
-		var themes = $config.themes; 
-		$config.theme = localStorage.getItem("theme") || "default"; 
-		var bootstrap = $('<link href="'+themes[$config.theme]+'/css/bootstrap.min.css" rel="stylesheet" />');
-		var theme = $('<link href="'+themes[$config.theme]+'/css/theme.css" rel="stylesheet" />');
-		bootstrap.appendTo('head');
-		theme.appendTo('head'); 
-		$('.theme-link').click(function(){
-			var themename = $(this).attr('data-theme');
-			var themeurl = themes[themename];
-			$config.theme = themename;
-			localStorage.setItem("theme", themename);
-			bootstrap.attr('href',themeurl+"/css/bootstrap.min.css");
-			theme.attr('href',themeurl+"/css/theme.css");
-			window.location.reload(); 
-		});
-	});
+	
 }); 

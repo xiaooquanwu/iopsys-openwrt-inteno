@@ -1,5 +1,5 @@
 angular.module("luci")
-.controller("InitPageController", function($scope, $tr, $state, $stateParams, $config, $session, $rpc, $navigation, $location, $rootScope, $http){
+.controller("InitPageController", function($scope, $tr, $state, $stateParams, $config, $session, $localStorage, $rpc, $navigation, $location, $rootScope, $http, $theme){
 	//$scope.progress = {}; 
 	console.log("INIT"); 
 	function progress(text, value){
@@ -9,15 +9,69 @@ angular.module("luci")
 			$scope.$apply();
 		}, 0);  
 	} 
+	
+	var scripts = []; 
 	async.series([
 		function(next){
 			//$scope.progress = { text: "test", value: 20 }; 
-			progress("Getting config..", 5); 
+			progress("Getting config..", 0); 
 			// TODO: use rpc
 			next(); 
 		},
 		function(next){
-			progress("Loading plugins..", 5); 
+			$config.mode = $localStorage.getItem("mode") || "basic"; 
+			$config.theme = $localStorage.getItem("theme") || $config.theme || "default"; 
+			
+			//$config.theme = "default"; 
+			
+			$theme.changeTheme($config.theme).done(function(){
+				next(); 
+			}).fail(function(){
+				next(); 
+			}); 
+			/*
+			if($config.themes){
+				var themes = {}; 
+				async.eachSeries($config.themes, function(theme_id, next){
+					console.log("Loading theme "+theme_id); 
+					var theme_root = "themes/"+theme_id; 
+					$http.get(theme_root+"/theme.json").success(function(data){
+						if(!data) return; 
+						Object.keys(data).map(function(k){
+							themes[k] = data[k]; 
+							var t = data[k]; 
+							if(t.scripts) scripts = scripts.concat(t.scripts.map(function(x){return theme_root + "/"+x;})); 
+							//alert(JSON.stringify(data)); 
+						}); 
+						$juci.module(theme_id, theme_root, data); 
+						next(); 
+					}).error(function(){
+						next(); 
+					}); 
+				}, function(){
+					if($config.theme in themes){
+						console.log("Using theme "+$config.theme); 
+						var th = "themes/"+$config.theme; 
+						$rootScope.theme_index = th+"/index.html"; 
+						var theme = $('<link href="'+th+'/css/theme.css" rel="stylesheet" />');
+						theme.appendTo('head'); 
+					} else {
+						console.log("Could not load theme "+$config.theme+"!"); 
+						var th = themes["default"]; 
+						$rootScope.theme_index = th+"/index.html"; 
+						var theme = $('<link href="'+th+'/css/theme.css" rel="stylesheet" />');
+						theme.appendTo('head'); 
+					} 
+					
+					next(); 
+				}); 
+			} else {
+				alert("You have no themes defined in config file!"); 
+				next(); 
+			}*/
+		}, 
+		function(next){
+			progress("Loading plugins..", 8); 
 			var count = 0; 
 			async.eachSeries($config.plugins, function(id, next){
 				count++; 
@@ -25,9 +79,7 @@ angular.module("luci")
 				var plugin_root = "plugins/"+id; 
 				$http.get(plugin_root + "/plugin.json")
 				.success(function(data){
-					var scripts = []; 
-					data.plugin_root = plugin_root; 
-					$juci.plugins[id] = data; 
+					$juci.module(id, plugin_root, data); 
 					if(data && data.scripts){
 						data.scripts.map(function(x){scripts.push(plugin_root + "/" + x); });
 					} 
@@ -110,7 +162,11 @@ angular.module("luci")
 			}); 
 		}
 	], function(err){
-		if(err) $state.go("error"); 
+		if(err) {
+			console.log("ERROR: "+err); 
+			$state.go("error"); 
+		}
+		
 		$juci._initialized = true; 
 		
 		// add this here to avoid being redirected to the 404 page from the start

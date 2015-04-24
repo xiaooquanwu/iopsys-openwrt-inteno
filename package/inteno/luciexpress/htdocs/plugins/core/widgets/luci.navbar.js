@@ -51,7 +51,7 @@ $juci.module("core")
 	$scope.isActive = function (viewLocation) { 
 		return viewLocation === $location.path();
 	};
-	
+	/*
 	$(function(){
 		var themes = $config.themes; 
 		$config.theme = localStorage.getItem("theme") || "default"; 
@@ -67,5 +67,5 @@ $juci.module("core")
 			//bootstrap.attr('href',themeurl+"/css/bootstrap.min.css");
 			theme.attr('href',themeurl+"/css/theme.css");
 		});
-	});
+	});*/
 }); 

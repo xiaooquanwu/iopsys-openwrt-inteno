@@ -18,10 +18,11 @@
   <link rel="stylesheet" href="css/app.css"/>
 </head>
 <body role="document" ng-cloak >
-	<div ng-controller="BodyCtrl">
+	<div ui-view="content" style="min-height: 1000px;"></div>
+	<!--<div ng-controller="BodyCtrl">
 		<div ng-include="theme_index"></div>
 		
-	</div>
+	</div>-->
 	<div style="margin-bottom: 40px"></div>
 	<script src="/bower_components/async/lib/async.js"></script>
 	<script src="/bower_components/requirejs/require.js"></script>
@@ -49,6 +50,7 @@
 	<script src="js/session.js"></script>
 	<script src="js/tr.js"></script>
 	<script src="js/localStorage.js"></script>
+	<script src="js/theme.js"></script>
 	<!-- ###---### -->
 </body>
 </html>

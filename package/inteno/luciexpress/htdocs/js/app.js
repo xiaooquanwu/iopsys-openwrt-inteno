@@ -35,7 +35,11 @@ function supports_html5_storage() {
 
 $juci = {
 		plugins: {},
-		module: function(name){
+		module: function(name, root, data){
+			if(data){
+				data.plugin_root = root; 
+				this.plugins[name] = data; 
+			}
 			var plugin = this.plugins[name]; 
 			var juci = this; 
 			return {
@@ -88,21 +92,7 @@ angular.module("luci", [
 		$juci.redirect = function(page){
 			window.location.href = "#!"+page; 
 		}
-		//$stateProvider.otherwise("login"); 
 		
-		/*$stateProvider.state("redirect", {
-			url: "/redirect/:path", 
-			views: {
-				"content": {
-					templateUrl: "pages/default.html"
-				}
-			}, 
-			onEnter: function($state, $stateParams){
-				console.log(JSON.stringify($stateParams)); 
-				$state.go($stateParams.path); 
-			},
-			luci_config: {}
-		}); */
 		$stateProvider.state("404", {
 			url: "/404", 
 			views: {
@@ -121,21 +111,23 @@ angular.module("luci", [
 			url: "/init/:redirect", 
 			views: {
 				"content": {
-					templateUrl: "/html/init.html"
+					templateUrl: "html/init.html"
 				}
 			}, 
 			onEnter: function($state, $stateParams, $config, $session, $rpc, $navigation, $location, $rootScope, $http){
 				if($juci._initialized) {
 					$juci.redirect($stateParams.redirect || "overview"); 
 					return;
+				} else {
+					
 				}
-				
 			},
 			luci_config: {}
 		}); 
 	})
 	.run(function($rootScope, $state, $session, gettextCatalog, $rpc, $config, $location, $navigation){
 		$rootScope.config = $config; 
+		//$rootScope.theme_index = "html/init.html"; 
 		// set current language
 		//gettextCatalog.currentLanguage = "se"; 
 		//gettextCatalog.debug = true;
@@ -143,12 +135,14 @@ angular.module("luci", [
         $rootScope.title = current.$$route.title;
     });*/
 		var path = $location.path().replace("/", "").replace(".", "_");  
+		
 		$state.go("init", {"redirect": path}); 
 	})
 
-window.app = angular.module("luci"); 
+//window.app = angular.module("luci"); 
 
-angular.module("luci").controller("BodyCtrl", function ($scope, $templateCache, $localStorage, $state, $session, $location, $window, $rootScope, $config) {
+/*
+angular.module("luci").controller("BodyCtrl", function ($scope, $templateCache, $localStorage, $state, $session, $location, $window, $rootScope, $config, $http) {
 	$scope.menuClass = function(page) {
 		var current = $location.path().substring(1);
 		return page === current ? "active" : "";
@@ -158,24 +152,8 @@ angular.module("luci").controller("BodyCtrl", function ($scope, $templateCache, 
 		label: "Basic Mode"
 	}]; 
 	
-	$config.mode = $localStorage.getItem("mode") || "basic"; 
-	$config.theme = $localStorage.getItem("theme") || $config.theme || "default"; 
-	
-	
-	if($config.theme in $config.themes){
-		var th = $config.themes[$config.theme]; 
-		$scope.theme_index = th+"/index.html"; 
-		var theme = $('<link href="'+th+'/css/theme.css" rel="stylesheet" />');
-		theme.appendTo('head'); 
-	} else {
-		alert("Could not load theme "+$config.theme+"!"); 
-		var th = $config.themes["default"]; 
-		$scope.theme_index = th+"/index.html"; 
-		var theme = $('<link href="'+th+'/css/theme.css" rel="stylesheet" />');
-		theme.appendTo('head'); 
-	}
 }); 
-
+*/
 
 $(document).ready(function(){
 	          

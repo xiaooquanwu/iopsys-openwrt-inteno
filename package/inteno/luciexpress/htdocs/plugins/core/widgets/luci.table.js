@@ -78,9 +78,9 @@ $juci.module("core")
 			// try to extend first column if the division is not whole number 
 			if(ncols < 12){
 				var w = Math.round(12 / ncols); 
-				$scope.cell_class = "col-md-"+w;
+				$scope.cell_class = "col-lg-"+w;
 				if(((12 / ncols) - w) != 0){ 
-					$scope.first_cell_class="col-md-"+(12 - w * (ncols - 1)); 
+					$scope.first_cell_class="col-lg-"+(12 - w * (ncols - 1)); 
 				} else {
 					$scope.first_cell_class= $scope.cell_class; 
 				}

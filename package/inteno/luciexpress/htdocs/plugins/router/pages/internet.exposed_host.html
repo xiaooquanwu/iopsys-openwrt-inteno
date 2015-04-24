@@ -1,5 +1,24 @@
 <luci-layout-with-sidebar>
 	<div ng-controller="InternetExHostPageCtrl">
-		Exposed host settings
+		<h2 translate>Exposed Host</h2>
+		<p translate>If you have a local network device that cannot run an Internet application properly behind the firewall, you can allow unrestricted Internet access to the network device (Exposed Host).</p>
+		<div class="row">
+			<div class="col-md-10">
+				<strong translate>Exposed Host Function</strong>
+			</div>
+			<div class="col-md-2"><switch ng-model="exposedHostEnabled" class="green"></switch></div>
+		</div>
+		<div ng-show="exposedHostEnabled">
+			<div class="row">
+				<div class="col-md-4">Plublic IP Address</div>
+				<div class="col-md-8">{{ wan.ip }}</div>
+			</div>
+			<div class="row">
+				<div class="col-md-4">Local IP Address</div>
+				<div class="col-md-8"><input type='text' ng-model='lan.ip' 
+          ng-pattern='/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/' 
+          placeholder='xxx.xxx.xxx.xxx'  /></div>
+			</div>
+		</div>
 	</div>
 </luci-layout-with-sidebar>
