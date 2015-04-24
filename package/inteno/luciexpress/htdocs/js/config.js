@@ -66,6 +66,7 @@ angular.module("luci")
 				"router.clients", 
 				"uci.state", 
 				"uci.set", 
+				"uci.delete", 
 				"uci.commit", 
 				"uci.configs", 
 				"network.interface.status", 

@@ -116,7 +116,8 @@
 				"set",
 				"get", 
 				"commit", 
-				"state"
+				"state", 
+				"delete"
 			]
 		},
 		"write": {
@@ -131,7 +132,8 @@
 				"set",
 				"get", 
 				"commit", 
-				"state"
+				"state", 
+				"delete"
 			]
 		}
 	},

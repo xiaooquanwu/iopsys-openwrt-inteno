@@ -51,12 +51,17 @@ angular.module("luci")
 									success: function(result){
 										//alert("SID: "+sid + " :: "+ JSON.stringify(result)); 
 										if(result && result.result) {
-											if(result.result[0] != 0) {
+											// TODO: modify all rpc UCI services so that they ALWAYS return at least 
+											// an empty json object. Otherwise we have no way to differentiate success 
+											// from failure of a request. This has to be done on the host side. 
+											if(result.result[0] != 0){ // || result.result[1] == undefined) {
 												console.log("RPC succeeded, but returned error: "+JSON.stringify(result));
 												deferred.reject(result.result[0]); 
 											} else {
 												deferred.resolve(result.result[1]);
 											}
+										} else {
+											deferred.reject(); 
 										}
 									}, 
 									error: function(result){

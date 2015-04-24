@@ -79,6 +79,7 @@ angular.module("luci", [
 	"ui.router", 
 	'ui.select',
 	"uiSwitch",
+	"ngAnimate", 
 	"gettext"
 	])
 	.config(function ($stateProvider, $locationProvider, $compileProvider, $urlRouterProvider, $controllerProvider) {
