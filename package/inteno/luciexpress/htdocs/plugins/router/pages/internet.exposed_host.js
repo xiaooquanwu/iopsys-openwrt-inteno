@@ -1,5 +1,5 @@
 $juci.module("router")
-.controller("InternetExHostPageCtrl", function($scope, $rpc, $config, $uci){
+.controller("InternetExHostPageCtrl", function($scope, $rpc, $config, $uci, $tr){
 	$scope.exposedHostEnabled = 0; 
 	$scope.wan = {}; 
 	$scope.lan = {}; 
@@ -27,10 +27,10 @@ $juci.module("router")
 	}; 
 	$scope.onSave = function(){
 		$uci.set("firewall.dmz", $scope.dmz).done(function(){
-			$scope.info_message = "Settings saved!"; 
+			$scope.info_message = $tr("STR_SETTINGSSAVED"); 
 			$scope.$apply(); 
 		}).fail(function(){ 
-			$scope.error_message = "Saving failed!"; 
+			$scope.error_message = $tr("STR_SETTINGSSAVEFAILED"); 
 		}); 
 		setTimeout(function(){ 
 			$scope.error_message = null; 
