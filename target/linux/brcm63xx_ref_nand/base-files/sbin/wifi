@@ -1150,18 +1150,6 @@ config wifi-iface
 	option wps_pbc '${WPS:-1}'
 	option wmf_bss_enable '1'
 	option bss_max '16'
-
-config wifi-iface
-	option device '$wl'
-	option network 'guest'
-	option mode 'ap'
-	option ssid '${SSID:-Inteno-$BSSID4}-Guest'
-	option encryption 'none'
-	option macfilter '0'
-	option wps_pbc '0'
-	option wmf_bss_enable '1'
-	option bss_max '16'
-
 EOF
 				uci -q set wireless.$wl.dfsc="$dfsc"
 			else
