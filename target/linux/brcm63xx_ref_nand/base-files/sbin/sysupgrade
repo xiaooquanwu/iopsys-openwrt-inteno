@@ -56,66 +56,59 @@ export CONF_TAR=/tmp/sysupgrade.tgz
 export ARGV="$*"
 export ARGC="$#"
 
+find_image_on_usb() {
+	local image
+	local extension=$(uci -q get system.@upgrade[0].fw_find_ext)
+	extension=${extension:-.w}
 
-find_image_on_usb () {
-    local image
-
-    image=$(find /mnt/ -name '*.w')
-    if [ -n "${image}" ]; then
-	ARGV=${image}
-    else
-	#echo "no image file found on USB"
-	ARGV=""
-    fi
+	image=$(find /mnt/ -name "*$extension")
+	if [ -n "${image}" ]; then
+		ARGV=${image}
+	else
+		ARGV=""
+	fi
 }
 
+online_fw_check() {
+	local imgver curver imgurl
+	local verpath="/tmp/fw_online_version"
+	local urlpath="/tmp/fw_online_url"
+	local checkurl=$(uci -q get system.@upgrade[0].fw_check_url)
+	local pathurl=$(uci -q get system.@upgrade[0].fw_path_url)
 
-download_image_file () {
-    local image
-    local current_sw_version
-    local fwpath
+	[ -n "$checkurl" ] || exit 1
+	[ -n "$pathurl" ] || exit 1
 
-    # get the FW path.
-    fwpath=$(uci get system.@system[0].fwpath)
+	wget -q $checkurl -O $verpath
 
-    # get the list of images and dump to file.
-    # already sorted according to date.
-    wget -q -O /tmp/images.txt ${fwpath}/\?C=M\;O=A
+	[ -f $verpath ] || exit 1
 
-    # get the last w-file.
-    image=$(grep '^<img src' /tmp/images.txt | awk -F'"' '{print $6}' | grep '.w' | tail -1)
-    #echo "newest online version: ${image}"
+	imgver=$(cat $verpath)
 
-    # get the current SW version.
-    #db show hw.board.iopVersion
-    current_sw_version=$(db get hw.board.iopVersion)
-    current_sw_version=${current_sw_version}.w
-    #echo "current version: ${current_sw_version}"
+	curver=$(db get hw.board.iopVersion)
 
-    if [ "${image}" != "${current_sw_version}" ]; then
-	#echo "upgrade to: ${image}"
-	    wget -q -O "/tmp/${image}" "${fwpath}/${image}"
-        ARGV="/tmp/${image}"
-    else
-	#echo "keep current version: ${current_sw_version}"
-	ARGV=""
-    fi
+	if [ "$imgver" != "$curver" ]; then
+		echo "$pathurl/$imgver"> $urlpath
+		ARGV="$pathurl/$imgver"
+	else
+		ARGV=""
+	fi
 }
-
 
 # if option --usb or --online, set ARGV accordingly.
 if [[ ${USB} -eq 1 ]]; then 
-  find_image_on_usb
-  echo "${ARGV}"
-  exit 0
+	find_image_on_usb
+	[ -n "$ARGV" ] && echo "${ARGV}"
+	exit 0
 elif [[ ${ONLINE} -eq 1 ]]; then 
-  download_image_file
-  #echo "ARGV: ${ARGV}"
-  echo "${ARGV}"
-  exit 0
+	online_fw_check
+	[ -n "$ARGV" ] && echo "${ARGV}"
+	exit 0
+fi
+
 ##always add complete path to argument and move to / directory
-elif [ $(dirname $ARGV) == "." ]; then 
-  ARGV="$PWD/`basename $ARGV`"
+if [ $(dirname $ARGV) == "." ]; then
+	ARGV="$PWD/`basename $ARGV`"
 fi
 
 cd /
