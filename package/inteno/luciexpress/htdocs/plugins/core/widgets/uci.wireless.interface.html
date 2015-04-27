@@ -1,0 +1,68 @@
+<div>
+	<table class="table">
+		<tr>
+			<td>
+					<div class="col-md-6"><strong style="font-size: 1.2em">{{ interface[".name"] + ".enabled"}}</strong></div>
+					<div class="col-md-6"><switch ng-model="interface.disabled" class="green" inverted></switch></div>
+			</td>
+		</tr>
+	</table>
+	<table class="table" ng-show="!interface.disabled">
+	<tr>
+		<td>
+				<div class="col-md-6"><strong style="font-size: 1.2em" translate>Wifi Name (SSID)</strong></div>
+				<div class="col-md-6"><input type="text" class="form-control" placeholder="Wifi Name" ng-model="interface.ssid"/></div>
+		</td>
+	</tr>
+	<tr>
+		<td>
+				<div class="col-md-9"><strong style="font-size: 1.2em" translate>Broadcast SSID</strong></div>
+				<div class="col-md-3"><switch id="enabled" name="enabled" ng-model="interface.closed" class="green" inverted></switch></div>
+		</td>
+	</tr>
+	<tr>
+		<td>
+				<div class="col-md-6"><strong style="font-size: 1.2em">Frequency</strong></div>
+				<div class="col-md-6">
+					<ui-select ng-model="interface.device"
+						 theme="bootstrap"
+						 search-enabled="false"
+						 >
+						<ui-select-match placeholder="Choose Frequency">{{"interface."+$select.selected}}</ui-select-match>
+						<ui-select-choices repeat="item in allRadios"
+										 refresh-delay="0">
+							<div >{{"interface."+item}}</div>
+							</ui-select-choices>
+					</ui-select>
+				</div>
+		</td>
+	</tr>
+	<tr>
+		<td>
+				<div class="col-md-6"><strong style="font-size: 1.2em">Protection Mode</strong></div>
+				<div class="col-md-6">
+					<ui-select ng-model="interface.encryption"
+						 theme="bootstrap"
+						 search-enabled="false"
+						 >
+						<ui-select-match placeholder="Choose Protection">{{"encryption."+$select.selected}}</ui-select-match>
+						<ui-select-choices repeat="item in allCryptModes"
+										 refresh-delay="0">
+							<div >{{"encryption."+item}}</div>
+							</ui-select-choices>
+					</ui-select>
+				</div>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<div class="col-md-6"><strong style="font-size: 1.2em">Wifi Password</strong></div>
+			<div class="col-md-6"><input type="{{(!showPassword)?'password':'text'}}" class="form-control" placeholder="Wifi Password" ng-model="interface.key"/></div>
+			<br style="clear: both"/>
+			<div style="float: right;margin-top: 10px; margin-bottom: 10px;"><strong style="font-size: 1.2em;">Display Characters: <input type="checkbox" ng-model="showPassword" /></strong></div>
+			<br style="clear: both"/>
+			<!--<div style="float: right;"><button class="btn btn-success" >Change Password</button></div>-->
+		</td>
+	</tr>
+</table>
+</div>

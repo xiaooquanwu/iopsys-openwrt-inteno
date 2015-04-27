@@ -10,7 +10,8 @@
 		"widgets/luci.navbar",
 		"widgets/luci.progress",
 		"widgets/luci.table",
-		"widgets/luci.top_bar"
+		"widgets/luci.top_bar", 
+		"widgets/uci.wireless.interface"
 	],
 	"pages": {
 		"overview": {

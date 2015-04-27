@@ -75,7 +75,7 @@ app.post('/ubus', function(req, res) {
 		}
 	}
 	
-  request({
+  request({ 
     url: config.ubus_uri,
     method: "POST",
     json: true,   // <--Very important!!!
