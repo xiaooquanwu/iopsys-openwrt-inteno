@@ -124,15 +124,6 @@ angular.module("luci")
 			});
 		}, 
 		function(next){
-			progress("Validating session..", 100); 
-			$session.init().done(function(){
-				next(); 
-			}).fail(function(){
-				console.log("Failed to verify session."); 
-				$state.go("login"); 
-			}); 
-		}, 
-		function(next){
 			progress("Getting navigation..", 100); 
 			
 			// get the menu navigation
@@ -159,6 +150,8 @@ angular.module("luci")
 				}); 
 				//$rootScope.$apply(); 
 				next(); 
+			}).fail(function(){
+				next();
 			}); 
 		}
 	], function(err){

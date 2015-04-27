@@ -137,7 +137,13 @@ angular.module("luci", [
     });*/
 		var path = $location.path().replace("/", "").replace(".", "_");  
 		
-		$state.go("init", {"redirect": path}); 
+		$session.init().done(function(){
+			$state.go("init", {"redirect": path}); 
+		}).fail(function(){
+			console.log("Failed to verify session."); 
+			$state.go("init", {"redirect": "login"}); 
+			//$state.go("login"); 
+		}); 
 	})
 
 //window.app = angular.module("luci"); 

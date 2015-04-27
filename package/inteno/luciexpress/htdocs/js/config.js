@@ -53,24 +53,28 @@ angular.module("luci")
 		], 
 		rpc: {
 			//host: "", not used anymore because we now instead do rpc forwarding in server.js!
-			exposed_calls: [
+			exposed_calls: [ // TODO: only login and access calls should always be available 
 				"session.login", 
-				"session.access", 
-				"session.destroy", 
-				"luci2.ui.menu", 
+				"session.access",
+				// TODO: these calls use wildcards in acl so we need to somehow get them automatically
+				// for now I defined them manually here. 
+				"luci2.ui.menu",
+				"uci.state", 
+				"uci.set", 
+				"uci.delete", 
+				"uci.commit", 
+				"uci.configs"
+				// the rest is automatically retreived from session now!
+				/*"session.destroy", 
+				
 				"luci2.network.conntrack_count",
 				"luci2.network.dhcp_leases",
 				"luci2.system.diskfree", 
 				"router.dslstats",
 				"router.info",
 				"router.clients", 
-				"uci.state", 
-				"uci.set", 
-				"uci.delete", 
-				"uci.commit", 
-				"uci.configs", 
 				"network.interface.status", 
-				"system.info"
+				"system.info"*/
 			]
 		}
 	}; 
