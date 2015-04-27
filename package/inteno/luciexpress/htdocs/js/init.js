@@ -20,7 +20,7 @@ angular.module("luci")
 		},
 		function(next){
 			$config.mode = $localStorage.getItem("mode") || "basic"; 
-			$config.theme = $localStorage.getItem("theme") || $config.theme || "default"; 
+			$config.theme = $localStorage.getItem("theme") || $config.theme || "inteno-red"; 
 			
 			//$config.theme = "default"; 
 			
