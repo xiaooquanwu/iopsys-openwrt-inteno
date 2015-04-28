@@ -305,6 +305,8 @@ load_wireless()
 static void
 match_client_to_network(Network *lan, char *hostaddr, bool *local, char **net, char **dev)
 {
+	if(!lan->ipaddr || !lan->netmask)
+		return;
 
 	struct in_addr ip, mask, snet, host, rslt;
 
