@@ -80,6 +80,9 @@ online_fw_check() {
 	[ -n "$checkurl" ] || exit 1
 	[ -n "$pathurl" ] || exit 1
 
+	rm -f $verpath
+	rm -f $urlpath
+
 	wget -q $checkurl -O $verpath
 
 	[ -f $verpath ] || exit 1
