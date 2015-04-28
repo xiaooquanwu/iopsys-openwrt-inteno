@@ -27,8 +27,10 @@ $juci.module("router")
 	}; 
 	$scope.onSave = function(){
 		$uci.set("firewall.dmz", $scope.dmz).done(function(){
-			$scope.info_message = $tr("STR_SETTINGSSAVED"); 
-			$scope.$apply(); 
+			$uci.commit("firewall.dmz").done(function(){
+				$scope.info_message = $tr("STR_SETTINGSSAVED"); 
+				$scope.$apply(); 
+			}); 
 		}).fail(function(){ 
 			$scope.error_message = $tr("STR_SETTINGSSAVEFAILED"); 
 		}); 

@@ -6,13 +6,13 @@
 			<tr>
 				<td>
 						<div class="col-md-11"><strong style="font-size: 1.5em">Firewall</strong></div>
-						<div class="col-md-1"> <switch id="enabled" name="enabled" ng-model="firewallEnabled" class="green"></switch></div>
+						<div class="col-md-1"><switch id="enabled" name="enabled" ng-model="settings.firewall" ng-change="onSave" class="green"></switch></div>
 				</td>
 			</tr>
 			<tr>
 				<td>
 						<div class="col-md-11"><strong style="font-size: 1.5em">Allow Ping to WAN interface</strong></div>
-						<div class="col-md-1"> <switch id="enabled" name="enabled" ng-model="allowWANPing" class="green"></switch></div>
+						<div class="col-md-1"><switch id="enabled" name="enabled" ng-model="settings.ping_wan" ng-change="onSave" class="green"></switch></div>
 				</td>
 			</tr>
 		</table>

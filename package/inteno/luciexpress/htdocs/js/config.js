@@ -61,8 +61,11 @@ angular.module("luci")
 				"luci2.ui.menu",
 				"uci.state", 
 				"uci.set", 
+				"uci.add", 
 				"uci.delete", 
 				"uci.commit", 
+				"uci.rollback", 
+				"uci.revert", 
 				"uci.configs"
 				// the rest is automatically retreived from session now!
 				/*"session.destroy", 

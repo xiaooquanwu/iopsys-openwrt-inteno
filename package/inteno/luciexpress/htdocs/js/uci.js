@@ -22,7 +22,7 @@
  
 // uci module for interacting with uci tables
 angular.module("luci")
-.factory('$uci', function($rpc){
+.factory('$uci', function($rpc, $rootScope){
 	function initReq(path){
 		var parts = path.split("."); 
 		var req = {}; 
@@ -50,11 +50,64 @@ angular.module("luci")
 			var req = initReq(path); 
 			req.values = values; 
 			$rpc.uci.set(req).done(function(state){
-				$rpc.uci.commit(req).done(function(){
-					deferred.resolve(); 
-				}).fail(function(){
-					deferred.reject(); 
-				}); 
+				deferred.resolve(); 
+			}).fail(function(){
+				deferred.reject(); 
+			}); 
+			return deferred.promise(); 
+		}, 
+		// add a new rule to the uci config
+		add: function(config, type, values){
+			var deferred = $.Deferred(); 
+			$rpc.uci.add({
+				"config": config, 
+				"type": type,
+				"values": values
+			}).done(function(state){
+				values[".name"] = state.section; 
+				deferred.resolve(state.section); 
+			}).fail(function(){
+				deferred.reject(); 
+			}); 
+			return deferred.promise(); 
+		},
+		// commit config changes
+		commit: function(path, values){
+			var deferred = $.Deferred(); 
+			var req = initReq(path); 
+			$rpc.uci.commit(req).done(function(state){
+				deferred.resolve(); 
+			}).fail(function(){
+				deferred.reject(); 
+			}); 
+			return deferred.promise(); 
+		},
+		// revert uncommitted changes
+		revert: function(path, values){
+			var deferred = $.Deferred(); 
+			var req = initReq(path); 
+			$rpc.uci.revert(req).done(function(state){
+				deferred.resolve(); 
+			}).fail(function(){
+				deferred.reject(); 
+			}); 
+			return deferred.promise(); 
+		},
+		// rollback
+		rollback: function(){
+			var deferred = $.Deferred(); 
+			$rpc.uci.rollback().done(function(state){
+				deferred.resolve(); 
+			}).fail(function(){
+				deferred.reject(); 
+			}); 
+			return deferred.promise(); 
+		},
+		delete: function(path){
+			var deferred = $.Deferred();
+			var req = initReq(path);  
+			$rpc.uci.delete(req).done(function(state){
+				deferred.resolve(); 
 			}).fail(function(){
 				deferred.reject(); 
 			}); 

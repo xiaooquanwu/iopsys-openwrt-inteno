@@ -38,7 +38,7 @@ angular.module("luci")
 						// create the rpc method
 						obj[path[0]] = function(data){
 							var func = (function(data){
-								if(!data) data = {}; 
+								if(!data) data = { }; 
 								var deferred = $.Deferred(); 
 								$.jsonRPC.withOptions({
 									namespace: "", 
@@ -46,7 +46,7 @@ angular.module("luci")
 								}, function(){	 
 									var sid = "00000000000000000000000000000000"; 
 									if($rootScope.sid) sid = $rootScope.sid; 
-									
+									//data.ubus_rpc_session = sid;  
 									this.request('call', {
 										params: [ sid, namespace, method, data],
 										success: function(result){

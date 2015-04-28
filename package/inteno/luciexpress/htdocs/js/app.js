@@ -78,6 +78,7 @@ angular.module("luci", [
 	"ui.bootstrap",
 	"ui.router", 
 	'ui.select',
+	'angularModalService', 
 	"uiSwitch",
 	"ngAnimate", 
 	"gettext"
