@@ -75,6 +75,7 @@ online_fw_check() {
 	local urlpath="/tmp/fw_online_url"
 	local checkurl=$(uci -q get system.@upgrade[0].fw_check_url)
 	local pathurl=$(uci -q get system.@upgrade[0].fw_path_url)
+	local extension=$(uci -q get system.@upgrade[0].fw_find_ext)
 
 	[ -n "$checkurl" ] || exit 1
 	[ -n "$pathurl" ] || exit 1
@@ -85,7 +86,7 @@ online_fw_check() {
 
 	imgver=$(cat $verpath)
 
-	curver=$(db get hw.board.iopVersion)
+	curver="$(db get hw.board.iopVersion)$extension"
 
 	if [ "$imgver" != "$curver" ]; then
 		echo "$pathurl/$imgver"> $urlpath
