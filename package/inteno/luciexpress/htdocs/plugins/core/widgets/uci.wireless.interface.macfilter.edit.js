@@ -20,20 +20,21 @@ $juci.module("core")
 		$scope.maclist = []; 
 		if(i && i.maclist) {
 			var clients = $scope.clients || {}; 
+			console.log("Updating: "+JSON.stringify(i.maclist)); 
 			i.maclist.map(function(x){
 				var parts = x.split("|"); 
-				$scope.maclist.push({ hostname: (clients[x]||parts[1]||""), macaddr: parts[0] }); 
+				$scope.maclist.push({ hostname: (clients[parts[0]]||parts[1]||""), macaddr: parts[0] }); 
 			}); 
 		}
 	}
 	
 	// watch for model change
 	$scope.$watch("interface", function(i){
-		updateMaclist(i); 
+		$scope.filterEnabled = (i.macfilter && i.macfilter == "1"); 
 	}); 
 	
 	// watch for changes in list of connected clients
-	$scope.$watch("clients", function(clients){
+	$scope.$watchCollection("clients", function(clients){
 		updateMaclist($scope.interface); 
 	}); 
 	
@@ -55,9 +56,7 @@ $juci.module("core")
 	$scope.$watch("filterEnabled", function(value){ 
 		$scope.interface.macfilter = value; 
 	}); 
-	$scope.$watch("interface.macfilter", function(value){
-		$scope.filterEnabled = (value && value == "1"); 
-	}); 
+	
 	$rpc.router.clients().done(function(clients){
 		$scope.clients = {}; 
 		$scope.client_list = []; 
@@ -102,7 +101,7 @@ $juci.module("core")
 		if($scope.client_list && $scope.maclist) {
 			$scope.client_list.map(function(x){
 				if(x.checked) {
-					if($scope.maclist.filter(function(x) { return x.macaddr == x.client.macaddr; }).length == 0){
+					if($scope.maclist.filter(function(a) { return a.macaddr == x.client.macaddr; }).length == 0){
 						$scope.maclist.push({ hostname: x.client.hostname, macaddr: x.client.macaddr }); 
 					} else {
 						console.log("MAC address "+x.client.macaddr+" is already in the list!"); 
@@ -111,6 +110,10 @@ $juci.module("core")
 			}); 
 		}
 		$scope.showModal = 0; 
+	}
+	
+	$scope.validation = function(form){
+		
 	}
 	
 	$scope.onDismissModal = function(){

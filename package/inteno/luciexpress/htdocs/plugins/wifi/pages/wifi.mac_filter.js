@@ -18,6 +18,7 @@ $juci.module("wifi")
 	} load(); 
 	
 	$scope.onApply = function(){
+		$scope.busy = 1; 
 		async.series([
 			function(next){
 				$uci.set("wireless."+$scope.main_wifi[".name"], $scope.main_wifi).done(function(){
@@ -34,7 +35,10 @@ $juci.module("wifi")
 				console.log("Saved wifi settings!"); 
 			}).fail(function(){
 				console.log("Failed to save wifi settings!"); 
-			}); 
+			}).always(function(){
+				$scope.busy = 0;
+				$scope.$apply(); 
+			});  
 		}); 
 	}
 	$scope.onCancel = function(){

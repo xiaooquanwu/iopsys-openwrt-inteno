@@ -7,18 +7,14 @@
 		</luci-config-lines>
 	</luci-config-section>
 	<luci-config-section ng-show="filterEnabled">
+		<!--<div class="alert alert-danger">
+			<div ng-message="pattern" translate><span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>You must enter a valid MAC address!</div>
+		</div>-->
 		<luci-config-lines>
 			<luci-config-line title="'Access for listed devices'">
-				<div class="dropdown">
-					<ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
-						<li role="presentation"><a role="menuitem" tabindex="-1" href="#" ng-click="interface.macfilter = '1'">Allow</a></li>
-						<li role="presentation"><a role="menuitem" tabindex="-1" href="#" ng-click="interface.macfilter = '2'">Deny</a></li>
-					</ul>
+				<div class="btn-group">
+					<button ng-repeat="mode in [['1','allow'], ['2', 'deny']]" class="btn btn-default" ng-model="interface.macfilter_mode" btn-radio="mode[0]">interface.macfilter.{{mode[1]}}</button>
 				</div>
-				<!--<div class="btn-toolbar">
-					<input type="radio" class="form-control" ng-model="interface.macfilter_mode" value="1"/> Allow
-					<input type="radio" class="form-control" ng-model="interface.macfilter_mode" value="2"/> Deny
-				</div>-->
 			</luci-config-line>
 			<luci-config-line title="'Currently added devices'">
 				<table class="table">
@@ -27,7 +23,7 @@
 							<input type="text" class="form-control" ng-model="host.hostname"/>
 						</td>
 						<td>
-							<input type="text" class="form-control" ng-model="host.macaddr" placeholder="xx:xx:xx:xx:xx:xx"/>
+							<input type="text" class="form-control" ng-model="host.macaddr" placeholder="xx:xx:xx:xx:xx:xx" ng-pattern="/^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$/"/>
 						</td>
 						<td>
 							<button class="btn btn-default" ng-click="onDeleteHost(host)"><i class="fa fa-trash-o"></i></button>
@@ -50,6 +46,7 @@
 	<modal title="'Add clients to MAC filtering list'" ng-show="showModal" on-accept="onAcceptModal()" on-dismiss="onDismissModal()" dismiss-label="Cancel" accept-label="Save">
 		<luci-config>
 			<luci-config-section>
+				
 				<div class="row" ng-repeat="cl in client_list">
 					<div class="col-xs-6">
 						<label>
