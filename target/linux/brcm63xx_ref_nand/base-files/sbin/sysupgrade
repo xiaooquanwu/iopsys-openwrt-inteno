@@ -1,16 +1,19 @@
 #!/bin/sh
 . /lib/functions.sh
+. /lib/functions/system.sh
 
 
 # initialize defaults
 RAMFS_COPY_BIN=""	# extra programs for temporary ramfs root
 RAMFS_COPY_DATA=""	# extra data files
+export MTD_CONFIG_ARGS=""
 export INTERACTIVE=0
 export VERBOSE=1
 export SAVE_CONFIG=1
 export SAVE_OVERLAY=0
 export DELAY=
 export CONF_IMAGE=
+export CONF_BACKUP_LIST=0
 export CONF_BACKUP=
 export CONF_SELECTED_BACKUP=
 export CONF_UCI_BACKUP=
@@ -18,13 +21,14 @@ export CONF_RESTORE=
 export NEED_IMAGE=
 export HELP=0
 export FORCE=0
+export TEST=0
 export PROVFILE=provisioning.conf
 export TMPDIR=/tmp
 USB=0
 ONLINE=0
 
 # parse options
-while [ -n "$1" ]; do 
+while [ -n "$1" ]; do
 	case "$1" in
 		-i) export INTERACTIVE=1;;
 		-d) export DELAY="$2"; shift;;
@@ -36,9 +40,13 @@ while [ -n "$1" ]; do
 		-s|--create-backup-selected) export CONF_SELECTED_BACKUP="$2" NEED_IMAGE=1; shift;;
 		-u|--create-backup-uci) export CONF_UCI_BACKUP="$2" NEED_IMAGE=1; shift;;
 		-r|--restore-backup) export CONF_RESTORE="$2" NEED_IMAGE=1; shift;;
+		-l|--list-backup) export CONF_BACKUP_LIST=1; break;;
 		-p|--password) if [ "$2" = "" ]; then echo "Can not have empty password!"; exit 1; fi; export CONF_PASSWORD="$2"; shift;;
 		-f) export CONF_IMAGE="$2"; shift;;
 		-F|--force) export FORCE=1;;
+		-T|--test) export TEST=1;;
+		--usb) USB=1; break;;
+		--online) ONLINE=1; break;;
 		-h|--help) export HELP=1; break;;
 		-*)
 			echo "Invalid option: $1"
@@ -99,14 +107,19 @@ online_fw_check() {
 }
 
 # if option --usb or --online, set ARGV accordingly.
-if [[ ${USB} -eq 1 ]]; then 
+if [[ ${USB} -eq 1 ]]; then
 	find_image_on_usb
 	[ -n "$ARGV" ] && echo "${ARGV}"
 	exit 0
-elif [[ ${ONLINE} -eq 1 ]]; then 
+elif [[ ${ONLINE} -eq 1 ]]; then
 	online_fw_check
 	[ -n "$ARGV" ] && echo "${ARGV}"
 	exit 0
+fi
+
+##always add complete path to argument and move to / directory
+if [ $(dirname $ARGV) == "." ]; then 
+  ARGV="$PWD/`basename $ARGV`"
 fi
 
 ##always add complete path to argument and move to / directory
@@ -127,6 +140,8 @@ upgrade-option:
 	-i           interactive mode
 	-c           attempt to preserve all changed files in /etc/
 	-n           do not save configuration over reflash
+	-T | --test
+	             Verify image and config .tar.gz but do not actually flash.
 	-F | --force
 	             Flash image even if image checks fail, this is dangerous!
 	-q           less verbose
@@ -146,6 +161,10 @@ backup-command:
 	             restore a .tar.gz created with sysupgrade -b
 	             then exit. Does not flash an image. If file is '-',
 	             the archive is read from stdin.
+	-l | --list-backup
+	             list the files that would be backed up when calling
+	             sysupgrade -b. Does not create a backup file.
+
 	-u| --create-backup-uci <file>  create .tar.gz of uci export command
 	             then exit. Does not flash an image. If file is '-',
 	             i.e. stdout, verbosity is set to 0 (i.e. quiet).
@@ -212,6 +231,8 @@ sysupgrade_image_check="platform_check_image"
 
 include /lib/upgrade
 
+[ "$1" = "nand" ] && nand_upgrade_stage2 $@
+
 handle_etc() {
 	local BMAC=$(cat /proc/nvram/BaseMacAddr | tr '[a-z]' '[A-Z]')
 	BMAC=${BMAC// /}
@@ -265,7 +286,6 @@ handle_etc() {
 	fi
 }
 
-
 do_save_conffiles() {
 	local conf_tar="${1:-$CONF_TAR}"
 
@@ -279,7 +299,7 @@ do_save_conffiles() {
 	run_hooks "$CONFFILES" $sysupgrade_init_conffiles
 	ask_bool 0 "Edit config file list" && vi "$CONFFILES"
 
-	v "Saving config files ..."
+	v "Saving config files..."
 	[ "$VERBOSE" -gt 1 ] && TAR_V="v" || TAR_V=""
 	
 	# do special case for stdout target
@@ -298,6 +318,8 @@ do_save_conffiles() {
 		fi
 	fi
 	handle_etc 0
+
+	rm -f "$CONFFILES"
 }
 
 do_save_selected_conffiles() {
@@ -347,6 +369,13 @@ do_save_conffiles_uci() {
 }
 
 
+if [ $CONF_BACKUP_LIST -eq 1 ]; then
+	add_uci_conffiles "$CONFFILES"
+	cat "$CONFFILES"
+	rm -f "$CONFFILES"
+	exit 0
+fi
+
 if [ -n "$CONF_BACKUP" ]; then
 	do_save_conffiles "$CONF_BACKUP"
 	exit $?
@@ -362,9 +391,12 @@ if [ -n "$CONF_UCI_BACKUP" ]; then
 	exit $?
 fi
 
+if [ -n "$CONF_RESTORE" ]; then
+	if [ "$CONF_RESTORE" != "-" ] && [ ! -f "$CONF_RESTORE" ]; then
+		echo "Backup archive '$CONF_RESTORE' not found."
+		exit 1
+	fi
 
-if [ -f "$CONF_RESTORE" ] || [ "$CONF_RESTORE" = "-" ]; then
-	[ "$VERBOSE" -gt 1 ] && TAR_V="v" || TAR_V=""
 	if [ -n "$CONF_PASSWORD" ]; then 
 		openssl des3 -d -in "$CONF_RESTORE" -out "$CONF_RESTORE.dec" -pass pass:"$CONF_PASSWORD"
 		if [ $? -eq 0 ]; then
@@ -374,6 +406,8 @@ if [ -f "$CONF_RESTORE" ] || [ "$CONF_RESTORE" = "-" ]; then
 			exit 1
 		fi
 	fi
+
+	[ "$VERBOSE" -gt 1 ] && TAR_V="v" || TAR_V=""
 	tar -C / -x${TAR_V}zf "$CONF_RESTORE"
 	exit $?
 fi
@@ -407,20 +441,29 @@ if [ -n "$CONF_IMAGE" ]; then
 	get_image "$CONF_IMAGE" "cat" > "$CONF_TAR"
 	export SAVE_CONFIG=1
 elif ask_bool $SAVE_CONFIG "Keep config files over reflash"; then
-	do_save_conffiles
+	[ $TEST -eq 1 ] || do_save_conffiles
 	export SAVE_CONFIG=1
 else
 	export SAVE_CONFIG=0
 fi
 
+if [ $TEST -eq 1 ]; then
+	exit 0
+fi
+
 run_hooks "" $sysupgrade_pre_upgrade
 
-kill_remaining TERM
-sleep 3
-kill_remaining KILL
+ubus call system upgrade
+touch /tmp/sysupgrade
 
-if [[ $(cat /tmp/IS_NAND) -eq 0 && -n "$(rootfs_type)" ]]; then
-	v "Switching to ramdisk ..."
+if [ ! -f /tmp/failsafe ] ; then
+	kill_remaining TERM
+	sleep 3
+	kill_remaining KILL
+fi
+
+if [ -n "$(rootfs_type)" ]; then
+	v "Switching to ramdisk..."
 	run_ramfs '. /lib/functions.sh; include /lib/upgrade; do_upgrade'
 else
 	do_upgrade
