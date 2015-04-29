@@ -1038,7 +1038,7 @@ wifi_detect() {
 	local WLDIR="/tmp/wireless"
 	local wls="wl0 wl1"
 	local vnos="0 1 2 3 4 5 6 7 8"
-	local bands band bwidth country hwmode pcid wl bno doth dfsc ch vdev vn
+	local bands band bwidth country hwmode pcid wl bno doth dfsc scntmr freq ch vdev vn
 	local BMAC=$(cat /proc/nvram/BaseMacAddr | tr '[a-z]' '[A-Z]')
 	BMAC=${BMAC// /}
 	local BSSID=$(printf "%X\n" $((0x$BMAC + 2)))
@@ -1063,6 +1063,7 @@ wifi_detect() {
 	local PCH2="$(uci -q get wireless.preferred.ch2g)"
 	local PDFS="$(uci -q get wireless.preferred.dfsc)"
 	local PCNT="$(uci -q get wireless.preferred.country)"
+	local PTMR="$(uci -q get wireless.preferred.scntmr)"
 
 	[ -n "$SSID" ] || SSID="${PSID:-Inteno}"-$BSSID4
 	[ -n "$ENCR" ] || ENCR=$PENC
@@ -1091,16 +1092,19 @@ wifi_detect() {
 		if wlctl -i $wl ap >/dev/null 2>&1; then
 			pcid=$(pcID $wl)
 			country="${PCNT:-EU/13}"
+			scntmr="${PTMR:-120}"
 			if $(is5G $pcid); then
+				freq="5G"
 				hwmode="${PHW5:-auto}"
 				band="a"
 				bwidth="${PBW5:-80}"
 				ch="${PCH5:-auto}"
 				bno=5
 				doth="1"
-				dfsc="${PDFS:-0}"
+				dfsc="${PDFS:-1}"
 				$(isAC $pcid) && hwmode="${PHW5:-11ac}"
 			else
+				freq="2.4G"
 				hwmode="${PHW2:-auto}"
 				band="b"
 				bwidth="${PBW2:-20}"
@@ -1119,7 +1123,7 @@ config wifi-device '$wl'
 	option bandwidth '$bwidth'
 	option hwmode '$hwmode'
 	option channel '$ch'
-	option scantimer '15'
+	option scantimer '$scntmr'
 	option wmm '1'
 	option wmm_noack '0'
 	option wmm_apsd '0'
@@ -1150,12 +1154,26 @@ config wifi-iface
 	option wps_pbc '${WPS:-1}'
 	option wmf_bss_enable '1'
 	option bss_max '16'
+
+config wifi-iface
+	option device '$wl'
+	option network '${NET:-lan}'
+	option mode 'ap'
+	option ssid '${SSID:-Inteno-$BSSID4}-$freq'
+	option encryption '${ENCR:-mixed-psk}'
+	option cipher 'auto'
+	option key '${KEY:-$WPAKEY}'
+	option gtk_rekey '0'
+	option macfilter '0'
+	option wps_pbc '${WPS:-1}'
+	option wmf_bss_enable '1'
+	option bss_max '16'
+
 EOF
 				uci -q set wireless.$wl.dfsc="$dfsc"
 			else
 				uci -q set wireless.$wl.band="$band"
 				uci -q set wireless.$wl.doth="$doth"
-				uci -q set wireless.$wl.dfsc="$dfsc"
 			fi
 		else
 			uci -q delete wireless.$wl
