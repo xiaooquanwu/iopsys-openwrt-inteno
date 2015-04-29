@@ -1097,7 +1097,7 @@ wifi_detect() {
 				freq="5G"
 				hwmode="${PHW5:-auto}"
 				band="a"
-				bwidth="${PBW5:-80}"
+				bwidth="${PBW5:-40}"
 				ch="${PCH5:-auto}"
 				bno=5
 				doth="1"
