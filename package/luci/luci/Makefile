@@ -446,6 +446,9 @@ define Package/luci-app-voice/install
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/etc/config/voice_client $(1)/etc/config/
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/etc/config/voice_codecs $(1)/etc/config/
 
+	$(INSTALL_DIR) $(1)/etc
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/etc/idc_cc.cfg $(1)/etc
+
 	echo $(PKG_VERSION) > $(1)/etc/iop_luci_version.log
 	echo $(PKG_SOURCE_VERSION) >> $(1)/etc/iop_luci_version.log
 
@@ -465,6 +468,8 @@ define Package/luci-app-voice/install
 	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/model/cbi/voice
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/advanced.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/brcm.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/call_filters.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/call_filter_details.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/country.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/dialplan.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/log.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
@@ -480,6 +485,7 @@ define Package/luci-app-voice/install
 
 	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/controller/voice
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/controller/voice/brcm.lua $(1)/usr/lib/lua/luci/controller/voice/
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/controller/voice/call_filters.lua $(1)/usr/lib/lua/luci/controller/voice/
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/controller/voice/core.lua $(1)/usr/lib/lua/luci/controller/voice/
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/controller/voice/dialplan.lua $(1)/usr/lib/lua/luci/controller/voice/
 endef
@@ -523,8 +529,6 @@ define Package/luci-app-voice-pbx/install
 	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/model/cbi/voice
 	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/controller/voice
 	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/view/voice
-	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/call_filters.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
-	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/call_filter_details.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/conference.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/conference_details.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/ivr.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
@@ -540,7 +544,6 @@ define Package/luci-app-voice-pbx/install
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/opening_hours_profile.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/moh.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
 	
-	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/controller/voice/call_filters.lua $(1)/usr/lib/lua/luci/controller/voice/
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/controller/voice/conference.lua $(1)/usr/lib/lua/luci/controller/voice/
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/controller/voice/ivr.lua $(1)/usr/lib/lua/luci/controller/voice/
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/controller/voice/queues.lua $(1)/usr/lib/lua/luci/controller/voice/
