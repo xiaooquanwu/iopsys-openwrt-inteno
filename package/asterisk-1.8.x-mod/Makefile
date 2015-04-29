@@ -10,16 +10,17 @@ include $(TOPDIR)/rules.mk
 PKG_NAME:=asterisk18-mod
 PKG_VERSION:=1.8.10.1
 
-PKG_SOURCE_VERSION:=86fd232eec0d63a317b8f3515513d3bc083a2acb
+PKG_SOURCE_VERSION:=ffdcf5be10c3d6cedb4957864fec1353a7438d14
 PKG_SOURCE_PROTO:=git
 ifeq ($(CONFIG_PACKAGE_bcmkernel),y)
 PKG_SOURCE_URL:=git@ihgsp.inteno.se:asterisk-aa
 else
 PKG_SOURCE_URL:=http://ihgsp.inteno.se/git/asterisk-aa
 endif
+
+PKG_RELEASE:=$(PKG_SOURCE_VERSION)
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_RELEASE).tar.gz
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
-PKG_RELEASE:=$(PKG_SOURCE_VERSION)
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
 
 include $(INCLUDE_DIR)/ltqtapi.mk
@@ -44,7 +45,7 @@ define Package/asterisk18-mod
 $(call Package/asterisk18-mod/Default)
   TITLE:=Complete open source PBX, v1.8x
   MENU:=1
-  DEPENDS:= +natalie-dect-h +bcmkernel +libopenssl +libncurses +libpopt +libpthread +zlib @!TARGET_avr32
+  DEPENDS:= +natalie-dect-h +PACKAGE_bcmkernel:bcmkernel +PACKAGE_bcmopen:bcmopen +libopenssl +libncurses +libpopt +libpthread +zlib @!TARGET_avr32
 endef
 
 define Package/asterisk18-mod/description
@@ -143,6 +144,18 @@ $(call Package/asterisk18-mod/Default/description)
  Asterisk.
 endef
 
+define Package/asterisk18-mod-res-voice
+$(call Package/asterisk18-mod/Default)
+  TITLE:=Voice client/pbx support
+  DEPENDS:= asterisk18-mod
+endef
+
+define Package/asterisk18-mod-res-voice/description
+$(call Package/asterisk18-mod/Default/description)
+ This package provides Voice Client/pbx support to
+ Asterisk.
+endef
+
 define Package/asterisk18-mod-res-srtp
 $(call Package/asterisk18-mod/Default)
   TITLE:=SRTP support
@@ -182,7 +195,7 @@ endef
 define Package/asterisk18-mod-chan-mobile
 $(call Package/asterisk18-mod/Default)
   TITLE:=Mobile channel support
-  DEPENDS:= asterisk18-mod +bluez
+  DEPENDS:= asterisk18-mod +bluez-libs
 endef
 
 define Package/asterisk18-mod-chan-mobile/description
@@ -540,6 +553,11 @@ define Package/asterisk18-mod-res-musiconhold/install
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/lib/asterisk/modules/res_musiconhold.so $(1)/usr/lib/asterisk/modules/
 endef
 
+define Package/asterisk18-mod-res-voice/install
+	$(INSTALL_DIR) $(1)/usr/lib/asterisk/modules
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/lib/asterisk/modules/res_voice.so $(1)/usr/lib/asterisk/modules/
+endef
+
 define Package/asterisk18-mod-chan-gtalk/conffiles
 /etc/asterisk/gtalk.conf
 /etc/asterisk/jabber.conf
@@ -714,6 +732,7 @@ $(eval $(call BuildPackage,asterisk18-mod-app-softhangup))
 $(eval $(call BuildPackage,asterisk18-mod-chan-iax2))
 $(eval $(call BuildPackage,asterisk18-mod-cdr))
 $(eval $(call BuildPackage,asterisk18-mod-res-musiconhold))
+$(eval $(call BuildPackage,asterisk18-mod-res-voice))
 $(eval $(call BuildPackage,asterisk18-mod-chan-gtalk))
 $(eval $(call BuildPackage,asterisk18-mod-chan-mobile))
 $(eval $(call BuildPackage,asterisk18-mod-res-fax))
@@ -751,6 +770,8 @@ $(eval $(call Buildasterisk18-modModuleTemplate,codec_ulaw,Signed linear to ulaw
 $(eval $(call Buildasterisk18-modModuleTemplate,codec_a_mu,Alaw to ulaw translation,translation between alaw and ulaw codecs))
 $(eval $(call Buildasterisk18-modModuleTemplate,codec_g722,G.722,a high bit rate 48/56/64Kbps ITU standard codec))
 $(eval $(call Buildasterisk18-modModuleTemplate,codec_g726,Signed linear to G.726 translation,translation between signed linear and ITU G.726-32kbps codecs))
+$(eval $(call Buildasterisk18-modModuleTemplate,codec_ilbc,iLBC,internet Low Bitrate Codec))
+$(eval $(call Buildasterisk18-modModuleTemplate,codec_gsm,GSM,GSM codec))
 $(eval $(call Buildasterisk18-modModuleTemplate,format_g726,G.726,support for headerless G.726 16/24/32/40kbps data format))
 $(eval $(call Buildasterisk18-modModuleTemplate,format_g729,G.729,support for raw headerless G729 data))
 $(eval $(call Buildasterisk18-modModuleTemplate,format_sln,Raw slinear format,support for raw slinear format))
