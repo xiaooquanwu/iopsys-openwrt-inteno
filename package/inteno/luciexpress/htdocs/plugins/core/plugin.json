@@ -11,7 +11,9 @@
 		"widgets/luci.progress",
 		"widgets/luci.table",
 		"widgets/luci.top_bar", 
+		"widgets/luci.config", 
 		"widgets/uci.wireless.interface",
+		"widgets/uci.wireless.interface.macfilter.edit",
 		"widgets/uci.firewall.nat.rule.edit",
 		"widgets/core.modal"
 	],

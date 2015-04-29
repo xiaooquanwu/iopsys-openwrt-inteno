@@ -26,11 +26,14 @@ $juci.module("core")
 	}]; */
 	$scope.allRadios = ["wl0", "wl1", "wl0wl1"]; 
 	$scope.allCryptModes = ["none", "wpa", "wpa2", "mixed-wpa", "wep-shared"]; 
+	$scope.configName = ""; 
 	
 	// TODO: need to have generic uci variables that reflect the gui 
 	$scope.$watch("interface", function(value){
 		value.disabled = (value.disabled == '1')?true:false;   
 		value.closed = (value.closed == '1')?true:false; 
+		$scope.configName = $scope.interface[".name"] + ".disabled"; 
+	
 	}); 
 	/*$scope.allCryptModes = [{
 		label: "Off", 

@@ -1,0 +1,67 @@
+<div>
+	<luci-config-section>
+		<luci-config-lines>
+			<luci-config-line title="'MAC Filtering'">
+				<switch ng-model="filterEnabled" class="green" ng-change="onFilterEnable"></switch>
+			</luci-config-line>
+		</luci-config-lines>
+	</luci-config-section>
+	<luci-config-section ng-show="filterEnabled">
+		<luci-config-lines>
+			<luci-config-line title="'Access for listed devices'">
+				<div class="dropdown">
+					<ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
+						<li role="presentation"><a role="menuitem" tabindex="-1" href="#" ng-click="interface.macfilter = '1'">Allow</a></li>
+						<li role="presentation"><a role="menuitem" tabindex="-1" href="#" ng-click="interface.macfilter = '2'">Deny</a></li>
+					</ul>
+				</div>
+				<!--<div class="btn-toolbar">
+					<input type="radio" class="form-control" ng-model="interface.macfilter_mode" value="1"/> Allow
+					<input type="radio" class="form-control" ng-model="interface.macfilter_mode" value="2"/> Deny
+				</div>-->
+			</luci-config-line>
+			<luci-config-line title="'Currently added devices'">
+				<table class="table">
+					<tr ng-repeat="host in maclist">
+						<td>
+							<input type="text" class="form-control" ng-model="host.hostname"/>
+						</td>
+						<td>
+							<input type="text" class="form-control" ng-model="host.macaddr" placeholder="xx:xx:xx:xx:xx:xx"/>
+						</td>
+						<td>
+							<button class="btn btn-default" ng-click="onDeleteHost(host)"><i class="fa fa-trash-o"></i></button>
+						</td>
+					</tr>
+					<tr>
+						<td></td>
+						<td></td>
+						<td>
+							<button class="btn btn-default" ng-click="onAddNewClient()"><i class="fa fa-plus"></i></button>
+						</td>
+					</tr>
+				</table>
+			</luci-config-line>
+			<luci-config-line title="'Add currently connected hosts to the list'">
+				<button class="btn btn-default" ng-click="onAddClients()"><i class="fa fa-plus"></i></button>
+			</luci-config-line>
+		</luci-config-lines>
+	</luci-config-section>
+	<modal title="'Add clients to MAC filtering list'" ng-show="showModal" on-accept="onAcceptModal()" on-dismiss="onDismissModal()" dismiss-label="Cancel" accept-label="Save">
+		<luci-config>
+			<luci-config-section>
+				<div class="row" ng-repeat="cl in client_list">
+					<div class="col-xs-6">
+						<label>
+							<input type="checkbox" ng-model="cl.checked"/> {{cl.client.hostname}}
+						</label>
+					</div>
+					<div class="col-xs-6">
+						<label>{{cl.client.macaddr}}</label>
+					</div>
+				</div>
+			</luci-config-section>
+		</luci-config>
+	</modal>
+</div>
+

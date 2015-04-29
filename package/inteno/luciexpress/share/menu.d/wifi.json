@@ -16,7 +16,7 @@
         "view": "wifi.schedule",
         "index": 20
     },
-    "wifi/WPS": {
+    "wifi/wps": {
         "title": "WPS",
         "acls": [  ],
         "view": "wifi.wps",

@@ -1,43 +1,35 @@
 <luci-layout-with-sidebar>
 	<div ng-controller="WifiGeneralPageCtrl">
-		<h2>General WiFi Settings</h2>
-		<p>Your EasyBox supports the industry-wide WiFi standards, enabling easy wireless connection of your devices.</p>
 		
-		<table class="table">
-			<tr>
-				<td>
-						<div class="col-md-11"><strong style="font-size: 1.2em">Wifi Network</strong></div>
-						<div class="col-md-1">
-							<switch id="enabled" name="enabled" ng-model="wifiEnabled" ng-change="onWifiEnable" class="green"></switch>
-						</div>
-				</td>
-			</tr>
-			<tr>
-				<td>
-						<div class="col-md-11"><strong style="font-size: 1.2em">Enable WiFi On/Off button on EasyBox</strong></div>
-						<div class="col-md-1"><switch id="enabled" name="enabled" ng-model="wifiButtonEnabled" class="green"></switch></div>
-				</td>
-			</tr>
-		</table>
-		<div class="alert alert-info" ng-show="info">
-			<p translate><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span> {{info}}</p>
-		</div>
-		<div class="row" ng-show="wifiCheckEnabled()">
-			<h2>Setup</h2>
-			<div class="col-md-6">
-				<uci-wireless-interface ng-model="main_wifi"></uci-wireless-interface>
+		<luci-config-section>
+			<luci-config-heading>General WiFi Settings</luci-config-heading>
+			<luci-config-info>Your EasyBox supports the industry-wide WiFi standards, enabling easy wireless connection of your devices.</luci-config-info>
+			<luci-config-lines>
+				<luci-config-line title="'Wifi Network'">
+					<switch id="enabled" name="enabled" ng-model="wifiEnabled" ng-change="onWifiEnable" class="green"></switch>
+				</luci-config-line>
+				<luci-config-line title="'Enable WiFi On/Off button on EasyBox'">
+					<switch id="enabled" name="enabled" ng-model="wifiButtonEnabled" ng-change="onWifiEnable" class="green"></switch>
+				</luci-config-line>
+			</luci-config-lines>
+		</luci-config-section>
+		<luci-config-section ng-show="wifiCheckEnabled()">
+			<luci-config-heading>Setup</luci-config-heading>
+			<div class="alert alert-info" ng-show="info">
+				<p translate><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span> {{info}}</p>
 			</div>
-			<div class="col-md-6">
-				<uci-wireless-interface ng-model="guest_wifi"></uci-wireless-interface>
+			<div class="row">
+				<div class="col-md-6">
+					<uci-wireless-interface ng-model="main_wifi"></uci-wireless-interface>
+				</div>
+				<div class="col-md-6">
+					<uci-wireless-interface ng-model="guest_wifi"></uci-wireless-interface>
+				</div>
 			</div>
-		</div>
-		<table class="table">
-			<tr>
-				<td style="text-align: right;">
-						<button class="btn btn-lg btn-primary" ng-click="onApply()">Apply</button>
-						<button class="btn btn-lg btn-default" ng-click="onCancel()">Cancel</button>
-				</td>
-			</tr>
-		</table>
+			<luci-config-footer>
+				<button class="btn btn-lg btn-primary" ng-click="onApply()">Apply</button>
+				<button class="btn btn-lg btn-default" ng-click="onCancel()">Cancel</button>
+			</luci-config-footer>
+		</luci-config-section>
 	</div>
 </luci-layout-with-sidebar>

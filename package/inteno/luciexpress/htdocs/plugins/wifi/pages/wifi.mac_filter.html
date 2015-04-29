@@ -1,5 +1,20 @@
 <luci-layout-with-sidebar>
 	<div ng-controller="WifiMacFilterPageCtrl">
-		Mac filter
+		<luci-config>
+			<luci-config-heading>MAC Filter</luci-config-heading>
+			<luci-config-info>To make your wireless network more secure, you can specify which devices are allowed to connect. The devices are identified by their MAC address. You can manage up to 32 devices.</luci-config-info>
+			<luci-config-section>
+				<luci-config-heading>str.main.wifi</luci-config-heading>
+				<uci-wireless-interface-macfilter-edit ng-model="main_wifi"></uci-wifi-iface-macfilter-edit>
+			</luci-config-section>
+			<luci-config-section>
+				<luci-config-heading>str.guest.wifi</luci-config-heading>
+				<uci-wireless-interface-macfilter-edit ng-model="guest_wifi"></uci-wifi-iface-macfilter-edit>
+			</luci-config-section>
+			<luci-config-footer>
+				<button class="btn btn-lg btn-primary" ng-click="onApply()">Apply</button>
+				<button class="btn btn-lg btn-default" ng-click="onCancel()">Cancel</button>
+			</luci-config-footer>
+		</luci-config>
 	</div>
 </luci-layout-with-sidebar>
