@@ -1171,22 +1171,25 @@ rpc_luci2_reset_test(struct ubus_context *ctx, struct ubus_object *obj,
 	char line[64] = { 0 };
 	bool supported = false;
 
-	if (!stat("/sbin/mtd", &s) && (s.st_mode & S_IXUSR))
-	{
-		if ((mtd = fopen("/proc/mtd", "r")) != NULL)
-		{
-			while (fgets(line, sizeof(line) - 1, mtd))
-			{
-				if (strstr(line, "\"rootfs_data\""))
-				{
-					supported = true;
-					break;
-				}
-			}
+/*	if (!stat("/sbin/mtd", &s) && (s.st_mode & S_IXUSR))*/
+/*	{*/
+/*		if ((mtd = fopen("/proc/mtd", "r")) != NULL)*/
+/*		{*/
+/*			while (fgets(line, sizeof(line) - 1, mtd))*/
+/*			{*/
+/*				if (strstr(line, "\"rootfs_data\""))*/
+/*				{*/
+/*					supported = true;*/
+/*					break;*/
+/*				}*/
+/*			}*/
 
-			fclose(mtd);
-		}
-	}
+/*			fclose(mtd);*/
+/*		}*/
+/*	}*/
+
+	if (!stat("/rom/overlay", &s) && S_ISDIR(s.st_mode))
+		supported = true;
 
 	blob_buf_init(&buf, 0);
 	blobmsg_add_u8(&buf, "supported", supported);
@@ -1217,7 +1220,8 @@ rpc_luci2_reset_start(struct ubus_context *ctx, struct ubus_object *obj,
 
 		sleep(1);
 
-		execl("/sbin/mtd", "/sbin/mtd", "-r", "erase", "rootfs_data", NULL);
+/*		execl("/sbin/mtd", "/sbin/mtd", "-r", "erase", "rootfs_data", NULL);*/
+		execl("/sbin/defaultreset", "/sbin/defaultreset", NULL, NULL);
 
 		return rpc_errno_status();
 
