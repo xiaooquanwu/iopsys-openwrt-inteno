@@ -1612,7 +1612,7 @@ CONFIG_PACKAGE_uci=y
 # CONFIG_PACKAGE_luci-lib-core_compile is not set
 # CONFIG_PACKAGE_luci-lib-core_stripped is not set
 # CONFIG_PACKAGE_luci-lib-core_srcdiet is not set
-CONFIG_PACKAGE_luci-lib-core_source=y
+# CONFIG_PACKAGE_luci-lib-core_source is not set
 # CONFIG_PACKAGE_luci-lib-fastindex is not set
 # CONFIG_PACKAGE_luci-lib-httpclient is not set
 # CONFIG_PACKAGE_luci-lib-ipkg is not set
@@ -1621,7 +1621,7 @@ CONFIG_PACKAGE_luci-lib-core_source=y
 # CONFIG_PACKAGE_luci-lib-lucid-http is not set
 # CONFIG_PACKAGE_luci-lib-lucid-rpc is not set
 # CONFIG_PACKAGE_luci-lib-nixio is not set
-CONFIG_PACKAGE_luci-lib-nixio_notls=y
+# CONFIG_PACKAGE_luci-lib-nixio_notls is not set
 # CONFIG_PACKAGE_luci-lib-nixio_axtls is not set
 # CONFIG_PACKAGE_luci-lib-nixio_cyassl is not set
 # CONFIG_PACKAGE_luci-lib-nixio_openssl is not set
