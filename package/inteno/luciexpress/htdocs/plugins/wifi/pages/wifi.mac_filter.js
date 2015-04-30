@@ -1,5 +1,5 @@
 $juci.module("wifi")
-.controller("WifiMacFilterPageCtrl", function($scope, $uci){
+.controller("WifiMacFilterPageCtrl", function($scope, $uci, $hosts){
 	$scope.guest_wifi = { }; 
 	$scope.main_wifi = {}; 
 	
@@ -31,6 +31,9 @@ $juci.module("wifi")
 				$uci.set("wireless."+$scope.guest_wifi[".name"], $scope.guest_wifi).done(function(){
 					
 				}).always(function(){ next(); }); 
+			}, 
+			function(next){
+				$hosts.commit().always(function() { next(); }); 
 			}
 		], function(){
 			$uci.commit("wireless").done(function(){

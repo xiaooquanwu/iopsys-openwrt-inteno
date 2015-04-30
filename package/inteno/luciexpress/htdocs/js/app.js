@@ -150,14 +150,22 @@ angular.module("luci", [
 angular.module("luci")
 .factory("$hosts", function($rpc, $uci){
 	var hosts = {}; 
-	var host_schema = schema({
-		hostname: /[a-zA-Z0-9]*/,
-		macaddr: /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/
-	}); 
 	return {
-		insert: function(obj){
+		insert: function(host){
 			var deferred = $.Deferred(); 
-			deferred.resolve(obj); 
+			if(host.macaddr in hosts){
+				deferred.resolve(hosts[host.macaddr]); 
+			} else {
+				$uci.add("hosts", "host", host).done(function(id){
+					$uci.commit("hosts").done(function(){
+						console.log("Added new host "+host.macaddr+" to database: "+id); 
+						hosts[host.macaddr] = host; 
+						deferred.resolve(host); 
+					}).fail(function(){deferred.reject();}); 
+				}).fail(function(){
+					deferred.reject(); 
+				});
+			}
 			return deferred.promise(); 
 		}, 
 		select: function(rules){
@@ -169,28 +177,35 @@ angular.module("luci")
 					function(next){
 						$uci.show("hosts").done(function(result){
 							Object.keys(result).map(function(k){
-								var host = result[k]; 
-								if(!host_schema(host)) {
-									console.log("ERROR processing host "+k+": "+JSON.stringify(host_schema.errors(host))); 
-									//return;
-								}
-								hosts[host.macaddr] = host; 
+								hosts[result[k].macaddr] = result[k]; 
 							}); 
-							next(); 
+							if(mac in hosts) next(hosts[mac]); 
+							else next(); 
 						}).fail(function(){ next(); }); 
 					}, 
 					function(next){
 						$rpc.router.clients().done(function(clients){
-							Object.keys(clients).map(function(x){ 
+							async.eachSeries(Object.keys(clients), function(x, next){
 								var cl = clients[x]; 
 								if(!(cl.macaddr in hosts)){
-									hosts[cl.macaddr] = {
+									console.log("Adding host "+cl.macaddr); 
+									
+									var host = {
 										hostname: cl.hostname, 
 										macaddr: cl.macaddr
 									}; 
+									$uci.add("hosts", "host", host).done(function(id){
+										$uci.commit("hosts").done(function(){
+											console.log("Added new host "+cl.macaddr+" to database - "+id); 
+											hosts[cl.macaddr] = host; 
+										}).always(function(){ next(); }); 
+									});
+								} else {
+									next(); 
 								}
-							});
-							next(); 
+							}, function(){
+								next(); 
+							}); 
 						}).fail(function(){ next(); }); 
 					}
 				], function(){
@@ -199,6 +214,21 @@ angular.module("luci")
 					else deferred.resolve(hosts[mac]); 
 				}); 
 			}
+			return deferred.promise(); 
+		},
+		commit: function(){
+			var deferred = $.Deferred(); 
+			async.eachSeries(Object.keys(hosts), function(x, next){
+				var h = hosts[x]; 
+				if(!h || !h.commit) {
+					console.log("Could not commit host "+x); 
+					next(); 
+				} else {
+					h.commit().always(function(){next(); }); 
+				}
+			}, function(){
+				deferred.resolve(); 
+			}); 
 			return deferred.promise(); 
 		}
 	}

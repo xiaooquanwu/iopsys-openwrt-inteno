@@ -24,7 +24,7 @@ $juci.module("core")
 					maclist.push(host); 
 					next(); 
 				}).fail(function(){
-					$hosts.insert({ hostname: "", macaddr: mac }).done(function(host){
+					$hosts.insert({ hostname: "no name", macaddr: mac }).done(function(host){
 						maclist.push(host);
 					}).always(function(){ next(); });  
 				}); 
@@ -50,7 +50,7 @@ $juci.module("core")
 			interface.maclist = []; 
 			list.map(function(x){
 				// save the hostname 
-				var macaddr = x.macaddr||""; 
+				var macaddr = x.macaddr.value||""; 
 				interface.maclist.push(macaddr); 
 			}); 
 		}

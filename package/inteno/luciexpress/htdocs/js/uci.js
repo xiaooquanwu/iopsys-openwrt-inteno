@@ -24,6 +24,53 @@
 angular.module("luci")
 .factory('$uci', function($rpc, $rootScope){
 	// TODO: schemas must be supplied by the router. 
+	
+	function MACAddress(mac){
+		this.value = mac; 
+		var self = this; 
+		
+	}
+	
+	var MACAddressSchema = schema.Schema.extensions.MACAddressSchema = new schema.Schema.extend({
+		errors: function(instance) {
+			if (!this.validate(instance)) {
+				return ( instance + ' is not a valid MAC address!' )
+			}
+			return false
+		},
+
+		validate: function(instance) {
+			//console.log(instance.value + " " + String(instance.value).match(/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/)); 
+			return (Object(instance) instanceof MACAddress) && (String(instance.value).match(/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/)); 
+		},
+
+		toJSON: function() {
+			return {
+				type: 'macaddr'
+			}
+		}
+	})
+
+	var macSchema = new MACAddressSchema().wrap()
+
+	schema.Schema.fromJSON.def(function(sch) {
+		if (!sch || sch.type !== 'macaddr') return
+
+		return new MACAddressSchema(); 
+	})
+	
+	MACAddress.prototype = {
+		set(value) {
+			this.value = value; 
+		},
+		get(){
+			return this.value; 
+		},
+		toString: function() { return String(this.value); }
+	}
+	
+	MACAddress.schema = macSchema; 
+	
 	var schemas = {
 		"wifi-device": {
 			schema: {
@@ -50,7 +97,7 @@ angular.module("luci")
 				"maxassoc": Number,
 				"doth": Boolean,
 				"hwmode": [ "auto", "11ac" ],
-				"radio": [ "on", "off" ]
+				"disabled": Boolean
 			},
 			defaults: {
 				"type": "broadcom",
@@ -76,7 +123,7 @@ angular.module("luci")
 				"maxassoc": 16,
 				"doth": 0,
 				"hwmode": "auto",
-				"radio": "on"
+				"disabled": 0
 			}
 		}, 
 		"wifi-iface": {
@@ -119,24 +166,64 @@ angular.module("luci")
 				"enabled": 1,
 				"macfilter": 1,
 				"maclist": ["00:00:00:00:00:00"],
-				"macmode": 0,
-				"ifname": "wl1"
+				"macmode": 0
 			}
 		}, 
 		"host": {
 			schema: {
 				"hostname": String, 
-				"macaddr": /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/
+				"macaddr": MACAddress
 			}, 
 			defaults: {
 				"hostname": "", 
-				"macaddr": "00:00:00:00:00:00"
+				"macaddr": new MACAddress("00:00:00:00:00:00")
 			}
 		}
 	}; 
-
+	
+	function UCIObject(obj, _schema){
+		var self = this; 
+		Object.keys(obj).map(function(x){
+			self[x] = obj[x]; 
+		});
+		
+		if(_schema) self[".schema"] = _schema; 
+		
+		/*
+		self.commit = function(){
+			var deferred = $.Deferred(); 
+			var self = this;
+			var _config = self[".config"];  
+			if(self[".dirty"]){
+				if(self.hasOwnProperty(".schema") && self[".schema"]){
+					var sc = schema(self[".schema"].schema); 
+					console.log("validating object "+self[".name"]+" "+JSON.stringify(self)); 
+					var err = sc.errors(self); 
+					if(err){
+						console.log("There were errors! "+JSON.stringify(err)); 
+					} 
+					$rpc.uci.set({
+						"config": _config, 
+						"section": self[".name"],
+						"values": stringify(self)
+					}).done(function(){
+						$rpc.uci.commit({"config": _config}).done(function(){
+							deferred.resolve(); 
+						}).fail(function(){ deferred.reject(); }); 
+					}).fail(function(){ deferred.reject(); }); 
+				} else {
+					deferred.resolve(); 
+				}
+			} else {
+				deferred.resolve(); 
+			}
+			return deferred.promise(); 
+		} */
+	}
+	
+	
 	function initReq(path){
-		var parts = path.split("."); 
+		var parts = (path||"").split("."); 
 		var req = {}; 
 		if(parts.length == 0) { deferred.reject(); return; }
 		req.config = parts[0]; 
@@ -152,6 +239,8 @@ angular.module("luci")
 				//console.log(property+": "+(typeof obj[property])+", array: "+(obj[property] instanceof Array)); 
 				if(obj[property] instanceof Array){
 					ret[property] = obj[property]; // skip arrays
+				} else if(obj[property] instanceof MACAddress){
+					ret[property] = obj[property].toString(); 
 				} else if (typeof obj[property] == "object"){
 					ret[property] = stringify(obj[property]);
 				} else {
@@ -165,26 +254,33 @@ angular.module("luci")
 	}
 	// validates a uci object against scheme using it's type and replaces 
 	// invalid values with defaults. 
-	function fixup_values(values, insert_defaults, path){
+	function fixup_values(_config, values, insert_defaults, path){
 		// converts all strings that are numbers to actual numbers in object
 		function fixup(obj, sc) {
+			var _schema = ((sc||{}).schema||{}); 
+			var _defaults = ((sc||{}).defaults||{}); 
 			for (var property in obj) {
 				if (obj.hasOwnProperty(property)) {
 					if (typeof obj[property] == "object" && !(obj[property] instanceof Array)){
-						fixup(obj[property], (sc.schema||{})[property]);
+						fixup(obj[property], _schema[property]);
 					} else {
 						var num = Number(obj[property]); 
 						if(!isNaN(num)) obj[property] = num; 
-						var type = (sc.schema||{})[property]; 
+						var type = _schema[property]; 
 						if(!(property in obj)) {
-							obj[property] = sc.defaults[property]; 
+							console.log("Property "+property+" is not in object!"); 
+							obj[property] = _defaults[property]; 
 						}
+						// if schema field is present then we need to validate it against the schema. 
 						if(type) {
 							var errors = []; 
-							var def = sc.defaults[property]; 
+							var def = _defaults[property]; 
 							if(type == Boolean){
 								if(obj[property] == 0) obj[property] = false; 
 								if(obj[property] == 1) obj[property] = true; 
+							} else if(type == MACAddress){
+								console.log("creating mac address for "+property); 
+								obj[property] = new MACAddress(obj[property]); 
 							} else if(type instanceof Array && obj[property] instanceof Array){
 								obj[property] = obj[property].map(function(x){
 									var err = schema(type).errors(x); 
@@ -206,6 +302,15 @@ angular.module("luci")
 								console.error("UCI: Failed to validate field "+name+", resettings to: "+JSON.stringify(sc.defaults[property]+": "+JSON.stringify(errors))); 
 							}
 						}
+						
+						// now we watch the object for changes and mark it as dirty
+						obj.watch(property, function(id, oval, nval){
+							if(oval != nval){
+								console.log("Property "+id+" changed "+oval+" -> "+nval); 
+								this[".dirty"] = true; 
+							}
+							return nval; 
+						}); 
 					}
 				}
 			}
@@ -215,17 +320,19 @@ angular.module("luci")
 		var fixed = {}; 
 		if(".type" in values){
 			var sc = (schemas[values[".type"]]||{}); 
-			fixed = fixup(values, sc);
+			values[".config"] = _config; 
+			fixed = fixup(new UCIObject(values, sc), sc);
 			//validate(sc, values); 
 		} else {
 			fixed = {}; 
 			Object.keys(values).map(function(k){
 				var obj = values[k]; 
+				obj[".config"] = _config; 
 				if(!(".type" in obj)){
 					console.log("Object missing type! ("+k+")"); 
 				} else {
 					var sc = (schemas[obj[".type"]]||{}); 
-					fixed[k] = fixup(obj, sc); 
+					fixed[k] = fixup(new UCIObject(obj, sc), sc); 
 					//validate(sc, obj); 
 				}
 			}); 
@@ -240,8 +347,8 @@ angular.module("luci")
 			$rpc.uci.state(req).done(function(state){
 				var fixed = null; 
 				try {
-					if(state && state.values) fixed = fixup_values(state.values); 
-					else if(state && state.value) fixed = fixup_values(state.value); 
+					if(state && state.values) fixed = fixup_values(req.config, state.values); 
+					else if(state && state.value) fixed = fixup_values(req.config, state.value); 
 				} catch(err) { console.error(err); deferred.reject(err); }; 
 				if(fixed) deferred.resolve(fixed); 
 				else deferred.reject(); 
@@ -253,7 +360,7 @@ angular.module("luci")
 		set: function(path, values){
 			var deferred = $.Deferred(); 
 			var req = initReq(path); 
-			req.values = stringify(fixup_values(values)); 
+			req.values = stringify(fixup_values(req.config, values)); 
 			$rpc.uci.set(req).done(function(state){
 				deferred.resolve(); 
 			}).fail(function(){
@@ -269,6 +376,7 @@ angular.module("luci")
 				"type": type,
 				"values": values
 			}).done(function(state){
+				values[".type"] = type; 
 				values[".name"] = state.section; 
 				deferred.resolve(state.section); 
 			}).fail(function(){

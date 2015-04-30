@@ -4,7 +4,7 @@ $juci.module("wifi")
 	$scope.mainWifiEnabled = 1; 
 	$scope.wifiButtonEnabled = 1; 
 	$scope.guestWifiEnabled = 0; 
-	$scope.guest_wifi = { }; 
+	$scope.guest_wifi = {}; 
 	$scope.main_wifi = {}; 
 	
 	$scope.wifiPassword = "123123"; 
@@ -40,17 +40,20 @@ $juci.module("wifi")
 		
 	}
 	$scope.onApply = function(){
-		console.log(JSON.stringify($scope.main_wifi)); 
-		console.log(JSON.stringify($scope.guest_wifi)); 
+		//console.log(JSON.stringify($scope.main_wifi)); 
+		//console.log(JSON.stringify($scope.guest_wifi)); 
 		async.series([
 			function(next){
-				$uci.set("wireless."+$scope.main_wifi[".name"], $scope.main_wifi).always(function(){next();}); 
+				$scope.main_wifi.commit().done(function(){
+					next(); 
+				}); 
+				//$uci.set("wireless."+$scope.main_wifi[".name"], $scope.main_wifi).always(function(){next();}); 
 			}, 
 			function(next){
 				$uci.set("wireless."+$scope.guest_wifi[".name"], $scope.guest_wifi).always(function(){next();}); 
 			}
 		], function(){
-			console.log("done"); 
+			console.log("saved wifi settings"); 
 			// done
 		}); 
 	}
