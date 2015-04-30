@@ -934,7 +934,7 @@ wdev_apsta_settings() {
 
 setup_wifi_device() {
 	local device="$1"
-	local radio
+	local disabled
 	config_get disabled "$device" disabled "0"
 
 	[ -n "$2" -a "$device" != "$2" ] && continue
