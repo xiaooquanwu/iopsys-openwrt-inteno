@@ -147,31 +147,62 @@ angular.module("luci", [
 		}); 
 	})
 
-//window.app = angular.module("luci"); 
-
-/*
-angular.module("luci").controller("BodyCtrl", function ($scope, $templateCache, $localStorage, $state, $session, $location, $window, $rootScope, $config, $http) {
-	$scope.menuClass = function(page) {
-		var current = $location.path().substring(1);
-		return page === current ? "active" : "";
-	};
-	$scope.modeList = [{
-		id: 0, 
-		label: "Basic Mode"
-	}]; 
-	
+angular.module("luci")
+.factory("$hosts", function($rpc, $uci){
+	var hosts = {}; 
+	var host_schema = schema({
+		hostname: /[a-zA-Z0-9]*/,
+		macaddr: /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/
+	}); 
+	return {
+		insert: function(obj){
+			var deferred = $.Deferred(); 
+			deferred.resolve(obj); 
+			return deferred.promise(); 
+		}, 
+		select: function(rules){
+			var mac = rules.macaddr; 
+			var deferred = $.Deferred(); 
+			if(mac in hosts) deferred.resolve(hosts[mac]); 
+			else {
+				async.series([
+					function(next){
+						$uci.show("hosts").done(function(result){
+							Object.keys(result).map(function(k){
+								var host = result[k]; 
+								if(!host_schema(host)) {
+									console.log("ERROR processing host "+k+": "+JSON.stringify(host_schema.errors(host))); 
+									//return;
+								}
+								hosts[host.macaddr] = host; 
+							}); 
+							next(); 
+						}).fail(function(){ next(); }); 
+					}, 
+					function(next){
+						$rpc.router.clients().done(function(clients){
+							Object.keys(clients).map(function(x){ 
+								var cl = clients[x]; 
+								if(!(cl.macaddr in hosts)){
+									hosts[cl.macaddr] = {
+										hostname: cl.hostname, 
+										macaddr: cl.macaddr
+									}; 
+								}
+							});
+							next(); 
+						}).fail(function(){ next(); }); 
+					}
+				], function(){
+					console.log("HOSTS: "+JSON.stringify(hosts)); 
+					if(!(mac in hosts)) deferred.reject(); 
+					else deferred.resolve(hosts[mac]); 
+				}); 
+			}
+			return deferred.promise(); 
+		}
+	}
 }); 
-*/
-/*
-angular.module("luci").directive('inverted', function() {
-  return {
-    require: 'ngModel',
-    link: function(scope, element, attrs, ngModel) {
-      ngModel.$parsers.push(function(val) { return !val; });
-      ngModel.$formatters.push(function(val) { return !val; });
-    }
-  };
-});*/
 
 $(document).ready(function(){
 	          

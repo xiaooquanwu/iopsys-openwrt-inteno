@@ -33,7 +33,7 @@ $juci.module("wifi")
 			}); 
 		}, function(){
 			$scope.info = null; 
-			$scope.$apply(); 
+			//$scope.$apply(); 
 		}); 
 	}
 	$scope.onGuestEnable = function(){
@@ -64,6 +64,7 @@ $juci.module("wifi")
 		$scope.main_wifi = $scope.interfaces[0]; //$scope.interfaces.filter(function(x) { return x[".name"] == "main"; })[0] || {}; 
 		$scope.guest_wifi = $scope.interfaces[1]; //$scope.interfaces.filter(function(x) { return x[".name"] == "guest"; })[0] || {}; 
 		
+		console.log(JSON.stringify($scope.main_wifi)); 
 		//$scope.guestWifiEnabled = ($scope.guest_wifi && $scope.guest_wifi.up == '1'); 
 		$scope.$apply(); 
 	}); 

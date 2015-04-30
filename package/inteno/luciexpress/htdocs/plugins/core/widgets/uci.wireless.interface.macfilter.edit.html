@@ -13,7 +13,7 @@
 		<luci-config-lines>
 			<luci-config-line title="'Access for listed devices'">
 				<div class="btn-group">
-					<button ng-repeat="mode in [['1','allow'], ['2', 'deny']]" class="btn btn-default" ng-model="interface.macfilter_mode" btn-radio="mode[0]">interface.macfilter.{{mode[1]}}</button>
+					<button ng-repeat="mode in [[1,'allow'], [2, 'deny']]" class="btn btn-default" ng-model="interface.macmode" btn-radio="mode[0]">interface.macmode.{{mode[1]}}</button>
 				</div>
 			</luci-config-line>
 			<luci-config-line title="'Currently added devices'">
@@ -23,7 +23,7 @@
 							<input type="text" class="form-control" ng-model="host.hostname"/>
 						</td>
 						<td>
-							<input type="text" class="form-control" ng-model="host.macaddr" placeholder="xx:xx:xx:xx:xx:xx" ng-pattern="/^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$/"/>
+							<input type="text" class="form-control" ng-model="host.macaddr" placeholder="xx:xx:xx:xx:xx:xx" /><!-- ng-pattern="/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/"-->
 						</td>
 						<td>
 							<button class="btn btn-default" ng-click="onDeleteHost(host)"><i class="fa fa-trash-o"></i></button>

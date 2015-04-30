@@ -10,33 +10,37 @@ $juci.module("core")
 		replace: true, 
 		require: "^ngModel"
 	 };  
-}).controller("uciWirelessInterfaceMacfilterEditController", function($scope, $rpc, $uci){
+}).controller("uciWirelessInterfaceMacfilterEditController", function($scope, $rpc, $uci, $hosts){
 	
 	$scope.maclist = []; 
 	$scope.filterEnabled = 0; 
 	
 	// updates scratch model for the view
 	function updateMaclist(i){
-		$scope.maclist = []; 
+		var maclist = []; 
 		if(i && i.maclist) {
-			var clients = $scope.clients || {}; 
-			console.log("Updating: "+JSON.stringify(i.maclist)); 
-			i.maclist.map(function(x){
-				var parts = x.split("|"); 
-				$scope.maclist.push({ hostname: (clients[parts[0]]||parts[1]||""), macaddr: parts[0] }); 
+			async.eachSeries(i.maclist, function(mac, next){
+				$hosts.select({ macaddr: mac }).done(function(host){
+					maclist.push(host); 
+					next(); 
+				}).fail(function(){
+					$hosts.insert({ hostname: "", macaddr: mac }).done(function(host){
+						maclist.push(host);
+					}).always(function(){ next(); });  
+				}); 
+			}, function(){
+				$scope.maclist = maclist; 
 			}); 
+		} else {
+			$scope.maclist = []; 
 		}
 	}
 	
 	// watch for model change
 	$scope.$watch("interface", function(i){
-		$scope.filterEnabled = (i.macfilter && i.macfilter == "1"); 
-	}); 
-	
-	// watch for changes in list of connected clients
-	$scope.$watchCollection("clients", function(clients){
-		updateMaclist($scope.interface); 
-	}); 
+		$scope.filterEnabled = i.macfilter; 
+		updateMaclist(i);
+	}, true); 
 	
 	// watch maclist for changes by the user
 	$scope.$watch("maclist", function(list){
@@ -46,29 +50,23 @@ $juci.module("core")
 			interface.maclist = []; 
 			list.map(function(x){
 				// save the hostname 
-				x.macaddr = x.macaddr||""; 
-				x.hostname = x.hostname||""; 
-				interface.maclist.push(x.macaddr.replace("|", "")+"|"+x.hostname.replace("|", "")); 
+				var macaddr = x.macaddr||""; 
+				interface.maclist.push(macaddr); 
 			}); 
 		}
-	}, true); 
+	}); 
 	
 	$scope.$watch("filterEnabled", function(value){ 
 		$scope.interface.macfilter = value; 
 	}); 
 	
 	$rpc.router.clients().done(function(clients){
-		$scope.clients = {}; 
-		$scope.client_list = []; 
-		Object.keys(clients).map(function(x){ 
-			var cl = clients[x]; 
-			$scope.clients[cl.macaddr] = cl.hostname; 
-			$scope.client_list.push({
+		$scope.client_list = Object.keys(clients).map(function(x){ 
+			return {
 				checked: false, 
-				client: cl
-			}); 
+				client: clients[x]
+			}
 		});
-		console.log(JSON.stringify($scope.clients)); 
 		$scope.$apply(); 
 	}); 
 	
@@ -110,10 +108,6 @@ $juci.module("core")
 			}); 
 		}
 		$scope.showModal = 0; 
-	}
-	
-	$scope.validation = function(form){
-		
 	}
 	
 	$scope.onDismissModal = function(){

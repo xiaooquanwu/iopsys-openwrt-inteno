@@ -2,6 +2,8 @@
 	<luci-config-section>
 		<luci-config-lines>
 			<luci-config-line title="configName"><switch ng-model="interface.disabled" class="green" inverted></switch></luci-config-line>
+		</luci-config-lines>
+		<luci-config-lines ng-hide="interface.disabled">
 			<luci-config-line title="'Wifi Name (SSID)'"><input type="text" class="form-control" placeholder="Wifi Name" ng-model="interface.ssid"/></luci-config-line>
 			<luci-config-line title="'Broadcast SSID'"><switch id="enabled" name="enabled" ng-model="interface.closed" class="green" inverted></switch></luci-config-line>
 			<luci-config-line title="'Frequency'">

@@ -113,11 +113,7 @@
 			},
 			"uci": [
 				"dropbear", 
-				"set",
-				"get", 
-				"commit", 
-				"state", 
-				"delete"
+				"hosts"
 			]
 		},
 		"write": {
@@ -129,11 +125,7 @@
 			},
 			"uci": [
 				"dropbear", 
-				"set",
-				"get", 
-				"commit", 
-				"state", 
-				"delete"
+				"hosts"
 			]
 		}
 	},

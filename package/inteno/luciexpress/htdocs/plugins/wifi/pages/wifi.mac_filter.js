@@ -21,11 +21,13 @@ $juci.module("wifi")
 		$scope.busy = 1; 
 		async.series([
 			function(next){
+				console.log("Saving object: "+JSON.stringify($scope.main_wifi)); 
 				$uci.set("wireless."+$scope.main_wifi[".name"], $scope.main_wifi).done(function(){
 					
 				}).always(function(){ next(); }); 
 			}, 
 			function(next){
+				console.log("Saving object: "+JSON.stringify($scope.guest_wifi)); 
 				$uci.set("wireless."+$scope.guest_wifi[".name"], $scope.guest_wifi).done(function(){
 					
 				}).always(function(){ next(); }); 
