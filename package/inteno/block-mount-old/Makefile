@@ -7,25 +7,25 @@
 
 include $(TOPDIR)/rules.mk
 
-PKG_NAME:=block-mount
+PKG_NAME:=block-mount-old
 PKG_VERSION:=0.2.0
 PKG_RELEASE:=9
 
 include $(INCLUDE_DIR)/package.mk
 
-define Package/block-mount/Default
+define Package/block-mount-old/Default
   SECTION:=base
   CATEGORY:=Base system
 endef
 
-define Package/block-mount
-  $(call Package/block-mount/Default)
+define Package/block-mount-old
+  $(call Package/block-mount-old/Default)
   TITLE:=Block device mounting and checking
   DEPENDS:= +blkid +swap-utils 
   MENU:=1
 endef
 
-define Package/block-mount/description
+define Package/block-mount-old/description
   Scripts used to mount and check block devices (filesystems and swap), as well
   as hotplug scripts to automount and check block devices when hotplug event (e.g.
   from plugging in a device) occurs.
@@ -34,18 +34,18 @@ define Package/block-mount/description
   device.
 endef
 
-define Package/block-mount/config
+define Package/block-mount-old/config
 	source "$(SOURCE)/Config.in"
 endef
 
 define Build/Compile
 endef
 
-define Package/block-mount/conffiles
+define Package/block-mount-old/conffiles
 /etc/config/fstab
 endef
 
-define Package/block-mount/install
+define Package/block-mount-old/install
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_BIN) ./files/fstab.init $(1)/etc/init.d/fstab
 	$(INSTALL_DIR) $(1)/etc/config
@@ -67,4 +67,4 @@ define Package/block-mount/install
 	$(INSTALL_DIR) $(1)/overlay
 endef
 
-$(eval $(call BuildPackage,block-mount))
+$(eval $(call BuildPackage,block-mount-old))

@@ -1,0 +1,35 @@
+. /lib/network/config.sh
+. /usr/share/libubox/jshn.sh
+
+iface_status() {
+	local iface=$1
+	local up
+	json_load "$(ifstatus $iface)"
+	json_get_var up up
+	json_close_object
+	return $up
+}
+
+case "$ACTION" in
+        add|register)
+                if [ "${INTERFACE:0:4}" == "wwan" ]; then
+                        netname=$(get_network_of "$INTERFACE")
+                        for net in $netname; do
+				local service=$(uci -q get network.$net.service)
+				local cnt=0
+				while $(iface_status $net); do
+		                        ifup $net
+					if [ "$service" == "qmi" ]; then
+						cnt=$(($cnt+1))
+						# quit trying if still not online after three times
+						[ $cnt -eq 3 ] && break
+						sleep 5
+					else
+						break
+					fi
+				done
+                        done
+                fi
+        ;;
+esac
+

@@ -1,0 +1,66 @@
+#!/bin/sh
+
+local usb_dir uVid uPid uMa uPr uSe bConf bNumConfs vendor product mdmtyp netdev comdev cdcdev ttydev usbno usbbr
+
+sanitize() {
+	sed -e 's/[[:space:]]\+$//; s/[[:space:]]\+/_/g' "$@"
+}
+
+find_usb_attrs() {
+	usb_dir="/sys/$DEVPATH"
+	[ -f "$usb_dir/idVendor" ] || usb_dir="${usb_dir%/*}"
+
+	uVid=$(cat "$usb_dir/idVendor")
+	uPid=$(cat "$usb_dir/idProduct")
+	uMa=$(sanitize "$usb_dir/manufacturer")
+	uPr=$(sanitize "$usb_dir/product")
+	uSe=$(sanitize "$usb_dir/serial")
+	bNumConfs=$(cat "$usb_dir/bNumConfigurations")
+	bConf=$(cat "$usb_dir/bConfigurationValue")
+	netdev=$(find $usb_dir -name wwan* | awk -F'/' '{print$NF}' | head -2 | tail -1)
+	cdcdev=$(find $usb_dir -name cdc-wdm* | awk -F'/' '{print$NF}' | head -2 | tail -1)
+	ttydev=$(ls $(find $usb_dir -name tty | head -2 | tail -1) | tail -1)
+	if [ -n "$cdcdev" ]; then
+		comdev=$cdcdev
+		mdmtyp=$(grep $uVid:$uPid /etc/modemdb | grep 'qmi\|mbim' | awk '{print$2}' | head -1)
+		vendor=$(grep $uVid:$uPid /etc/modemdb | grep 'qmi\|mbim' | awk '{print$3}' | head -1)
+		product=$(grep $uVid:$uPid /etc/modemdb | grep 'qmi\|mbim' | awk '{print$4}' | head -1)
+	else
+		comdev=$ttydev
+		mdmtyp=$(grep $uVid:$uPid /etc/modemdb | grep 'ncm' | awk '{print$2}' | head -1)
+		vendor=$(grep $uVid:$uPid /etc/modemdb | grep 'ncm' | awk '{print$3}' | head -1)
+		product=$(grep $uVid:$uPid /etc/modemdb | grep 'ncm' | awk '{print$4}' | head -1)
+	fi
+	[ -n "$mdmtyp" ] || mdmtyp=$(grep $uVid:$uPid /etc/modemdb | awk '{print$2}' | head -1)
+	[ -n "$vendor" ] || vendor=$(grep $uVid:$uPid /etc/modemdb | awk '{print$3}' | head -1)
+	[ -n "$product" ] || product=$(grep $uVid:$uPid /etc/modemdb | awk '{print$4}' | head -1)
+}
+
+convert_to_mbim() {
+	if [ "$mdmtyp" == "mbim" ] && [ "$bNumConfs" == "2" ]; then
+		[ "$bConf" == "2" ] || echo 2 > $usb_dir/bConfigurationValue
+	fi
+}
+
+usbno=$(echo $DEVPATH | cut -d'/' -f5)
+usbbr=$(echo $DEVPATH | cut -d'/' -f7)
+case "$usbbr" in
+	*:*) usbbr=$(echo $DEVPATH | cut -d'/' -f6) ;;
+esac
+
+find_usb_attrs
+if [ "$ACTION" = add ]; then
+	convert_to_mbim "$uVid:$uPid"
+	if [ -n "$uVid" ] && [ -n "$uPid" ] && [ -n "$mdmtyp" ] && [ -n "$netdev" ] && [ -n "$comdev" ]; then
+		if [ -n "$usbno" ] && [ -n "$usbbr" ]; then
+			sed -i "/$usbno:$usbbr/ d" /var/usbnets
+			echo $usbno:$usbbr $uVid:$uPid $uMa $uPr $netdev $comdev $mdmtyp $vendor $product >> /var/usbnets
+		fi
+	fi
+fi
+
+if [ "$ACTION" = remove ]; then
+	if [ -n "$usbno" ] && [ -n "$usbbr" ]; then
+		sed -i "/$usbno:$usbbr/ d" /var/usbnets
+	fi
+fi

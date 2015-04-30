@@ -1,0 +1,62 @@
+opengt
+set com 115200n81
+set comecho off
+set senddelay 0.05
+waitquiet 1 0.2
+
+:start
+ if $env("USE_DISCONNECT")="1" goto disconnect
+ send "AT^^NDISDUP=1,1,\""
+ send $env("USE_APN")
+
+ if $env("USE_AUTHTYPE")="-1" goto noauth
+ else goto auth
+
+:noauth
+ send "\"^m"
+ goto result
+
+:auth
+ send "\",\""
+ send $env("USE_USERID")
+ send "\",\""
+ send $env("USE_PASSWORD")
+ send "\","
+ send $env("USE_AUTHTYPE")
+ send "^m"
+ goto result
+
+:result
+ waitfor 5 "OK","ERR","ERROR"
+ if % = 0 goto connok
+ if % = 1 goto connerr
+ if % = 2 goto connerr
+
+:connok
+ print "WWAN connection established.\r\n"
+ goto done
+
+:connerr
+ print "WWAN error. Connection failed.\r\n"
+ exit 1
+
+:disconnect
+ send "AT^^NDISDUP=1,0,\""
+ send $env("USE_APN")
+ send "\"^m"
+
+ waitfor 5 "OK","ERR","ERROR"
+ if % = 0 goto disconnok
+ if % = 1 goto disconnerr
+ if % = 2 goto disconnerr
+
+:disconnok
+ print "WWAN connection disconnected.\r\n"
+ goto done
+
+:disconnerr
+ print "WWAN disconnection error.\r\n"
+ exit 1
+
+:done
+ exit 0
