@@ -28,6 +28,11 @@ config BCM_KERNEL_PROFILE
        help
 		Profile to build the broadcom software with, 96368GWV, 963268GWV, 96362GWV, 96816GWV, 96816OV
 
+config BCM_CFE_PASSWORD
+       string
+       prompt "Broadcom cfe password"
+       default ""
+
 config BCM_CHIP_ID
        string
        prompt "Broadcom chip id"
