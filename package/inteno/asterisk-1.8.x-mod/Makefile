@@ -10,7 +10,7 @@ include $(TOPDIR)/rules.mk
 PKG_NAME:=asterisk18-mod
 PKG_VERSION:=1.8.10.1
 
-PKG_SOURCE_VERSION:=cd036ad1042b87a83ba7313f3d262ea0e084fd23
+PKG_SOURCE_VERSION:=bc1eb011f023093447246a34df5253454713c12a
 PKG_SOURCE_PROTO:=git
 ifeq ($(CONFIG_PACKAGE_bcmkernel),y)
 PKG_SOURCE_URL:=git@ihgsp.inteno.se:asterisk-aa
@@ -45,7 +45,7 @@ define Package/asterisk18-mod
 $(call Package/asterisk18-mod/Default)
   TITLE:=Complete open source PBX, v1.8x
   MENU:=1
-  DEPENDS:= +natalie-dect-h +bcmkernel +libopenssl +libncurses +libpopt +libpthread +zlib @!TARGET_avr32
+  DEPENDS:= +natalie-dect-h +PACKAGE_bcmkernel:bcmkernel +PACKAGE_bcmopen:bcmopen +libopenssl +libncurses +libpopt +libpthread +uci +ubus +zlib @!TARGET_avr32
 endef
 
 define Package/asterisk18-mod/description
@@ -195,7 +195,7 @@ endef
 define Package/asterisk18-mod-chan-mobile
 $(call Package/asterisk18-mod/Default)
   TITLE:=Mobile channel support
-  DEPENDS:= asterisk18-mod +bluez
+  DEPENDS:= asterisk18-mod +bluez-libs
 endef
 
 define Package/asterisk18-mod-chan-mobile/description
