@@ -10,7 +10,7 @@ DISABLE_HOOKS=
 
 exec >/dev/null 2>&1
 
-local RESTART="0"
+local RESTART="1"
 local _enWifi=0
 local _enWps=0
 local _vno=0
@@ -1064,17 +1064,13 @@ wifi_updown() {
 }
 
 wifi_reload_legacy() {
-	RESTART="1"
 	wifi_updown "disable" "$1"
 	wifi_updown "enable" "$1"
-	RESTART="0"
 }
 
 wifi_reload() {
-	RESTART="1"
 	ubus call network reload
 	wifi_reload_legacy
-	RESTART="0"
 }
 
 wifi_detect() {
@@ -1223,6 +1219,7 @@ EOF
 	done
 	uci -q delete wireless.preferred
 	uci commit wireless
+	touch /tmp/wireless/first
 }
 
 wifi_onoff() {
@@ -1270,6 +1267,11 @@ check_md5sum() {
 		nvset wlmd5sum=$new_md5sum
 	fi
 }
+
+if [ -f /tmp/wireless/first ]; then
+	RESTART="0"
+	rm -f /tmp/wireless/first
+fi
 
 case "$1" in
 	on|off) wifi_onoff "$1" ;;
