@@ -942,7 +942,9 @@ setup_wifi_device() {
 	# bring down wireless device
 	wlctl -i $device down
 
-	wdev_assured_settings $device
+	if [ "$RESTART" == "0" ]; then
+		wdev_assured_settings $device
+	fi
 
 	# create virtual wireless interfaces
 	wlctl -i $device up
@@ -952,8 +954,12 @@ setup_wifi_device() {
 
 	[ "$disabled" == "1" ] && continue || _enWifi=$((_enWifi+1))
 
-	wdev_static_settings $device
-	wdev_radar_settings $device
+	if [ "$RESTART" == "0" ]; then
+		wdev_static_settings $device
+		wdev_radar_settings $device
+		wdev_antenna_settings $device
+		wdev_wds_settings $device
+	fi
 	wdev_bwcap_settings $device
 	wdev_hwmode_settings $device
 	wdev_channel_settings $device
@@ -961,47 +967,7 @@ setup_wifi_device() {
 	wdev_rifs_settings $device
 	wdev_wme_settings $device
 	wdev_tweak_settings $device
-	wdev_antenna_settings $device
 	wdev_power_settings $device
-	wdev_wds_settings $device
-	wdev_assoc_settings $device
-	wdev_apsta_settings $device
-
-	# setup virtual wireless interfaces
-	config_foreach setup_wifi_iface wifi-iface "$device"
-	_vno=0
-
-	wdev_wif_bringup $device
-}
-
-restart_wifi_device() {
-	local device="$1"
-	local radio
-	config_get disabled "$device" disabled "0"
-
-	[ -n "$2" -a "$device" != "$2" ] && continue
-
-	# bring down wireless device
-	wlctl -i $device down
-
-	wdev_assured_settings $device
-
-	# create virtual wireless interfaces
-	wlctl -i $device up
-	config_foreach create_vif wifi-iface "$device"
-	wlctl -i $device down
-	_cno=0
-
-	[ "$disabled" == "1" ] && continue || _enWifi=$((_enWifi+1))
-
-	wdev_bwcap_settings $device
-	wdev_hwmode_settings $device
-	wdev_channel_settings $device
-	wdev_rifs_settings $device
-	wdev_wme_settings $device
-	wdev_tweak_settings $device
-	wdev_power_settings $device
-	wdev_wds_settings $device
 	wdev_assoc_settings $device
 	wdev_apsta_settings $device
 
@@ -1097,54 +1063,10 @@ wifi_updown() {
 	wireless_sta
 }
 
-wifi_restart() {
-	local action="$1"
-	local wdev="$2"
-
-	cleanup $wdev
-	kill_related_daemons
-
-	config_load wireless
-
-	# disable wireless device
-	config_foreach set_wifi_down wifi-device $wdev
-	run_hooks wifi-device $DISABLE_HOOKS # ANYFI
-
-	# handle wireless led
-	ubus call led.wifi  set '{"state" : "off"}'
-	if [ "$action" == "disable" ]; then
-		[ -n "$(nvget wl_2g_radio)" ] && ubus call led.wifi  set '{"state" : "ok"}'
-		[ -n "$(nvget wl_5g_radio)" ] && ubus call led.wifi  set '{"state" : "eok"}'
-		return
-	fi
-
-	# enable wireless device
-	configure_wep "init"
-	config_foreach restart_wifi_device wifi-device $wdev
-	configure_wep "set"
-	nvset wlmngr=done
-
-	# handle wireless led
-	ubus call led.eco set '{"state" : "off"}'
-	if [ $_enWifi -le 0 ]; then
-	    ubus call led.eco set '{"state" : "ok"}'
-	    return
-	else
-		[ -n "$(nvget wl_2g_radio)" ] && ubus call led.wifi  set '{"state" : "ok"}'
-		[ -n "$(nvget wl_5g_radio)" ] && ubus call led.wifi  set '{"state" : "eok"}'
-	fi
-
-	map_networks
-	run_hooks wifi-device $ENABLE_HOOKS # ANYFI
-	nvcommit
-	start_related_daemons
-	wireless_sta
-}
-
 wifi_reload_legacy() {
 	RESTART="1"
-	wifi_restart "disable" "$1"
-	wifi_restart "enable" "$1"
+	wifi_updown "disable" "$1"
+	wifi_updown "enable" "$1"
 	RESTART="0"
 }
 
