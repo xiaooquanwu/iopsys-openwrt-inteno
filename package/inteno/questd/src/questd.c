@@ -355,6 +355,7 @@ wireless_sta(Client *clnt, Detail *dtl)
 	bool there = false;
 	char tab[16];
 	int ret, tmp;
+	int noise;
 
 	for (i = 0; wireless[i].device; i++) {
 		sprintf(cmnd, "wlctl -i %s sta_info %s 2>/dev/null", wireless[i].vif, clnt->macaddr);
@@ -375,10 +376,45 @@ wireless_sta(Client *clnt, Detail *dtl)
 			}
 			pclose(stainfo);
 		}
+		if (there) {
+			sprintf(cmnd, "wlctl -i %s noise", wireless[i].device);
+			if ((stainfo = popen(cmnd, "r"))) {
+				fread(line, sizeof(line), 1, stainfo);
+				remove_newline(line);
+				noise = atoi(line);
+				pclose(stainfo);
+			}
+			sprintf(cmnd, "wlctl -i %s rssi %s", wireless[i].vif, clnt->macaddr);
+			if ((stainfo = popen(cmnd, "r"))) {
+				fread(line, sizeof(line), 1, stainfo);
+				remove_newline(line);
+				dtl->snr = atoi(line) - noise;
+				pclose(stainfo);
+			}
+		}
 		if (there)
 			break;
 	}
 	return there;
+}
+
+static int
+active_connections(char *ipaddr)
+{
+	FILE *conn;
+	char cmnd[64];
+	char line[8];
+	int connum = 0;
+
+	sprintf(cmnd, "grep %s /proc/net/ip_conntrack | wc -l", ipaddr);
+	if ((conn = popen(cmnd, "r"))) {
+		fread(line, sizeof(line), 1, conn);
+		remove_newline(line);
+		connum = atoi(line);
+		pclose(conn);
+	}
+
+	return connum;
 }
 
 static void
@@ -412,6 +448,9 @@ populate_clients()
 					clients[cno].wireless = true;
 				else if(!(clients[cno].connected = arping(clients[cno].hostaddr, clients[cno].device, toms)))
 					recalc_sleep_time(true, toms);
+
+				if (clients[cno].connected)
+					details[cno].connum = active_connections(clients[cno].hostaddr);
 				cno++;
 			}
 		}
@@ -451,6 +490,9 @@ populate_clients()
 						else if(!(clients[cno].connected = arping(clients[cno].hostaddr, clients[cno].device, toms)))
 							recalc_sleep_time(true, toms);
 						cno++;
+
+						if (clients[cno].connected)
+							details[cno].connum = active_connections(clients[cno].hostaddr);
 					}
 				}
 			}
@@ -690,10 +732,13 @@ router_dump_clients(struct blob_buf *b)
 		blobmsg_add_u8(b, "dhcp", clients[i].dhcp);
 		blobmsg_add_u8(b, "connected", clients[i].connected);
 		blobmsg_add_u8(b, "wireless", clients[i].wireless);
+		if(clients[i].connected)
+			blobmsg_add_u32(b, "active_cons", details[i].connum);
 		if(clients[i].wireless) {
 			blobmsg_add_string(b, "wdev", clients[i].wdev);
 			blobmsg_add_u32(b, "idle", details[i].idle);
 			blobmsg_add_u32(b, "in_network", details[i].in_network);
+			blobmsg_add_u32(b, "snr", details[i].snr);
 			blobmsg_add_u64(b, "tx_bytes", details[i].tx_bytes);
 			blobmsg_add_u64(b, "rx_bytes", details[i].rx_bytes);
 			blobmsg_add_u32(b, "tx_rate", details[i].tx_rate);
@@ -726,6 +771,7 @@ router_dump_connected_clients(struct blob_buf *b)
 		blobmsg_add_string(b, "device", clients[i].device);
 		blobmsg_add_u8(b, "dhcp", clients[i].dhcp);
 		blobmsg_add_u8(b, "wireless", clients[i].wireless);
+		blobmsg_add_u32(b, "active_cons", details[i].connum);
 		if(clients[i].wireless) {
 			blobmsg_add_string(b, "wdev", clients[i].wdev);
 			blobmsg_add_u32(b, "idle", details[i].idle);
@@ -763,6 +809,8 @@ router_dump_network_clients(struct blob_buf *b, char *net)
 		blobmsg_add_u8(b, "dhcp", clients[i].dhcp);
 		blobmsg_add_u8(b, "connected", clients[i].connected);
 		blobmsg_add_u8(b, "wireless", clients[i].wireless);
+		if(clients[i].connected)
+			blobmsg_add_u32(b, "active_cons", details[i].connum);
 		if(clients[i].wireless) {
 			blobmsg_add_string(b, "wdev", clients[i].wdev);
 			blobmsg_add_u32(b, "idle", details[i].idle);
@@ -857,6 +905,7 @@ router_dump_stas(struct blob_buf *b)
 		if(strstr(clients[i].device, "br-"))
 			blobmsg_add_string(b, "bridge", clients[i].device);
 		blobmsg_add_string(b, "wdev", clients[i].wdev);
+		blobmsg_add_u32(b, "active_cons", details[i].connum);
 		blobmsg_add_u32(b, "idle", details[i].idle);
 		blobmsg_add_u32(b, "in_network", details[i].in_network);
 		blobmsg_add_u64(b, "tx_bytes", details[i].tx_bytes);
@@ -903,6 +952,7 @@ router_dump_wireless_stas(struct blob_buf *b, char *wname, bool vif)
 			blobmsg_add_string(b, "bridge", clients[i].device);
 		if(!vif)
 			blobmsg_add_string(b, "wdev", clients[i].wdev);
+		blobmsg_add_u32(b, "active_cons", details[i].connum);
 		blobmsg_add_u32(b, "idle", details[i].idle);
 		blobmsg_add_u32(b, "in_network", details[i].in_network);
 		blobmsg_add_u64(b, "tx_bytes", details[i].tx_bytes);
@@ -1055,6 +1105,8 @@ host_dump_status(struct blob_buf *b, char *addr, bool byIP)
 				blobmsg_add_string(b, "device", clients[i].device);
 				blobmsg_add_u8(b, "connected", clients[i].connected);
 				blobmsg_add_u8(b, "wireless", clients[i].wireless);
+				if(clients[i].connected)
+					blobmsg_add_u32(b, "active_cons", details[i].connum);
 				if(clients[i].wireless) {
 					blobmsg_add_string(b, "wdev", clients[i].wdev);
 					blobmsg_add_u32(b, "idle", details[i].idle);
@@ -1076,6 +1128,8 @@ host_dump_status(struct blob_buf *b, char *addr, bool byIP)
 				blobmsg_add_string(b, "device", clients[i].device);
 				blobmsg_add_u8(b, "connected", clients[i].connected);
 				blobmsg_add_u8(b, "wireless", clients[i].wireless);
+				if(clients[i].connected)
+					blobmsg_add_u32(b, "active_cons", details[i].connum);
 				if(clients[i].wireless) {
 					blobmsg_add_string(b, "wdev", clients[i].wdev);
 					blobmsg_add_u32(b, "idle", details[i].idle);
