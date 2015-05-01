@@ -49,4 +49,7 @@
 ./scripts/feeds install madplay
 ./scripts/feeds install alsa-utils
 ./scripts/feeds install i2c-tools
-./scripts/feeds install luciexpress
+./scripts/feeds install bluez-hcidump
+./scripts/feeds install bluez-libs
+./scripts/feeds install bluez-utils
+./scripts/feeds install boost-system
