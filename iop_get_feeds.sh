@@ -10,8 +10,6 @@
 ./scripts/feeds install libsqlite3
 ./scripts/feeds install libffmpeg
 ./scripts/feeds install libjpeg
-./scripts/feeds install usb-modeswitch-data
-./scripts/feeds install usb-modeswitch
 ./scripts/feeds install libeventlog
 ./scripts/feeds install libpng
 ./scripts/feeds install liblzo
