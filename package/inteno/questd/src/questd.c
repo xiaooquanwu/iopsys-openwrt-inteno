@@ -88,6 +88,16 @@ static const struct blobmsg_policy host_policy[__HOST_MAX] = {
 	[IP_ADDR] = { .name = "ipaddr", .type = BLOBMSG_TYPE_STRING },
 	[MAC_ADDR] = { .name = "macaddr", .type = BLOBMSG_TYPE_STRING },
 };
+
+enum {
+	PIN,
+	__PIN_MAX,
+};
+
+
+static const struct blobmsg_policy pin_policy[__PIN_MAX] = {
+	[PIN] = { .name = "pin", .type = BLOBMSG_TYPE_STRING },
+};
 /* END POLICIES */
 
 pthread_t tid[1];
@@ -379,14 +389,14 @@ wireless_sta(Client *clnt, Detail *dtl)
 		if (there) {
 			sprintf(cmnd, "wlctl -i %s noise", wireless[i].device);
 			if ((stainfo = popen(cmnd, "r"))) {
-				fread(line, sizeof(line), 1, stainfo);
+				fgets(line, sizeof(line), stainfo);
 				remove_newline(line);
 				noise = atoi(line);
 				pclose(stainfo);
 			}
 			sprintf(cmnd, "wlctl -i %s rssi %s", wireless[i].vif, clnt->macaddr);
 			if ((stainfo = popen(cmnd, "r"))) {
-				fread(line, sizeof(line), 1, stainfo);
+				fgets(line, sizeof(line), stainfo);
 				remove_newline(line);
 				dtl->snr = atoi(line) - noise;
 				pclose(stainfo);
@@ -408,7 +418,7 @@ active_connections(char *ipaddr)
 
 	sprintf(cmnd, "grep %s /proc/net/ip_conntrack | wc -l", ipaddr);
 	if ((conn = popen(cmnd, "r"))) {
-		fread(line, sizeof(line), 1, conn);
+		fgets(line, sizeof(line), conn);
 		remove_newline(line);
 		connum = atoi(line);
 		pclose(conn);
@@ -1144,6 +1154,7 @@ host_dump_status(struct blob_buf *b, char *addr, bool byIP)
 	}
 }
 
+/* ROUTER OBJECT */
 static int
 quest_router_specific(struct ubus_context *ctx, struct ubus_object *obj,
 		  struct ubus_request_data *req, const char *method,
@@ -1499,6 +1510,153 @@ static struct ubus_object router_object = {
 	.methods = router_object_methods,
 	.n_methods = ARRAY_SIZE(router_object_methods),
 };
+/* END OF ROUTER OBJECT */
+
+/* WPS OBJECT */
+static int
+wps_pbc(struct ubus_context *ctx, struct ubus_object *obj,
+		  struct ubus_request_data *req, const char *method,
+		  struct blob_attr *msg)
+{
+	system("killall -SIGUSR2 wps_monitor");
+	return 0;
+}
+
+static int
+wps_genpin(struct ubus_context *ctx, struct ubus_object *obj,
+		  struct ubus_request_data *req, const char *method,
+		  struct blob_attr *msg)
+{
+	FILE *genpin;
+	char cmnd[16];
+	char pin[9] = { '\0' };
+
+	sprintf(cmnd, "wps_cmd genpin");
+	if ((genpin = popen(cmnd, "r"))) {
+		fgets(pin, sizeof(pin), genpin);
+		remove_newline(pin);
+		pclose(genpin);
+	}
+
+	blob_buf_init(&bb, 0);
+
+	blobmsg_add_string(&bb, "pin", pin);
+	ubus_send_reply(ctx, req, bb.head);
+
+	return 0;
+}
+
+static int
+wps_checkpin(struct ubus_context *ctx, struct ubus_object *obj,
+		  struct ubus_request_data *req, const char *method,
+		  struct blob_attr *msg)
+{
+	struct blob_attr *tb[__PIN_MAX];
+
+	blobmsg_parse(pin_policy, __PIN_MAX, tb, blob_data(msg), blob_len(msg));
+
+	if (!(tb[PIN]))
+		return UBUS_STATUS_INVALID_ARGUMENT;
+
+	FILE *checkpin;
+	char cmnd[32];
+	char pin[9] = { '\0' };
+	bool valid = false;
+
+	snprintf(cmnd, 32, "wps_cmd checkpin %s", blobmsg_data(tb[PIN]));
+	if ((checkpin = popen(cmnd, "r"))) {
+		fgets(pin, sizeof(pin), checkpin);
+		remove_newline(pin);
+		pclose(checkpin);
+	}
+
+	if(strlen(pin))
+		valid = true;
+
+	blob_buf_init(&bb, 0);
+	blobmsg_add_u8(&bb, "valid", valid);
+	ubus_send_reply(ctx, req, bb.head);
+
+	return 0;
+}
+
+static int
+wps_stapin(struct ubus_context *ctx, struct ubus_object *obj,
+		  struct ubus_request_data *req, const char *method,
+		  struct blob_attr *msg)
+{
+	struct blob_attr *tb[__PIN_MAX];
+
+	blobmsg_parse(pin_policy, __PIN_MAX, tb, blob_data(msg), blob_len(msg));
+
+	if (!(tb[PIN]))
+		return UBUS_STATUS_INVALID_ARGUMENT;
+
+	runCmd("wps_cmd addenrollee wl0 sta_pin=%s &", blobmsg_data(tb[PIN]));
+
+	return 0;
+}
+
+static int
+wps_setpin(struct ubus_context *ctx, struct ubus_object *obj,
+		  struct ubus_request_data *req, const char *method,
+		  struct blob_attr *msg)
+{
+	struct blob_attr *tb[__PIN_MAX];
+
+	blobmsg_parse(pin_policy, __PIN_MAX, tb, blob_data(msg), blob_len(msg));
+
+	if (!(tb[PIN]))
+		return UBUS_STATUS_INVALID_ARGUMENT;
+
+	runCmd("wps_cmd setpin %s &", blobmsg_data(tb[PIN]));
+
+	return 0;
+}
+
+static int
+wps_showpin(struct ubus_context *ctx, struct ubus_object *obj,
+		  struct ubus_request_data *req, const char *method,
+		  struct blob_attr *msg)
+{
+	FILE *showpin;
+	char cmnd[32];
+	char pin[9] = { '\0' };
+
+	sprintf(cmnd, "nvram get wps_device_pin");
+	if ((showpin = popen(cmnd, "r"))) {
+		fgets(pin, sizeof(pin), showpin);
+		remove_newline(pin);
+		pclose(showpin);
+	}
+
+	blob_buf_init(&bb, 0);
+
+	blobmsg_add_string(&bb, "pin", pin);
+	ubus_send_reply(ctx, req, bb.head);
+
+	return 0;
+}
+
+static struct ubus_method wps_object_methods[] = {
+	UBUS_METHOD_NOARG("pbc", wps_pbc),
+	UBUS_METHOD_NOARG("genpin", wps_genpin),
+	UBUS_METHOD("checkpin", wps_checkpin, pin_policy),
+	UBUS_METHOD("stapin", wps_stapin, pin_policy),
+	UBUS_METHOD("setpin", wps_setpin, pin_policy),
+	UBUS_METHOD_NOARG("showpin", wps_showpin),
+};
+
+static struct ubus_object_type wps_object_type =
+	UBUS_OBJECT_TYPE("wps", wps_object_methods);
+
+static struct ubus_object wps_object = {
+	.name = "wps",
+	.type = &wps_object_type,
+	.methods = wps_object_methods,
+	.n_methods = ARRAY_SIZE(wps_object_methods),
+};
+/* END OF WPS OBJECT */
 
 static void
 quest_ubus_add_fd(void)
@@ -1555,6 +1713,7 @@ quest_ubus_init(const char *path)
 	quest_ubus_add_fd();
 
 	quest_add_object(&router_object);
+	quest_add_object(&wps_object);
 
 	return 0;
 }

@@ -43,7 +43,6 @@ typedef struct {
 	long rx_bytes;
 	int tx_rate;
 	int rx_rate;
-	int rssi;
 	int snr;
 } Detail;
 
