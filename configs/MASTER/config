@@ -542,8 +542,8 @@ CONFIG_BCM_ENDPOINT_MODULE=y
 # CONFIG_BCM_BLUETOOTH is not set
 # CONFIG_SECURE_BOOT_CFE is not set
 # CONFIG_PACKAGE_bcmopen is not set
-CONFIG_PACKAGE_block-mount=y
-# CONFIG_PACKAGE_block-mount-old is not set
+# CONFIG_PACKAGE_block-mount is not set
+CONFIG_PACKAGE_block-mount-old=y
 CONFIG_EXTROOT_SETTLETIME=20
 # CONFIG_PACKAGE_brcm-h is not set
 CONFIG_PACKAGE_brcm_fw_tool=y
@@ -2245,7 +2245,7 @@ CONFIG_PACKAGE_dropbear=y
 # CONFIG_DROPBEAR_ECC is not set
 # CONFIG_PACKAGE_ead is not set
 CONFIG_PACKAGE_firewall=y
-CONFIG_PACKAGE_fstools=y
+# CONFIG_PACKAGE_fstools is not set
 CONFIG_PACKAGE_hotplug2=y
 CONFIG_PACKAGE_jsonfilter=y
 CONFIG_PACKAGE_layer2interface=y
