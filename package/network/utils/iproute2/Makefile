@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2006-2014 OpenWrt.org
+# Copyright (C) 2006-2010 OpenWrt.org
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,38 +8,33 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=iproute2
-PKG_VERSION:=3.15.0
-PKG_RELEASE:=1
+PKG_VERSION:=3.3.0
+PKG_RELEASE:=2
 
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
 PKG_SOURCE_URL:=http://kernel.org/pub/linux/utils/net/iproute2/
-PKG_MD5SUM:=5b1711c9d16071959052e369a2682d77
+PKG_MD5SUM:=308e7145218dd552c2766fe527e239e1
 PKG_BUILD_PARALLEL:=1
 
-PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(BUILD_VARIANT)/$(PKG_NAME)-$(PKG_VERSION)
+PKG_BUILD_DIR:=$(BUILD_DIR)/iproute2-$(PKG_VERSION)
 
 include $(INCLUDE_DIR)/package.mk
 
 define Package/iproute2/Default
-  TITLE:=Routing control utility ($(2))
   SECTION:=net
   CATEGORY:=Network
-  URL:=http://www.linuxfoundation.org/collaborate/workgroups/networking/iproute2
-  SUBMENU:=Routing and Redirection
-  MAINTAINER:=Russell Senior <russell@personaltelco.net>
-  DEPENDS:= +libnl-tiny
-  VARIANT:=$(1)
+  URL:=http://linux-net.osdl.org/index.php/Iproute2
 endef
 
-Package/ip=$(call Package/iproute2/Default,tiny,Minimal)
-Package/ip-full=$(call Package/iproute2/Default,full,Full)
+define Package/ip
+$(call Package/iproute2/Default)
+  SUBMENU:=Routing and Redirection
+  DEPENDS:= +libnl-tiny
+  TITLE:=Routing control utility
+endef
 
 define Package/ip/conffiles
 /etc/iproute2/rt_tables
-endef
-
-define Package/ip-$(BUILD_VARIANT)/conffiles
-$(Package/ip/conffiles)
 endef
 
 define Package/tc
@@ -58,10 +53,6 @@ $(call Package/iproute2/Default)
   TITLE:=Socket statistics utility
 endef
 
-ifeq ($(BUILD_VARIANT),tiny)
-  IP_CONFIG_TINY:=y
-endif
-
 define Build/Configure
 	$(SED) "s,-I/usr/include/db3,," $(PKG_BUILD_DIR)/Makefile
 	$(SED) "s,^KERNEL_INCLUDE.*,KERNEL_INCLUDE=$(LINUX_DIR)/include," \
@@ -78,14 +69,9 @@ ifdef CONFIG_USE_EGLIBC
   endif
 endif
 
-TARGET_CFLAGS += -ffunction-sections -fdata-sections
-
 MAKE_FLAGS += \
 	EXTRA_CCOPTS="$(TARGET_CFLAGS) -I../include -I$(STAGING_DIR)/usr/include/libnl-tiny" \
 	KERNEL_INCLUDE="$(LINUX_DIR)/include" \
-	SHARED_LIBS="" \
-	LDFLAGS="-Wl,--gc-sections" \
-	IP_CONFIG_TINY=$(IP_CONFIG_TINY) \
 	FPIC="$(FPIC)"
 
 define Build/Compile
@@ -106,15 +92,11 @@ define Package/ip/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/ip/ip $(1)/usr/sbin/
 endef
 
-define Package/ip-$(BUILD_VARIANT)/install
-	$(Package/ip/install)
-endef
-
 define Package/tc/install
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/tc/tc $(1)/usr/sbin/
 	$(INSTALL_DIR) $(1)/etc/hotplug.d/iface
-	$(INSTALL_BIN) ./files/15-teql $(1)/etc/hotplug.d/iface/
+	$(INSTALL_BIN) ./files/30-teql $(1)/etc/hotplug.d/iface/
 endef
 
 define Package/genl/install
@@ -128,7 +110,6 @@ define Package/ss/install
 endef
 
 $(eval $(call BuildPackage,ip))
-$(eval $(call BuildPackage,ip-full))
 $(eval $(call BuildPackage,tc))
 $(eval $(call BuildPackage,genl))
 $(eval $(call BuildPackage,ss))

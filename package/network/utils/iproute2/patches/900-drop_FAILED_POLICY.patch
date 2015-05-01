@@ -9,9 +9,11 @@ Subject: [PATCH] add support for dropping with FAILED_POLICY
  ip/rtm_map.c              |    4 ++++
  3 files changed, 9 insertions(+)
 
---- a/include/linux/fib_rules.h
-+++ b/include/linux/fib_rules.h
-@@ -64,6 +64,10 @@ enum {
+Index: iproute2-3.3.0/include/linux/fib_rules.h
+===================================================================
+--- iproute2-3.3.0.orig/include/linux/fib_rules.h	2013-06-10 15:48:46.771045967 +0200
++++ iproute2-3.3.0/include/linux/fib_rules.h	2013-06-10 15:48:46.763045967 +0200
+@@ -64,6 +64,10 @@
  	FR_ACT_BLACKHOLE,	/* Drop without notification */
  	FR_ACT_UNREACHABLE,	/* Drop with ENETUNREACH */
  	FR_ACT_PROHIBIT,	/* Drop with EACCES */
@@ -22,9 +24,11 @@ Subject: [PATCH] add support for dropping with FAILED_POLICY
  	__FR_ACT_MAX,
  };
  
---- a/include/linux/rtnetlink.h
-+++ b/include/linux/rtnetlink.h
-@@ -203,6 +203,7 @@ enum {
+Index: iproute2-3.3.0/include/linux/rtnetlink.h
+===================================================================
+--- iproute2-3.3.0.orig/include/linux/rtnetlink.h	2013-06-10 15:48:46.771045967 +0200
++++ iproute2-3.3.0/include/linux/rtnetlink.h	2013-06-10 15:48:46.763045967 +0200
+@@ -191,6 +191,7 @@
  	RTN_THROW,		/* Not in this table		*/
  	RTN_NAT,		/* Translate this address	*/
  	RTN_XRESOLVE,		/* Use external resolver	*/
@@ -32,9 +36,11 @@ Subject: [PATCH] add support for dropping with FAILED_POLICY
  	__RTN_MAX
  };
  
---- a/ip/rtm_map.c
-+++ b/ip/rtm_map.c
-@@ -49,6 +49,8 @@ char *rtnl_rtntype_n2a(int id, char *buf
+Index: iproute2-3.3.0/ip/rtm_map.c
+===================================================================
+--- iproute2-3.3.0.orig/ip/rtm_map.c	2013-06-10 15:48:46.771045967 +0200
++++ iproute2-3.3.0/ip/rtm_map.c	2013-06-10 15:48:46.763045967 +0200
+@@ -49,6 +49,8 @@
  		return "nat";
  	case RTN_XRESOLVE:
  		return "xresolve";
@@ -43,7 +49,7 @@ Subject: [PATCH] add support for dropping with FAILED_POLICY
  	default:
  		snprintf(buf, len, "%d", id);
  		return buf;
-@@ -84,6 +86,8 @@ int rtnl_rtntype_a2n(int *id, char *arg)
+@@ -84,6 +86,8 @@
  		res = RTN_UNICAST;
  	else if (strcmp(arg, "throw") == 0)
  		res = RTN_THROW;
