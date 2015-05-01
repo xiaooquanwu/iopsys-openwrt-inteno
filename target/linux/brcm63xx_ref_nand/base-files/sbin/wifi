@@ -1260,22 +1260,24 @@ wifi_toggle_iface() {
 	fi
 }
 
-local old_md5sum="$(nvget wlmd5sum)"
-local new_md5sum="$(md5sum /etc/config/wireless | awk '{print$1}')"
+check_md5sum() {
+	local old_md5sum="$(nvget wlmd5sum)"
+	local new_md5sum="$(md5sum /etc/config/wireless | awk '{print$1}')"
 
-if [ "$old_md5sum" == "$new_md5sum" ]; then
-	exit
-else
-	nvset wlmd5sum=$new_md5sum
-fi
+	if [ "$old_md5sum" == "$new_md5sum" ]; then
+		exit
+	else
+		nvset wlmd5sum=$new_md5sum
+	fi
+}
 
 case "$1" in
 	on|off) wifi_onoff "$1" ;;
 	disable|enable) wifi_toggle_iface "$1" "$2" ;;
 	detect) wifi_detect ;;
 	down) wifi_updown "disable" "$2" ;;
-	reload) wifi_reload "$2" ;;
-	reload_legacy) wifi_reload_legacy "$2" ;;
+	reload) check_md5sum; wifi_reload "$2" ;;
+	reload_legacy) check_md5sum; wifi_reload_legacy "$2" ;;
 	*) ubus call network reload; wifi_updown "enable" "$2";;
 esac
 
