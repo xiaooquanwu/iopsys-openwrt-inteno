@@ -1270,6 +1270,7 @@ check_md5sum() {
 
 if [ -f /tmp/wireless/first ]; then
 	RESTART="0"
+	nvset wlmd5sum=""
 	rm -f /tmp/wireless/first
 fi
 
