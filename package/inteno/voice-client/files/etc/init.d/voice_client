@@ -12,6 +12,7 @@ if [ -f "$HOOKS" ] ; then
 fi
 
 START=60
+USE_PROCD=1
 
 # Some global variables
 SERIAL=$(cat /proc/nvram/SerialNumber)
@@ -1967,7 +1968,7 @@ configure_logger()
 	sed -i "s/|SYSLOG_FACILITY|/$syslog_facility/"	$WORKDIR/logger.tmp
 }
 
-start() {
+start_service() {
 	run_hook preinit
 	mkdir -p $WORKDIR
 	mkdir -p $WORKDIR/ssl
@@ -2086,6 +2087,7 @@ start() {
 	return
 }
 
-restart() {
-	start
+service_triggers() {
+        procd_add_reload_trigger voice_client
 }
+
