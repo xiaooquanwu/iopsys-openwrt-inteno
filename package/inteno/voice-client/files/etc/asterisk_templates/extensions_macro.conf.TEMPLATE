@@ -149,16 +149,14 @@ exten => s,n(call_cfbs),	Dial(SIP/${linecfbs}@${ARG1})
 ;
 ; ${ARG1} - Extension
 ;
-exten => s,1,	Set(result=${SHELL(/usr/lib/asterisk/log_call.sh Incoming ${ARG1} Blocked)})
-exten => s,n,   Congestion(10)
+exten => s,1,   Congestion(10)
 exten => s,n,	Hangup()
 
 [macro-callhandler-outgoing-blocked]
 ;
 ; ${ARG1} - Extension
 ;
-exten => s,1,	Set(result=${SHELL(/usr/lib/asterisk/log_call.sh Outgoing ${ARG1} Blocked)})
-exten => s,n,	Playtones(congestion)
+exten => s,1,	Playtones(congestion)
 exten => s,n,	Wait(5)
 exten => s,n,   Congestion(10)
 exten => s,n,	Hangup()

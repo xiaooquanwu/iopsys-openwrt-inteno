@@ -10,6 +10,11 @@ include => |PROVIDER|-outgoing
 
 [|PROVIDER|-transfer]
 ; Context used for call transfer for this Provider
+include => local_extensions
+include => |PROVIDER|-transfer-remote
+
+[|PROVIDER|-transfer-remote]
+; Context used for call transfer to remote extension for this Provider
 exten => _X.,1,		Transfer(SIP/${EXTEN}@|PROVIDER|,,)
 
 [|PROVIDER|-outgoing]
@@ -17,7 +22,7 @@ exten => _X.,1,		Transfer(SIP/${EXTEN}@|PROVIDER|,,)
 exten => _[*#0-9].,1,	Set(DIAL_EXTEN=${EXTEN})
 exten => _[*#0-9].,n,	|CUSTOM_OUTGOING|
 exten => _[*#0-9].,n,   |CALL_FILTER|
-exten => _[*#0-9].,n,	Set(result=${SHELL(/usr/lib/asterisk/log_call.sh Outgoing ${DIAL_EXTEN})})
+exten => _[*#0-9].,n,	Set(result=${SHELL(/usr/lib/asterisk/log_call.sh Outgoing |USERNAME| ${DIAL_EXTEN})})
 exten => _[*#0-9].,n,	Set(DB(LASTCALL/|PROVIDER|)=${DIAL_EXTEN})
 exten => _[*#0-9].,n,	Set(CALLERID(name)=|DISPLAYNAME|)
 exten => _[*#0-9].,n,	Set(__TRANSFER_CONTEXT=|PROVIDER|-transfer)

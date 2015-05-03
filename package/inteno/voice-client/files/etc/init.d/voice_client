@@ -29,6 +29,9 @@ ASTERISKDIR=/etc/asterisk
 WORKDIR=/tmp/$MODULENAME.$$
 MD5SUMSFILE=/tmp/$MODULENAME-sums.$$
 
+# Whitespace separated list of BRCM feature access codes
+BRCM_FAC=
+
 #TODO: go through templates, check usage
 
 TMPL_EXTENSIONS=$TEMPLATEDIR/extensions.conf.TEMPLATE
@@ -54,6 +57,8 @@ TMPL_DNSMGR=$TEMPLATEDIR/dnsmgr.conf.TEMPLATE
 
 TMPL_VOICEMAIL=$TEMPLATEDIR/voicemail.conf.TEMPLATE
 TMPL_VOICEMAIL_MAILBOX=$TEMPLATEDIR/voicemail_mailbox.TEMPLATE
+
+TMPL_MEETME=$TEMPLATEDIR/meetme.conf.TEMPLATE
 
 TMPL_QUEUES=$TEMPLATEDIR/queues.conf.TEMPLATE
 TMPL_QUEUE=$TEMPLATEDIR/queue.TEMPLATE
@@ -164,6 +169,7 @@ assemble_and_copy_config()
 	mv $WORKDIR/res_stun_monitor.tmp	$WORKDIR/res_stun_monitor.conf
 	mv $WORKDIR/features.tmp		$WORKDIR/features.conf
 	mv $WORKDIR/voicemail.tmp		$WORKDIR/voicemail.conf
+	mv $WORKDIR/meetme.tmp			$WORKDIR/meetme.conf
         mv $WORKDIR/logger.tmp			$WORKDIR/logger.conf
 	mv $WORKDIR/queues.tmp			$WORKDIR/queues.conf
 	mv $WORKDIR/dnsmgr.tmp			$WORKDIR/dnsmgr.conf
@@ -554,7 +560,17 @@ restore_secret()
 {
 	local section_found
 	local secret
+	local config_file
+	# Provide backwards compatibility
 	if [ -f "$ASTERISKDIR/sip_providers.conf" ] ; then
+		config_file=$ASTERISKDIR/sip_providers.conf
+	elif [ -f "$ASTERISKDIR/sip_peers.conf" ] ; then
+		config_file=$ASTERISKDIR/sip_peers.conf
+	else
+		return
+	fi
+
+	if [ -f $config_file ] ; then
 		while read line
 		do
 			if [ -n "$section_found" ] ; then
@@ -568,7 +584,7 @@ restore_secret()
 				#we found the correct section
 				section_found=1
 			fi
-		done < $ASTERISKDIR/sip_providers.conf
+		done < $config_file
 	fi
 }
 
@@ -718,10 +734,10 @@ configure_sip_provider()
 	fi
 
 	# Set or remove encryption
-	if [ -z "$encryption" ] ; then
+	if [ -z "$encryption" -o "$encryption" == "0" ] ; then
 		sed -i "/|ENCRYPTION|/d"		$WORKDIR/sip_provider.tmp
 	else
-		sed -i "s/|ENCRYPTION|/$encryption/g"		$WORKDIR/sip_provider.tmp
+		sed -i "s/|ENCRYPTION|/yes/g"		$WORKDIR/sip_provider.tmp
 	fi
 
 	# Force ulaw/alaw if fax, otherwise read selected codecs
@@ -966,6 +982,10 @@ configure_queue()
 
 	echo "[macro-$1]" >>					$WORKDIR/macros.tmp
 	echo "exten => s,1,Answer()" >>				$WORKDIR/macros.tmp
+
+        # Workaround to fix no ringback issue for incoming SIP calls
+	echo "exten => s,n,Playback(silence/1)" >>		$WORKDIR/macros.tmp
+
 	echo "exten => s,n,Queue($1,R)" >>			$WORKDIR/macros.tmp
 	echo "exten => s,n,MacroExit()" >>			$WORKDIR/macros.tmp
 	echo "" >>						$WORKDIR/macros.tmp
@@ -1045,6 +1065,58 @@ configure_sip_user()
 }
 
 #
+# Install common macros used by call filters
+#
+configure_call_filters()
+{
+	local country
+	config_get country BRCM country
+	# Read the International Dialing Code and the Country Code from config
+
+	echo "Looking up IDC and CC for country $country"
+	while read line
+	do
+		i=0
+		for v in $(echo $line | tr ";" "\n")
+		do
+			if [ "$i" -eq "0" -a "$v" != "$country" ] ; then
+				continue 2
+			fi
+			if [ "$i" -eq "1" ] ; then
+				idc=$v
+			fi
+			if [ "$i" -eq "2" ] ; then
+				cc=$v
+			fi
+			i=$((i+1))
+		done
+
+		if [ -n "$idc" -a -n "$cc" ] ; then
+			# IDC and CC found
+			break
+		fi
+	done < "/etc/idc_cc.cfg"
+	
+	echo "Found IDCs: $idc"
+	echo "Found CCs: $cc"
+
+	echo "[macro-check-foreign]" >>				$WORKDIR/macros.tmp
+	echo "exten => s,1,NoOp()" >>				$WORKDIR/macros.tmp
+
+	# Create regex patterns
+	# All x characters are replaced with [0-9] to match a single digit
+	idc="($(echo $idc | tr -s "" | tr "," "|" | sed 's/x/[0-9]/g'))"
+	cc="($(echo $cc | tr -s "" | tr "," "|"))"
+
+	echo "exten => s,n,GotoIf($[\"\${ARG1}\":\"($idc[0-9]+)\">0]?international:not-foreign)" >> $WORKDIR/macros.tmp
+	echo "exten => s,n(international),GotoIf($[\"\${ARG1}\":\"(${idc}${cc}[0-9]+)\">0]?not-foreign)" >> $WORKDIR/macros.tmp
+	echo "exten => s,n,Set(FOREIGN=1)" >>			$WORKDIR/macros.tmp
+	echo "exten => s,n,MacroExit()" >>			$WORKDIR/macros.tmp
+	echo "exten => s,n(not-foreign),Set(FOREIGN=0)" >>	$WORKDIR/macros.tmp
+	echo "" >>						$WORKDIR/macros.tmp
+}
+
+#
 # Install call filter macros
 #
 configure_call_filter()
@@ -1060,7 +1132,12 @@ configure_call_filter()
 #
 configure_call_filter_helper()
 {
-	local sip_provider filter_mode goto_label
+	local block_foreign
+	local block_special_rate
+
+	config_get block_foreign $1 block_foreign
+	config_get block_special_rate $1 block_special_rate
+
 	[ "$#" -ge 2 ] || return 0
 	
 	direction=$2
@@ -1068,69 +1145,49 @@ configure_call_filter_helper()
 		return
 	fi
 
-	echo "[macro-$1-$direction-call-filter]" >>		$WORKDIR/macros.tmp
+	echo "[macro-$1-$direction]" >>				$WORKDIR/macros.tmp
 	echo "exten => s,1,NoOp()" >>				$WORKDIR/macros.tmp
 
-	config_get filter_mode $1 $direction
-	if [ "x$filter_mode" == "xblacklist" ] ; then
-		goto_label="block"
-	fi
-	if [ "x$filter_mode" == "xwhitelist" ] ; then
-		goto_label="pass"
+	if [ "x$direction" == "xoutgoing" -a "x$block_foreign" == "x1" ] ; then
+		echo "exten => s,n,Macro(check-foreign,\${DIAL_EXTEN})" >>	$WORKDIR/macros.tmp
+		echo "exten => s,n,GotoIf($[\${FOREIGN}==1]?block)" >>		$WORKDIR/macros.tmp
 	fi
 
-	if [ -z "$goto_label" ] ; then
-		return
-	fi
-
-	local section cfgtype owner tmp
+	local section cfgtype owner
 	for section in ${CONFIG_SECTIONS}; do
 		config_get cfgtype "$section" TYPE
-		[ "x$cfgtype" != "xcall_filter_rule" ] && continue
+		[ "x$cfgtype" != "xcall_filter_rule_$direction" ] && continue
 		config_get owner $section owner
 		if [ "x$owner" == "x$1" ] ; then
-			local rule_direction rule_user rule_extension rule_enabled
-			config_get rule_direction $section direction
-			config_get rule_user $section user
+			local rule_extension rule_enabled
 			config_get rule_extension $section extension
 			config_get rule_enabled $section enabled
-
-			[ "x$rule_direction" != "x$direction" ] && continue
 
 			[ -z "$rule_enabled" -o "$rule_enabled" = "0" ] && continue
 
 			# Regular expression for matching calling or called number
-			regexp="$rule_extension[0-9]*"
+			regexp=$(echo $rule_extension | sed 's/#.*/\[0-9\]*/')
 		
-			if [ "x$rule_direction" == "xoutgoing" ] ; then
-				if [ "x$rule_user" == "x*" ] ; then
-					tmp="exten => s,n,GotoIf($[\"\${DIAL_EXTEN}\":\"$regexp\">0]?$goto_label)"
-					echo $tmp >>		$WORKDIR/macros.tmp
-				else
-					tmp="exten => s,n,GotoIf($[$[\"\${DIAL_EXTEN}\":\"$regexp\">0] &"
-					tmp="$tmp $[\"\${CHANNEL}\":\"$rule_user/[0-9]+|$rule_user-[0-9]+\">0]]?$goto_label)"
-					echo $tmp >>		$WORKDIR/macros.tmp
-				fi
+			if [ "x$direction" == "xoutgoing" ] ; then
+				cmd="GotoIf($[\"\${DIAL_EXTEN}\":\"$regexp\">0]?block)"
+				echo "exten => s,n,$cmd" >>	$WORKDIR/macros.tmp
 			fi
 			
-			if [ "x$rule_direction" == "xincoming" ] ; then
-				tmp="exten => s,n,GotoIf($[\"\${CALLERID(num)}\":\"$regexp\">0]?$goto_label)"
-				echo $tmp >>			$WORKDIR/macros.tmp
+			if [ "x$direction" == "xincoming" ] ; then
+				cmd="GotoIf($[\"\${CALLERID(num)}\":\"$regexp\">0]?block)"
+				echo "exten => s,n,$cmd" >>	$WORKDIR/macros.tmp
 			fi
 		fi
 	done
 	
-	if [ "x$filter_mode" == "xblacklist" ] ; then
-		echo "exten => s,n,Goto(pass)" >>		$WORKDIR/macros.tmp
-	fi
+	echo "exten => s,n,MacroExit()" >>			$WORKDIR/macros.tmp
 	if [ "x$direction" == "xincoming" ] ; then
-		tmp="exten => s,n(block),Macro(callhandler-incoming-blocked,\${CALLERID(num)})"
-		echo $tmp >>					$WORKDIR/macros.tmp
+		cmd="Macro(callhandler-incoming-blocked,\${CALLERID(num)})"
+		echo "exten => s,n(block),$cmd" >>		$WORKDIR/macros.tmp
 	else
-		tmp="exten => s,n(block),Macro(callhandler-outgoing-blocked,\${DIAL_EXTEN})"
-		echo $tmp >>					$WORKDIR/macros.tmp
+		cmd="Macro(callhandler-outgoing-blocked,\${DIAL_EXTEN})"
+		echo "exten => s,n(block),$cmd" >>		$WORKDIR/macros.tmp
 	fi
-	echo "exten => s,n(pass),NoOp()" >>			$WORKDIR/macros.tmp
 }
 
 get_call_filter()
@@ -1146,11 +1203,7 @@ get_call_filter()
 	local call_filter enabled
 	config_get call_filter $provider call_filter
 	if ! [ -z "$call_filter" ] ; then
-		# check if call filter is enabled
-		config_get enabled $call_filter enabled
-		if [ "x$enabled" = "x1" ] ; then
-			macro="Macro($call_filter-$direction-call-filter)"
-		fi	
+		macro="Macro($call_filter-$direction)"
 	fi
 	echo $macro
 }
@@ -1264,6 +1317,8 @@ configure_extensions()
 	if [ -n "$clir" -a "$clir" != "" ] ; then
 		sed -i "s/|CLIR_FAC_SET|//"		$WORKDIR/extensions.tmp
 		sed -i "s/|CLIR|/$clir/"		$WORKDIR/extensions.tmp
+		sed -i "s/|CLIR_FAC_LEN|/${#clir}/"     $WORKDIR/extensions.tmp
+		BRCM_FAC="$BRCM_FAC $clir."
 	else
 		sed -i "s/|CLIR_FAC_SET|/;/"		$WORKDIR/extensions.tmp
 	fi
@@ -1375,6 +1430,7 @@ configure_extensions_provider()
 	
 	#common settings
 	sed -i "s/|PROVIDER|/$1/g"			$WORKDIR/extensions_provider.tmp
+	sed -i "s/|USERNAME|/$user_without_suffix/g"	$WORKDIR/extensions_provider.tmp
 	sed -i "s/|CUSTOM_OUTGOING|/$custom_outgoing/"	$WORKDIR/extensions_provider.tmp
 	sed -i "s/|CALL_FILTER|/$call_filter_macro/"	$WORKDIR/extensions_provider.tmp
 	sed -i "s/|DISPLAYNAME|/$(escape_sed_substitution $displayname)/"		$WORKDIR/extensions_provider.tmp
@@ -1438,13 +1494,19 @@ configure_extensions_provider()
 
 	local call_lines call_ivr call_queue extension
 	echo "exten => $user,n,Set(__TRANSFER_CONTEXT=\${CHANNEL(peername)}-transfer)" >>	$tmp
+
+        # replace prefix '+' with '00'
+	echo "exten => $user,n,GotoIf($[\"\${CALLERID(NUM):0:1}\" = \"+\"]?rewrite:norewrite)" >>	$tmp
+	echo "exten => $user,n(rewrite),Set(CALLERID(num)=\"00\${CALLERID(num):1}\"))" >>		$tmp
+	echo "exten => $user,n(norewrite),NoOp()">>							$tmp
+
 	config_get call_lines $1 call_lines
 	config_get call_queue $1 call_queue
 	config_get call_ivr $1 call_ivr
 	if ! [ -z "$call_lines" ] ; then
 		# read a list of lines that should be dialled on incoming calls
 		incoming_lines=$(read_lines $1)
-		echo "exten => $user,n,Dial($incoming_lines,$(get_voicemail_timeout),t)" >>		$tmp
+		echo "exten => $user,n,Dial($incoming_lines,$(get_voicemail_timeout),tF(hangup,h,2))" >>		$tmp
 		echo "exten => $user,n,GotoIf($[\"\${DIALSTATUS}\"=\"ANSWER\"]?endcall)" >>		$tmp
 		echo "exten => $user,n,GotoIf($[\"\${DIALSTATUS}\"=\"BUSY\"]?noanswer)" >>		$tmp
 		echo "exten => $user,n,GotoIf($[\"\${DIALSTATUS}\"=\"NOANSWER\"]?noanswer:endcall)" >>	$tmp
@@ -1601,6 +1663,7 @@ configure_brcm()
 	local jbimpl
 	local dtmfcompatibility
 	local dialoutmsec
+	local fac
 
 	config_get country BRCM country
 	config_get jbenable BRCM jbenable
@@ -1609,8 +1672,11 @@ configure_brcm()
 	config_get jbimpl BRCM jbimpl
 	config_get dtmfmode SIP dtmfmode
 	config_get dialoutmsec BRCM dialoutmsec
+	config_get fac BRCM fac
 
-	endptcfg $country
+	BRCM_FAC="$BRCM_FAC $fac"
+	# Convert whitespace to commas
+	BRCM_FAC=$(echo $BRCM_FAC | sed -e 's/^ *//' -e 's/ *$//' | tr -s ' ' | tr ' ' ',')
 
 	if [ -z "$dialoutmsec" ] ; then
 		dialoutmsec=4000
@@ -1622,6 +1688,7 @@ configure_brcm()
 	sed -i "s/|JBMAXSIZE|/$jbmaxsize/"			$WORKDIR/brcm.tmp
 	sed -i "s/|JBIMPL|/$jbimpl/"				$WORKDIR/brcm.tmp
 	sed -i "s/|DIALOUTMSEC|/$dialoutmsec/"			$WORKDIR/brcm.tmp
+	sed -i "s/|FAC|/$BRCM_FAC/"				$WORKDIR/brcm.tmp
 
 	if [ "$dtmfmode" == "compatibility" ] ; then
 		dtmfcompatibility="1"
@@ -1765,6 +1832,52 @@ get_voicemail_timeout()
 	fi
 }
 
+configure_conference()
+{
+	local extension moh
+	config_get extension conference extension
+	config_get moh conference moh
+	
+	if [ -z "$extension" -o "x$extension" == "x" ] ; then
+		return
+	fi
+	
+	options="Ip"
+	if [ "x$moh" == "x1" ] ; then
+		options="${options}M"
+	fi
+	
+	echo "Configuring conference"
+	echo "exten => $extension,1,Answer()"					>> $WORKDIR/extensions_local.tmp
+	echo "exten => $extension,n,Playback(conf-getconfno)"			>> $WORKDIR/extensions_local.tmp
+	echo "exten => $extension,n(enterno),Read(confno,,5)"			>> $WORKDIR/extensions_local.tmp
+	
+	for section in ${CONFIG_SECTIONS}; do
+                config_get cfgtype "$section" TYPE
+                [ "x$cfgtype" != "xconference_room" ] && continue
+
+		local name id enabled
+		config_get name $section name
+		config_get id $section id
+		config_get enabled $section enabled
+
+		[ -z "$enabled" -o "$enabled" != "1" ] && continue
+
+		echo "Enabling conference room $id"
+		echo "exten => $extension,n,GotoIf($[\"\${confno}\"=\"$id\"]?enterconf)"	>> $WORKDIR/extensions_local.tmp
+		echo "conf => $id"								>> $WORKDIR/meetme.tmp
+        done
+
+	echo "exten => $extension,n,Playback(conf-invalid)"			>> $WORKDIR/extensions_local.tmp
+	echo "exten => $extension,n,Goto(enterno)"				>> $WORKDIR/extensions_local.tmp
+	
+	# Enter the caller into a MeetMe conference.
+	# It is possible to use the ConfBridge 1.8 application instead.
+	# Just make sure to update the $options variable.
+	echo "exten => $extension,n(enterconf),MeetMe(\${confno},$options)"	>> $WORKDIR/extensions_local.tmp
+	echo "exten => $extension,n,Hangup()"					>> $WORKDIR/extensions_local.tmp
+}
+
 #Create an extension "hint" to allow dialtone to be set according to sip provider reg status
 create_extensions_dialtone()
 {
@@ -1881,6 +1994,7 @@ start() {
 	cp $TMPL_CODECS			$WORKDIR/codecs.tmp
 	cp $TMPL_VOICEMAIL		$WORKDIR/voicemail.tmp
 	cp $TMPL_DNSMGR			$WORKDIR/dnsmgr.tmp
+	cp $TMPL_MEETME			$WORKDIR/meetme.tmp
 	touch				$WORKDIR/sip_providers.tmp
 	touch				$WORKDIR/sip_registrations.tmp
 	touch				$WORKDIR/sip_users.tmp
@@ -1891,6 +2005,7 @@ start() {
 	###########################
 	# Call Filter configuration
 	###########################
+	configure_call_filters
 	config_foreach configure_call_filter call_filter
 
 	#########################
@@ -1927,6 +2042,11 @@ start() {
 	###########################
 	configure_voicemail
 	config_foreach configure_mailbox mailbox
+
+	############
+	# Conference
+	############
+	configure_conference
 
 	######
 	# IVR 

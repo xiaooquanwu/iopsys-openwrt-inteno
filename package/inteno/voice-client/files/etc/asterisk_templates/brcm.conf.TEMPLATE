@@ -85,6 +85,11 @@ comfortnoise=0
 ; Maximum delay between on/off hook for detecting hook flash, milliseconds
 hfmaxdelay=500
 
+; Feature Access Codes
+; DTMF tone sequences to be treated as feature access codes
+; The '.' character is used as wildcard
+featureaccesscodes = |FAC|
+
 ;
 ; Unused/undocumented settings, do not uncomment/change these
 ;

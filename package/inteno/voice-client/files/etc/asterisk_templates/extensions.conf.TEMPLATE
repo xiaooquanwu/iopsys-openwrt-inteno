@@ -15,7 +15,7 @@ exten => _[+0-9a-zA-Z].,1,	|CUSTOM_INCOMING|
 
 ; Store caller id, and write to call log
 exten => _[+0-9a-zA-Z].,n,	Set(DB(LASTCALLER/${CHANNEL(peername)})=${CALLERID(NUM)})
-exten => _[+0-9a-zA-Z].,n,	Set(result=${SHELL(/usr/lib/asterisk/log_call.sh Incoming ${CALLERID(NUM)})})
+exten => _[+0-9a-zA-Z].,n,	Set(result=${SHELL(/usr/lib/asterisk/log_call.sh Incoming ${CALLERID(NUM)} ${EXTEN})})
 
 ; Handle call - Goto(call_line,${EXTEN},1) or Macro(callhandler,${CHANNEL(peername)})
 exten => _[+0-9a-zA-Z].,n,	|INCOMING_HANDLER|
@@ -38,4 +38,4 @@ exten => h,3,		Hangup()
 [clir]
 |CLIR_FAC_SET|exten => _|CLIR|.,1,      Set(CALLERID(num-pres)=prohib_not_screened)
 |CLIR_FAC_SET|exten => _|CLIR|.,n,      Set(CALLERID(name-pres)=prohib_not_screened)
-|CLIR_FAC_SET|exten => _|CLIR|.,n,      Goto(${EXTEN:4},1)
+|CLIR_FAC_SET|exten => _|CLIR|.,n,      Goto(${EXTEN:|CLIR_FAC_LEN|},1)

@@ -1,5 +1,7 @@
 [general]
+pickupexten = ;Disabled
 
 [featuremap]
-;blindxfer => |BLINDXFER| ;Blind transfer (default is #)
+blindxfer => |BLINDXFER| ;Blind transfer (default is #)
+disconnect => ;Disabled
 
