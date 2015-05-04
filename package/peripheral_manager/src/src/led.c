@@ -70,12 +70,15 @@ struct function_led {
 	struct function_action actions[LED_ACTION_MAX];
 };
 
-struct function_led leds[LED_FUNCTIONS];
+static int total_functions;
+
+struct function_led *leds;		/* Array of functions, LED_FUNCTIONS + num_super_functions */
 
 static leds_state_t global_state;	/* global state for the leds,overrids individual states */
 static leds_state_t press_state;	/* global state for the press indicator */
 
 int get_index_by_name(const char *const*array, int max, const char *name);
+int get_index_for_function(const char *name);
 struct led_drv *get_drv_led(char *name);
 static void dump_drv_list(void);
 static void dump_led(void);
@@ -89,6 +92,16 @@ int get_index_by_name(const char *const*array, int max, const char *name)
 	int i;
 	for (i=0; i < max ; i++ ){
 		if (!strcasecmp(name, array[i]))
+			return i;
+	}
+	return -1;
+}
+
+int get_index_for_function(const char *name)
+{
+	int i;
+	for (i=0 ; i < total_functions; i++) {
+		if (!strcasecmp(name, leds[i].name))
 			return i;
 	}
 	return -1;
@@ -215,8 +228,7 @@ static void dump_drv_list(void)
 static void dump_led(void)
 {
 	int i,j;
-
-	for (i = 0; i < LED_FUNCTIONS ; i++) {
+	for (i = 0; i < total_functions ; i++) {
 		for (j = 0 ; j < LED_ACTION_MAX; j++ ) {
 			if ( leds[i].actions[j].name != NULL ) {
 				struct led *led;
@@ -230,7 +242,7 @@ static void dump_led(void)
 
 /* return 0 = OK, -1 = error */
 static int set_function_led(const char* fn_name, const char* action) {
-	int led_idx = get_index_by_name(led_functions, LED_FUNCTIONS , fn_name);
+	int led_idx = get_index_for_function(fn_name);
 	int act_idx = get_index_by_name(fn_actions   , LED_ACTION_MAX, action );
 
 	if(led_idx == -1) {
@@ -275,9 +287,7 @@ static int led_set_method(struct ubus_context *ubus_ctx, struct ubus_object *obj
 {
 	struct blob_attr *tb[__LED_MAX];
 	char* state;
-
 	blobmsg_parse(led_policy, ARRAY_SIZE(led_policy), tb, blob_data(msg), blob_len(msg));
-
 	if (tb[LED_STATE]) {
 		char *fn_name = strchr(obj->name, '.') + 1;
 		state = blobmsg_data(tb[LED_STATE]);
@@ -298,7 +308,7 @@ static int led_status_method(struct ubus_context *ubus_ctx, struct ubus_object *
                              struct blob_attr *msg)
 {
 	char *fn_name = strchr(obj->name, '.') + 1;
-	int led_idx = get_index_by_name(led_functions, LED_FUNCTIONS , fn_name);
+	int led_idx = get_index_for_function(fn_name);
 	DBG(1,"for led %s",leds[led_idx].name);
 
 	blob_buf_init (&bblob, 0);
@@ -387,9 +397,11 @@ static const struct ubus_method leds_methods[] = {
 static struct ubus_object_type leds_object_type =
 	UBUS_OBJECT_TYPE("leds", leds_methods);
 
-#define LED_OBJECTS (LED_FUNCTIONS + 1)
+#define LED_OBJECTS 1
 static struct ubus_object led_objects[LED_OBJECTS] = {
     { .name = "leds",	        .type = &leds_object_type, .methods = leds_methods, .n_methods = ARRAY_SIZE(leds_methods), },
+
+#if 0
     { .name = "led.dsl",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
     { .name = "led.wifi",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
     { .name = "led.wps",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
@@ -410,6 +422,7 @@ static struct ubus_object led_objects[LED_OBJECTS] = {
     { .name = "led.gbe_phy_speed",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
     { .name = "led.gbe_phy_link",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
     { .name = "led.cancel",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
+#endif
 };
 
 
@@ -431,7 +444,7 @@ static void flash_handler(struct uloop_timeout *timeout)
 
 	if (global_state == LEDS_NORMAL ||
 	    global_state == LEDS_INFO ) {
-		for (i = 0; i < LED_FUNCTIONS ; i++) {
+		for (i = 0; i < total_functions ; i++) {
 			struct led *led;
 			if (leds[i].press_indicator & press_state) {
 //				DBG(1,"INDICATE_PRESS on %s",leds[i].name);
@@ -496,16 +509,51 @@ void led_pressindicator_clear(void){
 
 void led_init( struct server_ctx *s_ctx)
 {
-	int i,j,ret;
+	int i,j;
+	LIST_HEAD(led_map_list);
+	struct ucilist *map_node;
 
 	dump_drv_list();
 
 	/* register leds with ubus */
-
 	for (i=0 ; i<LED_OBJECTS ; i++) {
-		ret = ubus_add_object(s_ctx->ubus_ctx, &led_objects[i]);
+		int ret = ubus_add_object(s_ctx->ubus_ctx, &led_objects[i]);
 		if (ret)
 			DBG(1,"Failed to add object: %s", ubus_strerror(ret));
+	}
+
+	/* read out the function leds */
+	ucix_get_option_list( s_ctx->uci_ctx, "hw", "led_map", "functions" , &led_map_list);
+
+	total_functions = 0;
+	list_for_each_entry(map_node, &led_map_list, list) {
+		total_functions++;
+	}
+
+	leds = malloc(sizeof(struct function_led) * total_functions);
+	memset(leds, 0, sizeof(struct function_led) * total_functions);
+
+	/* set function name & regiter with ubus */
+	i = 0;
+	list_for_each_entry(map_node, &led_map_list, list) {
+		char name[100];
+		int ret;
+		struct ubus_object *ubo;
+		ubo = malloc(sizeof(struct ubus_object));
+		memset(ubo, 0, sizeof(struct ubus_object));
+
+		leds[i].name = strdup(map_node->val);
+
+		sprintf(name, "led.%s", leds[i].name);
+		ubo->name      = strdup(name);
+		ubo->methods   = led_methods;
+		ubo->n_methods = ARRAY_SIZE(led_methods);
+		ubo->type      = &led_object_type;
+
+		ret = ubus_add_object(s_ctx->ubus_ctx, ubo);
+		if (ret)
+			DBG(1,"Failed to add object: %s", ubus_strerror(ret));
+		i++;
 	}
 
 	/* we create a top list of led functions */
@@ -513,26 +561,26 @@ void led_init( struct server_ctx *s_ctx)
 	/* every action contains led actions lists */
 	/* the led states is attached to the drv_leds lists */
 
-	for (i = 0; i < LED_FUNCTIONS ; i++) {
+	for (i = 0; i < total_functions ; i++) {
 		for (j = 0 ; j < LED_ACTION_MAX; j++ ) {
 			char led_fn_name[256];
 			char led_action[256];
 
 			LIST_HEAD(led_action_list);
 			struct ucilist *node;
-
-			snprintf(led_fn_name, 256, "led_%s", led_functions[i]);
+			DBG(1,"k [%s]", leds[i].name);
+			snprintf(led_fn_name, 256, "led_%s", leds[i].name);
 			snprintf(led_action, 256, "led_action_%s", fn_actions[j]);
 			ucix_get_option_list( s_ctx->uci_ctx, "hw", led_fn_name, led_action , &led_action_list);
 
-//			DBG(2,"ken: hw %s %s",led_fn_name, led_action);
+			DBG(2,"ken: hw %s %s",led_fn_name, led_action);
 
 			INIT_LIST_HEAD( &leds[i].actions[j].led_list );
 
 			if (!list_empty(&led_action_list)) {
 
 				/* Found led with action, init structs */
-				leds[i].name  = led_functions[i];
+//				leds[i].name  = led_functions[i];
 				leds[i].state = LED_OFF;
 
 				leds[i].actions[j].name    = fn_actions[j];
@@ -584,7 +632,7 @@ void led_init( struct server_ctx *s_ctx)
 			s = node->val;
 			s +=4;	/*remove 'led_' from string */
 			DBG(1,"press indicator %s [%s]",node->val, s);
-			ix  = get_index_by_name(led_functions,LED_FUNCTIONS, s);
+			ix  = get_index_for_function(s);
 //			DBG(1,"press indicator %s [%s]->%d",node->val, s, ix);
 			leds[ix].press_indicator = 1;
 		}
