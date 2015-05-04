@@ -78,7 +78,7 @@ $juci.module("router")
 				leases.map(function(lease){
 					var date = new Date(null);
 					date.setSeconds(lease.expires); // specify value for SECONDS here
-					var time = date.toISOString().subsgettext(11, 8);
+					var time = date.toISOString().substr(11, 8);
 					$scope.systemDHCPLeasesTbl.rows.push(
 						[lease.hostname, lease.ipaddr, lease.macaddr, time]
 					);  

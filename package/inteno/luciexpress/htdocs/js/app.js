@@ -147,10 +147,10 @@ angular.module("luci", [
 			$rpc.router.info().done(function(info){
 				//console.log("Router info: "+JSON.stringify(info.system)); 
 				if(info && info.system) $config.system = info.system; 
-				$config.system = {
+				/*$config.system = {
 					name: "OpenWRT", 
 					hardware: ""
-				}; 
+				};*/ 
 				$state.go("init", {"redirect": path}); 
 			}).fail(function(){
 				console.error("Could not get system info. This gui depends on questd. You likely do not have it installed on your system!"); 
