@@ -1,6 +1,6 @@
-$juci.module("core")
+$juci.module("wifi")
 .directive("uciWirelessInterface", function($compile){
-	var plugin_root = $juci.module("core").plugin_root; 
+	var plugin_root = $juci.module("wifi").plugin_root; 
 	return {
 		templateUrl: plugin_root+"/widgets/uci.wireless.interface.html", 
 		scope: {

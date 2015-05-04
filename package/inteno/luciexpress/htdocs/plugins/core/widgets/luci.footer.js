@@ -29,7 +29,7 @@ $juci.module("core")
 		controller: "luciFooterController"
 	}; 
 })
-.controller("luciFooterController", function($scope, $rpc, $config, $languages, gettextCatalog, gettext, $tr){
+.controller("luciFooterController", function($scope, $rpc, $config, $languages, gettextCatalog, gettext, $tr, $status){
 	// TODO: move this into a higher level controller maybe? 
 	$scope.languages = $languages.getLanguages(); 
 	$scope.isActiveLanguage = function(lang){
@@ -39,17 +39,12 @@ $juci.module("core")
 		$languages.setLanguage(lang.short_code); 
 	}; 
 	$scope.config = $config; 
-	
-	function updateWANInfo(){
-		$rpc.network.interface.status({
-			"interface": "wan"
-		}).done(function(wan){
-			if(wan && ("ipv4-address" in wan) && wan["ipv4-address"].length) 
-				$scope.wanip = wan["ipv4-address"][0].address; 
-			else
-				$scope.wanip = $tr(gettext("Not connected")); 
-			$scope.$apply(); 
-		}); 	
-	} updateWANInfo(); 
-	setInterval(updateWANInfo, 10000); 
+	setInterval(function(){
+		try{ 
+			$scope.wanip = $status.ubus.network.interface.wan.status["ipv4-address"][0].ipaddr; 
+		} catch(e) { 
+			$scope.wanip = $tr(gettext("Not connected")); 
+		} 
+		try{ $scope.firmware = $status.ubus.router.info.system.firmware; } catch(e) {}
+	}, 1000); 
 }); 

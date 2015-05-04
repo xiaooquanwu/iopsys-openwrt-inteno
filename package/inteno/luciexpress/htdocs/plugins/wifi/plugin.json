@@ -1,6 +1,9 @@
 {
 	"scripts": [
-		"wifi"
+		"wifi",
+		"widgets/uci.wireless.interface",
+		"widgets/uci.wireless.interface.macfilter.edit",
+		"widgets/uci.wireless.device.edit"
 	],
 	"pages": {
 		"wifi.general": {
