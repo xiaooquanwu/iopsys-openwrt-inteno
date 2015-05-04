@@ -6,10 +6,10 @@
 					 theme="bootstrap"
 					 search-enabled="false"
 					 on-select="onChangeSection($item, $model)">
-				<ui-select-match placeholder="Select device...">{{devices[$select.selected].hostname}}</ui-select-match>
+				<ui-select-match placeholder="Select device...">{{devices[$select.selected].ipaddr}}</ui-select-match>
 				<ui-select-choices repeat="c in clients"
 								 refresh-delay="0">
-					<div >{{devices[c].hostname}}</div>
+					<div >{{devices[c].ipaddr  + " " + devices[c].hostname}}</div>
 				</ui-select-choices>
 			</ui-select>
 		</div>
@@ -55,9 +55,5 @@
 	<div class="form-group" ng-show="!portIsRange">
 		<label for="email" class="control-label col-xs-3">Private port</label>
 		<div class="col-xs-9"><input type="text" class="form-control" ng-model="rule.dest_port" ng-pattern="patterns.port"/></div>
-	</div>
-	<div class="btn-group btn-group-justified">
-		<button type="submit" class="btn btn-default " ng-click="onAccept(rule)" ng-disabled="ruleForm.$invalid">Submit</button>
-		<button type="submit" class="btn btn-default " ng-click="onCancel(rule)" ng-disabled="ruleForm.$invalid">Cancel</button>
 	</div>
 </form>

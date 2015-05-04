@@ -138,7 +138,7 @@ angular.module("luci", [
 		/*$rootScope.$on('$routeChangeSuccess', function (event, current, previous) {
         $rootScope.title = current.$$route.title;
     });*/
-		var path = $location.path().replace("/", "").replace(".", "_");  
+		var path = $location.path().replace(/\//g, "").replace(/\./g, "_");  
 		
 		$config.system = {}; 
 		$session.init().done(function(){

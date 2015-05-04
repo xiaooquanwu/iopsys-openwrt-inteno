@@ -1,5 +1,20 @@
 <luci-layout-with-sidebar>
 	<div ng-controller="StatusTVPageCtrl">
-		TV
+		<luci-config-section>
+			<luci-config-heading>{{ 'Vodaphone TV Status' | translate }}</luci-config-heading>
+			<luci-config-info>{{ 'status.tv.info' | translate }}</luci-config-info>
+			<h3>{{'Connection Status'|translate}}</h3>
+			<h3>{{'Vodaphone TV Channels'|translate}}</h3>
+			<table class="table">
+				<tr>
+					<th>Group IP</th>
+					<th>Bandwidth Usage (kbps)</th>
+					<th>PID/CC Error</th>
+					<th>LAN Port</th>
+					<th>Client IP</th>
+				</tr>
+				<tr></tr>
+			</table>
+		</luci-config-section>
 	</div>
 </luci-layout-with-sidebar>

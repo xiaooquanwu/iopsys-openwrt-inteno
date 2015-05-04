@@ -18,10 +18,10 @@ $juci.module("core")
 		port: /^\d{1,5}$/
 	}
 	$rpc.router.clients().done(function(clients){
-		//alert(JSON.stringify(Object.keys(clients).map(function(x) { return clients[x]; }))); 
+		//console.log(JSON.stringify(Object.keys(clients).map(function(x) { return clients[x]; }))); 
 		$scope.clients = []; 
 		$scope.devices = {}; 
-		Object.keys(clients).map(function(x) { 
+		Object.keys(clients).map(function(x) {
 			var c = clients[x]; 
 			if(c.connected){
 				$scope.devices[c.ipaddr] = c; 

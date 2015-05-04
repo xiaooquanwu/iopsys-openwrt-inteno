@@ -24,6 +24,13 @@ angular.module("luci")
 			"masq":					{ dvalue: true, type: Boolean }, 
 			"mtu_fix": 			{ dvalue: true, type: Boolean }
 		}, 
+		"firewall-forwarding": {
+			"src_ip":				{ dvalue: "", type: String }, 
+			"src_dport":			{ dvalue: 0, type: Number }, 
+			"proto":				{ dvalue: "tcp", type: String }, 
+			"dest_ip":			{ dvalue: "", type: String }, 
+			"dest_port":		{ dvalue: 0, type: Number }
+		}, 
 		"firewall-rule": {
 			"name":					{ dvalue: "", type: String }, 
 			"src":					{ dvalue: "lan", type: String }, 
@@ -144,6 +151,7 @@ angular.module("luci")
 			var self = this; 
 			self[".original"] = data; 
 			self[".name"] = data[".name"]; 
+			self[".type"] = data[".type"]; 
 			self[".section_type"] = type; 
 			
 			Object.keys(type).map(function(k){
@@ -172,7 +180,12 @@ angular.module("luci")
 				field.$reset(value); 
 			}); 
 		}
-		
+		UCISection.prototype.$delete = function(){
+			var self = this; 
+			if(self[".config"]) return self[".config"].$deleteSection(self[".name"]); 
+			var def = $.Deferred(); def.reject(); 
+			return def.promise(); 
+		}
 		UCISection.prototype.$getChangedValues = function(){
 			var type = this[".section_type"]; 
 			if(!type) return {}; 
@@ -241,11 +254,37 @@ angular.module("luci")
 				}
 			}); 
 		}
+		UCIConfig.prototype.$deleteSection = function(name){
+			var self = this; 
+			var deferred = $.Deferred(); 
+			//console.log("Deleting section "+name); 
+			$rpc.uci.delete({
+				"config": self[".name"], 
+				"section": name
+			}).done(function(){
+				var item = self[name]; 
+				self[".need_commit"] = true; 
+				for(var i = 0; i < self["@all"].length; i++){
+					if(self["@all"][i][".name"] == name) {
+						var jlist = self["@"+item[".type"]]||[]; 
+						for(var j = 0; j < jlist.length; j++){
+							if(jlist[j][".name"] == name) jlist.splice(j, 1); 
+						}
+						self["@all"].splice(i, 1); 
+					}; 
+					delete self[name]; 
+				}; 
+				deferred.resolve(); 
+			}).fail(function(){
+				deferred.reject(); 
+			}); 
+			return deferred.promise(); 
+		}
 		// creates a new object that will have values set to values
 		UCIConfig.prototype.create = function(item){
 			var self = this; 
 			if(!(".type" in item)) throw new Error("Missing '.type' parameter!"); 
-			var type = section_types[item[".type"]]; 
+			var type = section_types[item[".type"]] || section_types[self[".name"]+"-"+item[".type"]]; 
 			if(!type) throw Error("Trying to create section of unrecognized type!"); 
 			// TODO: validate values!
 			var values = {}; 
@@ -344,7 +383,10 @@ angular.module("luci")
 			}
 		}); 
 		console.log("Will do following write requests: "+JSON.stringify(writes)); 
-		
+		/*if(writes.length == 0) {
+			setTimeout(function(){ deferred.resolve(); }, 0); 
+			return deferred.promise(); 
+		}*/
 		async.eachSeries(writes, function(cmd, next){
 			$rpc.uci.set(cmd).done(function(){
 				console.log("Wrote config "+cmd.config); 
