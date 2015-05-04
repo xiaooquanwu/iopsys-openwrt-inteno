@@ -114,7 +114,7 @@ mcpd_configure() {
 }
 
 service_triggers() {
-        procd_add_reload_trigger mcpd
+        procd_add_reload_trigger network mcpd
 }
 
 start_service() {
@@ -126,6 +126,6 @@ start_service() {
 
 
 stop_service() {
-	service_stop $MCPD_BIN
+	service_stop $PROG
 }
 
