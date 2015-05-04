@@ -21,8 +21,8 @@ install_bin() { # <file> [ <symlink> ... ]
 	files=$1
 	[ -x "$src" ] && files="$src $(libs $src)"
 	install_file $files
-	[ -e /lib/ld-linux.so.3 ] && {
-		install_file /lib/ld-linux.so.3
+	[ -e /lib/ld.so.1 ] && {
+		install_file /lib/ld.so.1
 	}
 	shift
 	for link in "$@"; do {
@@ -34,45 +34,61 @@ install_bin() { # <file> [ <symlink> ... ]
 }
 
 supivot() { # <new_root> <old_root>
-	mount | grep "on $1 type" 2>&- 1>&- || mount -o bind $1 $1
+	/bin/mount | grep "on $1 type" 2>&- 1>&- || /bin/mount -o bind $1 $1
 	mkdir -p $1$2 $1/proc $1/sys $1/dev $1/tmp $1/overlay && \
-	mount -o noatime,move /proc $1/proc && \
+	/bin/mount -o noatime,move /proc $1/proc && \
 	pivot_root $1 $1$2 || {
-        umount $1 $1
+		/bin/umount -l $1 $1
 		return 1
 	}
 
-	mount -o noatime,move $2/sys /sys
-	mount -o noatime,move $2/dev /dev
-	mount -o noatime,move $2/tmp /tmp
-	mount -o noatime,move $2/overlay /overlay 2>&-
+	/bin/mount -o noatime,move $2/sys /sys
+	/bin/mount -o noatime,move $2/dev /dev
+	/bin/mount -o noatime,move $2/tmp /tmp
+	/bin/mount -o noatime,move $2/overlay /overlay 2>&-
 	return 0
 }
 
 run_ramfs() { # <command> [...]
-	install_bin /bin/busybox /bin/ash /bin/sh /bin/mount /bin/umount        \
-		/sbin/pivot_root /usr/bin/wget /sbin/reboot /bin/sync /bin/dd   \
-		/bin/grep /bin/cp /bin/mv /bin/tar /usr/bin/md5sum "/usr/bin/[" \
-		/bin/vi /bin/ls /bin/cat /usr/bin/awk /usr/bin/hexdump          \
-		/bin/sleep /bin/zcat /usr/bin/bzcat /usr/bin/printf /usr/bin/wc
+	install_bin /bin/busybox /bin/ash /bin/sh /bin/mount /bin/umount	\
+		/sbin/pivot_root /usr/bin/wget /sbin/reboot /bin/sync /bin/dd	\
+		/bin/grep /bin/cp /bin/mv /bin/tar /usr/bin/md5sum "/usr/bin/["	\
+		/bin/dd /bin/vi /bin/ls /bin/cat /usr/bin/awk /usr/bin/hexdump	\
+		/bin/sleep /bin/zcat /usr/bin/bzcat /usr/bin/printf /usr/bin/wc \
+		/bin/cut /usr/bin/printf /bin/sync /bin/mkdir /bin/rmdir	\
+		/bin/rm /usr/bin/basename /bin/kill /bin/chmod
 
 	install_bin /sbin/mtd
+	install_bin /sbin/ubi
+	install_bin /sbin/mount_root
+	install_bin /sbin/snapshot
+	install_bin /sbin/snapshot_tool
+	install_bin /usr/sbin/ubiupdatevol
+	install_bin /usr/sbin/ubiattach
+	install_bin /usr/sbin/ubiblock
+	install_bin /usr/sbin/ubiformat
+	install_bin /usr/sbin/ubidetach
+	install_bin /usr/sbin/ubirsvol
+	install_bin /usr/sbin/ubirmvol
+	install_bin /usr/sbin/ubimkvol
 	for file in $RAMFS_COPY_BIN; do
-		install_bin $file
+		install_bin ${file//:/ }
 	done
-	install_file /etc/resolv.conf /lib/functions.sh /lib/functions.sh /lib/upgrade/*.sh $RAMFS_COPY_DATA
+	install_file /etc/resolv.conf /lib/*.sh /lib/functions/*.sh /lib/upgrade/*.sh $RAMFS_COPY_DATA
+
+	[ -L "/lib64" ] && ln -s /lib $RAM_ROOT/lib64
 
 	supivot $RAM_ROOT /mnt || {
 		echo "Failed to switch over to ramfs. Please reboot."
 		exit 1
 	}
 
-	mount -o remount,ro /mnt
-	umount -l /mnt
+	/bin/mount -o remount,ro /mnt
+	/bin/umount -l /mnt
 
 	grep /overlay /proc/mounts > /dev/null && {
-		mount -o noatime,remount,ro /overlay
-		umount -l /overlay
+		/bin/mount -o noatime,remount,ro /overlay
+		/bin/umount -l /overlay
 	}
 
 	# spawn a new shell from ramdisk to reduce the probability of cache issues
@@ -82,6 +98,13 @@ run_ramfs() { # <command> [...]
 kill_remaining() { # [ <signal> ]
 	local sig="${1:-TERM}"
 	echo -n "Sending $sig to remaining processes ... "
+
+	local my_pid=$$
+	local my_ppid=$(cut -d' ' -f4  /proc/$my_pid/stat)
+	local my_ppisupgraded=
+	grep -q upgraded /proc/$my_ppid/cmdline >/dev/null && {
+		local my_ppisupgraded=1
+	}
 
 	local stat
 	for stat in /proc/[0-9]*/stat; do
@@ -97,18 +120,26 @@ kill_remaining() { # [ <signal> ]
 		# Skip kernel threads
 		[ -n "$cmdline" ] || continue
 
-		case "$name" in
-			# Skip essential services
-			*ash*|*init*|*watchdog*|*ssh*|*dropbear*|*telnet*|*login*|*hostapd*|*wpa_supplicant*|*cwmpd*|*ice*) : ;;
+		if [ $$ -eq 1 ] || [ $my_ppid -eq 1 ] && [ -n "$my_ppisupgraded" ]; then
+			# Running as init process, kill everything except me
+			if [ $pid -ne $$ ] && [ $pid -ne $my_ppid ]; then
+				echo -n "$name "
+				kill -$sig $pid 2>/dev/null
+			fi
+		else
+			case "$name" in
+				# Skip essential services
+				*procd*|*ash*|*init*|*watchdog*|*ssh*|*dropbear*|*telnet*|*login*|*hostapd*|*wpa_supplicant*|*nas*|*cwmpd*|*ice*) : ;;
 
-			# Killable process
-			*)
-				if [ $pid -ne $$ ] && [ $ppid -ne $$ ]; then
-					echo -n "$name "
-					kill -$sig $pid 2>/dev/null
-				fi
-			;;
-		esac
+				# Killable process
+				*)
+					if [ $pid -ne $$ ] && [ $ppid -ne $$ ]; then
+						echo -n "$name "
+						kill -$sig $pid 2>/dev/null
+					fi
+				;;
+			esac
+		fi
 	done
 	echo ""
 }
@@ -144,14 +175,14 @@ v() {
 }
 
 rootfs_type() {
-	mount | awk '($3 ~ /^\/$/) && ($5 !~ /rootfs/) { print $5 }'
+	/bin/mount | awk '($3 ~ /^\/$/) && ($5 !~ /rootfs/) { print $5 }'
 }
 
 get_image_sequence_number() {
 	if [ $2 -eq 1 ]; then
-		brcm_fw_tool -s -1 -w update $1
+		/sbin/brcm_fw_tool -s "$seqn" -w update $1
 	else
-		brcm_fw_tool -s -1 update $1
+		/sbin/brcm_fw_tool -s "$seqn" update $1
 	fi
 }
 
@@ -185,82 +216,36 @@ get_inteno_tag_val() {
 }
 
 check_crc() {
-	local from=$1
-	local file_sz calc csum
-
-	if is_inteno_image $from; then
-		case $(get_inteno_tag_val $from integrity) in
-		MD5SUM)
-			file_sz=$(ls -l $from |awk '{print $5}')
-			calc=$(head -c $(($file_sz-32)) $from |md5sum |awk '{print $1}')
-			csum=$(tail -c 32 $from)
-			[ "$calc" == "$csum" ] && echo "CRC_OK" || "CRC_BAD"
-			;;
-		*)
-			echo "UNKNOWN"
-			;;
-		esac
-	else
-		brcm_fw_tool check $from
-	fi
+	/sbin/brcm_fw_tool check $1
 }
 
 get_flash_type() {
-	if is_inteno_image $1; then
-		echo "NAND"
-	else
-		brcm_fw_tool -t check $1
-	fi
+	/sbin/brcm_fw_tool -t check $1
 }
 
 get_image_type() {
-	if is_inteno_image $1; then
-		echo "INTENO"
-	else
-		brcm_fw_tool -i check $1
-	fi
+	/sbin/brcm_fw_tool -i check $1
 }
 
 get_image_chip_id() {
-	if is_inteno_image $1; then
-		get_inteno_tag_val $1 chip
-	else
-		brcm_fw_tool -c check $1
-	fi
+	/sbin/brcm_fw_tool -c check $1
 }
 
 get_image_board_id() {
-	if is_inteno_image $1; then
-		get_inteno_tag_val $1 board
-	else
-		brcm_fw_tool -r check $1
-	fi
+	/sbin/brcm_fw_tool -r check $1
 }
 
 get_image_model_name() {
-	if is_inteno_image $1; then
-		get_inteno_tag_val $1 model
-	else
-		brcm_fw_tool -m check $1
-	fi
+	/sbin/brcm_fw_tool -m check $1
 }
 
 get_image_customer() {
-	if is_inteno_image $1; then
-		get_inteno_tag_val $1 customer
-	else
-		brcm_fw_tool -o check $1
-	fi
+	/sbin/brcm_fw_tool -o check $1
 }
 
 
 check_image_size() {
-	if is_inteno_image $1; then
-		# FIXME!
-		echo "SIZE_OK"
-	else
-		brcm_fw_tool -y check $1
-	fi
+	/sbin/brcm_fw_tool -y check $1
 }
 
 get_image() { # <source> [ <command> ]
@@ -273,22 +258,22 @@ get_image() { # <source> [ <command> ]
 		*) cmd="cat";;
 	esac
 	if [ -z "$conc" ]; then
-		local magic="$(eval $cmd $from | dd bs=2 count=1 2>/dev/null | hexdump -n 2 -e '1/1 "%02x"')"
+		local magic="$(eval $cmd $from 2>/dev/null | dd bs=2 count=1 2>/dev/null | hexdump -n 2 -e '1/1 "%02x"')"
 		case "$magic" in
 			1f8b) conc="zcat";;
 			425a) conc="bzcat";;
 		esac
 	fi
 
-	eval "$cmd $from ${conc:+| $conc}"
+	eval "$cmd $from 2>/dev/null ${conc:+| $conc}"
 }
 
 get_magic_word() {
-	get_image "$@" | dd bs=2 count=1 2>/dev/null | hexdump -v -n 2 -e '1/1 "%02x"'
+	(get_image "$@" | dd bs=2 count=1 | hexdump -v -n 2 -e '1/1 "%02x"') 2>/dev/null
 }
 
 get_magic_long() {
-	get_image "$@" | dd bs=4 count=1 2>/dev/null | hexdump -v -n 4 -e '1/1 "%02x"'
+	(get_image "$@" | dd bs=4 count=1 | hexdump -v -n 4 -e '1/1 "%02x"') 2>/dev/null
 }
 
 refresh_mtd_partitions() {
@@ -596,9 +581,8 @@ default_do_upgrade() {
 	if [ $is_nand -eq 1 ]; then
 
 		v "Setting bootline parameter to boot from newly flashed image"
-		brcm_fw_tool set -u 0
-		v "Current Software Upgrade Count: $(get_rootfs_sequence_number)"
-
+		/sbin/brcm_fw_tool set -u 0
+		v "Current Software Upgrade Count: $(ls /cferam* | awk -F'.' '{print$NF}')"
 		if [ "$SAVE_CONFIG" -eq 1 -a -z "$USE_REFRESH" ]; then
 			v "Creating save config file marker"
 			touch /SAVE_CONFIG
@@ -619,7 +603,7 @@ default_do_upgrade() {
 		v "-> Disable printk interrupt ..."
         echo 0 >/proc/sys/kernel/printk_with_interrupt_enabled
 		v "-> Will reboot the system after writing finishes ..."
-		brcm_fw_tool -V -q write $from &> /dev/console
+		/sbin/brcm_fw_tool -V -q write $from &> /dev/console
 		v "Upgrade syscall failed for some reason ..."
 	else
 		if [ "$SAVE_CONFIG" -eq 1 -a -z "$USE_REFRESH" ]; then
