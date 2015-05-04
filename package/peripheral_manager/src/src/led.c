@@ -568,12 +568,9 @@ void led_init( struct server_ctx *s_ctx)
 
 			LIST_HEAD(led_action_list);
 			struct ucilist *node;
-			DBG(1,"k [%s]", leds[i].name);
 			snprintf(led_fn_name, 256, "led_%s", leds[i].name);
 			snprintf(led_action, 256, "led_action_%s", fn_actions[j]);
 			ucix_get_option_list( s_ctx->uci_ctx, "hw", led_fn_name, led_action , &led_action_list);
-
-			DBG(2,"ken: hw %s %s",led_fn_name, led_action);
 
 			INIT_LIST_HEAD( &leds[i].actions[j].led_list );
 
@@ -591,12 +588,19 @@ void led_init( struct server_ctx *s_ctx)
 					char led_name[256],led_state[256];
 					struct led *led;
 					struct led_drv *drv;
+					char *c;
 					char *s = strdup(node->val);
 					led_name[0]=0;
 					led_state[0]=0;
 
-					/* get pointer to low level led driver.*/
-					*strchr(s,'=') = ' ';
+					/* get pointer to low level led driver. by removing the = sign and
+					   storing the remaining two strings.
+					*/
+					c = strchr(s,'=');
+					if( c == NULL)
+						continue;	/* no = found, abort */
+					*c = ' ';
+
 					sscanf(s, "%s %s", led_name, led_state);
 					drv = get_drv_led(led_name);
 
