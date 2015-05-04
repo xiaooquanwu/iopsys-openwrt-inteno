@@ -43,7 +43,8 @@ angular.module("luci")
 			"target":				{ dvalue: "REJECT", type: String }, 
 			"family": 			{ dvalue: "ipv4", type: String }, 
 			"icmp_type": 		{ dvalue: [], type: Array },
-			"enabled": 			{ dvalue: true, type: Boolean }
+			"enabled": 			{ dvalue: true, type: Boolean },
+			"hidden": 			{ dvalue: true, type: Boolean }
 		}, 
 		"firewall-settings": {
 			"disabled":			{ dvalue: false, type: Boolean }, 

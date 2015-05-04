@@ -1,28 +1,44 @@
 <luci-layout-with-sidebar>
 	<test-directive></test-directive>
 	<div ng-controller="PhoneCallLogPageCtrl">
-		<h2>Call Log</h3>
-		<div class="row">
-			<div class="col-md-6">
-				<strong style="font-size: 1.5em">{{'Show calls for' | translate}}</strong>
-			</div>
-			<div class="col-md-6">
-				<ui-select ng-model="select"
-             theme="bootstrap"
-             search-enabled="false"
-             style="width: 300px;">
-            <ui-select-match placeholder="All Phones">{{$select.selected.label}}</ui-select-match>
-						<ui-select-choices repeat="number in phoneNumbers"
-										 refresh-delay="0">
-							<div >{{number.label}}</div>
-						</ui-select-choices>
-				</ui-select>
-			</div>
-		</div>
-		<luci-table
+		<luci-config-section>
+			<luci-config-heading>{{ 'Call Log' | translate }}</luci-config-heading>
+			<luci-config-info>{{ 'phone.call_log.info' | translate }}</luci-config-info>
+			<luci-config-lines>
+				<luci-config-line title="{{'Show calls for'|translate}}">
+					<ui-select ng-model="phoneFilterSelected" theme="bootstrap" style="width: 300px;" on-select="onChangeFilter($item, $model)">
+						<ui-select-match placeholder="All Phones">{{$select.selected.from}}</ui-select-match>
+						<ui-select-choices repeat="phone in phoneList" refresh-delay="0"><div >{{phone.from}}</div></ui-select-choices>
+					</ui-select>
+				</luci-config-line>
+			</luci-config-lines>
+			<table class="table">
+				<tr>
+					<th></th>
+					<th translate>Date</th>
+					<th translate>Time</th>
+					<th translate>External Number</th>
+					<th translate>Your number</th>
+					<th translate>Duration</th>
+				</tr>
+				<tr ng-repeat="log in call_log | filter:{from:phoneFilter}">
+					<td>
+						<i class='fa fa-arrow-left' ng-show="log.direction == 'Outgoing'"></i>
+						<i class='fa fa-arrow-right' ng-show="log.direction == 'Incoming'"></i>
+					</td>
+					<td>{{log.date}}</td>
+					<td>{{log.time}}</td>
+					<td>{{log.to}}</td>
+					<td>{{log.from}}</td>
+					<td></td>
+				</tr>
+			</table>
+		</luci-config-section>
+		
+		<!--<luci-table
 			noequalize="on"
 			columns="['', 'Date', 'Time', 'External Number', 'Your Number', 'Duration', '']"
 			data="callListTbl">
-		</luci-table>
+		</luci-table>-->
 	</div>
 </luci-layout-with-sidebar>

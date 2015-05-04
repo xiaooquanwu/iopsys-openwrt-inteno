@@ -68,6 +68,7 @@ angular.module("luci")
 				"uci.confirm", 
 				"uci.revert", 
 				"uci.configs",
+				"asterisk.call_log.list", 
 				// local stuff for the node server. 
 				"local.features", 
 				"local.set_rpc_host"
