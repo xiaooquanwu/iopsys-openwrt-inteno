@@ -113,6 +113,7 @@
 			},
 			"uci": [
 				"dropbear", 
+				"easybox", 
 				"hosts"
 			]
 		},
@@ -125,6 +126,7 @@
 			},
 			"uci": [
 				"dropbear", 
+				"easybox", 
 				"hosts"
 			]
 		}
@@ -352,7 +354,20 @@
 			]
 		}
 	},
-
+	
+	"wireless": {
+		"description": "Wireless configuration", 
+		"read": {
+			"uci": [
+				"wireless"
+			]
+		}, 
+		"write": {
+			"uci": [
+				"wireless"
+			]
+		}
+	}, 
 	"firewall": {
 		"description": "Firewall configuration",
 		"read": {

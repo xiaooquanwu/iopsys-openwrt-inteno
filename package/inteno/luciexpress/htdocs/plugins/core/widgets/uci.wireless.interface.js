@@ -10,18 +10,12 @@ $juci.module("core")
 		replace: true, 
 		require: "^ngModel"
 	 };  
-}).controller("WifiInterfaceController", function($scope){
-	$scope.selectedProtection = "none"; 
-	$scope.selectedRadio = "wl0"; 
-
-	$scope.allRadios = ["wl0", "wl1", "wl0wl1"]; 
-	$scope.allCryptModes = ["none", "wpa", "wpa2", "mixed-wpa", "wep-shared"]; 
-	$scope.configName = ""; 
-	
-	// TODO: need to have generic uci variables that reflect the gui 
+}).controller("WifiInterfaceController", function($scope, $uci, gettext){
+	$scope.gettext = gettext; 
 	$scope.$watch("interface", function(value){
-		//value.disabled = (value.disabled == '1')?true:false;   
-		//value.closed = (value.closed == '1')?true:false; 
-		$scope.configName = $scope.interface[".name"] + ".disabled"; 
+		$scope.devices = $uci.wireless["@wifi-device"].map(function(x){
+			return x[".name"]; 
+		}); 
+		$scope.title = "wifi-iface.name="+$scope.interface[".name"]; 
 	}); 
 }); 

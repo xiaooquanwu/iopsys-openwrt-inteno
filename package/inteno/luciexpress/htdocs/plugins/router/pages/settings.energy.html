@@ -1,5 +1,23 @@
 <luci-layout-with-sidebar>
 	<div ng-controller="SettingsEnergyCtrl">
-		Energy
+		<luci-config-section>
+			<luci-config-heading>{{ 'Energy Settings' | translate }}</luci-config-heading>
+			<luci-config-info>{{ 'settings.energy.info' | translate }}</luci-config-info>
+			<luci-config-lines>
+				<luci-config-line title="{{'USB Port'|translate}}">
+					<switch id="enabled" name="enabled" ng-model="settings.usb_port.value" class="green"></switch>
+				</luci-config-line>
+				<luci-config-line title="{{'Status-LED'|translate}}">
+					<switch id="enabled" name="enabled" ng-model="settings.status_led.value" class="green"></switch>
+				</luci-config-line>
+				<luci-config-line title="{{'Power-LED'|translate}}">
+					<switch id="enabled" name="enabled" ng-model="settings.power_led.value" class="green"></switch>
+				</luci-config-line>
+				<luci-config-line title="{{'Power-LED Brightness'|translate}}">
+					<switch id="enabled" name="enabled" ng-model="settings.power_led_br.value" class="green"></switch>
+				</luci-config-line>
+			</luci-config-lines>
+		</luci-config-section>
+		<luci-config-apply></luci-config-apply>
 	</div>
 </luci-layout-with-sidebar>

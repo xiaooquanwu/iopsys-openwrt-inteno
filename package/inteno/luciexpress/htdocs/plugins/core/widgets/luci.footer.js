@@ -29,7 +29,7 @@ $juci.module("core")
 		controller: "luciFooterController"
 	}; 
 })
-.controller("luciFooterController", function($scope, $rpc, $config, $languages, gettextCatalog){
+.controller("luciFooterController", function($scope, $rpc, $config, $languages, gettextCatalog, gettext, $tr){
 	// TODO: move this into a higher level controller maybe? 
 	$scope.languages = $languages.getLanguages(); 
 	$scope.isActiveLanguage = function(lang){
@@ -38,14 +38,18 @@ $juci.module("core")
 	$scope.setLanguage = function(lang){
 		$languages.setLanguage(lang.short_code); 
 	}; 
+	$scope.config = $config; 
 	
-	$rpc.network.interface.status({
-		"interface": "wan"
-	}).done(function(wan){
-		$rpc.router.info().done(function(info){
-			$scope.firmwareVersion = info.system.firmware; 
-			$scope.wanip = wan["ipv4-address"][0].address; 
+	function updateWANInfo(){
+		$rpc.network.interface.status({
+			"interface": "wan"
+		}).done(function(wan){
+			if(wan && ("ipv4-address" in wan) && wan["ipv4-address"].length) 
+				$scope.wanip = wan["ipv4-address"][0].address; 
+			else
+				$scope.wanip = $tr(gettext("Not connected")); 
 			$scope.$apply(); 
-		}); 
-	}); 	
+		}); 	
+	} updateWANInfo(); 
+	setInterval(updateWANInfo, 10000); 
 }); 

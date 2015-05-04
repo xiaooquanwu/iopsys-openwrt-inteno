@@ -1,39 +1,40 @@
 {
     "wifi": {
         "title": "WiFi",
-        "redirect": "wifi.general",
+        "files": [ "/etc/config/wireless" ], 
+        "acls": [ "wireless"], 
         "index": 40
     },
     "wifi/general": {
         "title": "General",
-        "acls": [ ],
-        "view": "wifi.general",
+        "files": [ "/etc/config/wireless" ], 
+        "acls": [ "wireless"], 
         "index": 10
     },
     "wifi/schedule": {
         "title": "Schedule",
-        "acls": [  ],
-        "view": "wifi.schedule",
+        "files": [ "/etc/config/wireless" ], 
+        "acls": [ "wireless"], 
         "index": 20
     },
     "wifi/wps": {
         "title": "WPS",
-        "acls": [  ],
-        "view": "wifi.wps",
+        "files": [ "/etc/config/wireless" ], 
+        "acls": [ "wireless"], 
         "index": 30
     },
     "wifi/mac_filter": {
         "title": "MAC filter",
+        "files": [ "/etc/config/wireless" ], 
+        "acls": [ "wireless"], 
 				"modes": [ "expert" ], 
-        "acls": [ ],
-        "view": "wifi.mac_filter",
         "index": 40
     },
     "wifi/settings": {
         "title": "Settings",
 				"modes": [ "expert" ], 
-        "acls": [  ],
-        "view": "wifi.settings",
+        "files": [ "/etc/config/wireless" ], 
+        "acls": [ "wireless"],
         "index": 50
     }
 }

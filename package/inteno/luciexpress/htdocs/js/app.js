@@ -127,19 +127,35 @@ angular.module("luci", [
 			luci_config: {}
 		}); 
 	})
-	.run(function($rootScope, $state, $session, gettextCatalog, $rpc, $config, $location, $navigation){
+	.run(function($rootScope, $state, $session, gettextCatalog, $rpc, $uci, $config, $location, $navigation){
 		$rootScope.config = $config; 
+		//window.rpc = $rpc; 
+		//window.uci = $uci; 
 		//$rootScope.theme_index = "html/init.html"; 
 		// set current language
-		//gettextCatalog.currentLanguage = "se"; 
-		//gettextCatalog.debug = true;
+		gettextCatalog.currentLanguage = "se"; 
+		gettextCatalog.debug = true;
 		/*$rootScope.$on('$routeChangeSuccess', function (event, current, previous) {
         $rootScope.title = current.$$route.title;
     });*/
 		var path = $location.path().replace("/", "").replace(".", "_");  
 		
+		$config.system = {}; 
 		$session.init().done(function(){
-			$state.go("init", {"redirect": path}); 
+			// here we get router info part of the config. It will allow us to 
+			// pick the correct theme in the init script. TODO: perhaps do this somewhere else? 
+			$rpc.router.info().done(function(info){
+				//console.log("Router info: "+JSON.stringify(info.system)); 
+				if(info && info.system) $config.system = info.system; 
+				$config.system = {
+					name: "OpenWRT", 
+					hardware: ""
+				}; 
+				$state.go("init", {"redirect": path}); 
+			}).fail(function(){
+				console.error("Could not get system info. This gui depends on questd. You likely do not have it installed on your system!"); 
+				$state.go("init", {"redirect": path}); 
+			});
 		}).fail(function(){
 			console.log("Failed to verify session."); 
 			$state.go("init", {"redirect": "login"}); 

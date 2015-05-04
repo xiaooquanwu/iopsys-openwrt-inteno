@@ -20,15 +20,16 @@
  * 02110-1301 USA
  */
  
-$juci.controller("PhoneCallLogPageCtrl", function($scope){
+$juci.module("phone")
+.controller("PhoneCallLogPageCtrl", function($scope, gettext, $tr){
 	$scope.phoneNumbers = [{
-		label: "All Numbers"
+		label: gettext("All Numbers")
 	}, {
-		label: "Home Main"
+		label: gettext("Home Main")
 	}, {
-		label: "Office"
+		label: gettext("Office")
 	}, {
-		label: "Guest Room"
+		label: gettext("Guest Room")
 	}]; 
 	$scope.callListTbl = {
 		rows: [

@@ -2,17 +2,14 @@
 	<div ng-controller="WifiSettingsPageCtrl">
 		<luci-config>
 			<luci-config-section>
-				<luci-config-heading>Settings</luci-config-heading>
-				<luci-config-info>Below you can change parameters for the two WiFi frequencies 2.4 GHz and 5 GHz.</luci-config-info>
-				<h3>2.4Ghz</h3>
-				<uci-wireless-device-edit ng-model="wifi24"></uci-wireless-device-edit>
-				<h3>5Ghz</h3>
-				<uci-wireless-device-edit ng-model="wifi5"></uci-wireless-device-edit>
+				<luci-config-heading>{{'Settings'|translate}}</luci-config-heading>
+				<luci-config-info>{{'wifi.settings.info'|translate}}</luci-config-info>
+				<div ng-repeat="dev in devices">
+					<h3>{{ "wifi-device."+dev[".name"] | translate }}</h3>
+					<uci-wireless-device-edit ng-model="dev"></uci-wireless-device-edit>
+				</div>
 			</luci-config-section>
-			<luci-config-footer>
-				<button class="btn btn-lg btn-primary" ng-click="onApply()">Apply</button>
-				<button class="btn btn-lg btn-default" ng-click="onCancel()">Cancel</button>
-			</luci-config-footer>
+			<luci-config-apply></luci-config-apply>
 		</luci-config>
 	</div>
 </luci-layout-with-sidebar>

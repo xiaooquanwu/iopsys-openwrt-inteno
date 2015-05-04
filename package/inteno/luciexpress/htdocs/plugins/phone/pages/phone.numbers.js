@@ -20,6 +20,7 @@
  * 02110-1301 USA
  */
  
-$juci.controller("PhoneNumbersPageCtrl", function($scope){
+$juci.module("phone")
+.controller("PhoneNumbersPageCtrl", function($scope){
 	
 }); 

@@ -11,15 +11,13 @@ $juci.module("core")
 		require: "^ngModel"
 	 };  
 }).controller("uciWirelessInterfaceMacfilterEditController", function($scope, $rpc, $uci, $hosts){
-	
 	$scope.maclist = []; 
-	$scope.filterEnabled = 0; 
-	
+	/*
 	// updates scratch model for the view
 	function updateMaclist(i){
 		var maclist = []; 
 		if(i && i.maclist) {
-			async.eachSeries(i.maclist, function(mac, next){
+			async.eachSeries(i.maclist.value, function(mac, next){
 				$hosts.select({ macaddr: mac }).done(function(host){
 					maclist.push(host); 
 					next(); 
@@ -35,30 +33,53 @@ $juci.module("core")
 			$scope.maclist = []; 
 		}
 	}
-	
+	*/
 	// watch for model change
 	$scope.$watch("interface", function(i){
-		$scope.filterEnabled = i.macfilter; 
-		updateMaclist(i);
+		$scope.maclist = []; 
+		console.log("Syncing interface.."); 
+		if(i.maclist && i.maclist.value){
+			i.maclist.value.map(function(mac){
+				var added = { hostname: "", macaddr: mac}; 
+				$uci.hosts["@all"].map(function(host){
+					console.log("testing host "+host.hostname.value); 
+					if(host.macaddr.value == mac){
+						added = { hostname: host.hostname.value, macaddr: mac}; 
+					}
+				}); 
+				$scope.maclist.push(added); 
+			});
+			//$scope.$apply();  
+		}
 	}, true); 
 	
 	// watch maclist for changes by the user
-	$scope.$watch("maclist", function(list){
-		// rebuild the maclist? 
-		if(list && $scope.interface){
-			var interface = $scope.interface; 
-			interface.maclist = []; 
-			list.map(function(x){
-				// save the hostname 
-				var macaddr = x.macaddr.value||""; 
-				interface.maclist.push(macaddr); 
+	$scope.rebuildMacList = function(){
+		if($scope.interface){
+			var newlist = $scope.maclist.map(function(x){
+				var found = false; 
+				console.log("Looking for mac "+x.macaddr); 
+				$uci.hosts["@host"].map(function(host){
+					if(host.macaddr.value == x.macaddr) {
+						console.log("Setting hostname "+x.hostname+" on "+x.macaddr); 
+						host.hostname.value = x.hostname; 
+						found = true; 
+					}
+				}); 
+				if(!found){
+					$uci.hosts.create({ 
+						".type": "host", 
+						hostname: x.hostname, 
+						macaddr: x.macaddr
+					}).done(function(host){
+						console.log("Added new host to database: "+host.macaddr.value); 
+					}); 
+				}
+				return x.macaddr || "";  
 			}); 
+			$scope.interface.maclist.value = newlist;  
 		}
-	}); 
-	
-	$scope.$watch("filterEnabled", function(value){ 
-		$scope.interface.macfilter = value; 
-	}); 
+	}; 
 	
 	$rpc.router.clients().done(function(clients){
 		$scope.client_list = Object.keys(clients).map(function(x){ 
@@ -88,11 +109,7 @@ $juci.module("core")
 	}
 	
 	$scope.onAddNewClient = function(){
-		var interface = $scope.interface; 
-		if(interface){
-			if(!interface.maclist) interface.maclist = []; 
-			$scope.maclist.push({ hostname: "", macaddr: "" }); 
-		}
+		$scope.maclist.push({ hostname: "", macaddr: "" }); 
 	}
 	
 	$scope.onAcceptModal = function(){

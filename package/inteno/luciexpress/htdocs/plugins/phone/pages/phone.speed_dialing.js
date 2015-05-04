@@ -20,6 +20,7 @@
  * 02110-1301 USA
  */
  
-$juci.controller("PhoneSpeedDialingCtrl", function($scope){
+$juci.module("phone")
+.controller("PhoneSpeedDialingCtrl", function($scope){
 	
 }); 

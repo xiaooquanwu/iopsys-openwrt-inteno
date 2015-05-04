@@ -1,5 +1,7 @@
 angular.module("luci")
-.controller("InitPageController", function($scope, $tr, $state, $stateParams, $config, $session, $localStorage, $rpc, $navigation, $location, $rootScope, $http, $theme){
+.controller("InitPageController", function($scope, $tr, 
+	$state, $stateParams, $config, $session, $localStorage, 
+	$rpc, $navigation, $location, $rootScope, $http, gettext, $theme){
 	//$scope.progress = {}; 
 	console.log("INIT"); 
 	function progress(text, value){
@@ -19,8 +21,14 @@ angular.module("luci")
 			next(); 
 		},
 		function(next){
+			// TODO: this will be moved somewhere else. What we want to do is 
+			// pick both a theme and plugins based on the router model. 
+			console.log("Detected hardware model: "+$config.system.hardware); 
+			var themes = {
+				"CG300A": "inteno-red"
+			}; 
 			$config.mode = $localStorage.getItem("mode") || "basic"; 
-			$config.theme = $localStorage.getItem("theme") || $config.theme || "inteno-red"; 
+			$config.theme = $localStorage.getItem("theme") || themes[$config.system.hardware] || "inteno-red"; 
 			
 			//$config.theme = "default"; 
 			
@@ -29,51 +37,11 @@ angular.module("luci")
 			}).fail(function(){
 				next(); 
 			}); 
-			/*
-			if($config.themes){
-				var themes = {}; 
-				async.eachSeries($config.themes, function(theme_id, next){
-					console.log("Loading theme "+theme_id); 
-					var theme_root = "themes/"+theme_id; 
-					$http.get(theme_root+"/theme.json").success(function(data){
-						if(!data) return; 
-						Object.keys(data).map(function(k){
-							themes[k] = data[k]; 
-							var t = data[k]; 
-							if(t.scripts) scripts = scripts.concat(t.scripts.map(function(x){return theme_root + "/"+x;})); 
-							//alert(JSON.stringify(data)); 
-						}); 
-						$juci.module(theme_id, theme_root, data); 
-						next(); 
-					}).error(function(){
-						next(); 
-					}); 
-				}, function(){
-					if($config.theme in themes){
-						console.log("Using theme "+$config.theme); 
-						var th = "themes/"+$config.theme; 
-						$rootScope.theme_index = th+"/index.html"; 
-						var theme = $('<link href="'+th+'/css/theme.css" rel="stylesheet" />');
-						theme.appendTo('head'); 
-					} else {
-						console.log("Could not load theme "+$config.theme+"!"); 
-						var th = themes["default"]; 
-						$rootScope.theme_index = th+"/index.html"; 
-						var theme = $('<link href="'+th+'/css/theme.css" rel="stylesheet" />');
-						theme.appendTo('head'); 
-					} 
-					
-					next(); 
-				}); 
-			} else {
-				alert("You have no themes defined in config file!"); 
-				next(); 
-			}*/
 		}, 
 		function(next){
 			progress("Loading plugins..", 8); 
 			var count = 0; 
-			async.eachSeries($config.plugins, function(id, next){
+			async.each($config.plugins, function(id, next){
 				count++; 
 				progress(".."+id, 10+((80/$config.plugins.length) * count)); 
 				var plugin_root = "plugins/"+id; 
@@ -88,15 +56,30 @@ angular.module("luci")
 						Object.keys(data.pages).map(function(k){
 							var page = data.pages[k]; 
 							if(page.view){
-								scripts.push(plugin_root + "/" + page.view); 
-								$juci.$stateProvider.state(k.replace(".", "_"), {
+								//scripts.push(plugin_root + "/" + page.view); 
+								//console.log("Registering state "+k.replace(/\./g, "_")); 
+								$juci.$stateProvider.state(k.replace(/\./g, "_"), {
 									url: "/"+k, 
 									views: {
 										"content": {
-											templateUrl: (page.view)?(plugin_root + "/" + page.view + ".html"):"/html/default.html", 
+											templateUrl: plugin_root + "/" + page.view + ".html", 
 										}
 									},
+									// Perfect! This loads our controllers on demand! :) 
+									resolve: {
+											deps : function ($q, $rootScope) {
+													var deferred = $q.defer();
+													require([plugin_root + "/" + page.view], function (tt) {
+															$rootScope.$apply(function () {
+																	deferred.resolve();
+															});
+															deferred.resolve()
+													});
+													return deferred.promise;
+											}
+									},
 									onEnter: function($window){
+										document.title = $tr(k+".title")+" - "+$tr(gettext("application.name")); 
 										// TODO: all these redirects seem to load page multiple times. 
 										//if(item.redirect) $window.location.href = "#!"+item.redirect; 
 									},
@@ -105,16 +88,7 @@ angular.module("luci")
 							}
 						}); 
 					} 
-					async.eachSeries(scripts, function(script, next){
-						//console.log("...."+script); 
-						progress("...."+script, 10 + ((80 / $config.plugins.length) * count)); 
-						require([script], function(module){
-							next(); 
-						}); 
-					}, function(){
-						// goto next plugin
-						next(); 
-					}); 
+					next(); 
 				}).error(function(data){
 					next(); 
 				}); 
@@ -122,6 +96,18 @@ angular.module("luci")
 				
 				next(); 
 			});
+		}, 
+		function(next){
+			async.each(scripts, function(script, next){
+				//console.log("...."+script); 
+				//progress("...."+script, 10 + ((80 / $config.plugins.length) * count)); 
+				require([script], function(module){
+					next(); 
+				}); 
+			}, function(){
+				// goto next plugin
+				next(); 
+			}); 
 		}, 
 		function(next){
 			progress("Getting navigation..", 100); 
@@ -132,22 +118,23 @@ angular.module("luci")
 				Object.keys(data.menu).map(function(key){
 					var menu = data.menu[key]; 
 					var view = menu.view; 
-					var path = key.replace("/", "."); 
+					var path = key.replace(/\//g, "."); 
 					var obj = {
 						path: path, 
 						modes: data.menu[key].modes || [ ], 
 						text: data.menu[key].title, 
 						index: data.menu[key].index || 0, 
 					}; 
-					if(menu.redirect){
+					/*if(menu.redirect){
 						obj.redirect = menu.redirect; 
-					}
-					if(view){
-						obj.page = "/pages/"+view.replace("/", ".")+".html"; 
-					}
+					}*/
+					/*if(view){
+						obj.page = "/pages/"+path.replace(/\//g, ".")+".html"; 
+					}*/
 					$navigation.register(obj); 
 					
 				}); 
+				//console.log("NAV: "+JSON.stringify($navigation.tree())); 
 				//$rootScope.$apply(); 
 				next(); 
 			}).fail(function(){
@@ -167,8 +154,6 @@ angular.module("luci")
 		
 		progress("", 100); 
 		console.log("redirecting -> "+$stateParams.redirect); 
-		setTimeout(function(){
-			$state.go($stateParams.redirect || "overview"); 
-		}, 500); 
+		$state.go($stateParams.redirect || "overview"); 
 	}); 
 }); 

@@ -1,14 +1,12 @@
 {
-    "status/voice": {
+    "status/status/voice": {
         "title": "Voice",
         "acls": [ "status" ],
-        "view": "status.voice",
         "index": 20
     },
-    "status/tv": {
+    "status/status/tv": {
         "title": "Vodaphone TV",
         "acls": [ "status" ],
-        "view": "status.tv",
         "index": 30
     }
 }

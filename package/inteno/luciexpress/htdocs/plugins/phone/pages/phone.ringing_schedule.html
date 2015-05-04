@@ -1,5 +1,15 @@
 <luci-layout-with-sidebar>
 	<div ng-controller="PhoneRingingScheduleCtrl">
-		Ringing schedule
+		<luci-config-section>
+			<luci-config-heading>{{ 'Ringing Schedule' | translate }}</luci-config-heading>
+			<luci-config-info>{{ 'phone.schedule.info' | translate }}</luci-config-info>
+			<luci-config-lines>
+				<luci-config-line title="{{'Ringing Schedule'|translate}}"><switch id="enabled" name="enabled" ng-model="settings.scheduling.value" class="green"></switch></luci-config-line>
+			</luci-config-lines>
+			<luci-config-lines ng-show="settings.scheduling.value">
+				TODO
+			</luci-config-lines>
+		</luci-config-section>
+		<luci-config-apply></luci-config-apply>
 	</div>
 </luci-layout-with-sidebar>

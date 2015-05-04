@@ -1,5 +1,49 @@
 <luci-layout-with-sidebar>
 	<div ng-controller="StatusDiagnostics">
-		Diags..
+		<luci-config-section>
+			<luci-config-heading>{{ 'Diagnostic Utility' | translate }}</luci-config-heading>
+			<luci-config-info>{{ 'status.diagnostics.info' | translate }}</luci-config-info>
+			<h3>{{'Automated Diagnostics'|translate}}</h3>
+			<p>{{'status.diagnostics.auto.info'|translate}}</p>
+			<luci-config-lines>
+				<luci-config-line title="">
+					<button class="btn btn-lg btn-default">{{'Diagnose'|translate}}</button>
+				</luci-config-line>
+			</luci-config-lines>
+			<h3>{{'Ping Test'|translate}}</h3>
+			<p>{{'status.diagnostics.ping.info'|translate}}</p>
+			<luci-config-lines>
+				<luci-config-line title="">
+					<div class="row">
+						<div class="col-xs-6">
+							<input type="text" class="form-control"></input>
+						</div>
+						<div class="col-xs-6">
+							<button class="btn btn-lg btn-default">{{'Ping'|translate}}</button>
+						</div>
+					</div>
+				</luci-config-line>
+			</luci-config-lines>
+			<h3>{{'Tracing Tool'|translate}}</h3>
+			<p>{{'status.diagnostics.trace.info'|translate}}</p>
+			<luci-config-lines>
+				<luci-config-line title="{{'Connection Type'|translate}}">
+					<div class="btn-group">
+						<button type="button" class="btn btn-lg btn-default">WAN/Data</button>
+						<button type="button" class="btn btn-lg btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+							<span class="caret"></span>
+							<span class="sr-only">Toggle Dropdown</span>
+						</button>
+						<ul class="dropdown-menu" role="menu">
+							<li><a href="#">Action</a></li>
+							<li><a href="#">Another action</a></li>
+							<li><a href="#">Something else here</a></li>
+							<li class="divider"></li>
+							<li><a href="#">Separated link</a></li>
+						</ul>
+					</div>
+				</luci-config-line>
+			</luci-config-lines>
+		</luci-config-section>
 	</div>
 </luci-layout-with-sidebar>

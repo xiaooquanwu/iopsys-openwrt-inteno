@@ -1,29 +1,29 @@
 <div>
 	<luci-config-section>
 		<luci-config-lines>
-			<luci-config-line title="'MAC Filtering'">
-				<switch ng-model="filterEnabled" class="green" ng-change="onFilterEnable"></switch>
+			<luci-config-line title="{{'MAC Filtering'|translate}}">
+				<switch ng-model="interface.macfilter.value" class="green" ng-change="onFilterEnable"></switch>
 			</luci-config-line>
 		</luci-config-lines>
 	</luci-config-section>
-	<luci-config-section ng-show="filterEnabled">
+	<luci-config-section ng-show="interface.macfilter.value">
 		<!--<div class="alert alert-danger">
 			<div ng-message="pattern" translate><span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>You must enter a valid MAC address!</div>
 		</div>-->
 		<luci-config-lines>
-			<luci-config-line title="'Access for listed devices'">
+			<luci-config-line title="{{'Access for listed devices'|translate}}">
 				<div class="btn-group">
-					<button ng-repeat="mode in [[1,'allow'], [2, 'deny']]" class="btn btn-default" ng-model="interface.macmode" btn-radio="mode[0]">interface.macmode.{{mode[1]}}</button>
+					<button ng-repeat="mode in [[1,'allow'], [2, 'deny']]" class="btn btn-default" ng-model="interface.macmode.value" btn-radio="mode[0]">{{ 'interface.macmode.'+mode[1] | translate}}</button>
 				</div>
 			</luci-config-line>
-			<luci-config-line title="'Currently added devices'">
+			<luci-config-line title="{{'Currently added devices'|translate}}">
 				<table class="table">
-					<tr ng-repeat="host in maclist">
+					<tr ng-repeat="mac in maclist">
 						<td>
-							<input type="text" class="form-control" ng-model="host.hostname"/>
+							<input type="text" class="form-control" ng-model="mac.hostname" ng-blur="rebuildMacList()"/>
 						</td>
 						<td>
-							<input type="text" class="form-control" ng-model="host.macaddr.value" placeholder="xx:xx:xx:xx:xx:xx" /><!-- ng-pattern="/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/"-->
+							<input type="text" class="form-control" ng-model="mac.macaddr" ng-blur="rebuildMacList()" placeholder="xx:xx:xx:xx:xx:xx" /><!-- ng-pattern="/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/"-->
 						</td>
 						<td>
 							<button class="btn btn-default" ng-click="onDeleteHost(host)"><i class="fa fa-trash-o"></i></button>
@@ -38,12 +38,12 @@
 					</tr>
 				</table>
 			</luci-config-line>
-			<luci-config-line title="'Add currently connected hosts to the list'">
+			<luci-config-line title="{{'Add currently connected hosts to the list'|translate}}">
 				<button class="btn btn-default" ng-click="onAddClients()"><i class="fa fa-plus"></i></button>
 			</luci-config-line>
 		</luci-config-lines>
 	</luci-config-section>
-	<modal title="'Add clients to MAC filtering list'" ng-show="showModal" on-accept="onAcceptModal()" on-dismiss="onDismissModal()" dismiss-label="Cancel" accept-label="Save">
+	<modal title="{{'Add clients to MAC filtering list'|translate}}" ng-show="showModal" on-accept="onAcceptModal()" on-dismiss="onDismissModal()" dismiss-label="{{'Cancel'|translate}}" accept-label="{{'Save'|translate}}">
 		<luci-config>
 			<luci-config-section>
 				

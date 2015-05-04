@@ -1,24 +1,145 @@
 msgid ""
 msgstr ""
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
 "Project-Id-Version: \n"
 "POT-Creation-Date: \n"
 "PO-Revision-Date: \n"
 "Last-Translator: \n"
 "Language-Team: \n"
-"MIME-Version: 1.0\n"
-"X-Generator: Poedit 1.5.4\n"
 "Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.7.5\n"
 
-#: htdocs/pages/status.dsl.html:3
-msgid "DSL Status"
-msgstr ""
+msgid "Overview"
+msgstr "Overview"
 
-#: htdocs/widgets/luci.navbar.html:29
+msgid "Phone"
+msgstr "Phone"
+
+msgid "System"
+msgstr "System"
+
+msgid "Internet"
+msgstr "Internet"
+
+msgid "WiFi"
+msgstr "WiFi"
+
+msgid "Settings"
+msgstr "Settings"
+
+msgid "Status"
+msgstr "Status"
+
 msgid "Theme"
+msgstr "Theme"
+
+msgid "Network"
+msgstr "Network"
+
+#: htdocs/plugins/router/pages/internet.exposed_host.html:14
+msgid ""
+"<span class=\"glyphicon glyphicon-exclamation-sign\" aria-hidden=\"true\"></"
+"span> Warning: By using the exposed host function you bypass the firewall of "
+"your {{config.friendly_name}}. Please make sure that your computer is "
+"protected against attacks from Internet. The following ports will not be "
+"forwarded: {{ nonforwardedPorts || 'None'}}."
 msgstr ""
 
-#: htdocs/widgets/luci.login.html:3
+#: htdocs/plugins/wifi/pages/wifi.general.html:19
+msgid ""
+"<span class=\"glyphicon glyphicon-info-sign\" aria-hidden=\"true\"></span> "
+"{{info}}"
+msgstr ""
+
+#: htdocs/plugins/core/widgets/uci.wireless.device.edit.html:12
+msgid "Choose Bandwidth"
+msgstr "Choose Bandwidth"
+
+#: htdocs/plugins/core/widgets/uci.wireless.device.edit.html:18
+msgid "Choose Channel"
+msgstr "Choose Channel"
+
+#: htdocs/plugins/core/widgets/uci.wireless.interface.html:11
+msgid "Choose Device"
+msgstr "Choose Device"
+
+#: htdocs/plugins/core/widgets/uci.wireless.device.edit.html:6
+msgid "Choose Mode"
+msgstr "Choose Mode"
+
+#: htdocs/plugins/core/widgets/uci.wireless.interface.html:17
+msgid "Choose Protection"
+msgstr "Choose Protection"
+
+#: htdocs/plugins/router/pages/status.dsl.html:3
+msgid "DSL Status"
+msgstr "DSL Status"
+
+#: htdocs/plugins/router/pages/internet.exposed_host.html:3
+msgid "Exposed Host"
+msgstr ""
+
+#: htdocs/plugins/router/pages/internet.exposed_host.html:7
+msgid "Exposed Host Function"
+msgstr ""
+
+#: htdocs/plugins/wifi/pages/wifi.general.html:5
+msgid "General WiFi Settings"
+msgstr ""
+
+#: htdocs/plugins/router/pages/internet.exposed_host.html:4
+msgid ""
+"If you have a local network device that cannot run an Internet application "
+"properly behind the firewall, you can allow unrestricted Internet access to "
+"the network device (Exposed Host)."
+msgstr ""
+
+#: htdocs/plugins/router/pages/settings.uci.html:16
+msgid "Loading"
+msgstr ""
+
+#: htdocs/html/default.html:2
+msgid "Loading..."
+msgstr ""
+
+#: htdocs/plugins/router/pages/internet.port_mapping.html:6
+msgid "Local IP"
+msgstr ""
+
+#: htdocs/plugins/router/pages/internet.port_mapping.html:6
+msgid "Local port"
+msgstr ""
+
+#: htdocs/plugins/router/pages/internet.port_mapping.html:3
+msgid "Port Mapping"
+msgstr ""
+
+#: htdocs/plugins/router/pages/internet.port_mapping.html:4
+msgid ""
+"Port mapping allows remote computers to connect to a specific device within "
+"your private network."
+msgstr ""
+
+#: htdocs/plugins/router/pages/internet.port_mapping.html:6
+msgid "Protocol"
+msgstr ""
+
+#: htdocs/plugins/router/pages/internet.port_mapping.html:6
+msgid "Public Port"
+msgstr ""
+
+#: htdocs/html/404.html:2
+msgid "The page you were trying to access was not found!"
+msgstr ""
+
+#: htdocs/plugins/core/widgets/luci.login.html:3
 msgid "You are logged in!"
+msgstr ""
+
+#: htdocs/plugins/wifi/pages/wifi.general.html:6
+msgid ""
+"Your EasyBox supports the industry-wide WiFi standards, enabling easy "
+"wireless connection of your devices."
 msgstr ""

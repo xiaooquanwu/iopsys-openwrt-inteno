@@ -1,16 +1,23 @@
 $juci.module("router")
 .controller("InternetFirewallPageCtrl", function($scope, $uci){
-	
-	$uci.show("firewall.settings").done(function(settings){
-		$scope.settings = settings; 
-		settings.firewall = Number(settings.firewall); 
-		settings.ping_wan = Number(settings.ping_wan); 
-		
-		$scope.onSave = function(){
-			$uci.set("firewall.settings", $scope.settings).done(function(){
-				
-			}); 
-		}
+	$scope.firewallSwitchState = 0; 
+	$uci.sync("firewall").done(function(){
+		$scope.firewall = $uci.firewall; 
+		//settings.firewall = Number(settings.firewall); 
+		//settings.ping_wan = Number(settings.ping_wan); 
+		$scope.wan_ping_rule = $uci.firewall["@rule"].filter(function(rule){ return rule.name.value == "Allow-Ping" })[0]||null; 
+		$scope.firewallSwitchState = $uci.firewall["@rule"].filter(function(rule){ return rule.enabled.value == true; }).length > 0; 
 		$scope.$apply(); 
 	}); 
+	$scope.onFirewallToggle = function(){
+		if(!$scope.firewallSwitchState) {
+			$uci.firewall["@rule"].map(function(rule){
+				rule.enabled.value = false; 
+			}); 
+		} else {
+			$uci.firewall["@rule"].map(function(rule){
+				rule.enabled.value = true; 
+			}); 
+		}
+	}
 }); 

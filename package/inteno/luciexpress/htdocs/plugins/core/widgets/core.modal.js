@@ -12,7 +12,7 @@ $juci.module("core")
 			onAccept: "&onAccept",
 			onDismiss: "&onDismiss", 
 			ngShow: "=ngShow", 
-			title: "=title"
+			title: "@title"
 		}, 
 		controller: "ModalController", 
 		link: function postLink(scope, element, attrs) {

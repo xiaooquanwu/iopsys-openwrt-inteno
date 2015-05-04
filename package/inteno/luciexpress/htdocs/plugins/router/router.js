@@ -41,6 +41,6 @@ $juci.module("router")
 .state("status", {
 	url: "/status", 
 	onEnter: function($state){
-		$juci.redirect("status.overview"); 
+		$juci.redirect("status.status"); 
 	},
 }); 

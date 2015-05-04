@@ -36,6 +36,43 @@ No you can run the server using:
 	
 You may need to use 'nodejs' command instead of 'node' depending on your distro. 
 
+Using UCI from the web console
+---------------------
+
+It is now possible to use UCI directly from your browser console. When you open your console you will have a global uci object defined in the application.
+
+	uci.sync("wireless") // will sync the wireless table
+	uci.sync(["wireless", "hosts"]) // will sync both wireless and hosts configs. 
+	
+	uci.wireless.wl0.channel.value = 1 // will set channel value to 1 
+	
+	uci.save() // will save the uci config
+	
+Note however that both uci.sync() and uci.save() are async methods so they return a promise. So if you need to do several operations in series then you need to do it like this: 
+
+	uci.sync("wireless").done(function(){
+		console.log("Channel: "+uci.wireless.wl0.channel.value); 
+	}).fail(function(){
+		console.log("Failed to sync tables!"); 
+	}).always(function(){
+		console.log("Done!"); 
+	}); 
+	
+When you invoke sync() the uci code will load the specified configs into memory. The config types must be defined in uci.js file so that fields that are not present in the configs can be created with their default values. Please look in js/uci.js for details. This configuration may be moved somewhere else later. 
+
+There are several ways to access config elements: 
+
+	uci.wireless["@all"] // list of all sections in the wireless config
+	uci.wireless["@wifi-device"] // list of only the wifi device sections
+	uci.wireless.wl0 // access wl0 section by name (all sections that have a name can be accessed like this)
+	uci.wireless.cfg012345 // access a section with an automatically created uci name. 
+	
+I have tried to mimic the command line uci tool here as much as possible. 
+
+When you need to set a field value you need to use "value" member of the field. This is because we want to retain default and original value inside the field object so this is the only way to do this. This value field is defined with a setter and a getter so when you set a value that is different from the value retreived from your router then a field will be marked as dirty and will be sent to the router next time you call save(). 
+
+	uci.wireless.wl0.channel.value = 1
+
 JSONRPC service
 ---------------
 

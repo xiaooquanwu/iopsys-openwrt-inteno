@@ -1,0 +1,43 @@
+<luci-layout-with-sidebar>
+	<div id="dslstats" ng-controller="StatsCtrl" ng-form='myForm'>
+		<h2 translate>DSL Status</h2>
+		<div ng-hide="online">
+			{{'status.dsl.offline'|translate}}
+		</div>
+		<div ng-show="online">
+			<luci-table 
+				title="{{'DSL Connection'|translate}}"
+				data="dslConnectionInfo">
+			</luci-table>
+			<luci-table 
+				title="{{'DSL Mode'|translate}}"
+				data="dslModeInfo">
+			</luci-table>
+			<luci-table
+				title="{{'DSL Status Information'|translate}}"
+				columns="[ '', 'Configured', 'Current' ]"
+				data="dslStatusInfo">
+			</luci-table>
+			<luci-table
+				title="{{'Bit Rate'|translate}}"
+				columns="[ '', 'Downstream', 'Upstream' ]"
+				data="dslRateInfo">
+			</luci-table>
+			<luci-table
+				title="{{'Operating Data'|translate}}"
+				columns="[ '', 'Downstream', 'Upstream' ]"
+				data="dslOpInfo">
+			</luci-table>
+			<luci-table
+				title="{{'Error Counter'|translate}}"
+				columns="[ '', 'Downstream', 'Upstream' ]"
+				data="dslErrorInfo">
+			</luci-table>
+			<luci-table
+				title="{{'Cell Statistics'|translate}}"
+				columns="[ '', 'Transmitted', 'Received' ]"
+				data="dslCellInfo">
+			</luci-table>
+		</div>
+	</div>
+</luci-layout-with-sidebar>

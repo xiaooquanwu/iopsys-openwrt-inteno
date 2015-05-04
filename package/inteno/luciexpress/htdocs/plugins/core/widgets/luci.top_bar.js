@@ -7,13 +7,13 @@ $juci.module("core")
 		replace: true
 	 };  
 })
-.controller("luciTopBarController", function($scope, $config, $session, $window, $localStorage, $state){
-	$scope.model = $config.model; 
+.controller("luciTopBarController", function($scope, $config, $session, $window, $localStorage, $state, gettext){
+	$scope.model = ($config.system.name || "") + " " + ($config.system.hardware || ""); 
 	
 	$scope.guiModes = [
-		{id: "basic", label: "Basic Mode"},
-		{id: "expert", label: "Expert Mode"},
-		{id: "logout", label: "Log out"}
+		{id: "basic", label: gettext("Basic Mode")},
+		{id: "expert", label: gettext("Expert Mode")},
+		{id: "logout", label: gettext("Log out")}
 	]; 
 	Object.keys($scope.guiModes).map(function(k){
 		var m = $scope.guiModes[k]; 

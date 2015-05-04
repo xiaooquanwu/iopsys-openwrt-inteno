@@ -1,22 +1,22 @@
 <div>
 	<luci-config-section>
 		<luci-config-lines>
-			<luci-config-line title="'Wifi Mode'">
-				<ui-select ng-model="device.mode" search-enabled="false" style="width: 200px;">
-					<ui-select-match placeholder="{{ 'Choose Mode' | translate}}">{{"mode."+$select.selected}}</ui-select-match>
-					<ui-select-choices repeat="item in allModes" refresh-delay="0"><div>{{"mode."+item}}</div></ui-select-choices>
+			<luci-config-line title="{{'Wifi Mode'|translate}}">
+				<ui-select ng-model="device.hwmode.value" search-enabled="false" style="width: 200px;">
+					<ui-select-match placeholder="{{ 'Choose Mode' | translate}}">{{$select.selected|translate}}</ui-select-match>
+					<ui-select-choices repeat="item in device.hwmode.schema.allow" refresh-delay="0"><div>{{item|translate}}</div></ui-select-choices>
 				</ui-select>
 			</luci-config-line>
-			<luci-config-line title="'Bandwidth'">
-				<ui-select ng-model="device.bandwidth" theme="bootstrap" search-enabled="false" style="width: 200px;">
-					<ui-select-match placeholder="{{ 'Choose Bandwidth'  | translate}}">{{"bandwidth."+$select.selected}}</ui-select-match>
-					<ui-select-choices repeat="item in allBandwidths" refresh-delay="0"><div >{{"bandwidth."+item}}</div></ui-select-choices>
+			<luci-config-line title="{{'Bandwidth'|translate}}">
+				<ui-select ng-model="device.bandwidth.value" theme="bootstrap" search-enabled="false" style="width: 200px;">
+					<ui-select-match placeholder="{{ 'Choose Bandwidth'  | translate}}">{{$select.selected|translate}}</ui-select-match>
+					<ui-select-choices repeat="item in device.bandwidth.schema.allow" refresh-delay="0"><div >{{item|translate}}</div></ui-select-choices>
 				</ui-select>
 			</luci-config-line>
-			<luci-config-line title="'Channel'">
-				<ui-select ng-model="device.channel" theme="bootstrap" search-enabled="false" style="width: 200px;">
-					<ui-select-match placeholder="{{ 'Choose Channel'  | translate}}">{{"channel."+$select.selected}}</ui-select-match>
-					<ui-select-choices repeat="item in allChannels" refresh-delay="0"><div >{{"channel."+item}}</div></ui-select-choices>
+			<luci-config-line title="{{'Channel'|translate}}">
+				<ui-select ng-model="device.channel.value" theme="bootstrap" search-enabled="false" style="width: 200px;">
+					<ui-select-match placeholder="{{ 'Choose Channel'  | translate}}">{{$select.selected | translate}}</ui-select-match>
+					<ui-select-choices repeat="item in device.channel.schema.allow" refresh-delay="0"><div >{{item|translate}}</div></ui-select-choices>
 				</ui-select>
 			</luci-config-line>
 		</luci-config-lines>

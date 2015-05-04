@@ -1,15 +1,12 @@
 <luci-layout-with-sidebar>
 	<div ng-controller="WifiSchedulePageCtrl">
 		<luci-config-section>
-			<luci-config-heading>Schedule</luci-config-heading>
-			<luci-config-info>Schedule the times when your WiFi should be turned on or off automatically. Note: If WiFi is turned off, both Main and Guest WiFi are disabled</luci-config-info>
+			<luci-config-heading>{{ 'Schedule' | translate }}</luci-config-heading>
+			<luci-config-info>{{ 'wifi.schedule.info' | translate }}</luci-config-info>
 			<luci-config-lines>
-				<luci-config-line title="'Schedule Function'"><switch id="enabled" name="enabled" ng-model="scheduleEnabled" class="green"></switch></luci-config-line>
-			<luci-config-lines>
+				<luci-config-line title="{{'Schedule Function'|translate}}"><switch id="enabled" name="enabled" ng-model="settings.scheduling.value" class="green"></switch></luci-config-line>
+			</luci-config-lines>
 		</luci-config-section>
-		<luci-config-footer>
-			<button class="btn btn-lg btn-primary" ng-click="onApply()">Apply</button>
-			<button class="btn btn-lg btn-default" ng-click="onCancel()">Cancel</button>
-		</luci-config-footer>
+		<luci-config-apply></luci-config-apply>
 	</div>
 </luci-layout-with-sidebar>

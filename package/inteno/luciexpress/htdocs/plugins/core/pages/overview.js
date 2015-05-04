@@ -1,7 +1,8 @@
 $juci.module("core")
-.controller("OverviewPageCtrl", function($scope, $rpc){
+.controller("OverviewPageCtrl", function($scope, $rpc, $config){
 	$scope.themeUrl = ""; 
-	$scope.test = "Hello WOrld!"; 
+	$scope.config = $config; 
+	
 	$scope.wireless = {
 		clients: []
 	}; 

@@ -1166,9 +1166,9 @@ rpc_luci2_reset_test(struct ubus_context *ctx, struct ubus_object *obj,
                      struct ubus_request_data *req, const char *method,
                      struct blob_attr *msg)
 {
-	//FILE *mtd;
+	FILE *mtd;
 	struct stat s;
-	//char line[64] = { 0 };
+	char line[64] = { 0 };
 	bool supported = false;
 
 /*	if (!stat("/sbin/mtd", &s) && (s.st_mode & S_IXUSR))*/
@@ -1220,7 +1220,7 @@ rpc_luci2_reset_start(struct ubus_context *ctx, struct ubus_object *obj,
 
 		sleep(1);
 
-		//execl("/sbin/mtd", "/sbin/mtd", "-r", "erase", "rootfs_data", NULL);
+/*		execl("/sbin/mtd", "/sbin/mtd", "-r", "erase", "rootfs_data", NULL);*/
 		execl("/sbin/defaultreset", "/sbin/defaultreset", NULL, NULL);
 
 		return rpc_errno_status();

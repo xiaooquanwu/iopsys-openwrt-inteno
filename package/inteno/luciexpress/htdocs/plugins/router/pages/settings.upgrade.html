@@ -1,5 +1,34 @@
 <luci-layout-with-sidebar>
 	<div ng-controller="SettingsUpgradeCtrl">
-		Upgrade
+		<luci-config-section>
+			<luci-config-heading>{{ 'Firmware Upgrade' | translate }}</luci-config-heading>
+			<luci-config-info>{{ 'settings.upgrade.info' | translate }}</luci-config-info>
+			<luci-config-lines>
+				<luci-config-line title="{{'Current Firmware Version'|translate}}">
+					<strong>VF_Vox2.0_Build2.4.3_2012_03_11</strong>
+				</luci-config-line>
+			</luci-config-lines>
+			<h3>{{'Manual Firmware Upgrade'|translate}}</h3>
+			<p>{{'settings.upgrade.manual.info'|translate}}</p>
+			<luci-config-lines>
+				<luci-config-line title="{{'Upload file'|translate}}">
+					<input type="file"></input>
+				</luci-config-line>
+			</luci-config-lines>
+			<h3>{{'Online Update'|translate}}</h3>
+			<p>{{'settings.upgrade.online.info'|translate}}</p>
+			<luci-config-lines>
+				<luci-config-line title="">
+					<button class="btn btn-lg btn-default">{{'Check for Update'|translate}}</button>
+				</luci-config-line>
+			</luci-config-lines>
+			<h3>{{'USB Firmware Upgrade'|translate}}</h3>
+			<p>{{'settings.upgrade.usb.info'|translate}}</p>
+			<luci-config-lines>
+				<luci-config-line title="{{'Firmware File: '|translate}}">
+					<button class="btn btn-lg btn-default">{{'Install Upgrade'|translate}}</button>
+				</luci-config-line>
+			</luci-config-lines>
+		</luci-config-section>
 	</div>
 </luci-layout-with-sidebar>

@@ -18,7 +18,7 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
 app.use(express.static(__dirname + '/htdocs'));
 
 var rpc_calls = {
-	"luci2.ui.menu": function(params, next){
+	/*"luci2.ui.menu": function(params, next){
 		var menu = {}; 
 		// combine all menu files we have locally
 		fs.readdir("share/menu.d", function(err, files){
@@ -32,12 +32,22 @@ var rpc_calls = {
 				menu: menu
 			}); 
 		}); 
+	}, */
+	"local.features": function(params, next){
+		next({"list": ["rpcforward"]}); 
 	}, 
-	"session.access": function(params, next){
+	"local.set_rpc_host": function(params, next){
+		if(params.rpc_host) {
+			config.ubus_uri = "http://"+params.rpc_host+"/ubus"; 
+			console.log("Server: will forward all requests to "+config.ubus_uri); 
+		}
+		next({}); 
+	}, 
+	/*"session.access": function(params, next){
 		next({
 			"access-group": [ "a", "b" ] // just bogus access groups
 		}); 
-	}
+	}*/
 }; 
 
 // RPC end point
@@ -46,56 +56,57 @@ app.post('/ubus', function(req, res) {
   
   var data = req.body, err = null, rpcMethod;
   
-	console.log("JSON_CALL (-> "+config.ubus_uri+"): "+JSON.stringify(data)); 
 	
-	function doLocalRPC(){
-		if (!err && data.jsonrpc !== '2.0') {
-			onError({
-				code: -32600,
-				message: 'Bad Request. JSON RPC version is invalid or missing',
-				data: null
-			}, 400);
-			return;
-		}
-		
-		//console.log("Call: "+data.method+" "+JSON.stringify(data.params)); 
-		var name = data.params[1]+"."+data.params[2]; 
-		if(name in rpc_calls){
-			rpc_calls[name](null, function(resp){
-				res.write(JSON.stringify({
-					jsonrpc: "2.0", 
-					result: [0, resp]
-				}));
-				
-				res.end(); 
-			}); 
-		} else {
-			console.log("Unknown RPC call "+name); 
-			res.end(); 
-		}
+	if (!err && data.jsonrpc !== '2.0') {
+		onError({
+			code: -32600,
+			message: 'Bad Request. JSON RPC version is invalid or missing',
+			data: null
+		}, 400);
+		return;
 	}
 	
-  request({ 
-    url: config.ubus_uri,
-    method: "POST",
-    json: true,   // <--Very important!!!
-    body: data
-	}, function (error, response, body) {
-		if(error){ 
-			console.log("ERROR: "+error); 
-			res.write(JSON.stringify({
+	//console.log("Call: "+data.method+" "+JSON.stringify(data.params)); 
+	var name = data.params[1]+"."+data.params[2]; 
+	if(name in rpc_calls){
+		console.log("JSON_LOCAL: "+JSON.stringify(data)); 
+	
+		rpc_calls[name](data.params[3], function(resp){
+			var json = JSON.stringify({
 				jsonrpc: "2.0", 
-				result: [1, error]
-			}));
+				result: [0, resp]
+			});
+			console.log("JSON_RESP: "+json); 
+			res.write(json); 
 			res.end(); 
-			//doLocalRPC(); 
-			return; 
-		}
-		var json = JSON.stringify(body); 
-		console.log("JSON_RESP: "+json); 
-		res.write(json); 
-		res.end(); 
-	});
+		}); 
+	} else {
+		console.log("JSON_CALL (-> "+config.ubus_uri+"): "+JSON.stringify(data)); 
+	
+		request({ 
+			url: config.ubus_uri,
+			method: "POST",
+			json: true,   // <--Very important!!!
+			body: data
+		}, function (error, response, body) {
+			if(error){ 
+				console.log("ERROR: "+error); 
+				body = JSON.stringify({
+					jsonrpc: "2.0", 
+					result: [1, String(error)]
+				});
+				//doLocalRPC(); 
+			}
+			var json = JSON.stringify(body); 
+			console.log("JSON_RESP: "+json); 
+			res.write(json); 
+			res.end(); 
+		});
+		//console.log("Unknown RPC call "+name); 
+		//res.end(); 
+	}
+	
+  
 /*
 	console.log(JSON.stringify(data)); 
 	

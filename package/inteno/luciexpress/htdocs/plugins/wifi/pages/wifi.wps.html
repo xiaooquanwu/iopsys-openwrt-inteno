@@ -2,16 +2,13 @@
 	<div ng-controller="WifiWPSPageCtrl">
 		<luci-config>
 			<luci-config-section>
-				<luci-config-heading>WPS</luci-config-heading>
-				<luci-config-info>Using WPS it is possible to easily connect wireless devices with EasyBox on an encrypted channel. Below, you can choose and configure different connection methods.</luci-config-info>
+				<luci-config-heading>{{ 'WPS' | translate }}</luci-config-heading>
+				<luci-config-info>{{ 'wifi.wps.info' | translate }}</luci-config-info>
 				<luci-config-lines>
-					<luci-config-line title="'WPS Function'"><switch id="enabled" name="enabled" ng-model="scheduleEnabled" class="green"></switch></luci-config-line>
-				<luci-config-lines>
+					<luci-config-line title="{{'WPS Function'|translate}}"><switch id="enabled" name="enabled" ng-model="settings.wps.value" class="green"></switch></luci-config-line>
+				</luci-config-lines>
 			</luci-config-section>
-			<luci-config-footer>
-				<button class="btn btn-lg btn-primary" ng-click="onApply()">Apply</button>
-				<button class="btn btn-lg btn-default" ng-click="onCancel()">Cancel</button>
-			</luci-config-footer>
+			<luci-config-apply></luci-config-apply>
 		</luci-config>
 	</div>
 </luci-layout-with-sidebar>

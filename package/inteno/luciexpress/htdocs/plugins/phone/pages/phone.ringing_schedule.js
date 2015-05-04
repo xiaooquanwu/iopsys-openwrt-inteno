@@ -20,6 +20,10 @@
  * 02110-1301 USA
  */
  
-$juci.controller("PhoneRingingScheduleCtrl", function($scope){
-	
+$juci.module("phone")
+.controller("PhoneRingingScheduleCtrl", function($scope, $uci){
+	$uci.sync(["phone"]).done(function(){
+		// TODO add config for phone
+		$scope.settings = $uci.phone.settings; 
+	}); 
 }); 

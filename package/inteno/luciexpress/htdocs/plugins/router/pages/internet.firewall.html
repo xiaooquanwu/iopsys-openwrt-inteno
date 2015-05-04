@@ -5,16 +5,17 @@
 		<table class="table">
 			<tr>
 				<td>
-						<div class="col-md-11"><strong style="font-size: 1.5em">Firewall</strong></div>
-						<div class="col-md-1"><switch id="enabled" name="enabled" ng-model="settings.firewall" ng-change="onSave" class="green"></switch></div>
+					<div class="col-md-11"><strong style="font-size: 1.5em">Toggle all rules</strong></div>
+					<div class="col-md-1"><switch id="enabled" name="enabled" ng-model="firewallSwitchState" ng-change="onFirewallToggle" class="green"></switch></div>
 				</td>
 			</tr>
-			<tr>
+			<tr ng-repeat="rule in firewall['@rule']">
 				<td>
-						<div class="col-md-11"><strong style="font-size: 1.5em">Allow Ping to WAN interface</strong></div>
-						<div class="col-md-1"><switch id="enabled" name="enabled" ng-model="settings.ping_wan" ng-change="onSave" class="green"></switch></div>
+					<div class="col-md-11"><strong style="font-size: 1.5em">{{rule.name.value | translate}}</strong></div>
+					<div class="col-md-1"><switch id="enabled" name="enabled" ng-model="rule.enabled.value"  class="green"></switch></div>
 				</td>
 			</tr>
 		</table>
+		<luci-config-apply></luci-config-apply>
 	</div>
 </luci-layout-with-sidebar>

@@ -10,7 +10,7 @@
 						 on-select="onChangeMode($item, $model)"
 						 style="width: 150px;"
 				>
-						<ui-select-match placeholder="Basic">{{$select.selected.label}}</ui-select-match>
+						<ui-select-match placeholder="{{'Basic'|translate}}">{{$select.selected.label}}</ui-select-match>
 						<ui-select-choices repeat="mode in guiModes"
 										 refresh-delay="0">
 							<div >{{mode.label}}</div>

@@ -33,14 +33,23 @@
 		"settings.uci": {
 			"view": "pages/settings.uci"
 		},
+		"status.status": {
+			"view": "pages/status.status"
+		},
+		"status.status.dsl": {
+			"view": "pages/status.status.dsl"
+		},
+		"status.status.tv": {
+			"view": "pages/status.status.tv"
+		},
+		"status.status.voice": {
+			"view": "pages/status.status.voice"
+		},
 		"status.about": {
 			"view": "pages/status.about"
 		},
 		"status.diagnostics": {
 			"view": "pages/status.diagnostics"
-		},
-		"status.dsl": {
-			"view": "pages/status.dsl"
 		},
 		"status.events": {
 			"view": "pages/status.events"
@@ -48,17 +57,8 @@
 		"status.nat": {
 			"view": "pages/status.nat"
 		},
-		"status.overview": {
-			"view": "pages/status.overview"
-		},
 		"status.restart": {
 			"view": "pages/status.restart"
-		},
-		"status.tv": {
-			"view": "pages/status.tv"
-		},
-		"status.voice": {
-			"view": "pages/status.voice"
 		}
 	}
 }

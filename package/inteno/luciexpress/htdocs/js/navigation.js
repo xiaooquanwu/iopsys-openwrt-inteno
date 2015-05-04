@@ -77,7 +77,9 @@ angular.module("luci")
 			Object.assign(o.children, children); 
 			item = o; 
 		}
-		obj.children_list = Object.keys(obj.children).map(key => obj.children[key]);
+		obj.children_list = Object.keys(obj.children).map(function(key){
+			return obj.children[key]; 
+		});
 		obj.children_list.sort(function(a, b){
 			return a.index - b.index; 
 		}); 

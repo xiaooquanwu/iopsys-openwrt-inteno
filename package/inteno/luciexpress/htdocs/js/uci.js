@@ -1,430 +1,391 @@
-/*
- * juci - javascript universal client interface
- *
- * Project Author: Martin K. Schröder <mkschreder.uk@gmail.com>
- * 
- * Copyright (C) 2012-2013 Inteno Broadband Technology AB. All rights reserved.
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * version 2 as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA
- */
-
-// uci module for interacting with uci tables
 angular.module("luci")
-.factory('$uci', function($rpc, $rootScope){
-	// TODO: schemas must be supplied by the router. 
+.provider('$uci', function($rpcProvider){
+	$rpc = $rpcProvider.$get(); 
 	
-	function MACAddress(mac){
-		this.value = mac; 
-		var self = this; 
-		
-	}
-	
-	var MACAddressSchema = schema.Schema.extensions.MACAddressSchema = new schema.Schema.extend({
-		errors: function(instance) {
-			if (!this.validate(instance)) {
-				return ( instance + ' is not a valid MAC address!' )
-			}
-			return false
-		},
-
-		validate: function(instance) {
-			//console.log(instance.value + " " + String(instance.value).match(/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/)); 
-			return (Object(instance) instanceof MACAddress) && (String(instance.value).match(/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/)); 
-		},
-
-		toJSON: function() {
-			return {
-				type: 'macaddr'
-			}
-		}
-	})
-
-	var macSchema = new MACAddressSchema().wrap()
-
-	schema.Schema.fromJSON.def(function(sch) {
-		if (!sch || sch.type !== 'macaddr') return
-
-		return new MACAddressSchema(); 
-	})
-	
-	MACAddress.prototype = {
-		set(value) {
-			this.value = value; 
-		},
-		get(){
-			return this.value; 
-		},
-		toString: function() { return String(this.value); }
-	}
-	
-	MACAddress.schema = macSchema; 
-	
-	var schemas = {
+	var section_types = {
+		"easybox-settings": {
+			"usb_port": 		{ dvalue: true, type: Boolean }, 
+			"status_led": 	{ dvalue: true, type: Boolean }, 
+			"power_led": 		{ dvalue: true, type: Boolean }, 
+			"power_led_br":	{ dvalue: 100, type: Number }
+		}, 
+		"firewall-defaults": {
+			"syn_flood":		{ dvalue: true, type: Boolean }, 
+			"intput":				{ dvalue: "ACCEPT", type: String }, 
+			"output":				{ dvalue: "ACCEPT", type: String }, 
+			"forward":			{ dvalue: "REJECT", type: String }, 
+		}, 
+		"firewall-zone": {
+			"name":					{ dvalue: "", type: String }, 
+			"intput":				{ dvalue: "ACCEPT", type: String }, 
+			"output":				{ dvalue: "ACCEPT", type: String }, 
+			"forward":			{ dvalue: "REJECT", type: String }, 
+			"network": 			{ dvalue: [], type: Array }, 
+			"masq":					{ dvalue: true, type: Boolean }, 
+			"mtu_fix": 			{ dvalue: true, type: Boolean }
+		}, 
+		"firewall-rule": {
+			"name":					{ dvalue: "", type: String }, 
+			"src":					{ dvalue: "lan", type: String }, 
+			"src_ip":				{ dvalue: "", type: String }, 
+			"src_port":			{ dvalue: 0, type: Number }, 
+			"proto":				{ dvalue: "tcp", type: String }, 
+			"dest":					{ dvalue: "*", type: String }, 
+			"dest_ip":			{ dvalue: "", type: String }, 
+			"dest_port":		{ dvalue: 0, type: Number }, 
+			"target":				{ dvalue: "REJECT", type: String }, 
+			"family": 			{ dvalue: "ipv4", type: String }, 
+			"icmp_type": 		{ dvalue: [], type: Array },
+			"enabled": 			{ dvalue: true, type: Boolean }
+		}, 
+		"firewall-settings": {
+			"disabled":			{ dvalue: false, type: Boolean }, 
+			"ping_wan":			{ dvalue: false, type: Boolean }
+		}, 
+		"wifi-settings": {
+			"disabled":			{ dvalue: false, type: Boolean }, 
+			"button_enabled": { dvalue: false, type: Boolean }, 
+			"scheduling": 	{ dvalue: false, type: Boolean },
+			"wps":					{ dvalue: false, type: Boolean }
+		}, 
 		"wifi-device": {
-			schema: {
-				"type": String,
-				"country": String,
-				"band": [ "a", "b" ],
-				"bandwidth": Number,
-				"channel": [ "auto", 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 ],
-				"scantimer": Number,
-				"wmm": Boolean,
-				"wmm_noack": Boolean,
-				"wmm_apsd": Boolean,
-				"txpower": Number,
-				"rateset": [ "default" ],
-				"frag": Number,
-				"rts": Number,
-				"dtim_period": Number,
-				"beacon_int": Number,
-				"rxchainps": Boolean,
-				"rxchainps_qt": Number,
-				"rxchainps_pps": Number,
-				"rifs": Boolean,
-				"rifs_advert": Boolean,
-				"maxassoc": Number,
-				"doth": Boolean,
-				"hwmode": [ "auto", "11ac" ],
-				"disabled": Boolean
-			},
-			defaults: {
-				"type": "broadcom",
-				"country": "EU\/13",
-				"band": "b",
-				"bandwidth": 20,
-				"channel": "auto",
-				"scantimer": 15,
-				"wmm": 1,
-				"wmm_noack": 0,
-				"wmm_apsd": 0,
-				"txpower": 100,
-				"rateset": "default",
-				"frag": 0,
-				"rts": 0,
-				"dtim_period": 1,
-				"beacon_int": 100,
-				"rxchainps": 0,
-				"rxchainps_qt": 10,
-				"rxchainps_pps": 10,
-				"rifs": 0,
-				"rifs_advert": 0,
-				"maxassoc": 16,
-				"doth": 0,
-				"hwmode": "auto",
-				"disabled": 0
-			}
+			"type": 			{ dvalue: "", type: String },
+			"country": 		{ dvalue: "", type: String},
+			"band": 			{ dvalue: "none", type: String, allow: [ "a", "b" ] },
+			"bandwidth": 	{ dvalue: 0, type: String, allow: [ "20", "40", "80", "20/40" ] },
+			"channel":		{ dvalue: "auto", type: String, allow: [ "auto", 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 ] },
+			"scantimer":	{ dvalue: 0, type: Number },
+			"wmm":				{ dvalue: false, type: Boolean },
+			"wmm_noack":	{ dvalue: false, type: Boolean },
+			"wmm_apsd":		{ dvalue: false, type: Boolean },
+			"txpower":		{ dvalue: 0, type: Number },
+			"rateset":		{ dvalue: "default", type: String, allow: [ "default" ] },
+			"frag":				{ dvalue: 0, type: Number },
+			"rts":				{ dvalue: 0, type: Number },
+			"dtim_period":{ dvalue: 0, type: Number },
+			"beacon_int":	{ dvalue: 0, type: Number },
+			"rxchainps":	{ dvalue: false, type: Boolean },
+			"rxchainps_qt":{dvalue: 0, type: Number },
+			"rxchainps_pps":{dvalue: 0, type: Number },
+			"rifs":				{ dvalue: false, type: Boolean },
+			"rifs_advert":{ dvalue: false, type: Boolean },
+			"maxassoc":		{ dvalue: 0, type: Number },
+			"doth":				{ dvalue: 0, type: Boolean },
+			"hwmode":			{ dvalue: "auto", type: String, allow: [ "auto", "11ac" ] },
+			"disabled":		{ dvalue: false, type: Boolean }
 		}, 
 		"wifi-iface": {
-			schema: {
-				"device": /^wl0|wl1$/,
-				"network": [ "wan", "lan" ],
-				"mode": [ "ap" ],
-				"ssid": String,
-				"encryption": /^none|wpa|wpa2|mixed-wpa|wep-shared|mixed-psk$/,
-				"cipher": [ "auto" ],
-				"key": String,
-				"gtk_rekey": Boolean,
-				"wps_pbc": Boolean,
-				"wmf_bss_enable": Boolean,
-				"bss_max": Number,
-				"instance": Number,
-				"up": Boolean,
-				"disabled": Boolean,
-				"macmode": [ 0, 1, 2 ],
-				"macfilter": Boolean,
-				"maclist": Array(/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/)
-			},
-			defaults: {
-				"device": "wl0",
-				"network": "lan",
-				"mode": "ap",
-				"ssid": "",
-				"encryption": "mixed-psk",
-				"cipher": "auto",
-				"key": "",
-				"gtk_rekey": 0,
-				"wps_pbc": 1,
-				"wmf_bss_enable": 1,
-				"bss_max": 16,
-				"instance": 1.2,
-				"up": 1,
-				"disabled": 0,
-				"open": 0,
-				"macfilter_mode": 2,
-				"enabled": 1,
-				"macfilter": 1,
-				"maclist": ["00:00:00:00:00:00"],
-				"macmode": 0
-			}
+			"device": 		{ dvalue: "wl0", type: String, match: /^wl0|wl1$/ },
+			"network":		{ dvalue: "lan", type: String, allow: [ "wan", "lan" ] },
+			"mode":				{ dvalue: "ap", type: String, allow: [ "ap" ] },
+			"ssid":				{ dvalue: "Inteno", type: String },
+			"encryption":	{ dvalue: "mixed-psk", type: String, allow: [ "none", "wpa", "wpa2", "mixed-wpa", "wep-shared", "mixed-psk"] },
+			"cipher":			{ dvalue: "auto", type: String, allow: [ "auto" ] },
+			"key":				{ dvalue: "", type: String },
+			"gtk_rekey":	{ dvalue: false, type: Boolean },
+			"wps_pbc":		{ dvalue: false, type: Boolean },
+			"wmf_bss_enable":{ dvalue: false, type: Boolean },
+			"bss_max":		{ dvalue: 0, type: Number },
+			"instance":		{ dvalue: 0, type: Number },
+			"up":					{ dvalue: false, type: Boolean },
+			"closed":			{ dvalue: false, type: Boolean },
+			"disabled":		{ dvalue: false, type: Boolean },
+			"macmode":		{ dvalue: 1, type: Number, allow: [ 0, 1, 2 ] },
+			"macfilter":	{ dvalue: false, type: Boolean },
+			"maclist":		{ dvalue: [], type: Array, match_each: /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/ }
 		}, 
 		"host": {
-			schema: {
-				"hostname": String, 
-				"macaddr": MACAddress
-			}, 
-			defaults: {
-				"hostname": "", 
-				"macaddr": new MACAddress("00:00:00:00:00:00")
-			}
+			"hostname":		{ dvalue: "", type: String, required: true}, 
+			"macaddr":		{ dvalue: "", type: String, match: /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/, required: true}
 		}
 	}; 
-	
-	function UCIObject(obj, _schema){
-		var self = this; 
-		Object.keys(obj).map(function(x){
-			self[x] = obj[x]; 
-		});
+	function UCI(){
 		
-		if(_schema) self[".schema"] = _schema; 
-		
-		/*
-		self.commit = function(){
-			var deferred = $.Deferred(); 
-			var self = this;
-			var _config = self[".config"];  
-			if(self[".dirty"]){
-				if(self.hasOwnProperty(".schema") && self[".schema"]){
-					var sc = schema(self[".schema"].schema); 
-					console.log("validating object "+self[".name"]+" "+JSON.stringify(self)); 
-					var err = sc.errors(self); 
-					if(err){
-						console.log("There were errors! "+JSON.stringify(err)); 
-					} 
-					$rpc.uci.set({
-						"config": _config, 
-						"section": self[".name"],
-						"values": stringify(self)
-					}).done(function(){
-						$rpc.uci.commit({"config": _config}).done(function(){
-							deferred.resolve(); 
-						}).fail(function(){ deferred.reject(); }); 
-					}).fail(function(){ deferred.reject(); }); 
-				} else {
-					deferred.resolve(); 
-				}
-			} else {
-				deferred.resolve(); 
-			}
-			return deferred.promise(); 
-		} */
 	}
-	
-	
-	function initReq(path){
-		var parts = (path||"").split("."); 
-		var req = {}; 
-		if(parts.length == 0) { deferred.reject(); return; }
-		req.config = parts[0]; 
-		if(parts.length > 1) req.section = parts[1]; 
-		if(parts.length > 2) req.option = parts[2]; 
-		return req; 
-	}
-	
-	function stringify(obj) {
-		var ret = {}; 
-    for (var property in obj) {
-			if (obj.hasOwnProperty(property)) {
-				//console.log(property+": "+(typeof obj[property])+", array: "+(obj[property] instanceof Array)); 
-				if(obj[property] instanceof Array){
-					ret[property] = obj[property]; // skip arrays
-				} else if(obj[property] instanceof MACAddress){
-					ret[property] = obj[property].toString(); 
-				} else if (typeof obj[property] == "object"){
-					ret[property] = stringify(obj[property]);
-				} else {
-					ret[property] = String(obj[property]); 
-					if(ret[property] === "true") ret[property] = "1"; 
-					if(ret[property] === "false") ret[property] = "0"; 
-				}
+	(function(){
+		function UCIField(value, schema){
+			if(!schema) throw new Error("No schema specified for the field!"); 
+			this.ovalue = value; 
+			this.dirty = false; 
+			this.uvalue = undefined; 
+			this.schema = schema; 
+		}
+		UCIField.prototype = {
+			$reset: function(value){
+				this.ovalue = this.uvalue = value; 
+				this.dirty = false; 
+			}, 
+			get value(){
+				if(this.uvalue == undefined) return this.ovalue;
+				else return this.uvalue; 
+			},
+			set value(val){
+				if(!this.dirty && this.ovalue != val) this.dirty = true; 
+				this.uvalue = val; 
 			}
 		}
-		return ret; 
-	}
-	// validates a uci object against scheme using it's type and replaces 
-	// invalid values with defaults. 
-	function fixup_values(_config, values, insert_defaults, path){
-		// converts all strings that are numbers to actual numbers in object
-		function fixup(obj, sc) {
-			var _schema = ((sc||{}).schema||{}); 
-			var _defaults = ((sc||{}).defaults||{}); 
-			for (var property in obj) {
-				if (obj.hasOwnProperty(property)) {
-					if (typeof obj[property] == "object" && !(obj[property] instanceof Array)){
-						fixup(obj[property], _schema[property]);
-					} else {
-						var num = Number(obj[property]); 
-						if(!isNaN(num)) obj[property] = num; 
-						var type = _schema[property]; 
-						if(!(property in obj)) {
-							console.log("Property "+property+" is not in object!"); 
-							obj[property] = _defaults[property]; 
-						}
-						// if schema field is present then we need to validate it against the schema. 
-						if(type) {
-							var errors = []; 
-							var def = _defaults[property]; 
-							if(type == Boolean){
-								if(obj[property] == 0) obj[property] = false; 
-								if(obj[property] == 1) obj[property] = true; 
-							} else if(type == MACAddress){
-								console.log("creating mac address for "+property); 
-								obj[property] = new MACAddress(obj[property]); 
-							} else if(type instanceof Array && obj[property] instanceof Array){
-								obj[property] = obj[property].map(function(x){
-									var err = schema(type).errors(x); 
-									if(err) {
-										errors.push(err);
-										return ((def instanceof Array)?def[0]:def);  
-									} 
-									return x; 
-								}); 
-							} else {
-								var err = schema(type).errors(obj[property]); 
-								if(err) {
-									obj[property] = def; 
-									errors.push(err); 
-								}
-							}
-							if(errors.length){
-								var name = (path||"")+".@"+obj[".type"]+"["+obj[".name"]+"]."+property; 
-								console.error("UCI: Failed to validate field "+name+", resettings to: "+JSON.stringify(sc.defaults[property]+": "+JSON.stringify(errors))); 
-							}
-						}
-						
-						// now we watch the object for changes and mark it as dirty
-						obj.watch(property, function(id, oval, nval){
-							if(oval != nval){
-								console.log("Property "+id+" changed "+oval+" -> "+nval); 
-								this[".dirty"] = true; 
-							}
-							return nval; 
-						}); 
+		UCI.Field = UCIField; 
+	})(); 
+	(function(){
+		
+		function UCISection(config){
+			this[".config"] = config; 
+		}
+		
+		UCISection.prototype.$update = function(data){
+			if(!(".type" in data)) throw new Error("Supplied object does not have required '.type' field!"); 
+			// try either <config>-<type> or just <type>
+			var type = 	section_types[data[".type"]] || 
+									section_types[this[".config"][".name"]+"-"+data[".type"]]; 
+			if(!type) {
+				console.error("Section.$update: unrecognized section type "+this[".config"][".name"]+"-"+data[".type"]); 
+				return; 
+			}
+			var self = this; 
+			self[".original"] = data; 
+			self[".name"] = data[".name"]; 
+			self[".section_type"] = type; 
+			
+			Object.keys(type).map(function(k){
+				var field = self[k]; 
+				if(!field) { field = self[k] = new UCI.Field("", type[k]); }
+				var value = type[k].dvalue; 
+				if(!(k in data)) { 
+					//console.log("Field "+k+" missing in data!"); 
+				} else {
+					switch(type[k].type){
+						case String: value = data[k]; break; 
+						case Number: 
+							var n = Number(data[k]); 
+							if(isNaN(n)) n = type.dvalue;
+							value = n; 
+							break; 
+						case Array: value = data[k];  break; 
+						case Boolean: 
+							if(data[k] === "true" || data[k] === "1") value = true; 
+							else if(data[k] === "false" || data[k] === "0") value = false; 
+							break; 
+						default: 
+							value = data[k]; 
 					}
 				}
-			}
-			return obj; 
+				field.$reset(value); 
+			}); 
 		}
 		
-		var fixed = {}; 
-		if(".type" in values){
-			var sc = (schemas[values[".type"]]||{}); 
-			values[".config"] = _config; 
-			fixed = fixup(new UCIObject(values, sc), sc);
-			//validate(sc, values); 
-		} else {
-			fixed = {}; 
-			Object.keys(values).map(function(k){
-				var obj = values[k]; 
-				obj[".config"] = _config; 
-				if(!(".type" in obj)){
-					console.log("Object missing type! ("+k+")"); 
-				} else {
-					var sc = (schemas[obj[".type"]]||{}); 
-					fixed[k] = fixup(new UCIObject(obj, sc), sc); 
-					//validate(sc, obj); 
+		UCISection.prototype.$getChangedValues = function(){
+			var type = this[".section_type"]; 
+			if(!type) return {}; 
+			var self = this; 
+			var changed = {}; 
+			Object.keys(type).map(function(k){
+				if(self[k] && self[k].dirty){
+					console.log("Adding dirty field: "+k); 
+					changed[k] = self[k].value; 
+				}
+			}); 
+			return changed; 
+		}
+		UCI.Section = UCISection; 
+	})(); 
+	(function(){
+		function UCIConfig(uci, name){
+			this.uci = uci; 
+			this[".name"] = name; 
+			this["@all"] = []; 
+		}
+		function _insertSection(self, item){
+			console.log("Loaded new section: "+item[".name"]); 
+			var section = new UCI.Section(self); 
+			section.$update(item); 
+			if(!("@"+item[".type"] in self)) self["@"+item[".type"]] = []; 
+			self["@"+item[".type"]].push(section); 
+			self["@all"].push(section); 
+			self[item[".name"]] = section; 
+			return section; 
+		}
+		function _updateSection(self, item){
+			var section = self[item[".name"]]; 
+			if(section && section.$update) section.$update(item); 
+		}
+		UCIConfig.prototype.$sync = function(){
+			var deferred = $.Deferred(); 
+			var self = this; 
+			/*Object.keys(self).map(function(k){
+				if(k.indexOf("@") == 0) self[k] = []; 
+			}); */
+			$rpc.uci.state({
+				config: self[".name"]
+			}).done(function(data){
+				var vals = data.values; 
+				Object.keys(vals).map(function(k){
+					if(!(k in self)) _insertSection(self, vals[k]); 
+					else _updateSection(self, vals[k]); 
+				}); 
+				deferred.resolve(); 
+			}).fail(function(){
+				deferred.reject(); 
+			}); 
+			return deferred.promise(); 
+		}
+		// set object values on objects that match search criteria 
+		// if object does not exist, then create a new object 
+		UCIConfig.prototype.set = function(search, values){
+			var self = this; 
+			self["@all"].map(function(item){
+				var match = Object.keys(search).filter(function(x){ item[x] != search[x]; }).length == 0; 
+				if(match){
+					Object.keys(values).map(function(x){
+						item[x].value = values[x]; 
+					}); 
 				}
 			}); 
 		}
-		return fixed; 
-	}
-	return {
-		show: function(path){
-			var deferred = $.Deferred(); 
-			var req = initReq(path); 
-			
-			$rpc.uci.state(req).done(function(state){
-				var fixed = null; 
-				try {
-					if(state && state.values) fixed = fixup_values(req.config, state.values); 
-					else if(state && state.value) fixed = fixup_values(req.config, state.value); 
-				} catch(err) { console.error(err); deferred.reject(err); }; 
-				if(fixed) deferred.resolve(fixed); 
-				else deferred.reject(); 
-			}).fail(function(){
-				deferred.reject(); 
+		// creates a new object that will have values set to values
+		UCIConfig.prototype.create = function(item){
+			var self = this; 
+			if(!(".type" in item)) throw new Error("Missing '.type' parameter!"); 
+			var type = section_types[item[".type"]]; 
+			if(!type) throw Error("Trying to create section of unrecognized type!"); 
+			// TODO: validate values!
+			var values = {}; 
+			Object.keys(type).map(function(k){ 
+				if(k in item) values[k] = item[k]; 
+				else {
+					if(type[k].required) throw Error("Missing required field "+k); 
+					values[k] = type[k].dvalue; 
+				}
 			}); 
-			return deferred.promise(); 
-		}, 
-		set: function(path, values){
 			var deferred = $.Deferred(); 
-			var req = initReq(path); 
-			req.values = stringify(fixup_values(req.config, values)); 
-			$rpc.uci.set(req).done(function(state){
-				deferred.resolve(); 
-			}).fail(function(){
-				deferred.reject(); 
-			}); 
-			return deferred.promise(); 
-		}, 
-		// add a new rule to the uci config
-		add: function(config, type, values){
-			var deferred = $.Deferred(); 
+			console.log("Adding: "+item[".type"]+": "+JSON.stringify(values)); 
 			$rpc.uci.add({
-				"config": config, 
-				"type": type,
+				"config": self[".name"], 
+				"type": item[".type"],
+				"name": item[".name"], 
 				"values": values
 			}).done(function(state){
-				values[".type"] = type; 
-				values[".name"] = state.section; 
-				deferred.resolve(state.section); 
-			}).fail(function(){
-				deferred.reject(); 
-			}); 
-			return deferred.promise(); 
-		},
-		// commit config changes
-		commit: function(path, values){
-			var deferred = $.Deferred(); 
-			var req = initReq(path); 
-			$rpc.uci.commit(req).done(function(state){
-				deferred.resolve(); 
-			}).fail(function(){
-				deferred.reject(); 
-			}); 
-			return deferred.promise(); 
-		},
-		// revert uncommitted changes
-		revert: function(path, values){
-			var deferred = $.Deferred(); 
-			var req = initReq(path); 
-			$rpc.uci.revert(req).done(function(state){
-				deferred.resolve(); 
-			}).fail(function(){
-				deferred.reject(); 
-			}); 
-			return deferred.promise(); 
-		},
-		// rollback
-		rollback: function(){
-			var deferred = $.Deferred(); 
-			$rpc.uci.rollback().done(function(state){
-				deferred.resolve(); 
-			}).fail(function(){
-				deferred.reject(); 
-			}); 
-			return deferred.promise(); 
-		},
-		delete: function(path){
-			var deferred = $.Deferred();
-			var req = initReq(path);  
-			$rpc.uci.delete(req).done(function(state){
-				deferred.resolve(); 
+				item[".name"] = state.section; 
+				var section = _insertSection(self, item); 
+				self[".need_commit"] = true; 
+				deferred.resolve(section); 
 			}).fail(function(){
 				deferred.reject(); 
 			}); 
 			return deferred.promise(); 
 		}
-	}; 
+		UCIConfig.prototype.$getWriteRequests = function(){
+			var self = this; 
+			var reqlist = []; 
+			self["@all"].map(function(section){
+				var changed = section.$getChangedValues(); 
+				console.log(JSON.stringify(changed) +": "+Object.keys(changed).length); 
+				if(Object.keys(changed).length){
+					reqlist.push({
+						"config": self[".name"], 
+						"section": section[".name"], 
+						"values": changed
+					}); 
+				}
+			}); 
+			return reqlist; 
+		}
+		UCI.Config = UCIConfig; 
+	})(); 
+	
+	UCI.prototype.sync = function(configs){
+		var deferred = $.Deferred(); 
+		var self = this; 
+		async.series([
+			function(next){
+				$rpc.uci.configs().done(function(response){
+					var cfigs = response.configs; 
+					if(!cfigs) { next("could not retreive list of configs!"); return; }
+					cfigs.map(function(k){
+						if(!(k in self)){
+							console.log("Adding new config "+k); 
+							self[k] = new UCI.Config(self, k); 
+						}
+					}); 
+					next(); 
+				}); 
+			}, 
+			function(next){
+				if(!(configs instanceof Array)) configs = [configs]; 
+				if(!configs || configs.length == 0) { next(); return; }; 
+				async.eachSeries(configs, function(cf, next){
+					if(!(cf in self)) { next("invalid config name "+cf); return; }; 
+					self[cf].$sync().done(function(){
+						console.log("Synched config "+cf); 
+						next(); 
+					}).fail(function(){
+						next("Could not sync config "+cf); 
+					}); 
+				}, function(err){
+					next(err); 
+				}); 
+			}
+		], function(err){
+			if(err) deferred.reject(err); 
+			else deferred.resolve(); 
+		}); 
+		return deferred.promise(); 
+	}
+	
+	UCI.prototype.save = function(){
+		var deferred = $.Deferred(); 
+		var self = this; 
+		var writes = []; 
+		var resync = []; 
+		Object.keys(self).map(function(k){
+			if(self[k].constructor == UCI.Config){
+				var reqlist = self[k].$getWriteRequests(); 
+				if(self[k][".need_commit"]) resync.push(self[k][".name"]); 
+				reqlist.map(function(x){ writes.push(x); }); 
+			}
+		}); 
+		console.log("Will do following write requests: "+JSON.stringify(writes)); 
+		
+		async.eachSeries(writes, function(cmd, next){
+			$rpc.uci.set(cmd).done(function(){
+				console.log("Wrote config "+cmd.config); 
+				resync.push(cmd.config); 
+				next(); 
+			}).fail(function(){
+				console.error("Failed to write config "+cmd.config); 
+				next(); 
+			}); 
+		}, function(){
+			async.eachSeries(resync, function(config, next){
+				console.log("Committing config "+config); 
+				$rpc.uci.commit({config: config}).done(function(){
+					console.log("Resynching config "+config); 
+					self[config][".need_commit"] = false; 
+					self[config].$sync().done(function(){
+						next(); 
+					}).fail(function(err){
+						console.log("error synching config "+config+": "+err); 
+						next("syncerror"); 
+					}); 
+				}).fail(function(err){
+					next("could not commit config: "+err); 
+				}); 
+			}, function(err){
+				if(err) deferred.reject(err); 
+				else deferred.resolve(err); 
+			}); 
+		}); 
+		return deferred.promise(); 
+	}
+	
+	var uci = window.uci = new UCI(); 
+	
+	return {
+    $get: function() {
+      return uci; 
+    }
+  };
+	/*if(window.uci) return window.uci; 
+	else window.uci = new UCI(); 
+	return window.uci; */
+	//return new UCI(); 
 }); 

@@ -1,63 +1,43 @@
 {
     "status": {
         "title": "Status",
-				"redirect": "status.overview",
         "index": 60
     },
-    "status/overview": {
+    "status/status": {
 				"title": "Status", 
 				"acls": [ "status" ], 
-				"view": "status.overview",
 				"index": 9
 		}, 
-    "status/dsl": {
+    "status/status/dsl": {
         "title": "DSL",
         "acls": [ "status" ],
-        "view": "status.dsl",
         "index": 10
-    },
-    "status/voice": {
-        "title": "Voice",
-        "acls": [ "status" ],
-        "view": "status.voice",
-        "index": 20
-    },
-    "status/tv": {
-        "title": "Vodaphone TV",
-        "acls": [ "status" ],
-        "view": "status.tv",
-        "index": 30
     },
     "status/diagnostics": {
         "title": "Diagnostics",
         "acls": [ "status" ],
-        "view": "status.diagnostics",
         "index": 40
     },
     "status/events": {
         "title": "Events",
 				"modes": [ "expert" ], 
         "acls": [ "status" ],
-        "view": "status.events",
         "index": 50
     }, 
     "status/restart": {
 			"title": "Restart", 
 			"acls": [ "status" ], 
-			"view": "status.restart", 
 			"index": 60
 		},
     "status/about": {
 			"title": "About", 
 			"acls": [ "status" ], 
-			"view": "status.about", 
 			"index": 70
 		},
     "status/nat": {
 			"title": "NAT", 
 			"modes": [ "expert" ], 	
 			"acls": [ "status" ], 
-			"view": "status.nat", 
 			"index": 80
 		}
 }

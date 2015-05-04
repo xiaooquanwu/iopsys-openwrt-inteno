@@ -32,6 +32,8 @@ $juci.module("router")
 		$rpc.router.dslstats().done(function(dslstats){
 			dslstats = dslstats.dslstats; 
 			
+			$scope.online = dslstats.status && dslstats.status.length > 0; 
+			
 			// todo fields
 			with({dslstats: dslstats}){
 				dslstats.ip = "TODO"; 

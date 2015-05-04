@@ -79,7 +79,7 @@ angular.module("luci")
 				if(result && result.acls && result.acls.ubus) setupUbusRPC(result.acls.ubus); 
 				deferred.resolve(self.sid); 
 			}).fail(function(result){
-				deferred.reject(); 
+				deferred.reject(result); 
 			}); 
 			return deferred.promise(); 
 		}, 

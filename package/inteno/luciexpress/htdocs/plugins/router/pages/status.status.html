@@ -2,22 +2,22 @@
 	<div ng-controller="StatsOverviewCtrl">
 		<h2>Status</h2>
 		<luci-table
-			title="'System'"
+			title="{{'System'|translate}}"
 			data="systemStatusTbl"></luci-table>
 		<luci-table
-			title="'Memory'"
+			title="{{'Memory'|translate}}"
 			data="systemMemoryTbl"></luci-table>
 		<luci-table
-			title="'Storage'"
+			title="{{'Storage'|translate}}"
 			data="systemStorageTbl"></luci-table>
 		<luci-table
-			title="'Connections'"
+			title="{{'Connections'|translate}}"
 			data="systemConnectionsTbl"></luci-table>
 		<luci-table
-			title="'DHCP Leases'"
+			title="{{'DHCP Leases'|translate}}"
 			data="systemDHCPLeasesTbl"></luci-table>
 		<luci-table
-			title="'Active Stations'"
+			title="{{'Active Stations'|translate}}"
 			data="systemStationsTbl"></luci-table>
 	</div>
 </luci-layout-with-sidebar>
