@@ -1,0 +1,131 @@
+#!/bin/sh /etc/rc.common
+
+include /lib/network
+
+START=99
+
+USE_PROCD=1
+NAME=mcpd
+PROG=/usr/sbin/mcpd
+
+
+dscp_mark() {
+	local mark=$1
+	local dm=0
+	while [[ $dm -le 56 ]]; do
+		iptables -t mangle -D POSTROUTING -p igmp -j DSCP --set-dscp $dm 2>/dev/null
+		dm=$((dm+2))
+	done
+	[ -n "$mark" ] && iptables -t mangle -A POSTROUTING -p igmp -j DSCP --set-dscp-class $mark
+}
+
+mcpd_configure() {
+	local igmp_snooping_enable
+        local igmp_snooping_interfaces
+        local igmp_proxy_interfaces
+        local igmp_proxy_enable
+        local device
+        local proxdevs=""
+	local proxbridge=""
+	local bridged=0
+	local routed=0
+	local _i
+
+        config_load mcpd
+        config_get igmp_snooping_enable mcpd igmp_snooping_enable
+        config_get igmp_snooping_interfaces mcpd igmp_snooping_interfaces
+        config_get igmp_proxy_interfaces mcpd igmp_proxy_interfaces
+	config_get igmp_proxy_enable mcpd igmp_proxy_enable
+	# disable port snooping on all bridges
+	for br in $(brctl show | grep 'br-' | awk '{print$1}' | tr '\n' ' '); do
+		brctl enableportsnooping $br 0
+	done
+
+	grep igmp /etc/config/mcpd | awk '{print $2 $3}' | sed -e "s/[\'\"]/ /g" | tr "_" "-" > /var/mcpd.conf
+
+        for proxif in $igmp_proxy_interfaces; do
+                json_load "$(ifstatus $proxif)"
+                json_get_var device device
+		case "$device" in
+			br-*)
+				bridged=1
+				proxbridge="$device"
+				json_load "$(devstatus $device)"
+				_i=1
+				json_select bridge-members
+				while json_get_var dev $_i; do
+					case "$dev" in
+						*.*)
+							ifconfig $dev | grep RUNNING >/dev/null && proxdevs="$proxdevs $dev" && break
+						;;
+					esac
+					_i=$(($_i + 1))
+				done
+				json_select ..
+			;;
+			*)
+                		proxdevs="$proxdevs $device"
+			;;
+		esac
+        done
+	if [ $igmp_proxy_enable -eq 1 ]; then
+        sed  -i "s/igmp-proxy-interfaces.*/igmp-proxy-interfaces $proxdevs/"  /tmp/mcpd.conf
+        else 
+        sed  -i "s/igmp-proxy-interfaces.*/igmp-proxy-interfaces /"  /tmp/mcpd.conf
+        fi
+        echo "igmp-mcast-interfaces $proxdevs" >> /tmp/mcpd.conf
+
+        sed  -i "s/igmp-snooping-interfaces.*/igmp-snooping-interfaces $igmp_snooping_interfaces/"  /tmp/mcpd.conf
+        for snpif in $igmp_snooping_interfaces; do
+                case "$snpif" in
+                        br-*)
+				# enable port snooping on the bridge
+                                /usr/sbin/brctl enableportsnooping $snpif "$igmp_snooping_enable"
+
+				if [ "$snpif" != "$proxbridge" ]; then
+					routed=1
+					json_load "$(devstatus $snpif)"
+					_i=1
+					json_select bridge-members
+					while json_get_var dev $_i; do
+						case "$dev" in
+							*.*)
+								routed=0
+							;;
+						esac
+						_i=$(($_i + 1))
+					done
+					json_select ..
+				fi
+                        ;;
+			eth%d|wl%d*)
+				routed=1
+			;;
+                esac
+        done
+
+	if [ "$((bridged+routed))" == "2" ]; then
+		# enable bridged+routed igmp snooping mode
+		echo "igmp-bridged-routed 1" >> /tmp/mcpd.conf
+	fi
+
+	config_get igmp_dscp_mark mcpd igmp_dscp_mark
+	dscp_mark $igmp_dscp_mark
+}
+
+service_triggers() {
+        procd_add_reload_trigger mcpd
+}
+
+start_service() {
+	mcpd_configure
+        procd_open_instance
+        procd_set_param command "$PROG"
+        procd_close_instance
+}
+
+
+stop_service() {
+	service_stop $MCPD_BIN
+}
+
