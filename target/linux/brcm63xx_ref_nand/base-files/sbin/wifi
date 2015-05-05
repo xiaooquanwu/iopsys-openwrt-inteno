@@ -18,6 +18,11 @@ local _cno=0
 local staifs=""
 local wetifs=""
 
+local daymatch=0
+local timematch=0
+local current_day=$(date | awk '{print$1}' | tr '[A-Z]' '[a-z]')
+local current_time=$(date +%H%M)
+
 nvset() {
 	uci -q set broadcom.nvram."$1"
 }
@@ -86,9 +91,11 @@ run_acsd() {
 }
 
 start_related_daemons() {
+	local wps
+	config_get_bool wps status wps
 	eapd
 	nas
-	[ $_enWps -gt 0 ] && wps_monitor &
+	[ $wps -ne 0 -a $_enWps -gt 0 ] && wps_monitor &
 	run_acsd
 }
 
@@ -413,7 +420,7 @@ wif_wps_settings() {
 		nvset boardnum="1234"
 		nvset wps_modelname="Broadcom"
 		nvset wps_mfstring="Broadcom"
-		nvset wps_device_name="$(uci -q get wireless.@wifi-iface[0].ssid)"
+		nvset wps_device_name="Inteno"
 		nvset wps_version2="enabled"
 		lno=$(netno $network)
 		nvset lan"$lno"_wps_reg="enabled"
@@ -591,8 +598,8 @@ create_vif() {
 	# save uci config no for each virtual interface
 	nvset "$iface"_cfgno="$vif"
 
-	# tag guestMgr interface
-	[ "$network" == "guestMgr" ] && {
+	# tag guest interface
+	[ "$network" == "guestMgr" -o "$network" == "guest" ] && {
 		nvset wl_guestmgr_ifname="$iface"
 		nvset wl_guestmgr_cfgno="$vif"
 	}
@@ -934,8 +941,9 @@ wdev_apsta_settings() {
 
 setup_wifi_device() {
 	local device="$1"
-	local disabled
-	config_get disabled "$device" disabled "0"
+	local disabled wlan
+	config_get_bool disabled "$device" disabled "0"
+	config_get_bool wlan status wlan
 
 	[ -n "$2" -a "$device" != "$2" ] && continue
 
@@ -952,7 +960,7 @@ setup_wifi_device() {
 	wlctl -i $device down
 	_cno=0
 
-	[ "$disabled" == "1" ] && continue || _enWifi=$((_enWifi+1))
+	[ $wlan -eq 0 -o $disabled -eq 1 ] && continue || _enWifi=$((_enWifi+1))
 
 	if [ "$RESTART" == "0" ]; then
 		wdev_static_settings $device
@@ -1106,6 +1114,7 @@ wifi_detect() {
 	local PDFS="$(uci -q get wireless.preferred.dfsc)"
 	local PCNT="$(uci -q get wireless.preferred.country)"
 	local PTMR="$(uci -q get wireless.preferred.scntmr)"
+	local PGST="$(uci -q get wireless.preferred.guest)"
 
 	[ -n "$SSID" ] || SSID="${PSID:-Inteno}"-$BSSID4
 	[ -n "$ENCR" ] || ENCR=$PENC
@@ -1202,6 +1211,22 @@ config wifi-iface
 	option bss_max '16'
 
 EOF
+				if [ "$PGST" == "1" ]; then
+					cat >> /etc/config/wireless <<EOF
+config wifi-iface
+	option device '$wl'
+	option network 'guest'
+	option mode 'ap'
+	option ssid '${SSID:-Inteno-$BSSID4}-Guest'
+	option encryption 'none'
+	option macfilter '0'
+	option wps_pbc '0'
+	option wmf_bss_enable '1'
+	option bss_max '16'
+	option disabled '1'
+
+EOF
+				fi
 				uci -q set wireless.$wl.dfsc="$dfsc"
 			else
 				uci -q set wireless.$wl.band="$band"
@@ -1222,22 +1247,39 @@ EOF
 	touch /tmp/wireless/first
 }
 
+#wifi_onoff() {
+#	local status="$1"
+#	[ "$status" == "on" ] && status="1" || status="0"
+#	local dualwf="$(uci -q get wireless.wl1)"
+#	local wl0sta="$(uci -q get wireless.wl0.disabled)"
+#	local wl1sta="$(uci -q get wireless.wl1.disabled)"
+#	[ -n "$dualwf" ] || wl1sta="$wl0sta"
+#	[ -n "$wl0sta" ] || wl0sta="1"
+#	[ -n "$wl1sta" ] || wl1sta="1"
+
+#	if [ "$wl0sta" == "$wl1sta" -a "$status" == "$wl0sta" ]; then
+#		return
+#	fi
+
+#	uci -q set wireless.wl0.disabled="$status"
+#	uci -q set wireless.wl1.disabled="$status"
+#	uci commit wireless
+
+#	wifi_updown "disable"
+#	[ "$status" == "1" ] && wifi_updown "enable"
+#}
+
 wifi_onoff() {
 	local status="$1"
 	[ "$status" == "on" ] && status="1" || status="0"
-	local dualwf="$(uci -q get wireless.wl1)"
-	local wl0sta="$(uci -q get wireless.wl0.disabled)"
-	local wl1sta="$(uci -q get wireless.wl1.disabled)"
-	[ -n "$dualwf" ] || wl1sta="$wl0sta"
-	[ -n "$wl0sta" ] || wl0sta="1"
-	[ -n "$wl1sta" ] || wl1sta="1"
+	local cursta="$(uci -q get wireless.status.wlan)"
+	cursta="${cursta:-1}"
 
-	if [ "$wl0sta" == "$wl1sta" -a "$status" == "$wl0sta" ]; then
-		return
+	if [ "$status" == "$cursta" ]; then
+		exit
 	fi
 
-	uci -q set wireless.wl0.disabled="$status"
-	uci -q set wireless.wl1.disabled="$status"
+	uci -q set wireless.status.wlan="$status"
 	uci commit wireless
 
 	wifi_updown "disable"
@@ -1257,6 +1299,89 @@ wifi_toggle_iface() {
 	fi
 }
 
+day_to_number() {
+	case $1 in
+		all)		echo 0-6 ;;
+		weekdays)	echo 1-5 ;;
+		weekend)	echo 0,6 ;;
+		sun*)		echo 0 ;;
+		mon*)		echo 1 ;;
+		tue*)		echo 2 ;;
+		wed*)		echo 3 ;;
+		thu*)		echo 4 ;;
+		fri*)		echo 5 ;;
+		sat*)		echo 6 ;;
+		*)		echo error ;;
+	esac
+}
+
+set_wifi_schedule() {
+	local cfg="$1"
+	local status="$2"
+	local days time start stop start_hour stop_hour start_min stop_min
+	local sta revsta day dayn dayns
+
+	config_get days $cfg days
+	config_get time $cfg time
+
+	if [ "$status" == "1" ]; then
+		sta="on"
+		revsta="off"
+	else
+		sta="off"
+		revsta="on"
+	fi
+
+	start=$(echo $time | awk -F '[ ,-]' '{print$1}')
+	stop=$(echo $time | awk -F '[ ,-]' '{print$2}')
+
+	start_hour=$(echo $start | awk -F ':' '{print$1}')
+	start_min=$(echo $start | awk -F ':' '{print$2}')
+
+	stop_hour=$(echo $stop | awk -F ':' '{print$1}')
+	stop_min=$(echo $stop | awk -F ':' '{print$2}')
+
+	daymatch=0
+	for day in $days; do
+		[ "${day:0:3}" == "$current_day" ] && daymatch=1
+		dayn=$(day_to_number $day)
+		[ -n "$dayns" ] && dayns="$dayns,$dayn" || dayns="$dayn"
+	done
+
+	if [ $daymatch -eq 1 -a $current_time -gt ${start/:/} -a $current_time -lt ${stop/:/} ]; then
+		timematch=1
+		uci -q set wireless.status.wlan="$status"
+		uci commit wireless
+	fi
+
+	echo "$start_min $start_hour * * $dayns wifi $sta # WiFi_Schedule" >> /etc/crontabs/root
+	echo "$stop_min $stop_hour * * $dayns wifi $revsta # WiFi_Schedule" >> /etc/crontabs/root
+
+	/etc/init.d/cron reload
+}
+
+wifi_schedule() {
+	local schedule sched_status revstatus
+
+	sed -i "/WiFi_Schedule/ d" /etc/crontabs/root
+
+	config_load wireless
+
+	config_get_bool schedule status schedule "0"
+
+	[ $schedule == "0" ] && return
+
+	config_get_bool sched_status status sched_status "0"
+
+	config_foreach set_wifi_schedule wifi-schedule $sched_status
+
+	if [ $timematch -eq 0 ]; then
+		[ $sched_status == "1" ] && revstatus="0" || revstatus="1"
+		uci -q set wireless.status.wlan="$revstatus"
+		uci commit wireless
+	fi
+}
+
 check_md5sum() {
 	local old_md5sum="$(nvget wlmd5sum)"
 	local new_md5sum="$(md5sum /etc/config/wireless | awk '{print$1}')"
@@ -1268,6 +1393,12 @@ check_md5sum() {
 	fi
 }
 
+case "$1" in
+	on|off) wifi_onoff "$1"; exit ;;
+	detect) wifi_detect; exit ;;
+	*) wifi_schedule ;;
+esac
+
 if [ -f /tmp/wireless/first ]; then
 	RESTART="0"
 	nvset wlmd5sum=""
@@ -1275,9 +1406,7 @@ if [ -f /tmp/wireless/first ]; then
 fi
 
 case "$1" in
-	on|off) wifi_onoff "$1" ;;
 	disable|enable) wifi_toggle_iface "$1" "$2" ;;
-	detect) wifi_detect ;;
 	down) wifi_updown "disable" "$2" ;;
 	reload) check_md5sum; wifi_reload "$2" ;;
 	reload_legacy) check_md5sum; wifi_reload_legacy "$2" ;;
