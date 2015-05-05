@@ -63,6 +63,7 @@ config 3220_button 3220_touch_far
 config button_map button_map
 	list buttonnames RESET
 	list buttonnames WPS
+	list buttonnames WIFI
 	list buttonnames TOUCH_NEAR
 	list buttonnames TOUCH_FAR
 	option minpress 100
@@ -77,6 +78,12 @@ config button_map RESET
 config button_map WPS
 	list button gpio_wps
 	option hotplug wpsbutton
+	option longpress 3000
+
+config button_map WIFI
+	list button gpio_wps
+	option hotplug wifibutton
+
 
 config button_map TOUCH_NEAR
 	list button 3220_touch_near
