@@ -214,9 +214,11 @@ config led_map led_wifi_wps
 	list super_notice	'wifi_notice'
 		
 	list led_action_alert    WiFi_green=FLASH_SLOW
-	list super_notice	'wps_notice, wifi_ok'
+	list super_alert	'wps_notice, wifi_ok'
 
-	list led_action_error  WiFi_green=FLASH_FAST
+	list led_action_error    WiFi_green=FLASH_FAST
+	list super_error	'wifi_error'
+
 
 
 config led_map led_voice1
