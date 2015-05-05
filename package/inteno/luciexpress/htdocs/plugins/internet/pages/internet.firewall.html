@@ -1,0 +1,19 @@
+<luci-layout-with-sidebar>
+	<div ng-controller="InternetFirewallPageCtrl">
+        <luci-config-section>
+            <luci-config-heading>{{'internet.firewall.title'|translate}}</luci-config-heading>
+            <luci-config-info>{{'internet.firewall.info'|translate}}</luci-config-info>
+            <luci-config-lines>
+                <luci-config-line title="{{'toggle-all-rules'|translate}}">
+                    <switch id="enabled" name="enabled" ng-model="firewallSwitchState" ng-change="onFirewallToggle"></switch>
+                </luci-config-line>
+            </luci-config-lines>
+            <luci-config-lines>
+                <luci-config-line ng-repeat="rule in firewall['@rule']" title="{{rule.name.value|translate}}">
+                    <switch id="enabled" name="enabled" ng-model="rule.enabled.value"  class="green"></switch>
+                </luci-config-line>
+            </luci-config-lines>
+        </luci-config-section>
+		<luci-config-apply></luci-config-apply>
+	</div>
+</luci-layout-with-sidebar>

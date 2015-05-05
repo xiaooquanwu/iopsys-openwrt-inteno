@@ -11,12 +11,12 @@ $juci.module("core")
 		require: "^ngModel"
 	 };  
 }).controller("uciFirewallNatRuleEdit", function($scope, $uci, $rpc){
-	$scope.portIsRange = 1; 
+	$scope.portIsRange = 0;
 	$scope.protocols = ["udp", "tcp"]; 
 	$scope.patterns = {
 		ipaddress: /^(?!0)(?!.*\.$)((1?\d?\d|25[0-5]|2[0-4]\d)(\.|$)){4}$/,
 		port: /^\d{1,5}$/
-	}
+	};
 	$rpc.router.clients().done(function(clients){
 		//console.log(JSON.stringify(Object.keys(clients).map(function(x) { return clients[x]; }))); 
 		$scope.clients = []; 

@@ -1,5 +1,5 @@
 $juci.module("core")
-.directive("juciThemePicker", function($compile){
+.directive("juciThemePicker", function(){
 	var plugin_root = $juci.module("core").plugin_root; 
 	
 	return {
@@ -8,7 +8,6 @@ $juci.module("core")
 	 };  
 })
 .controller("JuciThemePickerController", function($scope, $theme, $config){
-	var allthemes = $theme.getAvailableThemes();
 	$scope.themes = $config.themes.map(function(x){
 		return {
 			id: x, 

@@ -1,7 +1,7 @@
 /*
  * juci - javascript universal client interface
  *
- * Project Author: Martin K. Schröder <mkschreder.uk@gmail.com>
+ * Project Author: Noël Wuyts <noel.wuyts@gmail.com>
  * 
  * Copyright (C) 2012-2013 Inteno Broadband Technology AB. All rights reserved.
  *
@@ -20,16 +20,16 @@
  * 02110-1301 USA
  */
  
-$juci.module("router")
-.state("settings", {
-	url: "/settings", 
+$juci.module("internet")
+.state("internet", {
+	url: "/internet", 
+	views: {
+		"content": {
+			templateUrl: "pages/internet.firewall.html"
+		}
+	},
 	onEnter: function(){
-		$juci.redirect("settings.password"); 
+		$juci.redirect("internet.firewall"); 
 	}
-})
-.state("status", {
-	url: "/status", 
-	onEnter: function(){
-		$juci.redirect("status.status"); 
-	}
-}); 
+});
+

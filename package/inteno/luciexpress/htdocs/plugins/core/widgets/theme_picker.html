@@ -3,8 +3,7 @@
 			 theme="bootstrap"
 			 search-enabled="false"
 			 on-select="onChangeTheme($item, $model)"
-			 style="width: 150px;"
-	>
+			 style="width: 150px;">
 			<ui-select-match placeholder="Pick your theme">{{$select.selected.label}}</ui-select-match>
 			<ui-select-choices repeat="theme in themes"
 							 refresh-delay="0">

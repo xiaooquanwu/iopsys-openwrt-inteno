@@ -20,17 +20,17 @@
  * 02110-1301 USA
  */
 
-$juci.module("vodaphone")
+$juci.module("vodafone")
 .directive("luciNavbar", function($http, $compile, $templateCache, $config){
-	var plugin_root = $juci.module("vodaphone").plugin_root; 
+	var plugin_root = $juci.module("vodafone").plugin_root;
 	var target_tpl = "plugins/core/widgets/luci.navbar.html"; 
 	return {
-	priority: 100, // give it higher priority than built-in ng-click
-		//templateUrl: plugin_root+"/widgets/vodaphone.navbar.html", 
+    priority: 100, // give it higher priority than built-in ng-click
+		//templateUrl: plugin_root+"/widgets/vodafone.navbar.html",
 		replace: true, 
-		link: function(scope, element, attrs){
-			if($config.theme == "vodaphone" && !$templateCache.get(plugin_root + "/widgets/vodaphone.navbar.html")){
-				var promise = $http.get(plugin_root + "/widgets/vodaphone.navbar.html", {cache: $templateCache}).success(function(html) {
+    link: function(scope, element, attrs){
+			if($config.theme == "vodaphone" && !$templateCache.get(plugin_root + "/widgets/vodafone.navbar.html")){
+				var promise = $http.get(plugin_root + "/widgets/vodafone.navbar.html", {cache: $templateCache}).success(function(html) {
 					$templateCache.put(target_tpl, html);
 				}).then(function (response) {
 					element.replaceWith($compile($templateCache.get(target_tpl))(scope));

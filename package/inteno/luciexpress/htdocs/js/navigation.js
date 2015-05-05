@@ -24,7 +24,7 @@
 // provides a service for managing all pages
 // pages register with this service, and menus can query it to get the navigation tree
 angular.module("luci")
-.provider('$navigation', function navigationProvider($stateProvider){
+.provider('$navigation', function navigationProvider(){
 	var data = {
 		children: {},
 		children_list: []
@@ -77,9 +77,8 @@ angular.module("luci")
 			Object.assign(o.children, children); 
 			item = o; 
 		}
-		obj.children_list = Object.keys(obj.children).map(function(key){
-			return obj.children[key]; 
-		});
+        obj.children_list = Object.keys(obj.children).map(function (key) {
+            return obj.children[key]; });
 		obj.children_list.sort(function(a, b){
 			return a.index - b.index; 
 		}); 

@@ -21,7 +21,7 @@
  */
  
 angular.module("luci")
-.factory('$config', function($rootScope){
+.factory('$config', function(){
 	return {
 		mode: "basic", // basic or expert supported
 		//model: "Inteno DG301",
@@ -42,14 +42,13 @@ angular.module("luci")
 		themes: [
 			"default", 
 			"inteno-red", 
-			"vodaphone"
+			"vodafone"
 		], 
 		plugins: [
 			"core", 
-			"phone", 
-			"settings", 
-			"status",
-			"router", 
+			"phone",
+            "internet",
+            "router",
 			"wifi"
 		], 
 		rpc: {

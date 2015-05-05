@@ -21,7 +21,7 @@
         "index": 30
     },
     "internet/dns": {
-        "title": "DNS",
+        "title": "DNS & DDNS",
 				"modes": [ "expert" ], 
         "acls": [ "hostnames" ],
         "index": 50

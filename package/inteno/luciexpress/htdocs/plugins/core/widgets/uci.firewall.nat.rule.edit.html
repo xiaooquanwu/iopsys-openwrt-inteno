@@ -1,59 +1,71 @@
-<form name="ruleForm" class="form-horizontal">
-	<div class="form-group">
-		<label for="email" class="control-label col-xs-3">Device</label>
-		<div class="col-xs-9">
-			<ui-select ng-model="rule.dest_ip"
-					 theme="bootstrap"
-					 search-enabled="false"
-					 on-select="onChangeSection($item, $model)">
-				<ui-select-match placeholder="Select device...">{{devices[$select.selected].ipaddr}}</ui-select-match>
-				<ui-select-choices repeat="c in clients"
-								 refresh-delay="0">
-					<div >{{devices[c].ipaddr  + " " + devices[c].hostname}}</div>
-				</ui-select-choices>
-			</ui-select>
-		</div>
-	</div>
-	<div class="form-group">
-		<label for="email" class="control-label col-xs-3">Local IP</label>
-		<div class="col-xs-9"><input type="text" class="form-control" ng-model="rule.dest_ip" ng-pattern="patterns.ipaddress"/></div>
-	</div>
-	<div class="form-group">
-		<label for="email" class="control-label col-xs-3">Protocol</label>
-		<div class="col-xs-9">
-			<ui-select ng-model="rule.proto"
-					 theme="bootstrap"
-					 search-enabled="false"
-					 on-select="onChangeSection($item, $model)">
-				<ui-select-match placeholder="Select protocol...">{{$select.selected}}</ui-select-match>
-				<ui-select-choices repeat="c in protocols"
-								 refresh-delay="0">
-					<div >{{c}}</div>
-				</ui-select-choices>
-			</ui-select>
-		</div>
-	</div>
-	<div class="form-group">
-		<label for="email" class="control-label col-xs-3">Type</label>
-		<div class="col-xs-9">
-			<input type="radio" ng-model="portIsRange" ng-value="1"/> Range
-			<input type="radio" ng-model="portIsRange" ng-value="0"/> Single
-		</div>
-	</div>
-	<div class="form-group" ng-show="portIsRange">
-		<label for="email" class="control-label col-xs-3">Public port range</label>
-		<div class="col-xs-9"><input type="text" class="form-control" ng-model="rule.src_dport" ng-pattern="patterns.port"/></div>
-	</div>
-	<div class="form-group" ng-show="portIsRange">
-		<label for="email" class="control-label col-xs-3">Private port range</label>
-		<div class="col-xs-9"><input type="text" class="form-control" ng-model="rule.dest_port" ng-pattern="patterns.port"/></div>
-	</div>
-	<div class="form-group" ng-show="!portIsRange">
-		<label for="email" class="control-label col-xs-3">Public port</label>
-		<div class="col-xs-9"><input type="text" class="form-control" ng-model="rule.src_dport" ng-pattern="patterns.port"/></div>
-	</div>
-	<div class="form-group" ng-show="!portIsRange">
-		<label for="email" class="control-label col-xs-3">Private port</label>
-		<div class="col-xs-9"><input type="text" class="form-control" ng-model="rule.dest_port" ng-pattern="patterns.port"/></div>
-	</div>
+<form name="ruleForm" class="form-horizontal" novalidate>
+    <div class="modal-body">
+        <div class="form-group">
+            <label for="device" class="control-label col-xs-4" translate>Device</label>
+            <div class="col-xs-8" id="device">
+                <ui-select ng-model="rule.dest_ip"
+                           theme="bootstrap"
+                           search-enabled="false"
+                           on-select="onChangeSection($item, $model)">
+                    <ui-select-match placeholder="Select device...">{{devices[$select.selected].hostname}}</ui-select-match>
+                    <ui-select-choices repeat="c in clients"
+                                       refresh-delay="0">
+                        <div >{{devices[c].hostname}}</div>
+                    </ui-select-choices>
+                </ui-select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="ipAddress" class="control-label col-xs-4" translate>Local IP Address</label>
+            <div class="col-xs-8"><input id="ipAddress" type="text" class="form-control" ng-model="rule.dest_ip" ng-pattern="patterns.ipaddress"/></div>
+        </div>
+        <div class="form-group">
+            <label for="protocol" class="control-label col-xs-4" translate>Protocol</label>
+            <div class="col-xs-8" id="protocol">
+                <ui-select ng-model="rule.proto"
+                           theme="bootstrap"
+                           search-enabled="false"
+                           on-select="onChangeSection($item, $model)">
+                    <ui-select-match placeholder="Select protocol...">{{$select.selected}}</ui-select-match>
+                    <ui-select-choices repeat="c in protocols"
+                                       refresh-delay="0">
+                        <div>{{c}}</div>
+                    </ui-select-choices>
+                </ui-select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="range" class="control-label col-xs-4">Type</label>
+            <div class="col-xs-8" id="range">
+                <div class="radio radio-info radio-inline">
+                    <input id="port" type="radio" ng-model="portIsRange" ng-value="0"/>
+                    <label for="port" translate>Port</label>
+                </div>
+                <div class="radio radio-info radio-inline">
+                    <input id="portRange" type="radio" ng-model="portIsRange" ng-value="1"/>
+                    <label for="portRange" translate>Port Range</label>
+                </div>
+            </div>
+        </div>
+        <div class="form-group" ng-show="portIsRange">
+            <label class="control-label col-xs-4">Public port range</label>
+            <div class="col-xs-3"><input type="text" class="form-control" ng-model="rule.src_dport" ng-pattern="patterns.port"/></div>
+            <div class="col-xs-3"><input type="text" class="form-control" ng-model="rule.src_dport" ng-pattern="patterns.port"/></div>
+        </div>
+        <div class="form-group" ng-show="portIsRange">
+            <label class="control-label col-xs-4">Private port range</label>
+            <div class="col-xs-3"><input type="text" class="form-control" ng-model="rule.dest_port" ng-pattern="patterns.port"/></div>
+            <div class="col-xs-3"><input type="text" class="form-control" ng-model="rule.dest_port" ng-pattern="patterns.port"/></div>
+        </div>
+        <div ng-show="!portIsRange">
+            <luci-input-port id="publicPortId" name="publicPort" model="rule.src_port" form="ruleForm" label="Public port" label-class="col-xs-4" input-outer-class="col-xs-3" message-class="col-xs-8" message-offset-class="col-xs-offset-4" />
+        </div>
+        <div ng-show="!portIsRange">
+            <luci-input-port id="privatePortId" name="privatePort" model="rule.dest_port" form="ruleForm" label="Private port" label-class="col-xs-4" input-outer-class="col-xs-3" message-class="col-xs-8" message-offset-class="col-xs-offset-4" />
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-primary" ng-click="onAccept(rule)" ng-disabled="ruleForm.$invalid" translate>Submit</button>
+        <button class="btn btn-default " data-dismiss="modal" translate>Cancel</button>
+    </div>
 </form>

@@ -4,15 +4,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Project-Id-Version: \n"
 
-#: htdocs/plugins/router/pages/internet.exposed_host.html:14
+#: htdocs/plugins/internet/pages/internet.exposed_host.html:14
 msgid "<span class=\"glyphicon glyphicon-exclamation-sign\" aria-hidden=\"true\"></span> Warning: By using the exposed host function you bypass the firewall of your {{config.friendly_name}}. Please make sure that your computer is protected against attacks from Internet. The following ports will not be forwarded: {{ nonforwardedPorts || 'None'}}."
 msgstr ""
 
-#: htdocs/plugins/router/pages/status.status.js:57
-msgid "ADSL"
-msgstr ""
-
-#: htdocs/plugins/core/widgets/uci.wireless.interface.macfilter.edit.html:14
+#: htdocs/plugins/wifi/widgets/uci.wireless.interface.macfilter.edit.html:14
 msgid "Access for listed devices"
 msgstr ""
 
@@ -24,12 +20,16 @@ msgstr ""
 msgid "Active Stations"
 msgstr ""
 
-#: htdocs/plugins/core/widgets/uci.wireless.interface.macfilter.edit.html:46
+#: htdocs/plugins/wifi/widgets/uci.wireless.interface.macfilter.edit.html:46
 msgid "Add clients to MAC filtering list"
 msgstr ""
 
-#: htdocs/plugins/core/widgets/uci.wireless.interface.macfilter.edit.html:41
+#: htdocs/plugins/wifi/widgets/uci.wireless.interface.macfilter.edit.html:41
 msgid "Add currently connected hosts to the list"
+msgstr ""
+
+#: htdocs/plugins/router/pages/status.status.js:57
+msgid "ADSL"
 msgstr ""
 
 #: htdocs/plugins/phone/pages/phone.call_log.js:26
@@ -40,7 +40,7 @@ msgstr ""
 msgid "Automated Diagnostics"
 msgstr ""
 
-#: htdocs/plugins/core/widgets/uci.wireless.device.edit.html:10
+#: htdocs/plugins/wifi/widgets/uci.wireless.device.edit.html:10
 msgid "Bandwidth"
 msgstr ""
 
@@ -60,7 +60,7 @@ msgstr ""
 msgid "Buffered"
 msgstr ""
 
-#: htdocs/plugins/core/widgets/uci.wireless.interface.macfilter.edit.html:46
+#: htdocs/plugins/wifi/widgets/uci.wireless.interface.macfilter.edit.html:46
 msgid "Cancel"
 msgstr ""
 
@@ -72,7 +72,7 @@ msgstr ""
 msgid "Change Password"
 msgstr ""
 
-#: htdocs/plugins/core/widgets/uci.wireless.device.edit.html:16
+#: htdocs/plugins/wifi/widgets/uci.wireless.device.edit.html:16
 msgid "Channel"
 msgstr ""
 
@@ -80,28 +80,32 @@ msgstr ""
 msgid "Check for Update"
 msgstr ""
 
-#: htdocs/plugins/core/widgets/uci.wireless.device.edit.html:12
+#: htdocs/plugins/wifi/widgets/uci.wireless.device.edit.html:12
 msgid "Choose Bandwidth"
 msgstr ""
 
-#: htdocs/plugins/core/widgets/uci.wireless.device.edit.html:18
+#: htdocs/plugins/wifi/widgets/uci.wireless.device.edit.html:18
 msgid "Choose Channel"
 msgstr ""
 
-#: htdocs/plugins/core/widgets/uci.wireless.interface.html:15
+#: htdocs/plugins/wifi/widgets/uci.wireless.interface.html:15
 msgid "Choose Device"
 msgstr ""
 
-#: htdocs/plugins/core/widgets/uci.wireless.device.edit.html:6
+#: htdocs/plugins/wifi/widgets/uci.wireless.device.edit.html:6
 msgid "Choose Mode"
 msgstr ""
 
-#: htdocs/plugins/core/widgets/uci.wireless.interface.html:21
+#: htdocs/plugins/wifi/widgets/uci.wireless.interface.html:21
 msgid "Choose Protection"
 msgstr ""
 
 #: htdocs/plugins/router/pages/settings.configuration.html:4
 msgid "Configuration"
+msgstr ""
+
+#: htdocs/plugins/router/pages/status.status.tv.html:6
+msgid "Connection Status"
 msgstr ""
 
 #: htdocs/plugins/router/pages/status.diagnostics.html:30
@@ -120,12 +124,29 @@ msgstr ""
 msgid "Current password"
 msgstr ""
 
-#: htdocs/plugins/core/widgets/uci.wireless.interface.macfilter.edit.html:19
+#: htdocs/plugins/wifi/widgets/uci.wireless.interface.macfilter.edit.html:19
 msgid "Currently added devices"
+msgstr ""
+
+#: htdocs/plugins/core/widgets/uci.firewall.nat.rule.edit.html:3
+msgid "Device"
 msgstr ""
 
 #: htdocs/plugins/router/pages/status.status.html:17
 msgid "DHCP Leases"
+msgstr ""
+
+#: htdocs/plugins/router/pages/status.diagnostics.html:10
+msgid "Diagnose"
+msgstr ""
+
+#: htdocs/plugins/router/pages/status.diagnostics.html:4
+msgid "Diagnostic Utility"
+msgstr ""
+
+#: htdocs/plugins/router/pages/settings.password.html:12
+#: htdocs/plugins/wifi/widgets/uci.wireless.interface.html:27
+msgid "Display Characters"
 msgstr ""
 
 #: htdocs/plugins/router/pages/status.status.dsl.html:9
@@ -144,24 +165,11 @@ msgstr ""
 msgid "DSL Status Information"
 msgstr ""
 
-#: htdocs/plugins/router/pages/status.diagnostics.html:10
-msgid "Diagnose"
-msgstr ""
-
-#: htdocs/plugins/router/pages/status.diagnostics.html:4
-msgid "Diagnostic Utility"
-msgstr ""
-
-#: htdocs/plugins/core/widgets/uci.wireless.interface.html:27
-#: htdocs/plugins/router/pages/settings.password.html:12
-msgid "Display Characters"
-msgstr ""
-
 #: htdocs/plugins/wifi/pages/wifi.general.html:11
 msgid "Enable WiFi On/Off button on EasyBox"
 msgstr ""
 
-#: htdocs/plugins/core/widgets/uci.wireless.interface.html:4
+#: htdocs/plugins/wifi/widgets/uci.wireless.interface.html:4
 msgid "Enabled"
 msgstr ""
 
@@ -181,11 +189,11 @@ msgstr ""
 msgid "Expert Mode"
 msgstr ""
 
-#: htdocs/plugins/router/pages/internet.exposed_host.html:3
+#: htdocs/plugins/internet/pages/internet.exposed_host.html:3
 msgid "Exposed Host"
 msgstr ""
 
-#: htdocs/plugins/router/pages/internet.exposed_host.html:7
+#: htdocs/plugins/internet/pages/internet.exposed_host.html:7
 msgid "Exposed Host Function"
 msgstr ""
 
@@ -230,17 +238,25 @@ msgstr ""
 msgid "Hostname"
 msgstr ""
 
-#: htdocs/plugins/router/pages/status.status.js:22
-#: htdocs/plugins/router/pages/status.status.js:28
-msgid "IPv4-Address"
-msgstr ""
-
-#: htdocs/plugins/router/pages/internet.exposed_host.html:4
+#: htdocs/plugins/internet/pages/internet.exposed_host.html:4
 msgid "If you have a local network device that cannot run an Internet application properly behind the firewall, you can allow unrestricted Internet access to the network device (Exposed Host)."
 msgstr ""
 
 #: htdocs/plugins/router/pages/settings.upgrade.html:29
 msgid "Install Upgrade"
+msgstr ""
+
+#: htdocs/plugins/internet/pages/internet.firewall.html:5
+msgid "internet.firewall.info"
+msgstr ""
+
+#: htdocs/plugins/internet/pages/internet.firewall.html:4
+msgid "internet.firewall.title"
+msgstr ""
+
+#: htdocs/plugins/router/pages/status.status.js:22
+#: htdocs/plugins/router/pages/status.status.js:28
+msgid "IPv4-Address"
 msgstr ""
 
 #: htdocs/plugins/router/pages/status.status.js:50
@@ -263,16 +279,22 @@ msgstr ""
 msgid "Loading"
 msgstr ""
 
+#: htdocs/plugins/internet/pages/internet.port_mapping.html:6
 #: htdocs/plugins/router/pages/internet.port_mapping.html:6
 msgid "Local IP"
 msgstr ""
 
-#: htdocs/plugins/router/pages/status.status.js:51
-msgid "Local Time"
+#: htdocs/plugins/core/widgets/uci.firewall.nat.rule.edit.html:18
+msgid "Local IP Address"
 msgstr ""
 
+#: htdocs/plugins/internet/pages/internet.port_mapping.html:6
 #: htdocs/plugins/router/pages/internet.port_mapping.html:6
 msgid "Local port"
+msgstr ""
+
+#: htdocs/plugins/router/pages/status.status.js:51
+msgid "Local Time"
 msgstr ""
 
 #: htdocs/plugins/core/widgets/luci.login.html:4
@@ -284,16 +306,16 @@ msgstr ""
 msgid "Login Account"
 msgstr ""
 
+#: htdocs/plugins/router/pages/status.status.js:28
+msgid "MAC address"
+msgstr ""
+
 #: htdocs/plugins/wifi/pages/wifi.mac_filter.html:4
 msgid "MAC Filter"
 msgstr ""
 
-#: htdocs/plugins/core/widgets/uci.wireless.interface.macfilter.edit.html:4
+#: htdocs/plugins/wifi/widgets/uci.wireless.interface.macfilter.edit.html:4
 msgid "MAC Filtering"
-msgstr ""
-
-#: htdocs/plugins/router/pages/status.status.js:28
-msgid "MAC address"
 msgstr ""
 
 #: htdocs/plugins/router/pages/status.status.js:22
@@ -312,6 +334,13 @@ msgstr ""
 msgid "Model"
 msgstr ""
 
+#: htdocs/plugins/router/pages/status.status.js:56
+#: htdocs/plugins/router/pages/status.status.js:57
+#: htdocs/plugins/router/pages/status.status.js:58
+#: htdocs/plugins/router/pages/status.status.js:59
+msgid "no"
+msgstr ""
+
 #: htdocs/plugins/router/pages/status.status.js:24
 #: htdocs/plugins/router/pages/status.status.js:88
 msgid "No active leases"
@@ -323,6 +352,10 @@ msgstr ""
 
 #: htdocs/plugins/router/pages/status.status.js:28
 msgid "Noise"
+msgstr ""
+
+#: htdocs/plugins/core/widgets/luci.footer.js:46
+msgid "Not connected"
 msgstr ""
 
 #: htdocs/plugins/phone/pages/phone.number_blocking.html:4
@@ -346,12 +379,24 @@ msgstr ""
 msgid "Password"
 msgstr ""
 
+#: htdocs/plugins/phone/pages/phone.number_blocking.html:5
+msgid "phone.number_blocking.info"
+msgstr ""
+
+#: htdocs/plugins/phone/pages/phone.ringing_schedule.html:5
+msgid "phone.schedule.info"
+msgstr ""
+
 #: htdocs/plugins/router/pages/status.diagnostics.html:22
 msgid "Ping"
 msgstr ""
 
 #: htdocs/plugins/router/pages/status.diagnostics.html:13
 msgid "Ping Test"
+msgstr ""
+
+#: htdocs/plugins/core/widgets/luci.input.port.html:9
+msgid "Please add"
 msgstr ""
 
 #: htdocs/plugins/core/widgets/luci.login.js:80
@@ -362,12 +407,22 @@ msgstr ""
 msgid "Please sign in"
 msgstr ""
 
+#: htdocs/plugins/core/widgets/uci.firewall.nat.rule.edit.html:41
+msgid "Port"
+msgstr ""
+
+#: htdocs/plugins/internet/pages/internet.port_mapping.html:3
 #: htdocs/plugins/router/pages/internet.port_mapping.html:3
 msgid "Port Mapping"
 msgstr ""
 
+#: htdocs/plugins/internet/pages/internet.port_mapping.html:4
 #: htdocs/plugins/router/pages/internet.port_mapping.html:4
 msgid "Port mapping allows remote computers to connect to a specific device within your private network."
+msgstr ""
+
+#: htdocs/plugins/core/widgets/uci.firewall.nat.rule.edit.html:45
+msgid "Port Range"
 msgstr ""
 
 #: htdocs/plugins/router/pages/settings.energy.html:13
@@ -378,16 +433,15 @@ msgstr ""
 msgid "Power-LED Brightness"
 msgstr ""
 
+#: htdocs/plugins/core/widgets/uci.firewall.nat.rule.edit.html:22
+#: htdocs/plugins/internet/pages/internet.port_mapping.html:6
 #: htdocs/plugins/router/pages/internet.port_mapping.html:6
 msgid "Protocol"
 msgstr ""
 
+#: htdocs/plugins/internet/pages/internet.port_mapping.html:6
 #: htdocs/plugins/router/pages/internet.port_mapping.html:6
 msgid "Public Port"
-msgstr ""
-
-#: htdocs/plugins/router/pages/status.status.js:28
-msgid "RX Rate"
 msgstr ""
 
 #: htdocs/plugins/router/pages/settings.configuration.html:17
@@ -411,8 +465,12 @@ msgstr ""
 msgid "Root Usage (/)"
 msgstr ""
 
-#: htdocs/plugins/core/widgets/uci.wireless.interface.macfilter.edit.html:46
+#: htdocs/plugins/router/pages/status.status.js:28
+msgid "RX Rate"
+msgstr ""
+
 #: htdocs/plugins/router/pages/settings.configuration.html:8
+#: htdocs/plugins/wifi/widgets/uci.wireless.interface.macfilter.edit.html:46
 msgid "Save"
 msgstr ""
 
@@ -430,137 +488,6 @@ msgstr ""
 
 #: htdocs/plugins/wifi/pages/wifi.settings.html:5
 msgid "Settings"
-msgstr ""
-
-#: htdocs/plugins/wifi/pages/wifi.general.html:17
-msgid "Setup"
-msgstr ""
-
-#: htdocs/plugins/router/pages/status.status.js:65
-msgid "Shared"
-msgstr ""
-
-#: htdocs/plugins/phone/pages/phone.call_log.html:7
-msgid "Show calls for"
-msgstr ""
-
-#: htdocs/plugins/core/widgets/luci.login.html:30
-msgid "Sign in"
-msgstr ""
-
-#: htdocs/plugins/router/pages/status.status.js:28
-msgid "Signal"
-msgstr ""
-
-#: htdocs/plugins/router/pages/settings.energy.html:10
-msgid "Status-LED"
-msgstr ""
-
-#: htdocs/plugins/router/pages/status.status.html:11
-msgid "Storage"
-msgstr ""
-
-#: htdocs/plugins/router/pages/status.status.js:67
-msgid "Swap"
-msgstr ""
-
-#: htdocs/plugins/router/pages/status.status.html:5
-msgid "System"
-msgstr ""
-
-#: htdocs/plugins/router/pages/status.status.js:28
-msgid "TX Rate"
-msgstr ""
-
-#: htdocs/plugins/router/pages/status.status.js:71
-msgid "Temporary Usage (/tmp)"
-msgstr ""
-
-#: htdocs/plugins/core/widgets/luci.navbar.html:28
-msgid "Theme"
-msgstr ""
-
-#: htdocs/plugins/core/widgets/luci.navbar.html:4
-msgid "Toggle navigation"
-msgstr ""
-
-#: htdocs/plugins/router/pages/status.diagnostics.html:27
-msgid "Tracing Tool"
-msgstr ""
-
-#: htdocs/plugins/router/pages/settings.upgrade.html:25
-msgid "USB Firmware Upgrade"
-msgstr ""
-
-#: htdocs/plugins/router/pages/settings.energy.html:7
-msgid "USB Port"
-msgstr ""
-
-#: htdocs/plugins/router/pages/settings.upgrade.html:14
-msgid "Upload file"
-msgstr ""
-
-#: htdocs/plugins/router/pages/status.status.js:52
-msgid "Uptime"
-msgstr ""
-
-#: htdocs/plugins/router/pages/status.status.js:64
-msgid "Usage"
-msgstr ""
-
-#: htdocs/plugins/core/widgets/luci.login.html:18
-msgid "Username"
-msgstr ""
-
-#: htdocs/plugins/router/pages/status.status.js:58
-msgid "VDSL"
-msgstr ""
-
-#: htdocs/plugins/router/pages/status.status.js:59
-msgid "Voice"
-msgstr ""
-
-#: htdocs/plugins/router/pages/status.status.js:60
-msgid "Voice Ports"
-msgstr ""
-
-#: htdocs/plugins/wifi/pages/wifi.wps.html:5
-msgid "WPS"
-msgstr ""
-
-#: htdocs/plugins/wifi/pages/wifi.wps.html:8
-msgid "WPS Function"
-msgstr ""
-
-#: htdocs/plugins/router/pages/status.status.js:56
-msgid "Wifi"
-msgstr ""
-
-#: htdocs/plugins/core/widgets/uci.wireless.device.edit.html:4
-msgid "Wifi Mode"
-msgstr ""
-
-#: htdocs/plugins/wifi/pages/wifi.general.html:8
-msgid "Wifi Network"
-msgstr ""
-
-#: htdocs/plugins/core/widgets/luci.login.html:3
-msgid "You are logged in!"
-msgstr ""
-
-#: htdocs/plugins/router/pages/status.status.js:56
-#: htdocs/plugins/router/pages/status.status.js:57
-#: htdocs/plugins/router/pages/status.status.js:58
-#: htdocs/plugins/router/pages/status.status.js:59
-msgid "no"
-msgstr ""
-
-#: htdocs/plugins/phone/pages/phone.number_blocking.html:5
-msgid "phone.number_blocking.info"
-msgstr ""
-
-#: htdocs/plugins/phone/pages/phone.ringing_schedule.html:5
-msgid "phone.schedule.info"
 msgstr ""
 
 #: htdocs/plugins/router/pages/settings.configuration.html:5
@@ -591,6 +518,30 @@ msgstr ""
 msgid "settings.upgrade.usb.info"
 msgstr ""
 
+#: htdocs/plugins/wifi/pages/wifi.general.html:17
+msgid "Setup"
+msgstr ""
+
+#: htdocs/plugins/router/pages/status.status.js:65
+msgid "Shared"
+msgstr ""
+
+#: htdocs/plugins/phone/pages/phone.call_log.html:7
+msgid "Show calls for"
+msgstr ""
+
+#: htdocs/plugins/core/widgets/luci.login.html:30
+msgid "Sign in"
+msgstr ""
+
+#: htdocs/plugins/router/pages/status.status.js:28
+msgid "Signal"
+msgstr ""
+
+#: htdocs/plugins/router/pages/settings.energy.html:10
+msgid "Status-LED"
+msgstr ""
+
 #: htdocs/plugins/router/pages/status.diagnostics.html:7
 msgid "status.diagnostics.auto.info"
 msgstr ""
@@ -611,24 +562,120 @@ msgstr ""
 msgid "status.dsl.offline"
 msgstr ""
 
-#: htdocs/plugins/core/widgets/uci.wireless.interface.html:10
+#: htdocs/plugins/router/pages/status.status.tv.html:5
+msgid "status.tv.info"
+msgstr ""
+
+#: htdocs/plugins/router/pages/status.status.html:11
+msgid "Storage"
+msgstr ""
+
+#: htdocs/plugins/router/pages/status.status.js:67
+msgid "Swap"
+msgstr ""
+
+#: htdocs/plugins/router/pages/status.status.html:5
+msgid "System"
+msgstr ""
+
+#: htdocs/plugins/router/pages/status.status.js:71
+msgid "Temporary Usage (/tmp)"
+msgstr ""
+
+#: htdocs/plugins/core/widgets/luci.navbar.html:28
+msgid "Theme"
+msgstr ""
+
+#: htdocs/plugins/core/widgets/luci.navbar.html:4
+msgid "Toggle navigation"
+msgstr ""
+
+#: htdocs/plugins/internet/pages/internet.firewall.html:7
+msgid "toggle-all-rules"
+msgstr ""
+
+#: htdocs/plugins/router/pages/status.diagnostics.html:27
+msgid "Tracing Tool"
+msgstr ""
+
+#: htdocs/plugins/router/pages/status.status.js:28
+msgid "TX Rate"
+msgstr ""
+
+#: htdocs/plugins/router/pages/settings.upgrade.html:14
+msgid "Upload file"
+msgstr ""
+
+#: htdocs/plugins/router/pages/status.status.js:52
+msgid "Uptime"
+msgstr ""
+
+#: htdocs/plugins/router/pages/status.status.js:64
+msgid "Usage"
+msgstr ""
+
+#: htdocs/plugins/router/pages/settings.upgrade.html:25
+msgid "USB Firmware Upgrade"
+msgstr ""
+
+#: htdocs/plugins/router/pages/settings.energy.html:7
+msgid "USB Port"
+msgstr ""
+
+#: htdocs/plugins/core/widgets/luci.login.html:18
+msgid "Username"
+msgstr ""
+
+#: htdocs/plugins/router/pages/status.status.js:58
+msgid "VDSL"
+msgstr ""
+
+#: htdocs/plugins/router/pages/status.status.tv.html:7
+msgid "Vodaphone TV Channels"
+msgstr ""
+
+#: htdocs/plugins/router/pages/status.status.tv.html:4
+msgid "Vodaphone TV Status"
+msgstr ""
+
+#: htdocs/plugins/router/pages/status.status.js:59
+msgid "Voice"
+msgstr ""
+
+#: htdocs/plugins/router/pages/status.status.js:60
+msgid "Voice Ports"
+msgstr ""
+
+#: htdocs/plugins/router/pages/status.status.js:56
+msgid "Wifi"
+msgstr ""
+
+#: htdocs/plugins/wifi/widgets/uci.wireless.device.edit.html:4
+msgid "Wifi Mode"
+msgstr ""
+
+#: htdocs/plugins/wifi/pages/wifi.general.html:8
+msgid "Wifi Network"
+msgstr ""
+
+#: htdocs/plugins/wifi/widgets/uci.wireless.interface.html:10
 msgid "wifi-iface.closed"
 msgstr ""
 
-#: htdocs/plugins/core/widgets/uci.wireless.interface.html:13
+#: htdocs/plugins/wifi/widgets/uci.wireless.interface.html:13
 msgid "wifi-iface.device"
 msgstr ""
 
-#: htdocs/plugins/core/widgets/uci.wireless.interface.html:19
+#: htdocs/plugins/wifi/widgets/uci.wireless.interface.html:19
 msgid "wifi-iface.encryption"
 msgstr ""
 
-#: htdocs/plugins/core/widgets/uci.wireless.interface.html:25
-#: htdocs/plugins/core/widgets/uci.wireless.interface.html:26
+#: htdocs/plugins/wifi/widgets/uci.wireless.interface.html:25
+#: htdocs/plugins/wifi/widgets/uci.wireless.interface.html:26
 msgid "wifi-iface.key"
 msgstr ""
 
-#: htdocs/plugins/core/widgets/uci.wireless.interface.html:7
+#: htdocs/plugins/wifi/widgets/uci.wireless.interface.html:7
 msgid "wifi-iface.ssid"
 msgstr ""
 
@@ -652,9 +699,21 @@ msgstr ""
 msgid "wifi.wps.info"
 msgstr ""
 
+#: htdocs/plugins/wifi/pages/wifi.wps.html:5
+msgid "WPS"
+msgstr ""
+
+#: htdocs/plugins/wifi/pages/wifi.wps.html:8
+msgid "WPS Function"
+msgstr ""
+
 #: htdocs/plugins/router/pages/status.status.js:56
 #: htdocs/plugins/router/pages/status.status.js:57
 #: htdocs/plugins/router/pages/status.status.js:58
 #: htdocs/plugins/router/pages/status.status.js:59
 msgid "yes"
+msgstr ""
+
+#: htdocs/plugins/core/widgets/luci.login.html:3
+msgid "You are logged in!"
 msgstr ""

@@ -22,14 +22,14 @@
  
 // service for managing session data
 angular.module("luci")
-.factory('$tr', function(gettextCatalog, $localStorage) {
+.factory('$tr', function(gettextCatalog) {
 	return function(str){
 		return gettextCatalog.getString(str); 
 	}
 });
 
 angular.module("luci")
-.factory('$languages', function($config, gettextCatalog, $localStorage, $window) {
+.factory('$languages', function($config, gettextCatalog, $localStorage) {
 	gettextCatalog.currentLanguage = $localStorage.getItem("language") || "se"; 
 	return {
 		getLanguages: function(){

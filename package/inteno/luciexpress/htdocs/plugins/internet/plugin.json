@@ -1,0 +1,19 @@
+{
+	"scripts": [
+		"internet"
+	],
+	"pages": {
+		"internet.dns": {
+			"view": "pages/internet.dns"
+		},
+		"internet.exposed_host": {
+			"view": "pages/internet.exposed_host"
+		},
+		"internet.firewall": {
+			"view": "pages/internet.firewall"
+		},
+		"internet.port_mapping": {
+			"view": "pages/internet.port_mapping"
+		}
+	}
+}

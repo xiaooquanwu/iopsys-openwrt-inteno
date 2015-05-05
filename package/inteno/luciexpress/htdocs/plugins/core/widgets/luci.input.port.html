@@ -1,0 +1,13 @@
+<div class="form-group has-feedback" ng-class="{ 'has-error': form[name].$invalid }">
+    <label for="{{id}}" class="control-label {{labelClass}}">{{label|translate}}</label>
+    <div class="{{inputOuterClass}}">
+        <input id="{{id}}" name="{{name}}" type="text" class="form-control" ng-model="model" placeholder="..." validate-port required />
+        <span ng-show="form[name].$invalid" class="glyphicon glyphicon-remove form-control-feedback"></span>
+    </div>
+    <div class="row" ng-show="form[name].$dirty && form[name].$invalid">
+        <div class="{{messageClass}} {{messageOffsetClass}}">
+            <span class="has-error small" ng-show="form[name].$error.required">{{'error.port.required'|translate}}</span>
+            <span class="has-error small" ng-show="form[name].$error.validatePort">{{'error.port.invalid'|translate}}</span>
+        </div>
+    </div>
+</div>

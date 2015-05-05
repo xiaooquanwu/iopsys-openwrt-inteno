@@ -5,7 +5,7 @@
         "index": 20
     },
     "status/status/tv": {
-        "title": "Vodaphone TV",
+        "title": "Vodafone TV",
         "acls": [ "status" ],
         "index": 30
     }

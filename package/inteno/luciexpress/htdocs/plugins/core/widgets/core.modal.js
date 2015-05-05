@@ -7,19 +7,18 @@ $juci.module("core")
 		transclude: true,
 		replace:true,
 		scope: {
-			acceptLabel: "@acceptLabel", 
-			dismissLabel: "@dismissLabel", 
-			onAccept: "&onAccept",
-			onDismiss: "&onDismiss", 
-			ngShow: "=ngShow", 
-			title: "@title"
+			acceptLabel: "@",
+			dismissLabel: "@",
+			onAccept: "&",
+			onDismiss: "&",
+			ngShow: "=",
+            title: "@",
+            hideCloseBtn : "@",
+            formIncluded : "@"
 		}, 
 		controller: "ModalController", 
 		link: function postLink(scope, element, attrs) {
-			//scope.title = attrs.title;
-			//scope.acceptLabel = attrs.acceptLabel; 
-			//scope.dismissLabel = attrs.dismissLabel; 
-			scope.element = element; 
+            scope.element = element;
 			scope.$watch("ngShow", function(value){
 				if(value == true)
 					$(element).modal('show');
