@@ -91,8 +91,12 @@ angular.module("luci")
 		$juci.controller = $controllerProvider.register; 
 		$juci.directive = $compileProvider.directive; 
 		$juci.state = $stateProvider.state; 
+		$juci.decorator = function(name, func){
+			return $provide.decorator(name, func); 
+		}
 		$juci.config = angular.module("luci").config; 
 		$juci.$stateProvider = $stateProvider; 
+		
 		
 		/*$provide.decorator("luciFooterDirective", function($delegate){
 			console.log(JSON.stringify($delegate[0])); 
@@ -171,13 +175,15 @@ angular.module("luci")
 			//$state.go("login"); 
 		}); 
 	})
-	.directive("luciFooter", function(){
-	var plugin_root = $juci.module("core").plugin_root; 
-	
-	return {
-		restrict: "E"
-	}; 
-})
+
+.directive("luciFooter", function(){ return {} })
+.directive("luciLayoutNaked", function(){ return {} })
+.directive("luciLayoutSingleColumn", function(){ return {} })
+.directive("luciLayoutWithSidebar", function(){ return {} })
+.directive("luciNav", function(){ return {} })
+.directive("luciNavbar", function(){ return {} })
+.directive("luciTopBar", function(){ return {} })
+
 angular.module("luci")
 .factory("$hosts", function($rpc, $uci){
 	var hosts = {}; 

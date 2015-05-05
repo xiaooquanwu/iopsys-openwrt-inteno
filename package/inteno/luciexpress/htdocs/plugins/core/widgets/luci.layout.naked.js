@@ -20,9 +20,9 @@
  * 02110-1301 USA
  */
  
-$juci.module("vodaphone")
+$juci.module("core")
 .directive("luciLayoutNaked", function(){
-	var plugin_root = $juci.module("vodaphone").plugin_root; 
+	var plugin_root = $juci.module("core").plugin_root; 
 	return {
 		templateUrl: plugin_root+"/widgets/luci.layout.naked.html", 
 		transclude: true,

@@ -5,6 +5,13 @@
 		"widgets/luci.progress",
 		"widgets/luci.table",
 		"widgets/luci.config", 
+		"widgets/luci.layout.naked",
+		"widgets/luci.layout.single_column",
+		"widgets/luci.layout.with_sidebar", 
+		"widgets/luci.footer",
+		"widgets/luci.nav",
+		"widgets/luci.navbar",
+		"widgets/luci.top_bar",
 		"widgets/uci.firewall.nat.rule.edit",
 		"widgets/core.modal",
         "widgets/luci.input.port"

@@ -21,9 +21,9 @@
  */
  
 
-$juci.module("inteno-red")
+$juci.module("core")
 .directive("luciNavbar", function($location, $rootScope){
-	var plugin_root = $juci.module("inteno-red").plugin_root; 
+	var plugin_root = $juci.module("core").plugin_root; 
 	function activate(){
 		var path = $location.path().replace(/^\/+|\/+$/g, ''); 
 		var subtree = path.split(".")[0]; 

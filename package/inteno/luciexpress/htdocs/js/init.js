@@ -21,24 +21,6 @@ angular.module("luci")
 			next(); 
 		},
 		function(next){
-			// TODO: this will be moved somewhere else. What we want to do is 
-			// pick both a theme and plugins based on the router model. 
-			console.log("Detected hardware model: "+$config.system.hardware); 
-			var themes = {
-				"CG300A": "inteno-red"
-			}; 
-			$config.mode = $localStorage.getItem("mode") || "basic"; 
-			$config.theme = $localStorage.getItem("theme") || themes[$config.system.hardware] || "inteno-red"; 
-			
-			//$config.theme = "default"; 
-			
-			$theme.changeTheme($config.theme).done(function(){
-				next(); 
-			}).fail(function(){
-				next(); 
-			}); 
-		}, 
-		function(next){
 			progress("Loading plugins..", 8); 
 			var count = 0; 
 			async.each($config.plugins, function(id, next){
@@ -47,6 +29,7 @@ angular.module("luci")
 				var plugin_root = "plugins/"+id; 
 				$http.get(plugin_root + "/plugin.json")
 				.success(function(data){
+					console.log("found plugin "+id); 
 					$juci.module(id, plugin_root, data); 
 					if(data && data.scripts){
 						data.scripts.map(function(x){scripts.push(plugin_root + "/" + x); });
@@ -96,6 +79,24 @@ angular.module("luci")
 				
 				next(); 
 			});
+		}, 
+		function(next){
+			// TODO: this will be moved somewhere else. What we want to do is 
+			// pick both a theme and plugins based on the router model. 
+			console.log("Detected hardware model: "+$config.system.hardware); 
+			var themes = {
+				"CG300A": "inteno-red"
+			}; 
+			$config.mode = $localStorage.getItem("mode") || "basic"; 
+			$config.theme = $localStorage.getItem("theme") || themes[$config.system.hardware] || "inteno-red"; 
+			
+			//$config.theme = "default"; 
+			
+			$theme.changeTheme($config.theme).done(function(){
+				next(); 
+			}).fail(function(){
+				next(); 
+			}); 
 		}, 
 		function(next){
 			async.each(scripts, function(script, next){

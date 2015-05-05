@@ -20,9 +20,9 @@
  * 02110-1301 USA
  */
  
-$juci.module("vodaphone")
+$juci.module("core")
 .directive("luciNav", function(){
-	var plugin_root = $juci.module("vodaphone").plugin_root; 
+	var plugin_root = $juci.module("core").plugin_root; 
 	return {
 		// accepted parameters for this tag
 		scope: {

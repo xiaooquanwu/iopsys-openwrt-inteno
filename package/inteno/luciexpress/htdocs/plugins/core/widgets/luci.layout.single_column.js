@@ -20,16 +20,19 @@
  * 02110-1301 USA
  */
  
-$juci.module("inteno-red")
-.directive("luciLayoutNaked", function(){
-	var plugin_root = $juci.module("inteno-red").plugin_root; 
+$juci.module("core")
+.directive("luciLayoutSingleColumn", function(){
+	var plugin_root = $juci.module("core").plugin_root; 
 	return {
-		templateUrl: plugin_root+"/widgets/luci.layout.naked.html", 
+		// accepted parameters for this tag
+		scope: {
+		}, 
+		templateUrl: plugin_root+"/widgets/luci.layout.single_column.html", 
 		transclude: true,
-		controller: "luciLayoutNakedController",
+		controller: "luciLayoutSingleColumnController",
 		controllerAs: "ctrl"
 	}; 
 })
-.controller("luciLayoutNakedController", function($scope, $session){
+.controller("luciLayoutSingleColumnController", function($scope, $session){
 	
 }); 
