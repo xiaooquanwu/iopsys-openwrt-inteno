@@ -147,12 +147,16 @@ rootfs_type() {
 	mount | awk '($3 ~ /^\/$/) && ($5 !~ /rootfs/) { print $5 }'
 }
 
-get_sequence_number() {
+get_image_sequence_number() {
 	if [ $2 -eq 1 ]; then
 		brcm_fw_tool -s -1 -w update $1
 	else
 		brcm_fw_tool -s -1 update $1
 	fi
+}
+
+get_rootfs_sequence_number() {
+	echo $(ls /cferam.* | cut -d. -f2 | sed 's/^0\+\([0-9]\)/\1/')
 }
 
 update_sequence_number() {
@@ -161,7 +165,7 @@ update_sequence_number() {
 	local ofs=$3
 	local size=$4
 
-	[ $seqn -eq 0 ] && seqn=$(ls /cferam.* | cut -d. -f2)
+	[ $seqn -eq 0 ] && seqn=$(get_rootfs_sequence_number)
 	[ -z "$ofs" ] && ofs=0
 	[ -z "$size" ] && size=0
 
@@ -489,7 +493,7 @@ inteno_image_upgrade() {
 
 			v "Writing kernel image to kernel_$upd_vol partition ..."
 			mtd_no=$(find_mtd_no "kernel_$cur_vol")
-			seqn=$(get_sequence_number /dev/mtd$mtd_no 0)
+			seqn=$(get_image_sequence_number /dev/mtd$mtd_no 0)
 			update_sequence_number $from $seqn $k_ofs $k_sz
 			mtd_no=$(find_mtd_no "kernel_$upd_vol")
 			imagewrite -c -k $k_ofs -l $k_sz /dev/mtd$mtd_no $from
@@ -503,7 +507,7 @@ inteno_image_upgrade() {
 				# Running from low bank, need to springboard
 
 				local newroot=/tmp/rootfs
-				seqn=$(ls /cferam.* | cut -d. -f2)
+				seqn=$(get_rootfs_sequence_number)
 
 				v "Creating springboard fs..."
 				mkdir -p $newroot
@@ -593,7 +597,7 @@ default_do_upgrade() {
 
 		v "Setting bootline parameter to boot from newly flashed image"
 		brcm_fw_tool set -u 0
-		v "Current Software Upgrade Count: $(ls /cferam* | awk -F'.' '{print$NF}')"
+		v "Current Software Upgrade Count: $(get_rootfs_sequence_number)"
 
 		if [ "$SAVE_CONFIG" -eq 1 -a -z "$USE_REFRESH" ]; then
 			v "Creating save config file marker"
