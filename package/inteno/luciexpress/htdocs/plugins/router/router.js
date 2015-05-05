@@ -31,16 +31,4 @@ $juci.module("router")
 	onEnter: function($state){
 		$juci.redirect("internet.firewall"); 
 	},
-})
-.state("settings", {
-	url: "/settings", 
-	onEnter: function($state){
-		$juci.redirect("settings.password"); 
-	},
-})
-.state("status", {
-	url: "/status", 
-	onEnter: function($state){
-		$juci.redirect("status.status"); 
-	},
-}); 
+});

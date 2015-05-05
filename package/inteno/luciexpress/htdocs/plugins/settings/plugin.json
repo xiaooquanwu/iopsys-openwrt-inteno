@@ -1,0 +1,25 @@
+{
+	"scripts": [
+		"settings"
+	],
+	"pages": {
+		"settings.configuration": {
+			"view": "pages/settings.configuration"
+		},
+		"settings.energy": {
+			"view": "pages/settings.energy"
+		},
+		"settings.network": {
+			"view": "pages/settings.network"
+		},
+		"settings.password": {
+			"view": "pages/settings.password"
+		},
+		"settings.upgrade": {
+			"view": "pages/settings.upgrade"
+		},
+		"settings.uci": {
+			"view": "pages/settings.uci"
+		}
+	}
+}

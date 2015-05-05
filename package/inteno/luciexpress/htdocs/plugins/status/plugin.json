@@ -1,0 +1,34 @@
+{
+	"scripts": [
+		"status"
+	],
+	"pages": {
+		"status.status": {
+			"view": "pages/status.status"
+		},
+		"status.status.dsl": {
+			"view": "pages/status.status.dsl"
+		},
+		"status.status.tv": {
+			"view": "pages/status.status.tv"
+		},
+		"status.status.voice": {
+			"view": "pages/status.status.voice"
+		},
+		"status.about": {
+			"view": "pages/status.about"
+		},
+		"status.diagnostics": {
+			"view": "pages/status.diagnostics"
+		},
+		"status.events": {
+			"view": "pages/status.events"
+		},
+		"status.nat": {
+			"view": "pages/status.nat"
+		},
+		"status.restart": {
+			"view": "pages/status.restart"
+		}
+	}
+}
