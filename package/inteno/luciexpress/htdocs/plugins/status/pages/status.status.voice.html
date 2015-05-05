@@ -1,5 +1,18 @@
 <luci-layout-with-sidebar>
 	<div ng-controller="StatusVoicePageCtrl">
-		Voice
+		<luci-config-section>
+			<luci-config-heading>{{ 'Voice Status' | translate }}</luci-config-heading>
+			<luci-config-info>{{ 'status.voice.info' | translate }}</luci-config-info>
+			<h3>{{'Your Phone Numbers'|translate}}</h3>
+			<table class="table">
+				<tr><th>#</th><th>Phone Number</th><th>Domain</th><th>Status</th></tr>
+				<tr ng-repeat="sip in sipAccounts track by $index">
+					<td>{{$index}}</td>
+					<td>{{sip.username}}</td>
+					<td>{{sip.domain}}</td>
+					<td>{{sip.registered}}</td>
+				</tr>
+			</table>
+		</luci-config-section>
 	</div>
 </luci-layout-with-sidebar>
