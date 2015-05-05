@@ -31,30 +31,6 @@ div.logo {
 	width: 32px; 
 }
 
-@media all and (min-width: 0px) and (max-width: 768px) {
-	.only-desktop {
-		display: none; 
-	}
-	.only-tablet {
-		display: none; 
-	}
-	.only-mobile {
-		display: block; 
-	}
-}
-
-@media all and (min-width: 768px) {
-	.only-desktop {
-		display: block; 
-	}
-	.only-tablet {
-		display: none; 
-	}
-	.only-mobile {
-		display: none; 
-	}
-}
-
 #rhombus-wrap {
 	float: left;
 	margin-left: -80px;
