@@ -157,6 +157,18 @@ config gpio_led GbE_yellow
 	option mode     sr
 
 ############### mapping led function to driver led
+config led_map led_map
+	list functions dsl
+	list functions wifi
+	list functions wps
+	list functions lan
+	list functions status
+	list functions usb
+	list functions internet
+	list functions wan_phy_link
+	list functions wan_phy_speed
+	list functions gbe_phy_link
+	list functions gbe_phy_speed	
 
 config led_map led_dsl
 	list led_action_ok     DSL_red=ON
