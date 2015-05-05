@@ -1298,6 +1298,21 @@ quest_router_connected_clients6(struct ubus_context *ctx, struct ubus_object *ob
 }
 
 static int
+quest_router_igmp_table(struct ubus_context *ctx, struct ubus_object *obj,
+		  struct ubus_request_data *req, const char *method,
+		  struct blob_attr *msg)
+{
+	struct blob_attr *tb[__QUEST_MAX];
+
+	blobmsg_parse(quest_policy, __QUEST_MAX, tb, blob_data(msg), blob_len(msg));
+
+	blob_buf_init(&bb, 0);
+	router_dump_connected_clients6(&bb);
+	ubus_send_reply(ctx, req, bb.head);
+
+	return 0;
+}
+static int
 quest_router_clients6(struct ubus_context *ctx, struct ubus_object *obj,
 		  struct ubus_request_data *req, const char *method,
 		  struct blob_attr *msg)
@@ -1492,6 +1507,7 @@ static struct ubus_method router_object_methods[] = {
 	UBUS_METHOD_NOARG("clients6", quest_router_clients6),
 	UBUS_METHOD_NOARG("connected", quest_router_connected_clients),
 	UBUS_METHOD_NOARG("connected6", quest_router_connected_clients6),
+	UBUS_METHOD_NOARG("igmptable", igmp_rpc),
 	UBUS_METHOD("sta", quest_router_wireless_stas, wl_policy),
 	UBUS_METHOD_NOARG("stas", quest_router_stas),
 	UBUS_METHOD("ports", quest_router_ports, network_policy),
@@ -1682,6 +1698,8 @@ quest_ubus_reconnect_timer(struct uloop_timeout *timeout)
 	printf("reconnected to ubus, new id: %08x\n", ctx->local_id);
 	quest_ubus_add_fd();
 }
+
+
 
 static void
 quest_ubus_connection_lost(struct ubus_context *ctx)

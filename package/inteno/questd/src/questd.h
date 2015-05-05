@@ -21,6 +21,7 @@
 #include <libubus.h>
 
 #include "dslstats.h"
+#include "igmp.h"
 
 #define MAX_VIF		8
 #define MAX_NETWORK	16

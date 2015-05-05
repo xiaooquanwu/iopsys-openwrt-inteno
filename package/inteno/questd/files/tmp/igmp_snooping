@@ -1,0 +1,5 @@
+igmp snooping 2  proxy 1  lan2lan-snooping 0/0, rate-limit 0pps, priority -1
+bridge device src-dev #tags lan-tci  wan-tci    group      mode RxGroup    source     reporter   timeout Index      ExcludPt
+br-lan eth5   eth2.1  00    0x0000   0xffffffff 0xe0027ffe EX   0xe0027ffe 0x00000000 0xc0a801f1 258     0x401e0001 -1
+br-lan eth5   eth2.1  00    0x0000   0xffffffff 0xefc3ffff EX   0xefc3ffff 0x00000000 0xc0a801f1 258     0x400e0001 -1
+br-lan eth5   eth2.1  00    0x0000   0xffffffff 0xefffffff EX   0xefffffff 0x00000000 0xc0a801f1 258     0x40070001 -1
