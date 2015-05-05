@@ -149,12 +149,14 @@ config led_map led_map
 #       list press_indicator led_wifi
 #       list press_indicator led_internet
 #       list press_indicator led_voice1
-       list functions status
-       list functions wifi
-       list functions wps
+#       list functions status
        list functions voice1
        list functions internet
        list functions mobile
+       list functions power
+       list functions wifi
+       list functions wps
+       list functions wifi_wps
 
 config led_map led_mobile
 	
@@ -178,19 +180,12 @@ config led_map led_mobile
 	list led_action_error     MMB_red=FLASH_SLOW
 	list led_action_error     MMB_green=OFF
 
-config led_map led_wifi
-	list led_action_ok     WiFi_green=ON 
-	list led_action_off    WiFi_green=OFF
-	list led_action_notice WiFi_green=PULSING
-	list led_action_alert  WiFi_green=FLASH_SLOW
-	list led_action_error  WiFi_green=FLASH_FAST
-
-config led_map led_status
-	list led_action_ok     PowerLED_red=ON
-	list led_action_off    PowerLED_red=OFF
-	list led_action_notice PowerLED_red=PULSING
-	list led_action_alert  PowerLED_red=FLASH_SLOW
-	list led_action_error  PowerLED_red=FLASH_FAST
+config led_map led_power
+       list led_action_ok     PowerLED_red=ON
+       list led_action_off    PowerLED_red=OFF
+       list led_action_notice PowerLED_red=PULSING
+       list led_action_alert  PowerLED_red=FLASH_SLOW
+       list led_action_error  PowerLED_red=FLASH_FAST
 
 config led_map led_internet
 	list led_action_ok     'DSL_green = ON'
@@ -205,9 +200,24 @@ config led_map led_internet
 	list led_action_error  'DSL_red   = FLASH_SLOW'
 
 config led_map led_wps
-	list led_action_off    WiFi_green=ON
-	list led_action_ok     WiFi_green=ON	
-	list led_action_notice WiFi_green=FLASH_FAST
+
+config led_map led_wifi
+
+config led_map led_wifi_wps
+	list led_action_off     WiFi_green=OFF
+	list super_off	       'wifi_off'
+	
+	list led_action_ok      WiFi_green=ON 
+	list super_ok	       'wifi_ok'
+
+	list led_action_notice   WiFi_green=PULSING
+	list super_notice	'wifi_notice'
+		
+	list led_action_alert    WiFi_green=FLASH_SLOW
+	list super_notice	'wps_notice, wifi_ok'
+
+	list led_action_error  WiFi_green=FLASH_FAST
+
 
 config led_map led_voice1
 	list led_action_ok     'VoIP_green = ON'
