@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <syslog.h>
 #include "log.h"
 #include "led.h"
@@ -55,11 +56,23 @@ struct led {
 	struct led_drv *drv;
 };
 
+struct super_functions {
+	struct list_head list;
+	led_action_t state;		/* state that the function need to match */
+	struct function_led *function;
+};
+
+struct super_list {
+	struct list_head list;
+	struct list_head sf_list;	/* this list contains states that needs to match for this super fuction action to be active */
+};
+
 /*middle layer contains lists of leds /buttons/... that should be set to a specific state */
 struct function_action {
 	const char *name;		/* If name is set this led action is in use by the board. */
 	struct list_head led_list;
 	struct list_head button_list;
+	struct list_head super_list;    /* list of super function lists */
 };
 
 /* main struct for the function leds.*/
@@ -70,9 +83,10 @@ struct function_led {
 	struct function_action actions[LED_ACTION_MAX];
 };
 
-static int total_functions;
 
-struct function_led *leds;		/* Array of functions, LED_FUNCTIONS + num_super_functions */
+
+struct function_led *leds;		/* Array of functions, LED_FUNCTIONS + super_functions */
+static int total_functions;		/* number of entries in leds array */
 
 static leds_state_t global_state;	/* global state for the leds,overrids individual states */
 static leds_state_t press_state;	/* global state for the press indicator */
@@ -85,6 +99,7 @@ static void dump_led(void);
 static void all_leds_off(void);
 static void all_leds_on(void);
 static void all_leds(led_state_t state);
+static const char * get_function_action( const char *s, struct function_led **function, int *action);
 
 /* we find out the index for a match in an array of char pointers containing max number of pointers */
 int get_index_by_name(const char *const*array, int max, const char *name)
@@ -232,13 +247,28 @@ static void dump_led(void)
 		for (j = 0 ; j < LED_ACTION_MAX; j++ ) {
 			if ( leds[i].actions[j].name != NULL ) {
 				struct led *led;
+				struct super_list *sl;
+
+				/* print out action list */
 				list_for_each_entry(led, &leds[i].actions[j].led_list, list) {
 					DBG(1,"%-15s %-8s %-15s %-10s",
 					    leds[i].name,
 					    leds[i].actions[j].name,
 					    led->drv->name,
 					    led_states[led->state]);
-}}}}}
+				}
+				/* print out super function list */
+				list_for_each_entry(sl, &leds[i].actions[j].super_list, list) {
+					struct super_functions *sf;
+					DBG(1,"   AND list");
+					list_for_each_entry(sf, &sl->sf_list, list) {
+						DBG(1,"\tfunction [%s] action [%s]",sf->function->name, fn_actions[sf->state]);
+					}
+				}
+			}
+		}
+	}
+}
 
 /* return 0 = OK, -1 = error */
 static int set_function_led(const char* fn_name, const char* action) {
@@ -507,6 +537,84 @@ void led_pressindicator_clear(void){
 	press_state = 0;
 }
 
+/*
+  input: s, string of comma separated function_action names, 'wifi_ok, wps_ok'
+
+  return:
+	NULL if no valid function actionpair found.
+	pointer to start of unused part of string.
+
+	fills in the function pointer with NULL or a real function
+	fills in action with 0 or real index (include 0),
+
+*/
+const char * get_function_action( const char *s, struct function_led **function, int *action)
+{
+	const char *first, *last, *end, *p;
+	char func[100], act[20];
+
+	DBG(1,"start [%s]", s);
+
+	*function = NULL;
+	*action = 0;
+
+	/* if string is zero length give up. */
+	if ( 0 == strlen(s))
+		return NULL;
+
+	end = s + strlen(s);
+
+	/* find first alpha char */
+	while (!isalnum(*s)){
+		s++;
+		if (s == end)
+			return NULL;
+	}
+	first = s;
+
+	/* find , or end of string or space/tab */
+	while ( (*s != ',') && (!isblank(*s))) {
+		s++;
+		if (s == end)
+			break;
+	}
+	last = s;
+
+	/* scan backwards for _ */
+	while (*s != '_' && s > first){
+		s--;
+	}
+
+	/* if we could not find a _ char bail out */
+	if (*s != '_')
+		return NULL;
+
+	/* extract function name */
+	p = first;
+	while (p != s) {
+		func[p-first] = *p;
+		p++;
+	}
+	func[p-first] = 0;
+
+	/* extract action name */
+	p = s + 1;
+	while (p != last) {
+		act[p-(s+1)] = *p;
+		p++;
+	}
+	act[p-(s+1)] = 0;
+
+	DBG(1,"function[%s] action[%s] func_idx %d", func, act, get_index_for_function(func));
+	*function = &leds[get_index_for_function(func)];
+	*action = get_index_by_name(fn_actions   , LED_ACTION_MAX, act );
+
+	if (*last == ',')
+		last++;
+
+	return last;
+}
+
 void led_init( struct server_ctx *s_ctx)
 {
 	int i,j;
@@ -583,7 +691,7 @@ void led_init( struct server_ctx *s_ctx)
 				leds[i].actions[j].name    = fn_actions[j];
 
 				/* fill in led actions */
-				DBG(2,"%-15s has led actions -> ",led_fn_name);
+				DBG(2,"%-15s has led actions %s -> ", led_fn_name, fn_actions[j]);
 				list_for_each_entry(node, &led_action_list, list) {
 					char led_name[256],led_state[256];
 					struct led *led;
@@ -619,9 +727,55 @@ void led_init( struct server_ctx *s_ctx)
 				/* fill in button actions */
 
 				/* fill in xxx actions */
+			}else {
+				DBG(2,"%-15s has no actions -> %s", led_fn_name, fn_actions[j]);
 			}
 		}
 	}
+
+	/* Read in functions that have function list (super functions) */
+	for (i = 0; i < total_functions ; i++) {
+		for (j = 0 ; j < LED_ACTION_MAX; j++ ) {
+			char led_fn_name[256];
+			char super_action[256];
+			LIST_HEAD(super_action_list);
+			struct ucilist *node;
+			snprintf(led_fn_name, 256, "led_%s", leds[i].name);
+			snprintf(super_action, 256, "super_%s", fn_actions[j]);
+			ucix_get_option_list( s_ctx->uci_ctx, "hw", led_fn_name, super_action , &super_action_list);
+			INIT_LIST_HEAD( &leds[i].actions[j].super_list );
+
+			if (!list_empty(&super_action_list)) {
+				DBG(1,"A:%s %s is a super function ",led_fn_name,super_action);
+
+				list_for_each_entry(node, &super_action_list, list) {
+					char *s;
+					struct function_led *function;
+					int action_ix;
+					struct super_list *sl = malloc(sizeof(struct super_list));
+					memset(sl, 0, sizeof(struct super_list));
+					list_add(&sl->list, &leds[i].actions[j].super_list);
+					INIT_LIST_HEAD( &sl->sf_list );
+
+					DBG(1,"add to super list  %s",node->val);
+
+					s = node->val;
+					while (s = get_function_action(s, &function, &action_ix)){
+						if (function) {
+							struct super_functions *sf = malloc(sizeof(struct super_functions));
+							memset(sf, 0, sizeof(struct super_functions));
+							sf->state = action_ix;
+							sf->function = function;
+							list_add(&sf->list, &sl->sf_list);
+							DBG(1,"C %s %s",function->name, fn_actions[action_ix]);
+						}
+					}
+				}
+			}else
+				DBG(1,"A:%s %s is a normal function ",led_fn_name,super_action);
+		}
+	}
+
 	{
 		struct ucilist *node;
 		/* read function buttons from section button_map */
