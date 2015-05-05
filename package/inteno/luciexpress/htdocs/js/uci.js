@@ -47,15 +47,24 @@ angular.module("luci")
 			"hidden": 			{ dvalue: true, type: Boolean }
 		}, 
 		"firewall-settings": {
-			"disabled":			{ dvalue: false, type: Boolean }, 
+			"disabled":			{ dvalue: false, type: Boolean },
 			"ping_wan":			{ dvalue: false, type: Boolean }
 		}, 
+		"wps-settings": {
+			"wps_enabled":			{ dvalue: true, type: Boolean },
+			"wps_button":			{ dvalue: true, type: Boolean },
+			"wps_devpin":			{ dvalue: true, type: Boolean }
+		},
 		"wifi-settings": {
-			"disabled":			{ dvalue: false, type: Boolean }, 
-			"button_enabled": { dvalue: false, type: Boolean }, 
-			"scheduling": 	{ dvalue: false, type: Boolean },
-			"wps":					{ dvalue: false, type: Boolean }
-		}, 
+			"wifi_enabled":			{ dvalue: true, type: Boolean },
+			"sched_enabled":		{ dvalue: false, type: Boolean },
+			"sched_mode":			{ dvalue: false, type: Boolean },
+			"wifi_button":			{ dvalue: true, type: Boolean }
+		},
+		"wifi-schedule": {
+			"days":				{ dvalue: [], type: Array },
+			"times":			{ dvalue: "", type: String }
+		},
 		"wifi-device": {
 			"type": 			{ dvalue: "", type: String },
 			"country": 		{ dvalue: "", type: String},
