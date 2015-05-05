@@ -1,11 +1,11 @@
 {
-	"title": "Vodafone",
+	"title": "Vodaphone", 
 	"index": "index.html", 
 	"styles": [
+		"css/bootstrap.min.css",
 		"css/theme.css"
 	], 
 	"scripts": [
-		"widgets/vodafone.navbar",
-		"widgets/vodafone.top_bar"
+		"vodaphone"
 	]
 }

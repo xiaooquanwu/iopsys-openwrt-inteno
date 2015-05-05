@@ -46,9 +46,11 @@ angular.module("luci")
 		], 
 		plugins: [
 			"core", 
-			"phone",
-            "internet",
-            "router",
+			"phone", 
+			"settings", 
+			"status",
+      "internet",
+			"router", 
 			"wifi"
 		], 
 		rpc: {
