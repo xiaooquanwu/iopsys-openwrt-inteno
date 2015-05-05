@@ -100,6 +100,7 @@ static void all_leds_off(void);
 static void all_leds_on(void);
 static void all_leds(led_state_t state);
 static const char * get_function_action( const char *s, struct function_led **function, int *action);
+static void super_update(void);
 
 /* we find out the index for a match in an array of char pointers containing max number of pointers */
 int get_index_by_name(const char *const*array, int max, const char *name)
@@ -270,10 +271,42 @@ static void dump_led(void)
 	}
 }
 
+/* loop over every function, if it is a super function update the state */
+static void super_update(void)
+{
+	int i,j;
+	for (i = 0; i < total_functions ; i++) {
+		for (j = 0 ; j < LED_ACTION_MAX; j++ ) {
+			if ( leds[i].actions[j].name != NULL ) {
+				struct super_list *sl;
+				list_for_each_entry(sl, &leds[i].actions[j].super_list, list) {
+					struct super_functions *sf;
+					int status = 0;
+//					DBG(1,"   AND list");
+					list_for_each_entry(sf, &sl->sf_list, list) {
+//						DBG(1,"\tfunction [%s] action [%s]",sf->function->name, fn_actions[sf->state]);
+						if (sf->function->state == sf->state ) {
+							status = 1;
+						} else {
+							status = 0;
+							break;
+						}
+					}
+					if (status){
+						leds[i].state = j;
+						DBG(1,"\tSet super function [%s] to action [%s]",leds[i].name, fn_actions[j]);
+					}
+				}
+			}
+		}
+	}
+}
+
 /* return 0 = OK, -1 = error */
 static int set_function_led(const char* fn_name, const char* action) {
 	int led_idx = get_index_for_function(fn_name);
 	int act_idx = get_index_by_name(fn_actions   , LED_ACTION_MAX, action );
+	struct led *led;
 
 	if(led_idx == -1) {
 		syslog(LOG_WARNING, "called over ubus with non valid led name [%s]", fn_name);
@@ -284,19 +317,12 @@ static int set_function_led(const char* fn_name, const char* action) {
 		return -1;
 	}
 
-	if ( leds[led_idx].actions[act_idx].name != NULL ) {
-		struct led *led;
+	leds[led_idx].state = act_idx;
 
-		leds[led_idx].state = act_idx;
-
-		list_for_each_entry(led, &leds[led_idx].actions[act_idx].led_list, list) {
-			if (led->drv){
-				led->drv->func->set_state(led->drv, led->state);
-			}
+	list_for_each_entry(led, &leds[led_idx].actions[act_idx].led_list, list) {
+		if (led->drv){
+			led->drv->func->set_state(led->drv, led->state);
 		}
-	}else {
-		syslog(LOG_WARNING, "led set on [%s] has no valid [%s] handler registered.", fn_name, action);
-		return -1;
 	}
 
 	return 0;
@@ -317,6 +343,7 @@ static int led_set_method(struct ubus_context *ubus_ctx, struct ubus_object *obj
 {
 	struct blob_attr *tb[__LED_MAX];
 	char* state;
+
 	blobmsg_parse(led_policy, ARRAY_SIZE(led_policy), tb, blob_data(msg), blob_len(msg));
 	if (tb[LED_STATE]) {
 		char *fn_name = strchr(obj->name, '.') + 1;
@@ -471,6 +498,8 @@ static void flash_handler(struct uloop_timeout *timeout)
 		fast = ON;
 	if (counter & 4 )
 		slow = ON;
+
+	super_update();
 
 	if (global_state == LEDS_NORMAL ||
 	    global_state == LEDS_INFO ) {

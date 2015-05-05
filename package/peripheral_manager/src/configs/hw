@@ -184,49 +184,63 @@ config gpio_button gpio_reset
 # 
 
 config led_map led_map
+       list functions status
+       list functions wifi
+       list functions wps
+
+config led_map led_status
+       list led_action_ok       'sim_led_A = ON'    
+       list led_action_ok       'sim_led_B = OFF'
+       list led_action_off      'sim_led_A = OFF'
+       list led_action_off      'sim_led_B = OFF'
+       list led_action_notice   'sim_led_A = FLASH_SLOW'
+       list led_action_notice   'sim_led_B = OFF'
+       list led_action_alert    'sim_led_A = OFF'
+       list led_action_alert    'sim_led_B = FLASH_SLOW'
+       list led_action_error    'sim_led_A = OFF'
+       list led_action_error    'sim_led_B = FLASH_FAST'
+
+config led_map led_wps
+#       list led_action_ok       'WPS_green=ON'
+#       list led_action_off      'WPS_green=OFF'
+#       list led_action_notice   'WPS_green=FLASH_SLOW'
+#       list led_action_alert    'WPS_green=FLASH_FAST'
+#       list led_action_error    'WPS_green=OFF'  
+
+config led_map led_wifi
+#       list led_action_ok     'Wireless_green = ON'
+#       list led_action_ok     'Wireless_blue  = OFF'
+#       list led_action_eok    'Wireless_green = OFF'
+#       list led_action_eok    'Wireless_blue  = ON'
+#       list led_action_off    'Wireless_green = OFF'
+#       list led_action_off    'Wireless_blue  = OFF'
+#       list led_action_notice 'Wireless_green = FLASH_SLOW'
+#       list led_action_notice 'Wireless_blue  = OFF'
+#       list led_action_alert  'Wireless_green = OFF'
+#       list led_action_alert  'Wireless_blue  = FLASH_SLOW'
+#       list led_action_error  'Wireless_green = OFF'
+#       list led_action_error  'Wireless_blue  = FLASH_FAST'
+
+###############################################################################
+#
+# function superfunctions
+# 
+# Used when one led is controlled by seferal different functions
+# here we map in what state the underlying normal functions should have
+# to set a state, and what action to take in that state.
 
 
-config led_map status_ok
-			list led_action	Status_green=ON
-			list led_action	Status_red=OFF
-config led_map status_off
-			list led_action	Status_green=OFF
-			list led_action	Status_red=OFF
-config led_map status_notice
-			list led_action	Status_green=FLASH_SLOW
-			list led_action	Status_red=OFF
-config led_map status_alert
-			list led_action	Status_green=
-			list led_action	Status_red=FLASH_SLOW
-config led_map status_error
-			list led_action	Status_green=OFF
-			list led_action	Status_red=FLASH_FAST
+# list available super functions.
+config led_map led_map
+       list functions super_a
 
+config led_map led_super_a
+       list led_action_ok	sim_led_C=ON
+       list super_ok		'wifi_ok, wps_ok'
 
-config led_map wifi_ok
-			list led_action sim_led_A=ON
-			list led_action sim_led_C=OFF	
-config led_map wifi_off
-			list led_action sim_led_A=OFF
-			list led_action sim_led_C=OFF
-config led_map wifi_notice
-			list led_action sim_led_A=OFF
-			list led_action sim_led_C=ON
-config led_map wifi_alert
-			list led_action sim_led_A=OFF
-			list led_action sim_led_C=ON
-config led_map wifi_error
-			list led_action sim_led_A=FLASH_SLOW
-			list led_action sim_led_C=FLASH_SLOW
+       list led_action_off      sim_led_C=OFF
+       list super_off		'wifi_off, wps_off'
 
-config led_map wps_ok
-			list led_action sim_led_B=ON
-config led_map wps_off
-			list led_action sim_led_B=OFF
-config led_map wps_notice
-			list led_action sim_led_B=ON
-config led_map wps_alert
-			list led_action sim_led_B=ON
-config led_map wps_error
-			list led_action sim_led_B=ON
-
+       list led_action_notice	 sim_led_C=FLASH_SLOW
+       list super_notice	 'wifi_notice'
+       list super_notice  	 'wps_notice'
