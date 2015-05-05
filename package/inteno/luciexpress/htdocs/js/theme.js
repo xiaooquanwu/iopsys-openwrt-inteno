@@ -68,10 +68,10 @@ angular.module("luci")
 				$config.theme = theme_id; 
 				$localStorage.setItem("theme", theme_id); 
 				var theme_root = "themes/"+theme_id; 
-				//$rootScope.theme_index = th+"/index.html"; 
 				$("head link[data-theme-css]").remove(); 
 				if(theme.styles){
 					theme.styles.map(function(x){
+						console.log("Adding "+theme_root+'/' + x); 
 						var style = $('<link href="'+theme_root+'/' + x + '" rel="stylesheet" data-theme-css/>');
 						style.appendTo('head'); 
 					}); 

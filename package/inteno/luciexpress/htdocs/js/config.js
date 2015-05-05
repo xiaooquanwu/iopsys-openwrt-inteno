@@ -45,9 +45,10 @@ angular.module("luci")
 			"vodaphone"
 		], 
 		plugins: [
-			"hello_world", 
 			"core", 
 			"phone", 
+			"settings", 
+			"status",
 			"router", 
 			"wifi"
 		], 
@@ -67,8 +68,10 @@ angular.module("luci")
 				"uci.rollback",
 				"uci.confirm", 
 				"uci.revert", 
+				"uci.changes", 
 				"uci.configs",
 				"asterisk.call_log.list", 
+				"luci2.system.password_set", 
 				// local stuff for the node server. 
 				"local.features", 
 				"local.set_rpc_host"

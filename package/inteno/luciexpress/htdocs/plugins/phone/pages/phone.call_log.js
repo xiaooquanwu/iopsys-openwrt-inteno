@@ -24,6 +24,7 @@ $juci.module("phone")
 .controller("PhoneCallLogPageCtrl", function($scope, $uci, gettext, $tr){ 
 	$scope.phoneFilter = ""; 
 	$scope.uniquePhones = [];
+	$scope.phoneList = []; 
 	$rpc.asterisk.call_log.list().done(function(res){
 		var unique_phones = {}; 
 		$scope.call_log = res.call_log.map(function(log){
@@ -44,13 +45,4 @@ $juci.module("phone")
 	$scope.onChangeFilter = function(item, model){
 		$scope.phoneFilter = model.from; 
 	}
-	$scope.callListTbl = {
-		rows: [
-			["<i class='fa fa-arrow-left'></i>", "Today", "13:12", "0171234568765", "Office", "1:13", "<input type='checkbox'/>"],
-			["<i class='fa fa-arrow-left'></i>", "Today", "13:12", "1123445451", "Office", "1:13", "<input type='checkbox'/>"],
-			["<i class='fa fa-arrow-right'></i>", "Today", "13:12", "123123123123", "Office", "1:13", "<input type='checkbox'/>"],
-			["<i class='fa fa-arrow-left'></i>", "Today", "13:12", "0171234568765", "Office", "1:13", "<input type='checkbox'/>"],
-			["<i class='fa fa-arrow-right'></i>", "Today", "13:12", "123123123123", "Office", "1:13", "<input type='checkbox'/>"]
-		]
-	}; 
 }); 

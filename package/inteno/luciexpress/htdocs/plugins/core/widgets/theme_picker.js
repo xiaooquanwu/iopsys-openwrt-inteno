@@ -1,6 +1,7 @@
 $juci.module("core")
 .directive("juciThemePicker", function($compile){
 	var plugin_root = $juci.module("core").plugin_root; 
+	
 	return {
 		templateUrl: plugin_root+"/widgets/theme_picker.html", 
 		replace: true

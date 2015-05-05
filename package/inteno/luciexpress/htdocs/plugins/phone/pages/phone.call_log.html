@@ -6,7 +6,7 @@
 			<luci-config-info>{{ 'phone.call_log.info' | translate }}</luci-config-info>
 			<luci-config-lines>
 				<luci-config-line title="{{'Show calls for'|translate}}">
-					<ui-select ng-model="phoneFilterSelected" theme="bootstrap" style="width: 300px;" on-select="onChangeFilter($item, $model)">
+					<ui-select ng-model="phoneFilterSelected" search="disabled" theme="bootstrap" style="width: 300px;" on-select="onChangeFilter($item, $model)">
 						<ui-select-match placeholder="All Phones">{{$select.selected.from}}</ui-select-match>
 						<ui-select-choices repeat="phone in phoneList" refresh-delay="0"><div >{{phone.from}}</div></ui-select-choices>
 					</ui-select>

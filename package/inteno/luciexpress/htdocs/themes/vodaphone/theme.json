@@ -2,10 +2,16 @@
 	"title": "Vodaphone", 
 	"index": "index.html", 
 	"styles": [
+		"css/bootstrap.min.css",
 		"css/theme.css"
 	], 
 	"scripts": [
-		"widgets/vodaphone.navbar",
-		"widgets/vodaphone.top_bar"
+		"widgets/luci.layout.naked",
+		"widgets/luci.layout.single_column",
+		"widgets/luci.layout.with_sidebar", 
+		"widgets/luci.footer",
+		"widgets/luci.nav",
+		"widgets/luci.navbar",
+		"widgets/luci.top_bar"
 	]
 }

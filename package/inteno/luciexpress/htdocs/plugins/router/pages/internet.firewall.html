@@ -5,10 +5,12 @@
 		<table class="table">
 			<tr>
 				<td>
-					<div class="col-md-11"><strong style="font-size: 1.5em">Toggle all rules</strong></div>
+					<div class="col-md-11"><strong style="font-size: 1.5em">Enable firewall</strong></div>
 					<div class="col-md-1"><switch id="enabled" name="enabled" ng-model="firewallSwitchState" ng-change="onFirewallToggle" class="green"></switch></div>
 				</td>
 			</tr>
+		</table>
+		<table class="table" ng-show="firewallSwitchState">
 			<tr ng-repeat="rule in firewall['@rule']"  ng-hide="rule.hidden.value">
 				<td>
 					<div class="col-md-11"><strong style="font-size: 1.5em">{{rule.name.value | translate}}</strong></div>

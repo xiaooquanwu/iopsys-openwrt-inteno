@@ -25,10 +25,10 @@ $juci.module("vodaphone")
 	var plugin_root = $juci.module("vodaphone").plugin_root; 
 	var target_tpl = "plugins/core/widgets/luci.navbar.html"; 
 	return {
-    priority: 100, // give it higher priority than built-in ng-click
+	priority: 100, // give it higher priority than built-in ng-click
 		//templateUrl: plugin_root+"/widgets/vodaphone.navbar.html", 
 		replace: true, 
-    link: function(scope, element, attrs){
+		link: function(scope, element, attrs){
 			if($config.theme == "vodaphone" && !$templateCache.get(plugin_root + "/widgets/vodaphone.navbar.html")){
 				var promise = $http.get(plugin_root + "/widgets/vodaphone.navbar.html", {cache: $templateCache}).success(function(html) {
 					$templateCache.put(target_tpl, html);
@@ -38,4 +38,13 @@ $juci.module("vodaphone")
 			}
 		}
 	}; 
+})
+.controller("NavigationCtrl", function($scope, $location, $navigation, $rootScope, $config, $rpc){
+	$scope.tree = $navigation.tree(); 
+	$scope.hasChildren = function(menu){
+		return menu.children_list > 0; 
+	}
+	$scope.isActive = function (viewLocation) { 
+		return viewLocation === $location.path();
+	};
 }); 

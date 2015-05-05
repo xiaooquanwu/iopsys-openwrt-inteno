@@ -1,6 +1,6 @@
-$juci.module("core")
+$juci.module("inteno-red")
 .directive("luciTopBar", function($compile){
-	var plugin_root = $juci.module("core").plugin_root; 
+	var plugin_root = $juci.module("inteno-red").plugin_root; 
 	return {
 		templateUrl: plugin_root+"/widgets/luci.top_bar.html", 
 		controller: "luciTopBarController", 

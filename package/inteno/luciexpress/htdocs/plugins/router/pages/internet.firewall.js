@@ -8,12 +8,18 @@ $juci.module("router")
 	}); 
 	$scope.onFirewallToggle = function(){
 		if(!$scope.firewallSwitchState) {
-			$uci.firewall["@rule"].map(function(rule){
-				rule.enabled.value = false; 
+			$uci.firewall["@zone"].map(function(zone){
+				if(zone.name.value == "wan"){
+					zone.input.value = "ACCEPT"; 
+					zone.forward.value = "ACCEPT"; 
+				}
 			}); 
 		} else {
-			$uci.firewall["@rule"].map(function(rule){
-				rule.enabled.value = true; 
+			$uci.firewall["@zone"].map(function(zone){
+				if(zone.name.value == "wan"){
+					zone.input.value = "REJECT"; 
+					zone.forward.value = "REJECT"; 
+				}
 			}); 
 		}
 	}

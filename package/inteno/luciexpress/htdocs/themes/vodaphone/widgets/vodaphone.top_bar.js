@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA
  */
-
+/*
 $juci.module("vodaphone")
 .directive("luciTopBar", function($http, $compile, $templateCache, $config){
 	var plugin_root = $juci.module("vodaphone").plugin_root; 
@@ -38,4 +38,29 @@ $juci.module("vodaphone")
 			}
 		}
 	}; 
-}); 
+})
+.controller("luciTopBarController", function($scope, $config, $session, $window, $localStorage, $state){
+	$scope.model = $config.model; 
+	
+	$scope.guiModes = [
+		{id: "basic", label: "Basic Mode"},
+		{id: "expert", label: "Expert Mode"},
+		{id: "logout", label: "Log out"}
+	]; 
+	Object.keys($scope.guiModes).map(function(k){
+		var m = $scope.guiModes[k]; 
+		if(m.id == $config.mode) $scope.selectedMode = m;
+	});  
+	$scope.onChangeMode = function(item){
+		var selected = item.id; 
+		if(selected == "logout") {
+			$session.logout().always(function(){
+				$window.location.href="/"; 
+			}); 
+		} else {
+			$localStorage.setItem("mode", selected); 
+			$config.mode = selected; 
+			$state.reload(); 
+		}
+	};
+}); */

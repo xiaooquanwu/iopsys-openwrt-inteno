@@ -17,7 +17,7 @@ angular.module("luci")
 		}, 
 		"firewall-zone": {
 			"name":					{ dvalue: "", type: String }, 
-			"intput":				{ dvalue: "ACCEPT", type: String }, 
+			"input":				{ dvalue: "ACCEPT", type: String }, 
 			"output":				{ dvalue: "ACCEPT", type: String }, 
 			"forward":			{ dvalue: "REJECT", type: String }, 
 			"network": 			{ dvalue: [], type: Array }, 

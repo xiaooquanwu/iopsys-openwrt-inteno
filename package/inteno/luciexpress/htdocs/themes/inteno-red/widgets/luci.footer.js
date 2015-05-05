@@ -20,9 +20,9 @@
  * 02110-1301 USA
  */
  
-$juci.module("core")
+$juci.module("inteno-red")
 .directive("luciFooter", function(){
-	var plugin_root = $juci.module("core").plugin_root; 
+	var plugin_root = $juci.module("inteno-red").plugin_root; 
 	
 	return {
 		templateUrl: plugin_root+"/widgets/luci.footer.html", 

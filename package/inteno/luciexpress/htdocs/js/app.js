@@ -82,14 +82,23 @@ angular.module("luci", [
 	"uiSwitch",
 	"ngAnimate", 
 	"gettext"
-	])
-	.config(function ($stateProvider, $locationProvider, $compileProvider, $urlRouterProvider, $controllerProvider) {
+	]); 
+	
+angular.module("luci")
+	.config(function ($stateProvider, $locationProvider, $compileProvider, $urlRouterProvider, $controllerProvider, $provide) {
 		//$locationProvider.otherwise({ redirectTo: "/" });
 		$locationProvider.hashPrefix('!');
 		$juci.controller = $controllerProvider.register; 
 		$juci.directive = $compileProvider.directive; 
 		$juci.state = $stateProvider.state; 
+		$juci.config = angular.module("luci").config; 
 		$juci.$stateProvider = $stateProvider; 
+		
+		/*$provide.decorator("luciFooterDirective", function($delegate){
+			console.log(JSON.stringify($delegate[0])); 
+			return $delegate; 
+		});*/ 
+	
 		$juci.$urlRouterProvider = $urlRouterProvider; 
 		$juci.redirect = function(page){
 			window.location.href = "#!"+page; 
@@ -131,7 +140,7 @@ angular.module("luci", [
 		$rootScope.config = $config; 
 		//window.rpc = $rpc; 
 		//window.uci = $uci; 
-		//$rootScope.theme_index = "html/init.html"; 
+		
 		// set current language
 		gettextCatalog.currentLanguage = "se"; 
 		gettextCatalog.debug = true;
@@ -162,7 +171,13 @@ angular.module("luci", [
 			//$state.go("login"); 
 		}); 
 	})
-
+	.directive("luciFooter", function(){
+	var plugin_root = $juci.module("core").plugin_root; 
+	
+	return {
+		restrict: "E"
+	}; 
+})
 angular.module("luci")
 .factory("$hosts", function($rpc, $uci){
 	var hosts = {}; 
