@@ -146,10 +146,38 @@ config vox_led PowerLED_red
 
 ############### mapping led function to driver led
 config led_map led_map
-       list press_indicator led_wifi
-       list press_indicator led_internet
-       list press_indicator led_voice1
-       
+#       list press_indicator led_wifi
+#       list press_indicator led_internet
+#       list press_indicator led_voice1
+       list functions status
+       list functions wifi
+       list functions wps
+       list functions voice1
+       list functions internet
+       list functions mobile
+
+config led_map led_mobile
+	
+        list led_action_off       MMB_blue=OFF 
+	list led_action_off       MMB_red=OFF 
+	list led_action_0ff       MMB_green=OFF
+
+	list led_action_ok        MMB_blue=ON 
+	list led_action_ok        MMB_red=OFF
+	list led_action_ok        MMB_green=OFF
+
+	list led_action_notice    MMB_blue=OFF 
+	list led_action_notice    MMB_red=OFF
+	list led_action_notice    MMB_green=ON
+
+	list led_action_alert     MMB_blue=OFF
+	list led_action_alert     MMB_red=ON
+	list led_action_alert     MMB_green=OFF
+
+	list led_action_error     MMB_blue=OFF
+	list led_action_error     MMB_red=FLASH_SLOW
+	list led_action_error     MMB_green=OFF
+
 config led_map led_wifi
 	list led_action_ok     WiFi_green=ON 
 	list led_action_off    WiFi_green=OFF
@@ -177,7 +205,7 @@ config led_map led_internet
 	list led_action_error  'DSL_red   = FLASH_SLOW'
 
 config led_map led_wps
-	list led_action_off    WiFi_green=ON if led.wifi=OK
+	list led_action_off    WiFi_green=ON
 	list led_action_ok     WiFi_green=ON	
 	list led_action_notice WiFi_green=FLASH_FAST
 
