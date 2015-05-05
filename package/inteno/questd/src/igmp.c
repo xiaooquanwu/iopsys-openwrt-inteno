@@ -8,7 +8,6 @@
 #include "questd.h"
 #include "igmp.h"
 
-
 static void tokenize_line(char *str, const char **tokens, size_t tokens_size) {
 	char *ptr = str;
 	const char **token = tokens; // = line;
@@ -27,7 +26,7 @@ static void tokenize_line(char *str, const char **tokens, size_t tokens_size) {
 			continue;
 		}
 		ptr++;
-	}  
+	}
 }
 
 int igmp_rpc(struct ubus_context *ctx, struct ubus_object *obj,
@@ -39,10 +38,9 @@ int igmp_rpc(struct ubus_context *ctx, struct ubus_object *obj,
 	char line[256];
 	IGMPtable table[128];
 	const char *tokens[32] = { 0 };
-	void *object, *array;
+	void *object, *array,*t;
 
 	blob_buf_init(&bb, 0);
-	// /proc/net/
 	if (!(in = fopen("/tmp/igmp_snooping", "r")))
 		return 1;
 	array = blobmsg_open_array(&bb, "tables");
@@ -61,80 +59,91 @@ int igmp_rpc(struct ubus_context *ctx, struct ubus_object *obj,
 		tokenize_line(line, tokens, sizeof(tokens) / sizeof(char*));
 		int tok_pos = 0;
 		const char **token = tokens;
-		//const char *names[] = { "bridge", "dev", "srcdev", "tags", "lantci",
-		//		"wantci", "group", "mode", "rxgroup", "source", "reporter",
-		//		"timeout", "index", "excludept" };
+		const char *names[] = { "bridge", "dev", "srcdev", "tags", "lantci",
+				"wantci", "group", "mode", "rxgroup", "source", "reporter",
+				"timeout", "index", "excludept" };
 
 		while (*token) {
 			printf("<%d>\n",tok_pos);
 			switch (tok_pos) {
 			case 0:
 
-				sprintf(table[row-2].bridge,"%s",*token);
-				printf("%s\n%s\n",table[row-2].bridge,*token);
+				snprintf(table[row-2].bridge,"%s",token);
+				printf("%s\n%s\n",table[row-2].bridge,token);
 				break;
 			case 1:
-				sprintf(table[row-2].device,"%s",*token);
+				snprintf(table[row-2].device,"%s",token);
 				break;
 			case 2:
-				sprintf(table[row - 2].tags ,"%s",*token);
+				snprintf(table[row - 2].tags ,"%s",token);
 				break;
 			case 3: {
 				uint32_t ip;
-				sscanf(*token, "%8x", &ip);
+				char str[17];
+
+				sscanf(token, "%8x", &ip);
 				sprintf(table[row - 2].lantci, "%d.%d.%d.%d", (ip >> 16),
 						(ip >> 8) & 0xff, ip & 0xff, (ip >> 24) & 0xff);
 			}
 				break;
 			case 4: {
 				uint32_t ip;
-				sscanf(*token, "%8x", &ip);
+				char str[17];
+
+				sscanf(token, "%8x", &ip);
 				sprintf(table[row - 2].wantci, "%d.%d.%d.%d", (ip >> 16),
 						(ip >> 8) & 0xff, ip & 0xff, (ip >> 24) & 0xff);
 			}
 				break;
 			case 5: {
 				uint32_t ip;
-				sscanf(*token, "%8x", &ip);
+				char str[17];
+
+				sscanf(token, "%8x", &ip);
 				sprintf(table[row - 2].group, "%d.%d.%d.%d", (ip >> 16),
 						(ip >> 8) & 0xff, ip & 0xff, (ip >> 24) & 0xff);
 			}
 				break;
 			case 6:
-				sprintf(table[row - 2].mode,"%s",*token);
+				snprintf(table[row - 2].mode,"%s",token);
 				break;
 			case 7: {
 				uint32_t ip;
+				char str[17];
 
-				sscanf(*token, "%8x", &ip);
+				sscanf(token, "%8x", &ip);
 				sprintf(table[row - 2].RxGroup, "%d.%d.%d.%d", (ip >> 16),
 						(ip >> 8) & 0xff, ip & 0xff, (ip >> 24) & 0xff);
 			}
 				break;
 			case 8: {
 				uint32_t ip;
-				sscanf(*token, "%8x", &ip);
+				char str[17];
+
+				sscanf(token, "%8x", &ip);
 				sprintf(table[row - 2].source, "%d.%d.%d.%d", (ip >> 16),
 						(ip >> 8) & 0xff, ip & 0xff, (ip >> 24) & 0xff);
 			}
 				break;
 			case 9: {
 				uint32_t ip;
-				sscanf(*token, "%8x", &ip);
+				char str[17];
+
+				sscanf(token, "%8x", &ip);
 				sprintf(table[row - 2].reporter, "%d.%d.%d.%d", (ip >> 16),
 						(ip >> 8) & 0xff, ip & 0xff, (ip >> 24) & 0xff);
 			}
 				break;
 			case 10:
-				sprintf(table[row - 2].timeout,"%s",*token);
+				snprintf(table[row - 2].timeout,"%s",token);
 
 				break;
 			case 11:
-				sprintf(table[row - 2].Index,"%s",*token);
+				snprintf(table[row - 2].Index,"%s",token);
 
 				break;
 			case 12:
-				sprintf(table[row - 2].ExcludPt,"%s",*token);
+				snprintf(table[row - 2].ExcludPt,"%s",token);
 
 				break;
 			default:
@@ -173,4 +182,3 @@ int igmp_rpc(struct ubus_context *ctx, struct ubus_object *obj,
 
 	return 0;
 }
-
