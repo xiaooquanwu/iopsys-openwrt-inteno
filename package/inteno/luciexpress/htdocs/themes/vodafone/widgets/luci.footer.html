@@ -1,0 +1,23 @@
+<div class="container">
+	<div class="row">
+		<div class="col-xs-1"></div>
+		<div class="col-xs-10">
+			<div class="col-md-8 col-xs-12">
+				<div id="language-switcher-list" >
+					<span ng-repeat="lang in languages">
+						<a style="text-decoration: {{isActiveLanguage(lang)?'underline':'none'}}; color: inherit;" href="" ng-click="setLanguage(lang)">{{lang.title}}</a>{{$last ? '' : ' | '}}
+					</span>
+				</div>
+				<div id="info">
+					WAN IP Address: {{wanip}} | Firmware version: {{firmware}}
+				</div>
+			</div>
+			<div class="col-md-4 col-xs-12">
+				<div style="float: right;">
+					<juci-theme-picker></juci-theme-picker>
+				</div>
+			</div>
+		</div>
+		<div class="col-xs-1"></div>
+	</div>
+</div>

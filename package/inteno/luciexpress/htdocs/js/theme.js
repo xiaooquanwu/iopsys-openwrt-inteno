@@ -30,7 +30,7 @@ angular.module("luci")
 		loadTheme: function(theme_id){
 			console.log("Loading theme "+theme_id); 
 			var deferred = $.Deferred(); 
-			
+			var self = this; 
 			var themes = this.themes; 
 			if(!(theme_id in themes)) {
 				var theme_root = "themes/"+theme_id; 
@@ -55,6 +55,7 @@ angular.module("luci")
 					}
 				}).error(function(){
 					console.log("Could not retreive theme config for theme: "+theme_id); 
+					self.changeTheme("default"); 
 				}); 
 			} else {
 				deferred.resolve(themes[theme_id]); 

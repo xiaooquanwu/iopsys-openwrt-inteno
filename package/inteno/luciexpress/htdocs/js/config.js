@@ -50,7 +50,7 @@ angular.module("luci")
 			"settings", 
 			"status",
       "internet",
-			"router", 
+			//"router", 
 			"wifi"
 		], 
 		rpc: {

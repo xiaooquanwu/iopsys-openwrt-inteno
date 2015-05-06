@@ -1,0 +1,123 @@
+body {
+	font-size: 16px;
+}
+
+.top-bar { 
+	margin-bottom: 20px; 
+	background-color: #EBEBEB;
+	border-bottom: 1px solid #ccc;
+	padding-bottom: 10px; 
+}
+
+.top-bar { 
+	margin-bottom: 20px; 
+	background-color: #EBEBEB;
+	border-bottom: 1px solid #ccc;
+	padding-bottom: 10px; 
+}
+
+.navbar-default {
+	box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+.navbar-brand {
+	padding: 9px !important; 
+}
+
+div.logo {
+	background-image: url('../img/vf-logo.png'); 
+	background-size: 100%; 
+	height: 32px; 
+	width: 32px; 
+}
+
+#rhombus-wrap {
+	float: left;
+	margin-left: -80px;
+	margin-right: 20px;
+	margin-top: -35px;
+	position: relative;
+	width: 60px;
+	z-index: 10;
+}
+#logo {
+	background: scroll;
+	background-color: transparent;
+	background-image: url("../img/vf-logo.png");
+	background-origin: padding-box;
+	background-position: 0 30px;
+	background-repeat: no-repeat;
+	background-size: auto auto;
+	display: block;
+	height: 90px;
+	position: absolute;
+	width: 60px;
+	z-index: 5;
+}
+#rhombus {
+	background-color: #e60000;
+	height: 40px;
+	left: -9969px;
+	position: absolute;
+	top: 41px;
+	width: 9999px;
+	z-index: -1;
+}
+#rhombus:before {
+	border-color: transparent transparent #e60000 transparent;
+	border-style: none inset solid none;
+	border-width: medium 9999px 9999px medium;
+	content: " ";
+	height: 0;
+	left: 25px;
+	overflow: hidden;
+	position: absolute;
+	top: -9996px;
+	width: 0;
+}
+#rhombus:after {
+	border-right: 9999px inset transparent;
+	border-top: 9999px solid #e60000;
+	content: " ";
+	height: 0;
+	left: 24px;
+	overflow: hidden;
+	position: absolute;
+	top: 36px;
+	width: 0;
+	z-index: 1;
+}
+
+.luci-nav a {
+	color: #444; 
+}
+.nav > li.open > a {
+	color: #ee0000 !important; 
+}
+.navbar .nav > li.open > a {
+	color: #fff !important; 
+}
+
+h1, h2 {
+	color: #e00 !important; 
+}
+
+.animate-show {
+  line-height: 20px;
+  opacity: 1;
+  padding: 10px;
+  border: 1px solid black;
+  background: white;
+}
+
+.animate-show.ng-hide-add.ng-hide-add-active,
+.animate-show.ng-hide-remove.ng-hide-remove-active {
+  -webkit-transition: all linear 0.5s;
+  transition: all linear 0.5s;
+}
+
+.animate-show.ng-hide {
+  line-height: 0;
+  opacity: 0;
+  padding: 0 10px;
+}
