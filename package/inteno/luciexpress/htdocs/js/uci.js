@@ -112,6 +112,12 @@ angular.module("luci")
 		"host": {
 			"hostname":		{ dvalue: "", type: String, required: true}, 
 			"macaddr":		{ dvalue: "", type: String, match: /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/, required: true}
+		},
+		"upgrade": {
+			"fw_check_url":		{ dvalue: "", type: String, required: false},
+			"fw_path_url":		{ dvalue: "", type: String, required: false},
+			"fw_find_ext":		{ dvalue: "", type: String, required: false},
+			"fw_down_path":		{ dvalue: "", type: String, required: false}
 		}
 	}; 
 	function UCI(){
