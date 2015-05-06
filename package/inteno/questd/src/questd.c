@@ -313,7 +313,7 @@ load_wireless()
 }
 
 static void
-match_client_to_network(Network *lan, char *hostaddr, bool *local, char **net, char **dev)
+match_client_to_network(Network *lan, char *hostaddr, bool *local, char *net, char *dev)
 {
 	if(!lan->ipaddr || !lan->netmask)
 		return;
@@ -329,11 +329,11 @@ match_client_to_network(Network *lan, char *hostaddr, bool *local, char **net, c
 
 	if((snet.s_addr ^ rslt.s_addr) == 0) {
 		*local = true;
-		snprintf(*net, 32, lan->name);
+		snprintf(net, 32, lan->name);
 		if (lan->type && !strcmp(lan->type, "bridge"))
-			snprintf(*dev, 32, "br-%s", lan->name);
+			snprintf(dev, 32, "br-%s", lan->name);
 		else
-			snprintf(*dev, 32, lan->ifname);
+			snprintf(dev, 32, lan->ifname);
 	}
 }
 
@@ -347,7 +347,7 @@ handle_client(Client *clnt)
 	if (sscanf(clnt->hostaddr, "%d.%d.%d.%d", &ip[0], &ip[1], &ip[2], &ip[3]) == 4) {
 		for (netno=0; network[netno].exists; netno++) {
 			if (network[netno].is_lan) {
-				match_client_to_network(&network[netno], clnt->hostaddr, &clnt->local, (char**)&clnt->network, (char**)&clnt->device);
+				match_client_to_network(&network[netno], clnt->hostaddr, &clnt->local, clnt->network, clnt->device);
 				if (clnt->local)
 					break;
 			}
