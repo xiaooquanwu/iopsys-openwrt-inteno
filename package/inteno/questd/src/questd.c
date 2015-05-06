@@ -329,11 +329,11 @@ match_client_to_network(Network *lan, char *hostaddr, bool *local, char *net, ch
 
 	if((snet.s_addr ^ rslt.s_addr) == 0) {
 		*local = true;
-		snprintf(net, 32, lan->name);
+		snprintf(*net, 32, lan->name);
 		if (lan->type && !strcmp(lan->type, "bridge"))
-			snprintf(dev, 32, "br-%s", lan->name);
+			snprintf(*dev, 32, "br-%s", lan->name);
 		else
-			snprintf(dev, 32, lan->ifname);
+			snprintf(*dev, 32, lan->ifname);
 	}
 }
 
@@ -1313,21 +1313,6 @@ quest_router_igmp_table(struct ubus_context *ctx, struct ubus_object *obj,
 	return 0;
 }*/
 
-static int
-quest_router_igmp_table(struct ubus_context *ctx, struct ubus_object *obj,
-		  struct ubus_request_data *req, const char *method,
-		  struct blob_attr *msg)
-{
-	struct blob_attr *tb[__QUEST_MAX];
-
-	blobmsg_parse(quest_policy, __QUEST_MAX, tb, blob_data(msg), blob_len(msg));
-
-	blob_buf_init(&bb, 0);
-	router_dump_connected_clients6(&bb);
-	ubus_send_reply(ctx, req, bb.head);
-
-	return 0;
-}
 static int
 quest_router_clients6(struct ubus_context *ctx, struct ubus_object *obj,
 		  struct ubus_request_data *req, const char *method,
