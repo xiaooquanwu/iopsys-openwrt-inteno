@@ -559,12 +559,16 @@ default_do_upgrade() {
 	local from
 	local cfe_fs=0
 	local is_nand=0
+	local fwpath
+
+	fwpath=$(uci -q get system.@upgrade[0].fw_upload_path)
+	[ -n "$fwpath" ] || fwpath="/tmp/firmware.bin"
 
 	[ $(cat /tmp/CFE_FS) -eq 1 ] && cfe_fs=1
 	[ $(cat /tmp/IS_NAND) -eq 1 ] && is_nand=1
 
 	case "$1" in
-		http://*|ftp://*) from=/tmp/firmware.img;;
+		http://*|ftp://*) from="$fwpath";;
 		*) from=$1;;
 	esac
 

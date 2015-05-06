@@ -995,7 +995,41 @@ rpc_luci2_upgrade_test(struct ubus_context *ctx, struct ubus_object *obj,
                        struct ubus_request_data *req, const char *method,
                        struct blob_attr *msg)
 {
-	const char *cmd[4] = { "sysupgrade", "--test", "/tmp/firmware.bin", NULL };
+	const char *fwpath = "/tmp/firmware.bin";
+
+	struct uci_package *p;
+	struct uci_element *e;
+	struct uci_section *s;
+	struct uci_ptr ptr = { .package = "system" };
+
+
+	uci_load(cursor, ptr.package, &p);
+
+	if (p)
+	{
+		uci_foreach_element(&p->sections, e)
+		{
+			s = uci_to_section(e);
+
+			if (strcmp(s->type, "upgrade"))
+				continue;
+
+			ptr.o = NULL;
+			ptr.option = "fw_upload_path";
+			ptr.section = e->name;
+			uci_lookup_ptr(cursor, &ptr, NULL, true);
+			break;
+		}
+
+		if (ptr.o && ptr.o->type == UCI_TYPE_STRING)
+		{
+			fwpath = strdup(ptr.o->v.string);
+		}
+
+		uci_unload(cursor, p);
+	}
+
+	const char *cmd[4] = { "sysupgrade", "--test", fwpath, NULL };
 	return ops->exec(cmd, NULL, NULL, NULL, NULL, NULL, ctx, req);
 }
 
@@ -1004,7 +1038,48 @@ rpc_luci2_upgrade_start(struct ubus_context *ctx, struct ubus_object *obj,
                         struct ubus_request_data *req, const char *method,
                         struct blob_attr *msg)
 {
-	return 0;
+	const char *fwpath = "/tmp/firmware.bin";
+	//const char *keep = "";
+
+	struct uci_package *p;
+	struct uci_element *e;
+	struct uci_section *s;
+	struct uci_ptr ptr = { .package = "system" };
+
+	uci_load(cursor, ptr.package, &p);
+
+	if (p)
+	{
+		uci_foreach_element(&p->sections, e)
+		{
+			s = uci_to_section(e);
+
+			if (strcmp(s->type, "upgrade"))
+				continue;
+
+			ptr.o = NULL;
+			ptr.option = "fw_upload_path";
+			ptr.section = e->name;
+			uci_lookup_ptr(cursor, &ptr, NULL, true);
+			break;
+		}
+
+		if (ptr.o && ptr.o->type == UCI_TYPE_STRING)
+		{
+			fwpath = strdup(ptr.o->v.string);
+		}
+
+		uci_unload(cursor, p);
+	}
+
+/*	struct blob_attr *tb[__RPC_UPGRADE_MAX];*/
+/*	blobmsg_parse(rpc_upgrade_policy, __RPC_UPGRADE_MAX, tb, blob_data(msg), blob_len(msg));*/
+
+/*	if (tb[RPC_UPGRADE_KEEP] && !blobmsg_data(tb[RPC_UPGRADE_KEEP]))*/
+/*		keep = "-n";*/
+
+	const char *cmd[3] = { "sysupgrade", fwpath, NULL };
+	return ops->exec(cmd, NULL, NULL, NULL, NULL, NULL, ctx, req);
 }
 
 static int
@@ -1012,7 +1087,40 @@ rpc_luci2_upgrade_clean(struct ubus_context *ctx, struct ubus_object *obj,
                         struct ubus_request_data *req, const char *method,
                         struct blob_attr *msg)
 {
-	if (unlink("/tmp/firmware.bin"))
+	const char *fwpath = "/tmp/firmware.bin";
+
+	struct uci_package *p;
+	struct uci_element *e;
+	struct uci_section *s;
+	struct uci_ptr ptr = { .package = "system" };
+
+	uci_load(cursor, ptr.package, &p);
+
+	if (p)
+	{
+		uci_foreach_element(&p->sections, e)
+		{
+			s = uci_to_section(e);
+
+			if (strcmp(s->type, "upgrade"))
+				continue;
+
+			ptr.o = NULL;
+			ptr.option = "fw_upload_path";
+			ptr.section = e->name;
+			uci_lookup_ptr(cursor, &ptr, NULL, true);
+			break;
+		}
+
+		if (ptr.o && ptr.o->type == UCI_TYPE_STRING)
+		{
+			fwpath = strdup(ptr.o->v.string);
+		}
+
+		uci_unload(cursor, p);
+	}
+
+	if (unlink(fwpath))
 		return rpc_errno_status();
 
 	return 0;
