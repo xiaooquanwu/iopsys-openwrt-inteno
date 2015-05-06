@@ -329,11 +329,11 @@ match_client_to_network(Network *lan, char *hostaddr, bool *local, char *net, ch
 
 	if((snet.s_addr ^ rslt.s_addr) == 0) {
 		*local = true;
-		snprintf(*net, 32, lan->name);
+		snprintf(net, 32, lan->name);
 		if (lan->type && !strcmp(lan->type, "bridge"))
-			snprintf(*dev, 32, "br-%s", lan->name);
+			snprintf(dev, 32, "br-%s", lan->name);
 		else
-			snprintf(*dev, 32, lan->ifname);
+			snprintf(dev, 32, lan->ifname);
 	}
 }
 
