@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <syslog.h>
 #include "log.h"
 #include "led.h"
@@ -32,17 +33,9 @@ typedef enum {
 static const char * const fn_actions[LED_ACTION_MAX] =
 { "off", "ok", "eok", "notice", "alert", "error", "custom"};
 
-#define LED_FUNCTIONS 20
-static const char* const led_functions[LED_FUNCTIONS] =
-{ "dsl",	"wifi",		"wps",		"lan",
-  "status",	"dect",		"tv",		"usb",
-  "wan",	"internet",	"voice1",	"voice2",
-  "eco",	"gbe",		"ext",		"wan_phy_speed",
-  "wan_phy_link","gbe_phy_speed","gbe_phy_link","cancel" };
-
 /* Names for led_state_t */
 static const char* const led_states[LED_STATES_MAX] =
-{ "off", "on", "flash_slow", "flash_fast","breading", "fadeon", "fadeoff" };
+{ "off", "on", "flash_slow", "flash_fast","pulsing", "fadeon", "fadeoff" };
 
 /* Names for leds_state_t */
 static const char* const leds_states[LEDS_MAX] =
@@ -55,11 +48,23 @@ struct led {
 	struct led_drv *drv;
 };
 
+struct super_functions {
+	struct list_head list;
+	led_action_t state;		/* state that the function need to match */
+	struct function_led *function;
+};
+
+struct super_list {
+	struct list_head list;
+	struct list_head sf_list;	/* this list contains states that needs to match for this super fuction action to be active */
+};
+
 /*middle layer contains lists of leds /buttons/... that should be set to a specific state */
 struct function_action {
 	const char *name;		/* If name is set this led action is in use by the board. */
 	struct list_head led_list;
 	struct list_head button_list;
+	struct list_head super_list;    /* list of super function lists */
 };
 
 /* main struct for the function leds.*/
@@ -70,18 +75,24 @@ struct function_led {
 	struct function_action actions[LED_ACTION_MAX];
 };
 
-struct function_led leds[LED_FUNCTIONS];
+
+
+struct function_led *leds;		/* Array of functions, LED_FUNCTIONS + super_functions */
+static int total_functions;		/* number of entries in leds array */
 
 static leds_state_t global_state;	/* global state for the leds,overrids individual states */
 static leds_state_t press_state;	/* global state for the press indicator */
 
 int get_index_by_name(const char *const*array, int max, const char *name);
+int get_index_for_function(const char *name);
 struct led_drv *get_drv_led(char *name);
 static void dump_drv_list(void);
 static void dump_led(void);
 static void all_leds_off(void);
 static void all_leds_on(void);
 static void all_leds(led_state_t state);
+static const char * get_function_action( const char *s, struct function_led **function, int *action);
+static void super_update(void);
 
 /* we find out the index for a match in an array of char pointers containing max number of pointers */
 int get_index_by_name(const char *const*array, int max, const char *name)
@@ -89,6 +100,16 @@ int get_index_by_name(const char *const*array, int max, const char *name)
 	int i;
 	for (i=0; i < max ; i++ ){
 		if (!strcasecmp(name, array[i]))
+			return i;
+	}
+	return -1;
+}
+
+int get_index_for_function(const char *name)
+{
+	int i;
+	for (i=0 ; i < total_functions; i++) {
+		if (!strcasecmp(name, leds[i].name))
 			return i;
 	}
 	return -1;
@@ -215,23 +236,69 @@ static void dump_drv_list(void)
 static void dump_led(void)
 {
 	int i,j;
-
-	for (i = 0; i < LED_FUNCTIONS ; i++) {
+	for (i = 0; i < total_functions ; i++) {
 		for (j = 0 ; j < LED_ACTION_MAX; j++ ) {
 			if ( leds[i].actions[j].name != NULL ) {
 				struct led *led;
+				struct super_list *sl;
+
+				/* print out action list */
 				list_for_each_entry(led, &leds[i].actions[j].led_list, list) {
 					DBG(1,"%-15s %-8s %-15s %-10s",
 					    leds[i].name,
 					    leds[i].actions[j].name,
 					    led->drv->name,
 					    led_states[led->state]);
-}}}}}
+				}
+				/* print out super function list */
+				list_for_each_entry(sl, &leds[i].actions[j].super_list, list) {
+					struct super_functions *sf;
+					DBG(1,"   AND list");
+					list_for_each_entry(sf, &sl->sf_list, list) {
+						DBG(1,"\tfunction [%s] action [%s]",sf->function->name, fn_actions[sf->state]);
+					}
+				}
+			}
+		}
+	}
+}
+
+/* loop over every function, if it is a super function update the state */
+static void super_update(void)
+{
+	int i,j;
+	for (i = 0; i < total_functions ; i++) {
+		for (j = 0 ; j < LED_ACTION_MAX; j++ ) {
+			if ( leds[i].actions[j].name != NULL ) {
+				struct super_list *sl;
+				list_for_each_entry(sl, &leds[i].actions[j].super_list, list) {
+					struct super_functions *sf;
+					int status = 0;
+//					DBG(1,"   AND list");
+					list_for_each_entry(sf, &sl->sf_list, list) {
+//						DBG(1,"\tfunction [%s] action [%s]",sf->function->name, fn_actions[sf->state]);
+						if (sf->function->state == sf->state ) {
+							status = 1;
+						} else {
+							status = 0;
+							break;
+						}
+					}
+					if (status){
+						leds[i].state = j;
+						DBG(1,"\tSet super function [%s] to action [%s]",leds[i].name, fn_actions[j]);
+					}
+				}
+			}
+		}
+	}
+}
 
 /* return 0 = OK, -1 = error */
 static int set_function_led(const char* fn_name, const char* action) {
-	int led_idx = get_index_by_name(led_functions, LED_FUNCTIONS , fn_name);
+	int led_idx = get_index_for_function(fn_name);
 	int act_idx = get_index_by_name(fn_actions   , LED_ACTION_MAX, action );
+	struct led *led;
 
 	if(led_idx == -1) {
 		syslog(LOG_WARNING, "called over ubus with non valid led name [%s]", fn_name);
@@ -242,19 +309,12 @@ static int set_function_led(const char* fn_name, const char* action) {
 		return -1;
 	}
 
-	if ( leds[led_idx].actions[act_idx].name != NULL ) {
-		struct led *led;
+	leds[led_idx].state = act_idx;
 
-		leds[led_idx].state = act_idx;
-
-		list_for_each_entry(led, &leds[led_idx].actions[act_idx].led_list, list) {
-			if (led->drv){
-				led->drv->func->set_state(led->drv, led->state);
-			}
+	list_for_each_entry(led, &leds[led_idx].actions[act_idx].led_list, list) {
+		if (led->drv){
+			led->drv->func->set_state(led->drv, led->state);
 		}
-	}else {
-		syslog(LOG_WARNING, "led set on [%s] has no valid [%s] handler registered.", fn_name, action);
-		return -1;
 	}
 
 	return 0;
@@ -277,7 +337,6 @@ static int led_set_method(struct ubus_context *ubus_ctx, struct ubus_object *obj
 	char* state;
 
 	blobmsg_parse(led_policy, ARRAY_SIZE(led_policy), tb, blob_data(msg), blob_len(msg));
-
 	if (tb[LED_STATE]) {
 		char *fn_name = strchr(obj->name, '.') + 1;
 		state = blobmsg_data(tb[LED_STATE]);
@@ -298,7 +357,7 @@ static int led_status_method(struct ubus_context *ubus_ctx, struct ubus_object *
                              struct blob_attr *msg)
 {
 	char *fn_name = strchr(obj->name, '.') + 1;
-	int led_idx = get_index_by_name(led_functions, LED_FUNCTIONS , fn_name);
+	int led_idx = get_index_for_function(fn_name);
 	DBG(1,"for led %s",leds[led_idx].name);
 
 	blob_buf_init (&bblob, 0);
@@ -376,8 +435,6 @@ static const struct ubus_method led_methods[] = {
 static struct ubus_object_type led_object_type =
 	UBUS_OBJECT_TYPE("led", led_methods);
 
-
-
 static const struct ubus_method leds_methods[] = {
 	UBUS_METHOD("set", leds_set_method, led_policy),
 	{ .name = "status", .handler = leds_status_method },
@@ -387,29 +444,9 @@ static const struct ubus_method leds_methods[] = {
 static struct ubus_object_type leds_object_type =
 	UBUS_OBJECT_TYPE("leds", leds_methods);
 
-#define LED_OBJECTS (LED_FUNCTIONS + 1)
+#define LED_OBJECTS 1
 static struct ubus_object led_objects[LED_OBJECTS] = {
     { .name = "leds",	        .type = &leds_object_type, .methods = leds_methods, .n_methods = ARRAY_SIZE(leds_methods), },
-    { .name = "led.dsl",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
-    { .name = "led.wifi",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
-    { .name = "led.wps",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
-    { .name = "led.lan",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
-    { .name = "led.status",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
-    { .name = "led.dect",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
-    { .name = "led.tv",		.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
-    { .name = "led.usb",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
-    { .name = "led.wan",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
-    { .name = "led.internet",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
-    { .name = "led.voice1",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
-    { .name = "led.voice2",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
-    { .name = "led.eco",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
-    { .name = "led.gbe",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
-    { .name = "led.ext",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
-    { .name = "led.wan_phy_speed",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
-    { .name = "led.wan_phy_link",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
-    { .name = "led.gbe_phy_speed",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
-    { .name = "led.gbe_phy_link",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
-    { .name = "led.cancel",	.type = &led_object_type, .methods = led_methods, .n_methods = ARRAY_SIZE(led_methods), },
 };
 
 
@@ -429,10 +466,11 @@ static void flash_handler(struct uloop_timeout *timeout)
 	if (counter & 4 )
 		slow = ON;
 
+	super_update();
+
 	if (global_state == LEDS_NORMAL ||
 	    global_state == LEDS_INFO ) {
-		/* BUG we should check if the driver support flash in hardware and only do this on simple on/off leds */
-		for (i = 0; i < LED_FUNCTIONS ; i++) {
+		for (i = 0; i < total_functions ; i++) {
 			struct led *led;
 			if (leds[i].press_indicator & press_state) {
 //				DBG(1,"INDICATE_PRESS on %s",leds[i].name);
@@ -450,14 +488,32 @@ static void flash_handler(struct uloop_timeout *timeout)
 					if (action_state == LED_OK)
 						action_state = LED_OFF;
 				}
-
 				list_for_each_entry(led, &leds[i].actions[action_state].led_list, list) {
-					if (led->state == FLASH_FAST){
-						if (led->drv)
+
+					if (led->state == FLASH_FAST) {
+						if (led->drv) {
+							if (led->drv->func->support) {
+								if (led->drv->func->support(led->drv, FLASH_FAST)) {
+									/* hardware support flash */
+									led->drv->func->set_state(led->drv, FLASH_FAST);
+									continue;
+								}
+							}
+							/* emulate flash with on/off */
 							led->drv->func->set_state(led->drv, fast);
-					}else if (led->state == FLASH_SLOW){
-						if (led->drv)
+						}
+					}else if (led->state == FLASH_SLOW) {
+						if (led->drv) {
+							if (led->drv->func->support) {
+								if (led->drv->func->support(led->drv, FLASH_SLOW)) {
+									/* hardware support flash */
+									led->drv->func->set_state(led->drv, FLASH_SLOW);
+									continue;
+								}
+							}
+							/* emulate flash with on/off */
 							led->drv->func->set_state(led->drv, slow);
+						}
 					}else{
 						if (led->drv)
 							led->drv->func->set_state(led->drv, led->state);
@@ -477,18 +533,131 @@ void led_pressindicator_clear(void){
 	press_state = 0;
 }
 
+/*
+  input: s, string of comma separated function_action names, 'wifi_ok, wps_ok'
+
+  return:
+	NULL if no valid function actionpair found.
+	pointer to start of unused part of string.
+
+	fills in the function pointer with NULL or a real function
+	fills in action with 0 or real index (include 0),
+
+*/
+const char * get_function_action( const char *s, struct function_led **function, int *action)
+{
+	const char *first, *last, *end, *p;
+	char func[100], act[20];
+
+	DBG(1,"start [%s]", s);
+
+	*function = NULL;
+	*action = 0;
+
+	/* if string is zero length give up. */
+	if ( 0 == strlen(s))
+		return NULL;
+
+	end = s + strlen(s);
+
+	/* find first alpha char */
+	while (!isalnum(*s)){
+		s++;
+		if (s == end)
+			return NULL;
+	}
+	first = s;
+
+	/* find , or end of string or space/tab */
+	while ( (*s != ',') && (!isblank(*s))) {
+		s++;
+		if (s == end)
+			break;
+	}
+	last = s;
+
+	/* scan backwards for _ */
+	while (*s != '_' && s > first){
+		s--;
+	}
+
+	/* if we could not find a _ char bail out */
+	if (*s != '_')
+		return NULL;
+
+	/* extract function name */
+	p = first;
+	while (p != s) {
+		func[p-first] = *p;
+		p++;
+	}
+	func[p-first] = 0;
+
+	/* extract action name */
+	p = s + 1;
+	while (p != last) {
+		act[p-(s+1)] = *p;
+		p++;
+	}
+	act[p-(s+1)] = 0;
+
+	DBG(1,"function[%s] action[%s] func_idx %d", func, act, get_index_for_function(func));
+	*function = &leds[get_index_for_function(func)];
+	*action = get_index_by_name(fn_actions   , LED_ACTION_MAX, act );
+
+	if (*last == ',')
+		last++;
+
+	return last;
+}
+
 void led_init( struct server_ctx *s_ctx)
 {
-	int i,j,ret;
+	int i,j;
+	LIST_HEAD(led_map_list);
+	struct ucilist *map_node;
 
 	dump_drv_list();
 
 	/* register leds with ubus */
-
 	for (i=0 ; i<LED_OBJECTS ; i++) {
-		ret = ubus_add_object(s_ctx->ubus_ctx, &led_objects[i]);
+		int ret = ubus_add_object(s_ctx->ubus_ctx, &led_objects[i]);
 		if (ret)
 			DBG(1,"Failed to add object: %s", ubus_strerror(ret));
+	}
+
+	/* read out the function leds */
+	ucix_get_option_list( s_ctx->uci_ctx, "hw", "led_map", "functions" , &led_map_list);
+
+	total_functions = 0;
+	list_for_each_entry(map_node, &led_map_list, list) {
+		total_functions++;
+	}
+
+	leds = malloc(sizeof(struct function_led) * total_functions);
+	memset(leds, 0, sizeof(struct function_led) * total_functions);
+
+	/* set function name & regiter with ubus */
+	i = 0;
+	list_for_each_entry(map_node, &led_map_list, list) {
+		char name[100];
+		int ret;
+		struct ubus_object *ubo;
+		ubo = malloc(sizeof(struct ubus_object));
+		memset(ubo, 0, sizeof(struct ubus_object));
+
+		leds[i].name = strdup(map_node->val);
+
+		sprintf(name, "led.%s", leds[i].name);
+		ubo->name      = strdup(name);
+		ubo->methods   = led_methods;
+		ubo->n_methods = ARRAY_SIZE(led_methods);
+		ubo->type      = &led_object_type;
+
+		ret = ubus_add_object(s_ctx->ubus_ctx, ubo);
+		if (ret)
+			DBG(1,"Failed to add object: %s", ubus_strerror(ret));
+		i++;
 	}
 
 	/* we create a top list of led functions */
@@ -496,44 +665,45 @@ void led_init( struct server_ctx *s_ctx)
 	/* every action contains led actions lists */
 	/* the led states is attached to the drv_leds lists */
 
-//	led_names = ucix_get_option(s_ctx->uci_ctx, "hw", "board", "lednames");
-
-	for (i = 0; i < LED_FUNCTIONS ; i++) {
+	for (i = 0; i < total_functions ; i++) {
 		for (j = 0 ; j < LED_ACTION_MAX; j++ ) {
 			char led_fn_name[256];
 			char led_action[256];
 
 			LIST_HEAD(led_action_list);
 			struct ucilist *node;
-
-			snprintf(led_fn_name, 256, "led_%s", led_functions[i]);
+			snprintf(led_fn_name, 256, "led_%s", leds[i].name);
 			snprintf(led_action, 256, "led_action_%s", fn_actions[j]);
 			ucix_get_option_list( s_ctx->uci_ctx, "hw", led_fn_name, led_action , &led_action_list);
-
-//			DBG(2,"ken: hw %s %s",led_fn_name, led_action);
 
 			INIT_LIST_HEAD( &leds[i].actions[j].led_list );
 
 			if (!list_empty(&led_action_list)) {
 
 				/* Found led with action, init structs */
-				leds[i].name  = led_functions[i];
 				leds[i].state = LED_OFF;
 
 				leds[i].actions[j].name    = fn_actions[j];
 
 				/* fill in led actions */
-				DBG(2,"%-15s has led actions -> ",led_fn_name);
+				DBG(2,"%-15s has led actions %s -> ", led_fn_name, fn_actions[j]);
 				list_for_each_entry(node, &led_action_list, list) {
 					char led_name[256],led_state[256];
 					struct led *led;
 					struct led_drv *drv;
+					char *c;
 					char *s = strdup(node->val);
 					led_name[0]=0;
 					led_state[0]=0;
 
-					/* get pointer to low level led driver.*/
-					*strchr(s,'=') = ' ';
+					/* get pointer to low level led driver. by removing the = sign and
+					   storing the remaining two strings.
+					*/
+					c = strchr(s,'=');
+					if( c == NULL)
+						continue;	/* no = found, abort */
+					*c = ' ';
+
 					sscanf(s, "%s %s", led_name, led_state);
 					drv = get_drv_led(led_name);
 
@@ -552,9 +722,55 @@ void led_init( struct server_ctx *s_ctx)
 				/* fill in button actions */
 
 				/* fill in xxx actions */
+			}else {
+				DBG(2,"%-15s has no actions -> %s", led_fn_name, fn_actions[j]);
 			}
 		}
 	}
+
+	/* Read in functions that have function list (super functions) */
+	for (i = 0; i < total_functions ; i++) {
+		for (j = 0 ; j < LED_ACTION_MAX; j++ ) {
+			char led_fn_name[256];
+			char super_action[256];
+			LIST_HEAD(super_action_list);
+			struct ucilist *node;
+			snprintf(led_fn_name, 256, "led_%s", leds[i].name);
+			snprintf(super_action, 256, "super_%s", fn_actions[j]);
+			ucix_get_option_list( s_ctx->uci_ctx, "hw", led_fn_name, super_action , &super_action_list);
+			INIT_LIST_HEAD( &leds[i].actions[j].super_list );
+
+			if (!list_empty(&super_action_list)) {
+				DBG(1,"A:%s %s is a super function ",led_fn_name,super_action);
+
+				list_for_each_entry(node, &super_action_list, list) {
+					char *s;
+					struct function_led *function;
+					int action_ix;
+					struct super_list *sl = malloc(sizeof(struct super_list));
+					memset(sl, 0, sizeof(struct super_list));
+					list_add(&sl->list, &leds[i].actions[j].super_list);
+					INIT_LIST_HEAD( &sl->sf_list );
+
+					DBG(1,"add to super list  %s",node->val);
+
+					s = node->val;
+					while (s = get_function_action(s, &function, &action_ix)){
+						if (function) {
+							struct super_functions *sf = malloc(sizeof(struct super_functions));
+							memset(sf, 0, sizeof(struct super_functions));
+							sf->state = action_ix;
+							sf->function = function;
+							list_add(&sf->list, &sl->sf_list);
+							DBG(1,"C %s %s",function->name, fn_actions[action_ix]);
+						}
+					}
+				}
+			}else
+				DBG(1,"A:%s %s is a normal function ",led_fn_name,super_action);
+		}
+	}
+
 	{
 		struct ucilist *node;
 		/* read function buttons from section button_map */
@@ -569,7 +785,7 @@ void led_init( struct server_ctx *s_ctx)
 			s = node->val;
 			s +=4;	/*remove 'led_' from string */
 			DBG(1,"press indicator %s [%s]",node->val, s);
-			ix  = get_index_by_name(led_functions,LED_FUNCTIONS, s);
+			ix  = get_index_for_function(s);
 //			DBG(1,"press indicator %s [%s]->%d",node->val, s, ix);
 			leds[ix].press_indicator = 1;
 		}

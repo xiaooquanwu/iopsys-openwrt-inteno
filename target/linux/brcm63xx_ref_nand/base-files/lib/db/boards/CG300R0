@@ -194,7 +194,14 @@ config led_map led_map
 #       list dimmed led_wps
 #       list dimmed led_dect
 #       list dimmed led_internet
-
+	list functions wifi
+	list functions wps
+	list functions status
+	list functions dect
+	list functions wan_phy_link
+	list functions wan_phy_speed
+	list functions internet	
+	
 config led_map led_wifi
        list led_action_ok     'Wireless_green = ON'
        list led_action_ok     'Wireless_blue  = OFF'
