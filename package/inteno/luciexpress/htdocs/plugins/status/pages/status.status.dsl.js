@@ -1,4 +1,4 @@
-$juci.module("router")
+$juci.module("status")
 .controller("StatsCtrl", function($scope, $rpc, $session, gettextCatalog){
 		$scope.dslstats = {}; 
 		

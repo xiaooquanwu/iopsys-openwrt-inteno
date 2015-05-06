@@ -1,4 +1,4 @@
-$juci.module("router")
+$juci.module("internet")
 .controller("InternetDNSPageCtrl", function($scope){
 	
 }); 

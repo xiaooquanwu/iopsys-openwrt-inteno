@@ -2,11 +2,11 @@ $juci.module("wifi")
 .controller("WifiGeneralPageCtrl", function($scope, $uci, $tr){
 	async.series([
 		function(next){
-			$uci.sync(["wireless"]).done(function(){
-				if(!$uci.wireless.settings){
+			$uci.sync(["wireless", "easybox"]).done(function(){
+				if(!$uci.wireless.status){
 					$uci.wireless.create({
-						".type": "wifi-settings", 
-						".name": "settings", 
+						".type": "wifi-status", 
+						".name": "status", 
 						disabled: false, 
 						button_enabled: false
 					}).done(function(){
@@ -26,7 +26,7 @@ $juci.module("wifi")
 		function(next){
 			window.uci = $uci; 
 			$scope.interfaces = $uci.wireless['@wifi-iface']; 
-			$scope.settings = $uci.wireless.settings; 
+			$scope.status = $uci.wireless.status; 
 			$scope.$apply(); 
 			
 			next(); 

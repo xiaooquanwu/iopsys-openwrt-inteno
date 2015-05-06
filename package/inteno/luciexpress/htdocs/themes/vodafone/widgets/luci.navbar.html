@@ -7,14 +7,14 @@
 			<span class="icon-bar"></span>
 		</button>
 		
-		<a class="navbar-brand visible-sm visible-xs" href="/#!overview" >
+		<a class="navbar-brand visible-xs" href="/#!overview" >
 			<div class="logo"></div>
 		</a>
 	</div>
 	<div id="navbar" class="navbar-collapse collapse">
 		<ul class="nav navbar-nav" auto-active>
-			<li class="dropdown" ng-repeat="item in tree.children_list track by $index">
-				<a href="#!{{item.path}}" role="button" >{{item.text | translate}} </a>
+			<li class="dropdown" ng-repeat="item in tree.children_list track by $index" style="width: 16.666666667%">
+				<a href="#!{{item.path}}" role="button" style="width: 100%; text-align: center;">{{item.text | translate}} </a>
 			</li>
 		</ul>
 	</div>

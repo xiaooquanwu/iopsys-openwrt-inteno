@@ -1,19 +1,23 @@
 <luci-layout-with-sidebar>
 	<div ng-controller="InternetFirewallPageCtrl">
-        <luci-config-section>
-            <luci-config-heading>{{'internet.firewall.title'|translate}}</luci-config-heading>
-            <luci-config-info>{{'internet.firewall.info'|translate}}</luci-config-info>
-            <luci-config-lines>
-                <luci-config-line title="{{'toggle-all-rules'|translate}}">
-                    <switch id="enabled" name="enabled" ng-model="firewallSwitchState" ng-change="onFirewallToggle"></switch>
-                </luci-config-line>
-            </luci-config-lines>
-            <luci-config-lines>
-                <luci-config-line ng-repeat="rule in firewall['@rule']" title="{{rule.name.value|translate}}">
-                    <switch id="enabled" name="enabled" ng-model="rule.enabled.value"  class="green"></switch>
-                </luci-config-line>
-            </luci-config-lines>
-        </luci-config-section>
+		<h2 translate>Firewall settings</h3>
+		<p translate>Your EasyBox provides extensive firewall functionality which protects against common attacks. Vodafone recommends not to turn off firewall.</p>
+		<table class="table">
+			<tr>
+				<td>
+					<div class="col-md-11"><strong style="font-size: 1.5em">Enable firewall</strong></div>
+					<div class="col-md-1"><switch id="enabled" name="enabled" ng-model="firewallSwitchState" ng-change="onFirewallToggle" class="green"></switch></div>
+				</td>
+			</tr>
+		</table>
+		<table class="table" ng-show="firewallSwitchState">
+			<tr ng-repeat="rule in firewall['@rule']"  ng-hide="rule.hidden.value">
+				<td>
+					<div class="col-md-11"><strong style="font-size: 1.5em">{{rule.name.value | translate}}</strong></div>
+					<div class="col-md-1"><switch id="enabled" name="enabled" ng-model="rule.enabled.value"  class="green"></switch></div>
+				</td>
+			</tr>
+		</table>
 		<luci-config-apply></luci-config-apply>
 	</div>
 </luci-layout-with-sidebar>

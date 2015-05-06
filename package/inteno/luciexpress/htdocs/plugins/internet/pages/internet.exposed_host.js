@@ -1,4 +1,4 @@
-$juci.module("router")
+$juci.module("internet")
 .controller("InternetExHostPageCtrl", function($scope, $rpc, $config, $uci, $tr){
 	$scope.exposedHostEnabled = 0; 
 	$scope.wan = {}; 

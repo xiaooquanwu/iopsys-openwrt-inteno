@@ -6,14 +6,14 @@
 			<luci-config-info>{{ 'wifi.general.info' | translate }}</luci-config-info>
 			<luci-config-lines>
 				<luci-config-line title="{{'Wifi Network'|translate}}">
-					<switch ng-model="settings.disabled.value" class="green" inverted></switch>
+					<switch ng-model="status.wlan.value" class="green" ></switch>
 				</luci-config-line>
 				<luci-config-line title="{{'Enable WiFi On/Off button on EasyBox'|translate}}">
-					<switch ng-model="settings.button_enabled.value" class="green"></switch>
+					<switch ng-model="easybox.wifibutton.value" class="green"></switch>
 				</luci-config-line>
 			</luci-config-lines>
 		</luci-config-section>
-		<luci-config-section ng-show="!settings.disabled.value">
+		<luci-config-section ng-show="status.wlan.value">
 			<luci-config-heading>{{ 'Setup' | translate }}</luci-config-heading>
 			<div class="alert alert-info" ng-show="info">
 				<p><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span> {{info}}</p>

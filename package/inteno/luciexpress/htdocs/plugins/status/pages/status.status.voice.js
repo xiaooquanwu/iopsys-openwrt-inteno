@@ -1,4 +1,4 @@
-$juci.module("router")
+$juci.module("status")
 .controller("StatusVoicePageCtrl", function($scope, $rpc){
 	$rpc.asterisk.status().done(function(data){
 		if(data && data.sip){

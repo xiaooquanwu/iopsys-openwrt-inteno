@@ -1,5 +1,15 @@
+@font-face {
+    font-family: "vodafont";
+    src: url("../fonts/vodafonelt-webfont.woff") format('woff');
+}
+
 body {
 	font-size: 16px;
+	font-family: "Arial","Helvetica" !important; 
+}
+
+h1, h2, h3, h4, h5, .navbar-nav {
+	font-family: "vodafont" !important;
 }
 
 .top-bar { 
@@ -22,6 +32,46 @@ body {
 
 .navbar-brand {
 	padding: 9px !important; 
+}
+
+/*** fill entire nav **/
+.navbar .navbar-inner {
+    padding: 0;
+}
+
+.navbar .nav {
+    margin: 0;
+    display: table;
+    width: 100%;
+}
+
+.navbar .nav li {
+    display: table-cell;
+    width: 1%;
+    float: none;
+}
+
+.navbar .nav li a {
+    font-weight: bold;
+    text-align: center;
+    border-left: 1px solid rgba(250, 250, 250, .75);
+    border-right: 1px solid rgba(0, 0, 0, .1);
+}
+
+.navbar .nav li:first-child a {
+    border-left: 0;
+   /*border-radius: 3px 0 0 3px;*/
+}
+
+.navbar .nav li:last-child a {
+    border-right: 0;
+    /*border-radius: 0 3px 3px 0;*/
+}
+/*******/
+
+.navbar .nav {
+	font-size: 1.3em; 
+	font-weight: bold; 
 }
 
 div.logo {

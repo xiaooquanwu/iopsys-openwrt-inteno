@@ -1,4 +1,4 @@
-$juci.module("router")
+$juci.module("status")
 .controller("StatusEventsPageCtrl", function($scope){
 	
 }); 

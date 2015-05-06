@@ -3,21 +3,24 @@ $juci.module("internet")
 	$scope.firewallSwitchState = 0; 
 	$uci.sync("firewall").done(function(){
 		$scope.firewall = $uci.firewall; 
-		//settings.firewall = Number(settings.firewall); 
-		//settings.ping_wan = Number(settings.ping_wan); 
-		$scope.wan_ping_rule = $uci.firewall["@rule"].filter(function(rule){ return rule.name.value == "Allow-Ping" })[0]||null; 
 		$scope.firewallSwitchState = $uci.firewall["@rule"].filter(function(rule){ return rule.enabled.value == true; }).length > 0; 
 		$scope.$apply(); 
 	}); 
 	$scope.onFirewallToggle = function(){
 		if(!$scope.firewallSwitchState) {
-			$uci.firewall["@rule"].map(function(rule){
-				rule.enabled.value = false; 
+			$uci.firewall["@zone"].map(function(zone){
+				if(zone.name.value == "wan"){
+					zone.input.value = "ACCEPT"; 
+					zone.forward.value = "ACCEPT"; 
+				}
 			}); 
 		} else {
-			$uci.firewall["@rule"].map(function(rule){
-				rule.enabled.value = true; 
+			$uci.firewall["@zone"].map(function(zone){
+				if(zone.name.value == "wan"){
+					zone.input.value = "REJECT"; 
+					zone.forward.value = "REJECT"; 
+				}
 			}); 
-		};
+		}
 	}
 }); 

@@ -1,4 +1,4 @@
-$juci.module("router")
+$juci.module("status")
 .controller("StatsOverviewCtrl", function ($scope, $session, $rootScope, $rpc, gettext, $tr) {
 	$scope.sysinfo = {}; 
 	$scope.info = {}; 

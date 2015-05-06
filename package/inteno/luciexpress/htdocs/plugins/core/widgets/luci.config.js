@@ -68,7 +68,7 @@ $juci.module("core")
 			console.error("Could not save uci configuration!"); 
 		}).always(function(){
 			$scope.busy = 0; 
-			$scope.$apply(); 
+			setTimeout(function(){$scope.$apply();}, 0); 
 		}); 
 	}
 }); 

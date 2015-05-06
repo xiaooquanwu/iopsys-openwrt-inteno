@@ -2,9 +2,9 @@
 	<div ng-controller="OverviewPageCtrl">
 	
 		<div class="row">
-			<div class="col-lg-4 visible-lg">
+			<div class="col-lg-4 visible-lg" ng-show="dsl.mode != ''">
 				<div style="position: relative;">
-					<img src="/img/overview-background-top-left-vdsl.jpg" id="Image-Maps-Com-image-maps-2015-04-08-033120" usemap="#image-maps-2015-04-08-033120" alt="topBackground">
+					<img ng-src="themes/vodafone/img/overview/overview-background-top-left-vdsl.jpg" id="Image-Maps-Com-image-maps-2015-04-08-033120" usemap="#image-maps-2015-04-08-033120" alt="topBackground">
 					<span style="position: absolute; left: 250px; top: 100px; white-space: nowrap; ">{{dsl.max_rate_down}} Mbit/s</span>
 					<span style="position: absolute; left: 250px; top: 130px; white-space: nowrap; ">{{dsl.max_rate_up}} Mbit/s</span>
 				</div>
@@ -17,8 +17,11 @@
 		</div>
 		<div class="row">
 			<div class="col-lg-12 visible-lg">
-				<center>
-					<img src="/img/overview-background-bot.jpg" id="Image-Maps-Com-image-maps-2015-04-08-032815" usemap="#image-maps-2015-04-08-032815" alt="Router">
+				<center style="position:relative; font-size: 3em; color: #00b0c9; ">
+					<img ng-src="themes/vodafone/img/overview/overview-background-bot.jpg" id="Image-Maps-Com-image-maps-2015-04-08-032815" usemap="#image-maps-2015-04-08-032815" alt="Router">
+					<div style="position: absolute; top: 70px; left: 100px; text-align: center; width: 60px;">{{wireless.clients.length}}</div>
+					<div style="position: absolute; top: 70px; left: 450px; text-align: center; width: 60px;">{{network.clients.length}}</div>
+					<div style="position: absolute; top: 70px; left: 795px; text-align: center; width: 60px;">{{sipAccounts.length}}</div>
 				</center>
 			</div>
 		</div>
@@ -29,13 +32,13 @@
 					<tr>
 						<td>
 							<div class="col-md-2"><i class="fa fa-calendar fa-2x"></i></div>
-							<div class="col-md-10"><strong>Schedule is on</strong></div>
+							<div class="col-md-10"><strong>Schedule is {{wifiSchedStatus | translate}}</strong></div>
 						</td>
 					</tr>
 					<tr>
 						<td>
 							<div class="col-md-2"><i class="fa fa-wifi fa-2x"></i></div>
-							<div class="col-md-10"><strong>WPS is active</strong></div>
+							<div class="col-md-10"><strong>WPS is {{wifiWPSStatus | translate}}</strong></div>
 						</td>
 					</tr>
 					<tr ng-repeat="client in wireless.clients">
@@ -70,7 +73,7 @@
 					<tr ng-repeat="client in network.clients">
 						<td>
 								<div class="col-md-2"><i class="fa fa-laptop fa-2x"></i></div>
-								<div class="col-md-8">{{client.hostname || "Unknown"}}<br/>{{client.ipaddr}}</div>
+								<div class="col-md-8">{{client.hostname || defaultHostName}}<br/>{{client.ipaddr}}</div>
 						</td>
 					</tr>
 				</table>
@@ -84,16 +87,10 @@
 							<div class="col-md-10"><strong>Schedule is on</strong></div>
 						</td>
 					</tr>
-					<tr>
+					<tr ng-repeat="sip in sipAccounts track by $index">
 						<td>
-								<div class="col-md-2"><strong>U1</strong></div>
-								<div class="col-md-8"><strong>00123384809</strong></div>
-						</td>
-					</tr>
-					<tr>
-						<td>
-								<div class="col-md-2"><strong>U2</strong></div>
-								<div class="col-md-8"><strong>09012309123</strong></div>
+								<div class="col-md-2"><strong style="font-size: 1.2em">U{{$index}}</strong></div>
+								<div class="col-md-8"><strong>{{sip.username}}</strong></div>
 						</td>
 					</tr>
 				</table>
