@@ -109,6 +109,13 @@
 			"ubus": {
 				"luci2.system": [
 					"sshkeys_get"
+				], 
+				"wps": [
+					"genpin", 
+					"setpin",
+					"pbc",
+					"showpin",
+					"stapin"
 				]
 			},
 			"uci": [
@@ -122,6 +129,13 @@
 				"luci2.system": [
 					"sshkeys_set",
 					"password_set"
+				], 
+				"wps": [
+					"genpin", 
+					"setpin",
+					"pbc",
+					"showpin",
+					"stapin"
 				]
 			},
 			"uci": [

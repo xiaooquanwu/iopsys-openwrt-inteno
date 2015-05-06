@@ -11,13 +11,13 @@
 				<switch id="enabled" name="enabled" ng-model="interface.closed.value" class="green" inverted></switch>
 			</luci-config-line>
 			<luci-config-line title="{{'wifi-iface.device'|translate}}">
-				<ui-select ng-model="interface.device.value"  style="width: 200px;" search-enabled="false">
+				<ui-select ng-model="interface.device.value"  search-enabled="false">
 					<ui-select-match placeholder="{{ 'Choose Device' | translate}}">{{"interface."+$select.selected}}</ui-select-match>
 					<ui-select-choices repeat="item in devices" refresh-delay="0"><div>{{"interface."+item}}</div></ui-select-choices>
 				</ui-select>
 			</luci-config-line>
 			<luci-config-line title="{{'wifi-iface.encryption'|translate}}">
-				<ui-select ng-model="interface.encryption.value"  style="width: 200px;" theme="bootstrap" search-enabled="false">
+				<ui-select ng-model="interface.encryption.value"  theme="bootstrap" search-enabled="false">
 					<ui-select-match placeholder="{{ 'Choose Protection'  | translate}}">{{"encryption."+$select.selected}}</ui-select-match>
 					<ui-select-choices repeat="item in interface.encryption.schema.allow" refresh-delay="0"><div >{{"encryption."+item}}</div></ui-select-choices>
 				</ui-select>
