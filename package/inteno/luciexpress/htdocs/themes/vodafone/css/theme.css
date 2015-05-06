@@ -152,6 +152,10 @@ h1, h2 {
 	color: #e00 !important; 
 }
 
+.footer {
+	margin-top: 1000px; 
+}
+
 .animate-show {
   line-height: 20px;
   opacity: 1;

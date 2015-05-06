@@ -183,6 +183,17 @@ angular.module("luci")
 .directive("luciNav", function(){ return {} })
 .directive("luciNavbar", function(){ return {} })
 .directive("luciTopBar", function(){ return {} })
+.directive('ngOnload', [function(){
+	return {
+    scope: {
+        callBack: '&ngOnload'
+    },
+    link: function(scope, element, attrs){
+        element.on('load', function(){
+            return scope.callBack();
+        })
+    }
+}}])
 
 angular.module("luci")
 .factory("$hosts", function($rpc, $uci){

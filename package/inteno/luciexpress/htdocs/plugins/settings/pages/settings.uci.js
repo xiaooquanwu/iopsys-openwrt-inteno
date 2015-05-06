@@ -1,4 +1,4 @@
-$juci.module("router")
+$juci.module("settings")
 .controller("SettingsUCIController", function($scope, $rpc){
 	var configs = {}; 
 	$scope.loading = 0; 

@@ -1,10 +1,10 @@
-$juci.module("router")
-.controller("SettingsPasswordCtrl", function($scope){
+$juci.module("settings")
+.controller("SettingsPasswordCtrl", function($scope, $tr, gettext){
 	$scope.showPassword = 0; 
 	$scope.showModal = 0; 
 	$scope.modal = {
 		old_password: "", 
-		password: "test", 
+		password: "", 
 		password2: ""
 	}; 
 	$scope.passwordStrength = 1; 
@@ -25,10 +25,23 @@ $juci.module("router")
 		$scope.passwordStrength = measureStrength($scope.modal.password); 
 	}, true); 
 	$scope.onChangePasswordClick = function(){
+		$scope.modal = {}; 
 		$scope.showModal = 1; 
-		/*$rpc.luci2.system.password_set({user: "martin", password: "asdf"}).done(function(data){
-			$scope.showModal = 1; 
-		}); */
+	}
+	$scope.onAcceptModal = function(){
+		if($scope.modal.password != $scope.modal.password2) alert($tr(gettext("Passwords do not match!"))); 
+		else {
+			// TODO: change to correct username
+			$rpc.luci2.system.password_set({user: "root", password: $scope.modal.password}).done(function(data){
+				$scope.showModal = 0; 
+				$scope.$apply(); 
+			}).fail(function(){
+				
+			}); 
+		}
+	}
+	$scope.onDismissModal = function(){
+		$scope.showModal = 0; 
 	}
 }); 
 

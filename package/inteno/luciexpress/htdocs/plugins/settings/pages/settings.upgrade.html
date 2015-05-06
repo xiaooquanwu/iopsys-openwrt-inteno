@@ -5,16 +5,24 @@
 			<luci-config-info>{{ 'settings.upgrade.info' | translate }}</luci-config-info>
 			<luci-config-lines>
 				<luci-config-line title="{{'Current Firmware Version'|translate}}">
-					<strong>VF_Vox2.0_Build2.4.3_2012_03_11</strong>
+					<strong>{{config.system.firmware}}</strong>
 				</luci-config-line>
 			</luci-config-lines>
 			<h3>{{'Manual Firmware Upgrade'|translate}}</h3>
 			<p>{{'settings.upgrade.manual.info'|translate}}</p>
-			<luci-config-lines>
-				<luci-config-line title="{{'Upload file'|translate}}">
-					<input type="file"></input>
-				</luci-config-line>
-			</luci-config-lines>
+			<iframe name="postiframe" id="postiframe" style="display: none;" ></iframe>
+			<form target="postiframe" action="/cgi-bin/luci-upload" method="post" enctype="multipart/form-data">
+				<input type="hidden" name="sessionid" value="{{sessionID}}" />
+				<input type="hidden" name="filename" value="/tmp/firmware.bin" />
+				<luci-config-lines>
+					<luci-config-line title="{{'Pick firmware file to upload'|translate}}">
+						<input type="file" class="" name="filedata" />
+					</luci-config-line>
+					<luci-config-line title="{{'Start upgrade'|translate}}">
+						<input type="submit" class="btn btn-lg btn-default" value="{{'Upgrade'|translate}}"/>
+					</luci-config-line>
+				</luci-config-lines>
+			</form>
 			<h3>{{'Online Update'|translate}}</h3>
 			<p>{{'settings.upgrade.online.info'|translate}}</p>
 			<luci-config-lines>
@@ -25,7 +33,7 @@
 			<h3>{{'USB Firmware Upgrade'|translate}}</h3>
 			<p>{{'settings.upgrade.usb.info'|translate}}</p>
 			<luci-config-lines>
-				<luci-config-line title="{{'Firmware File: '|translate}}">
+				<luci-config-line title="{{'Firmware File: '|translate}} - {{usbFileName}}">
 					<button class="btn btn-lg btn-default">{{'Install Upgrade'|translate}}</button>
 				</luci-config-line>
 			</luci-config-lines>
