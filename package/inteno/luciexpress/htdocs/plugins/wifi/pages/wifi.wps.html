@@ -11,14 +11,14 @@
 			<luci-config-section>
 				<luci-config-lines ng-repeat="interface in wireless['@wifi-iface']">
 					<luci-config-line title="{{'Enable WPS on '|translate}} {{interface.ssid.value}}">
-						<switch id="enabled" name="enabled" ng-model="interface.wps_pbc.value" class="green" inverted></switch>
+						<switch id="enabled" name="enabled" ng-model="interface.wps_pbc.value" class="green" ></switch>
 					</luci-config-line>
 				</luci-config-lines>
 				<h2 translate>WPS PBC</h2>
 				<p translate>wifi.wps.pbc.info</p>
 				<luci-config-lines>
 					<luci-config-line title="{{'Pressing WiFi on/off button on EasyBox for long time activates pairing '|translate}}">
-						<switch id="enabled" name="enabled" ng-model="easybox.wpsbutton.value" class="green" inverted></switch>
+						<switch id="enabled" name="enabled" ng-model="easybox.settings.wifibutton.value" class="green" ></switch>
 					</luci-config-line>
 					<luci-config-line title="{{'Pair (within 2 minutes)'|translate}}">
 						<button class="btn btn-default" ng-click="onPairPBC()" translate>Pair</button>

@@ -153,19 +153,7 @@ h1, h2 {
 }
 
 .footer {
-	margin-top: 0px; 
-}
-
-@media screen and ( min-width: 600px ){
-	.dynheight {
-		min-height: 768px; 
-	}
-}
-
-@media screen and ( max-width: 600px ){
-	.footer {
-		margin-top: 100px;  
-	}
+	margin-top: 1000px; 
 }
 
 .animate-show {

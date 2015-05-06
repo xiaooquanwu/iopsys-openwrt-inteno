@@ -109,40 +109,61 @@
 })( jQuery);
 
 $juci.module("settings")
-.controller("SettingsUpgradeCtrl", function($scope, $uci, $rpc, $session){
+.controller("SettingsUpgradeCtrl", function($scope, $session){
 	$scope.sessionID = $session.sid;
-	$scope.uploadFilename = "/tmp/firmware.bin";
 	$scope.usbFileName = "()"; 
 	console.log("SID: "+$scope.sessionID);  
-	
-	$uci.sync("system").done(function(){
-		if($uci.system.upgrade && $uci.system.upgrade.fw_upload_path.value){
-			$scope.uploadFilename = $uci.system.upgrade.fw_upload_path.value; 
-			console.log("Using upload path from config: "+$scope.uploadFilename); 
-		}
-	}); 
 	
 	$scope.onUploadComplete = function(result){
 		console.log("Upload completed: "+JSON.stringify(result)); 
 	}
-	
+	setInterval(function checkUpload(){
+		var iframe = $("#postiframe"); 
+		var json = iframe.contents().text();
+		if(json.length) {
+			$scope.onUploadComplete(JSON.parse(json)); 
+			iframe.contents().html("<html>"); 
+		}
+	}, 100); 
 	$scope.onUploadUpgrade = function(){
-		$("#postiframe").bind("load", function(){
-			var json = $(this).contents().text(); 
-			var obj = {}; 
-			try {
-				obj = JSON.parse(json); 
-			} catch(e){ alert("The server returned an error!");  }
-			
-			$rpc.luci2.system.upgrade_test().done(function(result){
-				console.log(JSON.stringify(result)); 
-				$rpc.luci2.system.upgrade_start().done(function(result){
-					console.log(JSON.stringify(result)); 
-				}); 
-			}); 
-			
-			$(this).unbind("load"); 
-		}); 
-		$("form[name='uploadForm']").submit();
+		var formData = new FormData($('uploadForm')[0]); 
+		
+		/*$.upload( "/cgi-bin/luci-upload", new FormData($('*uploadForm*')[0]))
+		.progress( function( progressEvent, upload) {
+				if( progressEvent.lengthComputable) {
+						var percent = Math.round( progressEvent.loaded * 100 / progressEvent.total) + '%';
+						if( upload) {
+								console.log( percent + ' uploaded');
+						} else {
+								console.log( percent + ' downloaded');
+						}
+				}
+		})
+		.done( function() {
+				console.log( 'Finished upload');                    
+		});*/
+		$.ajax({
+			type        : 'POST',
+			url         : 'http://192.168.1.4/cgi-bin/luci-upload',
+			data: formData,
+			cache: false,
+			contentType: false,
+			processData: false,
+			xhr: function() {  // custom xhr
+					myXhr = $.ajaxSettings.xhr();
+					if(myXhr.upload){ // if upload property exists
+							myXhr.upload.addEventListener('progress', function(){
+								console.log("Progress"); 
+							}, false); // progressbar
+					}
+					return myXhr;
+			},
+			success     : function(data) {
+				console.log("Upload completed!"); 
+			}, 
+			error: function(data){
+				console.log("Error: "+JSON.stringify(data)); 
+			}
+		}, "json"); 
 	}
 }); 

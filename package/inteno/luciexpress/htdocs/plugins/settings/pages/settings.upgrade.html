@@ -11,15 +11,15 @@
 			<h3>{{'Manual Firmware Upgrade'|translate}}</h3>
 			<p>{{'settings.upgrade.manual.info'|translate}}</p>
 			<iframe name="postiframe" id="postiframe" style="display: none;" ></iframe>
-			<form target="postiframe" name="uploadForm" action="/cgi-bin/luci-upload" method="post" enctype="multipart/form-data" >
+			<form target="postiframe" action="/cgi-bin/luci-upload" method="post" enctype="multipart/form-data">
 				<input type="hidden" name="sessionid" value="{{sessionID}}" />
-				<input type="hidden" name="filename" value="{{uploadFilename}}" />
+				<input type="hidden" name="filename" value="/tmp/firmware.bin" />
 				<luci-config-lines>
 					<luci-config-line title="{{'Pick firmware file to upload'|translate}}">
-						<input type="file" class="btn btn-default btn-file"  name="filedata" />
+						<input type="file" class="" name="filedata" />
 					</luci-config-line>
 					<luci-config-line title="{{'Start upgrade'|translate}}">
-						<button ng-click="onUploadUpgrade()" class="btn btn-lg btn-default">{{'Upgrade'|translate}}</button>
+						<input type="submit" class="btn btn-lg btn-default" value="{{'Upgrade'|translate}}"/>
 					</luci-config-line>
 				</luci-config-lines>
 			</form>
