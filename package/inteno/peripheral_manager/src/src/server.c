@@ -7,6 +7,7 @@
 #include "catv.h"
 #include "sfp.h"
 #include "touch_sx9512.h"
+#include "prox_px3220.h"
 
 struct server_ctx server;
 
@@ -17,6 +18,7 @@ void gpio_led_init(struct server_ctx *);
 void gpio_button_init(struct server_ctx *);
 
 void catv_monitor_init(struct server_ctx *);
+void vox_init(struct server_ctx *);
 
 struct catv_handler *catv_h;
 struct sfp_handler *sfp_h;
@@ -38,6 +40,10 @@ void server_start(struct uci_context *uci_ctx, struct ubus_context *ubus_ctx)
 	gpio_button_init(&server);
 
 	sx9512_init(&server);
+
+	px3220_init(&server);
+
+	vox_init(&server);
 #endif
 
 	DBG(1, "connect generic buttons/leds to hardware drivers.");

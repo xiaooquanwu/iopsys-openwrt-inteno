@@ -25,9 +25,12 @@ peripheral_manager_SOURCES = \
 	src/i2c.c \
 	src/i2c.h \
 	src/sfp.c \
-	src/sfp.h 
+	src/sfp.h
 
 if BRCM_BOARD
+
+bin_PROGRAMS += vox_test
+
 peripheral_manager_SOURCES += \
 	src/gpio_led.c \
 	src/gpio_led.h \
@@ -36,7 +39,15 @@ peripheral_manager_SOURCES += \
 	src/gpio.c \
 	src/gpio.h \
 	src/touch_sx9512.c \
-	src/touch_sx9512.h
+	src/touch_sx9512.h \
+	src/vox.h \
+	src/vox.c \
+	src/prox_px3220.c
+
+vox_test_SOURCES = \
+	src/vox_test.c \
+	src/gpio.c \
+	src/gpio.h
 endif
 
 peripheral_manager_LDADD = $(UCI_LIB) $(UBOX_LIB) $(UBUS_LIB) -lm

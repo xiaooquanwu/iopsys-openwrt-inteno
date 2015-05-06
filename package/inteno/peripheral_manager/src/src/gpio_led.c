@@ -96,7 +96,7 @@ static int gpio_set_state(struct led_drv *drv, led_state_t state)
 		shift_register3_set(p->addr, bit_val);
 		break;
 	default:
-		DBG(1,"access mode not supported [%d]", p->mode);
+		DBG(1,"access mode not supported [%d,%s]", p->mode, p->led.name);
 	}
 
 	return p->state;
@@ -150,6 +150,8 @@ void gpio_led_init(struct server_ctx *s_ctx) {
 				data->mode =  SHIFTREG2;
 			else if (!strncasecmp("csr",s,4))
 				data->mode =  SHIFTREG3;
+			else
+				DBG(1, "Mode %s : Not supported!", s);
 		}
 
 		s = ucix_get_option(s_ctx->uci_ctx, "hw" , data->led.name, "active");

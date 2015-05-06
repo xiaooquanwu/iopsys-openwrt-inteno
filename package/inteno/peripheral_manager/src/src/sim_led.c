@@ -41,10 +41,9 @@ struct sim_data {
 	int addr;
 	led_color_t color;
 	int state;
-	int breading;
+	int pulsing;
 	struct led_drv led;
 };
-
 
 void sim_led_init(struct server_ctx *s_ctx) {
 
@@ -86,11 +85,11 @@ void sim_led_init(struct server_ctx *s_ctx) {
 		}
 		DBG(1, "color = [%s]=(%d)", s,data->color);
 
-		s = ucix_get_option(s_ctx->uci_ctx, "hw" , data->led.name, "breading");
-		DBG(1, "breading = [%s]", s);
+		s = ucix_get_option(s_ctx->uci_ctx, "hw" , data->led.name, "pulsing");
+		DBG(1, "pulsing = [%s]", s);
 		if (s){
 			if (!strncasecmp("yes",s,3))
-				data->breading = 1;
+				data->pulsing = 1;
 		}
 		data->led.func = &func;
 		data->led.priv = data;
