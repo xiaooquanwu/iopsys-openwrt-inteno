@@ -109,10 +109,18 @@
 })( jQuery);
 
 $juci.module("settings")
-.controller("SettingsUpgradeCtrl", function($scope, $session){
+.controller("SettingsUpgradeCtrl", function($scope, $uci, $session){
 	$scope.sessionID = $session.sid;
+	$scope.uploadFilename = "/tmp/firmware.bin";
 	$scope.usbFileName = "()"; 
 	console.log("SID: "+$scope.sessionID);  
+	
+	$uci.sync("system").done(function(){
+		if($uci.system.upgrade && $uci.system.upgrade.fw_upload_path.value){
+			$scope.uploadFilename = $uci.system.upgrade.fw_upload_path.value; 
+			console.log("Using upload path from config: "+$scope.uploadFilename); 
+		}
+	}); 
 	
 	$scope.onUploadComplete = function(result){
 		console.log("Upload completed: "+JSON.stringify(result)); 
@@ -122,9 +130,9 @@ $juci.module("settings")
 		var json = iframe.contents().text();
 		if(json.length) {
 			$scope.onUploadComplete(JSON.parse(json)); 
-			iframe.contents().html("<html>"); 
+			iframe.contents().html(""); 
 		}
-	}, 100); 
+	}, 500); 
 	$scope.onUploadUpgrade = function(){
 		var formData = new FormData($('uploadForm')[0]); 
 		

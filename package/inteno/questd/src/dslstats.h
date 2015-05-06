@@ -37,7 +37,7 @@ enum {
 	DSLSTATS_COUNTER_COUNT
 }; 
 
-typedef struct { double up; double down } UpDown; 
+typedef struct { double up; double down; } UpDown; 
 typedef struct dsl_bearer {
 
 	UpDown max_rate; 

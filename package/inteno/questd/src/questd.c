@@ -329,11 +329,11 @@ match_client_to_network(Network *lan, char *hostaddr, bool *local, char **net, c
 
 	if((snet.s_addr ^ rslt.s_addr) == 0) {
 		*local = true;
-		snprintf(net, 32, lan->name);
+		snprintf(*net, 32, lan->name);
 		if (lan->type && !strcmp(lan->type, "bridge"))
-			snprintf(dev, 32, "br-%s", lan->name);
+			snprintf(*dev, 32, "br-%s", lan->name);
 		else
-			snprintf(dev, 32, lan->ifname);
+			snprintf(*dev, 32, lan->ifname);
 	}
 }
 
@@ -364,7 +364,7 @@ wireless_sta(Client *clnt, Detail *dtl)
 	int i = 0;
 	bool there = false;
 	char tab[16];
-	int ret, tmp;
+	int tmp;
 	int noise;
 
 	for (i = 0; wireless[i].device; i++) {
@@ -377,12 +377,12 @@ wireless_sta(Client *clnt, Detail *dtl)
 					there = true;
 					strncpy(clnt->wdev, wireless[i].vif, sizeof(clnt->wdev));
 				}
-				ret = sscanf(line, "\t idle %d seconds", &(dtl->idle));
-				ret = sscanf(line, "\t in network %d seconds", &(dtl->in_network));
-				ret = sscanf(line, "\t tx total bytes: %ld\n", &(dtl->tx_bytes));
-				ret = sscanf(line, "\t rx data bytes: %ld", &(dtl->rx_bytes));
-				ret = sscanf(line, "\t rate of last tx pkt: %d kbps - %d kbps", &tmp, &(dtl->tx_rate));
-				ret = sscanf(line, "\t rate of last rx pkt: %d kbps", &(dtl->rx_rate));
+				sscanf(line, "\t idle %d seconds", &(dtl->idle));
+				sscanf(line, "\t in network %d seconds", &(dtl->in_network));
+				sscanf(line, "\t tx total bytes: %ld\n", &(dtl->tx_bytes));
+				sscanf(line, "\t rx data bytes: %ld", &(dtl->rx_bytes));
+				sscanf(line, "\t rate of last tx pkt: %d kbps - %d kbps", &tmp, &(dtl->tx_rate));
+				sscanf(line, "\t rate of last rx pkt: %d kbps", &(dtl->rx_rate));
 			}
 			pclose(stainfo);
 		}
@@ -1296,7 +1296,7 @@ quest_router_connected_clients6(struct ubus_context *ctx, struct ubus_object *ob
 
 	return 0;
 }
-
+/*
 static int
 quest_router_igmp_table(struct ubus_context *ctx, struct ubus_object *obj,
 		  struct ubus_request_data *req, const char *method,
@@ -1307,11 +1307,12 @@ quest_router_igmp_table(struct ubus_context *ctx, struct ubus_object *obj,
 	blobmsg_parse(quest_policy, __QUEST_MAX, tb, blob_data(msg), blob_len(msg));
 
 	blob_buf_init(&bb, 0);
-	router_dump_connected_clients6(&bb);
+	igpm_rpc(&bb);
 	ubus_send_reply(ctx, req, bb.head);
 
 	return 0;
-}
+}*/
+
 static int
 quest_router_clients6(struct ubus_context *ctx, struct ubus_object *obj,
 		  struct ubus_request_data *req, const char *method,
@@ -1579,7 +1580,7 @@ wps_checkpin(struct ubus_context *ctx, struct ubus_object *obj,
 	char pin[9] = { '\0' };
 	bool valid = false;
 
-	snprintf(cmnd, 32, "wps_cmd checkpin %s", blobmsg_data(tb[PIN]));
+	snprintf(cmnd, 32, "wps_cmd checkpin %s", (char*)blobmsg_data(tb[PIN]));
 	if ((checkpin = popen(cmnd, "r"))) {
 		fgets(pin, sizeof(pin), checkpin);
 		remove_newline(pin);

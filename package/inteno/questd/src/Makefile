@@ -1,5 +1,5 @@
 CC		= gcc
-CFLAGS		= -g -Wall
+CFLAGS		= -g -Wall 
 LOCLIBS		= 
 LIBS		= -luci -lubus -lubox -lpthread
 OBJS		= questd.o dumper.o port.o arping.o usb.o ndisc.o dslstats.o tools.o igmp.o

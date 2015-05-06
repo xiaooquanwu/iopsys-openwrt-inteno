@@ -41,7 +41,6 @@ void dslstats_load(struct dsl_stats *self){
 	char sep[64]; 
 	char arg1[64]; 
 	char arg2[64]; 
-	int i = 0;
 	
 	// start with default bearer 0 (we can support more later)
 	DSLBearer *bearer = &self->bearers[0]; 
@@ -59,7 +58,7 @@ void dslstats_load(struct dsl_stats *self){
 			case 0: { // sections
 				if(strstr(line, "Bearer")){
 					int id = 0; 
-					if(sscanf(strstr(line, "Bearer"), "Bearer %d", sep, &id) > 0){
+					if(sscanf(strstr(line, "Bearer"), "Bearer %d", &id) > 0){
 						if(id < DSLSTATS_BEARER_COUNT){
 							bearer = &self->bearers[id];
 							DSLDEBUG("Switching bearer: %d\n", id); 
@@ -98,7 +97,7 @@ void dslstats_load(struct dsl_stats *self){
 				else if(strstr(name, "Line Status") == name) self->line_status = strdup(arg1); 
 				else if(strstr(name, "Bearer") == name){
 					unsigned long id, up, down, ret; 
-					if((ret = sscanf(arg1, "%d, Upstream rate = %lu Kbps, Downstream rate = %lu Kbps", &id, &up, &down)) == 3){
+					if((ret = sscanf(arg1, "%lu, Upstream rate = %lu Kbps, Downstream rate = %lu Kbps", &id, &up, &down)) == 3){
 						if(id < DSLSTATS_BEARER_COUNT){
 							bearer = &self->bearers[id]; 
 							bearer->rate.up = up; 
