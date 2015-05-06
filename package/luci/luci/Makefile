@@ -2,8 +2,8 @@ include $(TOPDIR)/rules.mk
 
 PKG_BRANCH:=svn-0.11
 PKG_NAME:=luci
-PKG_VERSION:=inteno-1.0.179
-PKG_SOURCE_VERSION:=d40a28ff65b058d5c68c0e9b50430966cd560fcf
+PKG_VERSION:=inteno-1.0.180
+PKG_SOURCE_VERSION:=e9e4a2ae044203bafec56511df21a63345d9906f
 
 PKG_SOURCE_PROTO:=git
 ifeq ($(CONFIG_PACKAGE_bcmkernel),y)
@@ -441,7 +441,6 @@ endef
 LUCI_VOICE_DIR=$(PKG_BUILD_DIR)/applications/luci-voice
 define Package/luci-app-voice/install
 	$(CP) -a $(LUCI_VOICE_DIR)/ipkg/* $(1)/CONTROL/ 2>/dev/null || true
-	
 	$(INSTALL_DIR) $(1)/etc/config
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/etc/config/voice_client $(1)/etc/config/
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/etc/config/voice_codecs $(1)/etc/config/
@@ -543,7 +542,6 @@ define Package/luci-app-voice-pbx/install
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/opening_hours.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/opening_hours_profile.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/moh.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
-	
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/controller/voice/conference.lua $(1)/usr/lib/lua/luci/controller/voice/
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/controller/voice/ivr.lua $(1)/usr/lib/lua/luci/controller/voice/
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/controller/voice/queues.lua $(1)/usr/lib/lua/luci/controller/voice/
@@ -552,7 +550,6 @@ define Package/luci-app-voice-pbx/install
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/controller/voice/opening_hours.lua $(1)/usr/lib/lua/luci/controller/voice/
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/controller/voice/sounds.lua $(1)/usr/lib/lua/luci/controller/voice/
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/controller/voice/moh.lua $(1)/usr/lib/lua/luci/controller/voice/
-	
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/view/voice/moh.htm $(1)/usr/lib/lua/luci/view/voice/
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/view/voice/sounds.htm $(1)/usr/lib/lua/luci/view/voice/
 endef
