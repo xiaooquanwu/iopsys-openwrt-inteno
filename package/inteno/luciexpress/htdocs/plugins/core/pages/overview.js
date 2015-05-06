@@ -48,5 +48,5 @@ $juci.module("core")
 			}); 
 		}); 
 	} refresh(); 
-	setInterval(refresh, 5000); 
+	//setInterval(refresh, 5000); 
 }); 

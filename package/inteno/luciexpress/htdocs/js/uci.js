@@ -8,8 +8,9 @@ angular.module("luci")
 			"status_led": 	{ dvalue: true, type: Boolean }, 
 			"power_led": 		{ dvalue: true, type: Boolean }, 
 			"power_led_br":	{ dvalue: 100, type: Number },
-			"wifibutton": 		{ dvalue: true, type: Boolean },
-			"wpsbutton": 		{ dvalue: true, type: Boolean }
+			"wifibutton": 	{ dvalue: true, type: Boolean },
+			"wpsbutton": 		{ dvalue: true, type: Boolean },
+			"wpsdevicepin": { dvalue: true, type: Boolean }
 		}, 
 		"firewall-defaults": {
 			"syn_flood":		{ dvalue: true, type: Boolean }, 
@@ -53,7 +54,7 @@ angular.module("luci")
 			"ping_wan":			{ dvalue: false, type: Boolean }
 		},
 		"wifi-status": {
-			"wlan":		{ dvalue: true, type: Boolean },
+			"wlan":		{ dvalue: true, type: Boolean }, 
 			"wps":		{ dvalue: true, type: Boolean },
 			"schedule":	{ dvalue: false, type: Boolean },
 			"sched_status":	{ dvalue: false, type: Boolean }

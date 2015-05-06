@@ -12,6 +12,7 @@
 		"widgets/luci.nav",
 		"widgets/luci.navbar",
 		"widgets/luci.top_bar",
+		"widgets/wifi.signal.indicator",
 		"widgets/uci.firewall.nat.rule.edit",
 		"widgets/core.modal",
         "widgets/luci.input.port"

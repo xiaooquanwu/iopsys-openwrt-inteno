@@ -42,7 +42,10 @@
 						<td>
 								<div class="col-md-2"><i class="fa fa-desktop fa-2x"></i></div>
 								<div class="col-md-8">{{client.hostname}}<br/>{{client.ipaddr}}</div>
-								<div ng-show="client.connected" class="col-md-2" style="color: #a9b400"><i class="fa fa-signal fa-2x"></i></div>
+								<div ng-show="client.connected" class="col-md-2" style="color: #a9b400">
+									<wifi-signal-indicator ng-model="client.snr"></wifi-signal-indicator>
+									<!--<i class="fa fa-signal fa-2x"></i>-->
+								</div>
 								<div ng-show="!client.connected" class="col-md-2" style="color: #eee"><i class="fa fa-signal fa-2x"></i></div>
 						</td>
 					</tr>
