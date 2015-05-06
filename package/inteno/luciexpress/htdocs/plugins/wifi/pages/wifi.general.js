@@ -27,6 +27,7 @@ $juci.module("wifi")
 			window.uci = $uci; 
 			$scope.interfaces = $uci.wireless['@wifi-iface']; 
 			$scope.status = $uci.wireless.status; 
+			$scope.easybox = $uci.easybox.settings; 
 			$scope.$apply(); 
 			
 			next(); 
