@@ -119,6 +119,7 @@
 				], 
 				"asterisk.call_log": [
 					"list"
+					"sshkeys_get"
 				], 
 				"wps": [
 					"genpin", 

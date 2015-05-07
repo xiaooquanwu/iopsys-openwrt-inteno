@@ -125,7 +125,6 @@ $juci.module("settings")
 	$scope.onUploadComplete = function(result){
 		console.log("Upload completed: "+JSON.stringify(result)); 
 	}
-	
 	$scope.onUploadUpgrade = function(){
 		$("#postiframe").bind("load", function(){
 			var json = $(this).contents().text(); 
