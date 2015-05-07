@@ -136,11 +136,15 @@ static const struct blobmsg_policy rpc_opkg_package_policy[__RPC_OP_MAX] = {
 
 enum {
 	RPC_UPGRADE_KEEP,
+	RPC_UPGRADE_CHECK,
+	RPC_UPGRADE_PATH,
 	__RPC_UPGRADE_MAX
 };
 
 static const struct blobmsg_policy rpc_upgrade_policy[__RPC_UPGRADE_MAX] = {
 	[RPC_UPGRADE_KEEP] = { .name = "keep",    .type = BLOBMSG_TYPE_BOOL },
+	[RPC_UPGRADE_CHECK] = { .name = "type",    .type = BLOBMSG_TYPE_STRING },
+	[RPC_UPGRADE_PATH] = { .name = "path",    .type = BLOBMSG_TYPE_STRING },
 };
 
 enum {
@@ -991,6 +995,23 @@ rpc_luci2_usb_list(struct ubus_context *ctx, struct ubus_object *obj,
 }
 
 static int
+rpc_luci2_upgrade_check(struct ubus_context *ctx, struct ubus_object *obj,
+                       struct ubus_request_data *req, const char *method,
+                       struct blob_attr *msg)
+{
+	const char *type = "--usb";
+
+	struct blob_attr *tb[__RPC_UPGRADE_MAX];
+	blobmsg_parse(rpc_upgrade_policy, __RPC_UPGRADE_MAX, tb, blob_data(msg), blob_len(msg));
+
+	if (tb[RPC_UPGRADE_CHECK] && !strcmp(blobmsg_data(tb[RPC_UPGRADE_CHECK]), "online"))
+		type = "--online";
+
+	const char *cmd[3] = { "sysupgrade", type, NULL };
+	return ops->exec(cmd, NULL, NULL, NULL, NULL, NULL, ctx, req);
+}
+
+static int
 rpc_luci2_upgrade_test(struct ubus_context *ctx, struct ubus_object *obj,
                        struct ubus_request_data *req, const char *method,
                        struct blob_attr *msg)
@@ -1040,13 +1061,26 @@ rpc_luci2_upgrade_start(struct ubus_context *ctx, struct ubus_object *obj,
 {
 	const char *fwpath = "/tmp/firmware.bin";
 	//const char *keep = "";
+	bool found = false;
+
+	struct blob_attr *tb[__RPC_UPGRADE_MAX];
+	blobmsg_parse(rpc_upgrade_policy, __RPC_UPGRADE_MAX, tb, blob_data(msg), blob_len(msg));
+
+	if (tb[RPC_UPGRADE_PATH] && strlen(blobmsg_data(tb[RPC_UPGRADE_PATH]))) {
+		fwpath = strdup(blobmsg_data(tb[RPC_UPGRADE_PATH]));
+		found = true;
+	}
+
+/*	if (tb[RPC_UPGRADE_KEEP] && !blobmsg_data(tb[RPC_UPGRADE_KEEP]))*/
+/*		keep = "-n";*/
 
 	struct uci_package *p;
 	struct uci_element *e;
 	struct uci_section *s;
 	struct uci_ptr ptr = { .package = "system" };
 
-	uci_load(cursor, ptr.package, &p);
+	if (!found)
+		uci_load(cursor, ptr.package, &p);
 
 	if (p)
 	{
@@ -1071,12 +1105,6 @@ rpc_luci2_upgrade_start(struct ubus_context *ctx, struct ubus_object *obj,
 
 		uci_unload(cursor, p);
 	}
-
-/*	struct blob_attr *tb[__RPC_UPGRADE_MAX];*/
-/*	blobmsg_parse(rpc_upgrade_policy, __RPC_UPGRADE_MAX, tb, blob_data(msg), blob_len(msg));*/
-
-/*	if (tb[RPC_UPGRADE_KEEP] && !blobmsg_data(tb[RPC_UPGRADE_KEEP]))*/
-/*		keep = "-n";*/
 
 	const char *cmd[3] = { "sysupgrade", fwpath, NULL };
 	return ops->exec(cmd, NULL, NULL, NULL, NULL, NULL, ctx, req);
@@ -2908,6 +2936,8 @@ rpc_luci2_api_init(const struct rpc_daemon_ops *o, struct ubus_context *ctx)
 		                                  rpc_password_policy),
 		UBUS_METHOD_NOARG("led_list",     rpc_luci2_led_list),
 		UBUS_METHOD_NOARG("usb_list",     rpc_luci2_usb_list),
+		UBUS_METHOD("upgrade_check", rpc_luci2_upgrade_check,
+						rpc_upgrade_policy),
 		UBUS_METHOD_NOARG("upgrade_test", rpc_luci2_upgrade_test),
 		UBUS_METHOD("upgrade_start",      rpc_luci2_upgrade_start,
 		                                  rpc_upgrade_policy),
