@@ -5,19 +5,20 @@ $juci.module("internet")
 	$scope.lan = {}; 
 	$scope.config = $config; 
 	
-	function load(){
-		$uci.show("firewall.dmz").done(function(dmz){
-			$scope.dmz = dmz; 
-			$scope.exposedHostEnabled = Number(dmz.enabled); 
-			$scope.$apply(); 
-		});
-	} load(); 
-	
-	$rpc.network.interface.status({
-		"interface": "wan"
-	}).done(function(wan){
-		$scope.wan.ip = wan["ipv4-address"][0].address; 
-	}); 
+	async.parallel([
+		function(next){
+			$uci.sync("firewall").done(function(){
+				$scope.firewall = $uci.firewall; 
+			}).always(function(){ next(); }); 
+		}, 
+		function(next){
+			$rpc.network.interface.status({
+				"interface": "wan"
+			}).done(function(wan){
+				$scope.wan.ip = wan["ipv4-address"][0].address; 
+			}).always(function(){ next(); }); 
+		}
+	]); 
 	
 	$scope.onEnable = function(en){
 		$scope.dmz.enabled = $scope.exposedHostEnabled; 

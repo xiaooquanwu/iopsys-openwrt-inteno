@@ -1,42 +1,30 @@
 <luci-layout-with-sidebar>
 	<div ng-controller="InternetExHostPageCtrl">
-		<h2 translate>Exposed Host</h2>
-		<p translate>If you have a local network device that cannot run an Internet application properly behind the firewall, you can allow unrestricted Internet access to the network device (Exposed Host).</p>
-		<div class="row">
-			<div class="col-md-10">
-				<strong translate>Exposed Host Function</strong>
-			</div>
-			<div class="col-md-1"><switch ng-model="exposedHostEnabled" ng-change="onEnable" class="green"></switch></div>
-			<div class="col-md-1"></div>
-		</div>
-		<div ng-show="exposedHostEnabled">
-			<div class="alert alert-danger">
-				<p translate><span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span> Warning: By using the exposed host function you bypass the firewall of your {{config.friendly_name}}. Please make sure that your computer is protected against attacks from Internet. The following ports will not be forwarded: {{ nonforwardedPorts || 'None'}}.</p>
-			</div>
-			
-			<div class="panel panel-default">
-				<div class="panel-body">
-					<div class="row">
-						<div class="col-md-4">Plublic IP Address</div>
-						<div class="col-md-8">{{ wan.ip }}</div>
-					</div>
-					<div class="row">
-						<div class="col-md-4">Local IP Address</div>
-						<div class="col-md-8">
-							<input type='text' ng-model='dmz.host' 
-							ng-pattern='/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/' 
-							placeholder='xxx.xxx.xxx.xxx' required />
-						</div>
-					</div>
+		<luci-config>
+			<luci-config-section>
+				<luci-config-heading>{{'Exposed Host'|translate}}</luci-config-heading>
+				<luci-config-info>{{'internet.exposed_host.info'|translate}}</luci-config-info>
+				<luci-config-lines>
+					<luci-config-line title="{{'Exposed Host Function'|translate}}">
+						<switch id="enabled" name="enabled" ng-model="firewall.dmz.enabled.value" class="green"></switch>
+					</luci-config-line>
+				</luci-config-lines>
+			</luci-config-section>
+			<luci-config-section ng-show="firewall.dmz.enabled.value">
+				<div class="alert alert-danger">
+					<p translate><span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span> Warning: By using the exposed host function you bypass the firewall of your {{config.friendly_name}}. Please make sure that your computer is protected against attacks from Internet. The following ports will not be forwarded: {{ nonforwardedPorts || 'None'}}.</p>
 				</div>
-				<div class="panel-footer">
-					<button class="btn btn-primary" ng-click="onSave()"> Save </button>
-					<button class="btn btn-default" ng-click="onReset()"> Reset </button>
-				</div>
-			</div>
-			<div class="alert alert-info ng-hide nga-fade nga-default" ng-show="info_message">{{ info_message }}</div>
-			<div class="alert alert-danger  ng-hide nga-fade nga-default" ng-show="error_message"><span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span> {{ error_message }}</div>
-			
-		</div>
+				<p translate>Choose the local IP address that should be exposed to Internet. Additionally you should configure this IP address as static DHCP address for your device (see Settings/Network).</p>
+				<luci-config-lines>
+					<luci-config-line title="{{'Public IP Address'|translate}}">
+						<strong>{{wan.ip}}</strong>
+					</luci-config-line>
+					<luci-config-line title="{{'Local IP Address'|translate}}">
+						<input type="text" class="form-control" placeholder="{{ip.address.label}}" ng-model="firewall.dmz.host.value"/>
+					</luci-config-line>
+				</luci-config-lines>
+			</luci-config-section>
+			<luci-config-apply></luci-config-apply>
+		</luci-config>
 	</div>
 </luci-layout-with-sidebar>
