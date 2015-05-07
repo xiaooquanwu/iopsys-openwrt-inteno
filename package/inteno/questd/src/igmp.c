@@ -42,7 +42,8 @@ int igmp_rpc(struct ubus_context *ctx, struct ubus_object *obj,
 	void *object, *array;
 
 	blob_buf_init(&bb, 0);
-	if (!(in = fopen("/proc/net/igmp_snooping", "r")))
+	// /proc/net/
+	if (!(in = fopen("/tmp/igmp_snooping", "r")))
 		return 1;
 	array = blobmsg_open_array(&bb, "tables");
 

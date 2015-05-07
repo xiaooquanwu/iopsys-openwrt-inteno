@@ -1,5 +1,5 @@
 $juci.module("status")
-.controller("StatsCtrl", function($scope, $rpc, $session, gettextCatalog){
+.controller("StatsCtrl", function($scope, $rpc, $session, gettext, $tr){
 		$scope.dslstats = {}; 
 		
 		$scope.dslConnectionInfo = {

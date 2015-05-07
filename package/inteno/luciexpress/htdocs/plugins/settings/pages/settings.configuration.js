@@ -46,7 +46,7 @@ $juci.module("settings")
 		$("form[name='restoreForm']").submit();
 	}
 	$scope.onUploadComplete = function(result){
-		console.log("Result: "+JSON.stringify(result)+": "+$scope.restore.password); 
+		console.log("Uploaded: "+JSON.stringify(result)+": "+$scope.restore.password); 
 		$rpc.luci2.system.backup_restore({
 			password: $scope.restore.password
 		}).done(function(result){
@@ -54,7 +54,10 @@ $juci.module("settings")
 				alert(result.stderr); 
 			} else {
 				$scope.showUploadModal = 0; 
+				$scope.$apply(); 
 			}
+		}).fail(function(err){
+			console.error("Filed: "+JSON.stringify(err)); 
 		}); 
 	}
 	$scope.onAcceptModal = function(){

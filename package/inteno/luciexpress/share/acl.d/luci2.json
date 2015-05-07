@@ -108,7 +108,17 @@
 		"read": {
 			"ubus": {
 				"luci2.system": [
-					"sshkeys_get"
+					"sshkeys_get", 
+					"upgrade_test", 
+					"upgrade_clean", 
+					"upgrade_start"
+				], 
+				
+				"asterisk": [
+					"status"
+				], 
+				"asterisk.call_log": [
+					"list"
 				], 
 				"wps": [
 					"genpin", 
@@ -116,6 +126,12 @@
 					"pbc",
 					"showpin",
 					"stapin"
+				], 
+				"router": [
+					"networks"
+				], 
+				"network.interface": [
+					"dump"
 				]
 			},
 			"uci": [
@@ -130,6 +146,9 @@
 				"luci2.system": [
 					"sshkeys_set",
 					"password_set"
+				], 
+				"asterisk.call_log": [
+					"list"
 				], 
 				"wps": [
 					"genpin", 

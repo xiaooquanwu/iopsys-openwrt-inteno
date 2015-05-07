@@ -21,7 +21,7 @@
 					<img ng-src="themes/vodafone/img/overview/overview-background-bot.jpg" id="Image-Maps-Com-image-maps-2015-04-08-032815" usemap="#image-maps-2015-04-08-032815" alt="Router">
 					<div style="position: absolute; top: 70px; left: 100px; text-align: center; width: 60px;">{{wireless.clients.length}}</div>
 					<div style="position: absolute; top: 70px; left: 450px; text-align: center; width: 60px;">{{network.clients.length}}</div>
-					<div style="position: absolute; top: 70px; left: 795px; text-align: center; width: 60px;">{{sipAccounts.length}}</div>
+					<div style="position: absolute; top: 70px; left: 795px; text-align: center; width: 60px;">{{sipAccounts.length||0}}</div>
 				</center>
 			</div>
 		</div>
@@ -90,7 +90,7 @@
 					<tr ng-repeat="sip in sipAccounts track by $index">
 						<td>
 								<div class="col-md-2"><strong style="font-size: 1.2em">U{{$index}}</strong></div>
-								<div class="col-md-8"><strong>{{sip.username}}</strong></div>
+								<div class="col-md-8"><strong>{{sip.user.value}}</strong></div>
 						</td>
 					</tr>
 				</table>

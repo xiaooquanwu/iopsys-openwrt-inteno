@@ -60,8 +60,17 @@ angular.module("luci")
 				"asterisk.status", 
 				"luci2.system.password_set", 
 				"luci2.system.backup_restore", 
+				"luci2.system.upgrade_test",  
+				"luci2.system.upgrade_clean",  
+				"luci2.system.upgrade_start", 
 				"luci2.system.reset_test", 
 				"luci2.system.reset_start", 
+				"luci2.system.reboot", 
+				"luci2.system.ping", 
+				"luci2.network.ping",
+				"luci2.network.traceroute", 
+				"network.interface.dump", 
+				"router.networks", 
 				// local stuff for the node server. 
 				"local.features", 
 				"local.set_rpc_host"
