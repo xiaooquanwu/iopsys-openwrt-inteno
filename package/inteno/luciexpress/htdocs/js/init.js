@@ -1,3 +1,5 @@
+//! Author: Martin K. Schröder <mkschreder.uk@gmail.com>
+
 angular.module("luci")
 .controller("InitPageController", function($scope, $tr, 
 	$state, $stateParams, $config, $session, $localStorage, 
@@ -41,6 +43,7 @@ angular.module("luci")
 							if(page.view){
 								//scripts.push(plugin_root + "/" + page.view); 
 								//console.log("Registering state "+k.replace(/\./g, "_")); 
+								// TODO: there is still a problem with state changes where template gets loaded before the dependencies so controller is not found
 								$juci.$stateProvider.state(k.replace(/\./g, "_"), {
 									url: "/"+k, 
 									views: {

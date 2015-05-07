@@ -1,3 +1,5 @@
+//! Author: Martin K. Schröder <mkschreder.uk@gmail.com>
+
 angular.module("luci")
 .factory('$status', function($rpc) {
 	var updates = {

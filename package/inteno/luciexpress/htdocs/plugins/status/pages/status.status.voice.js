@@ -7,6 +7,7 @@ $juci.module("status")
 				if(data.sip[k].ip) accounts.push(data.sip[k]); 
 			}); 
 			$scope.sipAccounts = accounts; 
+			$scope.$apply(); 
 		}
 	}); 
 }); 

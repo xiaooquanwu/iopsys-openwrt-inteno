@@ -15,6 +15,8 @@ $juci.module("core")
 		}; 
 	}); 
 	$scope.onChangeTheme = function(item){
-		$theme.changeTheme(item.id); 
+		$theme.changeTheme(item.id).done(function(){
+			window.location.reload(); 
+		}); 
 	}
 }); 

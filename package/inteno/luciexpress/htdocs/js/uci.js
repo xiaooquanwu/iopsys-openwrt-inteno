@@ -1,3 +1,5 @@
+//! Author: Martin K. Schröder <mkschreder.uk@gmail.com>
+
 angular.module("luci")
 .provider('$uci', function($rpcProvider){
 	$rpc = $rpcProvider.$get(); 
@@ -53,6 +55,55 @@ angular.module("luci")
 			"disabled":			{ dvalue: false, type: Boolean },
 			"ping_wan":			{ dvalue: false, type: Boolean }
 		},
+		"voice_client-brcm_line": {
+      "extension": 			{ dvalue: '', type: String }, 
+      "sip_account": 		{ dvalue: '', type: String }, 
+      "noise":					{ dvalue: false, type: Boolean }, 
+      "vad":						{ dvalue: false, type: Boolean }, 
+      "txgain":					{ dvalue: false, type: Boolean }, 
+      "rxgain":					{ dvalue: false, type: Boolean }, 
+      "echo_cancel":		{ dvalue: true, type: Boolean }, 
+      "callwaiting":		{ dvalue: false, type: Boolean }, 
+      "clir":						{ dvalue: false, type: Boolean }, 
+      "name":						{ dvalue: '', type: String }, 
+      "instance":				{ dvalue: '', type: String }
+		}, 
+		"voice_client-sip_service_provider": {           
+			"name":							{ dvalue: "Account 1", type: String },
+			"codec0":						{ dvalue: "alaw", type: String },  
+			"codec1":						{ dvalue: "ulaw", type: String },       
+			"codec2":						{ dvalue: "g729", type: String },   
+			"codec3":						{ dvalue: "g726", type: String },
+			"autoframing":			{ dvalue: false, type: Boolean },
+			"cfim_on":					{ dvalue: "*21*", type: String },  
+			"cfim_off":					{ dvalue: "#21#", type: String },
+			"cfbs_on":					{ dvalue: "*61*", type: String }, 
+			"cfbs_off":					{ dvalue: "#61#", type: String }, 
+			"call_return":			{ dvalue: "*69", type: String },         
+			"redial":						{ dvalue: "*66", type: String },   
+			"is_fax":						{ dvalue: false, type: Boolean },      
+			"transport":				{ dvalue: "udp", type: String },
+			"priority_ulaw":		{ dvalue: 0, type: Number },
+			"priority_alaw":		{ dvalue: 0, type: Number }, 
+			"priority_g729":		{ dvalue: 0, type: Number },  
+			"priority_g723":		{ dvalue: 0, type: Number },
+			"priority_g726":		{ dvalue: 0, type: Number },   
+			"enabled":					{ dvalue: true, type: Boolean },
+			"target":						{ dvalue: "direct", type: String },       
+			"call_lines":				{ dvalue: "BRCM/4", type: String },
+			"mailbox":					{ dvalue: "-", type: String },     
+			"call_filter":			{ dvalue: "-", type: String },     
+			"domain":						{ dvalue: "217.27.161.62", type: String },      
+			"user":							{ dvalue: "0854601910", type: String }, 
+			"authuser":					{ dvalue: "0854601910", type: String }, 
+			"displayname":			{ dvalue: "TEST", type: String }, 
+			"ptime_ulaw":				{ dvalue: 20, type: Number }, 
+			"ptime_g726":				{ dvalue: 20, type: Number },     
+			"ptime_g729":				{ dvalue: 20, type: Number }, 
+			"ptime_alaw":				{ dvalue: 20, type: Number }, 
+			"host":							{ dvalue: "217.27.161.62", type: String },  
+			"outboundproxy":		{ dvalue: "217.27.161.62", type: String }
+		}, 
 		"wifi-status": {
 			"wlan":		{ dvalue: true, type: Boolean }, 
 			"wps":		{ dvalue: true, type: Boolean },
@@ -80,8 +131,8 @@ angular.module("luci")
 			"dtim_period":{ dvalue: 0, type: Number },
 			"beacon_int":	{ dvalue: 0, type: Number },
 			"rxchainps":	{ dvalue: false, type: Boolean },
-			"rxchainps_qt":{dvalue: 0, type: Number },
-			"rxchainps_pps":{dvalue: 0, type: Number },
+			"rxchainps_qt":{ dvalue: 0, type: Number },
+			"rxchainps_pps":{ dvalue: 0, type: Number },
 			"rifs":				{ dvalue: false, type: Boolean },
 			"rifs_advert":{ dvalue: false, type: Boolean },
 			"maxassoc":		{ dvalue: 0, type: Number },
@@ -366,12 +417,18 @@ angular.module("luci")
 				if(!(configs instanceof Array)) configs = [configs]; 
 				if(!configs || configs.length == 0) { next(); return; }; 
 				async.eachSeries(configs, function(cf, next){
-					if(!(cf in self)) { next("invalid config name "+cf); return; }; 
+					if(!(cf in self)) { 
+						console.error("invalid config name "+cf); 
+						next(); 
+						return; 
+					}; 
 					self[cf].$sync().done(function(){
 						console.log("Synched config "+cf); 
 						next(); 
 					}).fail(function(){
-						next("Could not sync config "+cf); 
+						console.error("Could not sync config "+cf); 
+						next(); // continue because we want to sync as many as we can!
+						//next("Could not sync config "+cf); 
 					}); 
 				}, function(err){
 					next(err); 

@@ -11,14 +11,14 @@ $juci.module("core")
 		require: "^ngModel"
 	 };  
 }).controller("wifiSignalIndicator", function($scope, $uci, $rpc){
-	var step = 100 / 4; 
 	$scope.bars = [false, false, false, false]; 
 	$scope.$watch("value", function(value){
-		$scope.bars[0] = true; 
-		$scope.bars[1] = $scope.bars[2] = $scope.bars[3] = false; 
-		if(value > step) $scope.bars[1] = true; 
-		if(value > (step * 2)) $scope.bars[2] = true; 
-		if(value > (step * 3)) $scope.bars[3] = true; 
+		var q = value / 5; 
+		$scope.bars[0] = $scope.bars[1] = $scope.bars[2] = $scope.bars[3] = false; 
+		if(value > 1) $scope.bars[0] = true; 
+		if(value > 2) $scope.bars[1] = true; 
+		if(value > 3) $scope.bars[2] = true; 
+		if(value > 4) $scope.bars[3] = true; 
 	}); 
 	$scope.barStyle = function(idx, active){
 		var height = 5 + ((idx) * 5); 

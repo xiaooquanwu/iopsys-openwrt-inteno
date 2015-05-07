@@ -90,7 +90,11 @@ The menu system in the gui is actually created on the router side and retreived 
 License Notice
 --------------
 
-Project Author: Martin K. Schröder <mkschreder.uk@gmail.com>
+Contributors: 
+	- Noel Wuyts <skype: noel.wuyts>: angular, widgets, development
+	- Feten Besbes <skype: feten_besbes>: css
+
+Project lead: Martin K. Schröder <mkschreder.uk@gmail.com>
 
 Copyright (C) 2012-2013 Inteno Broadband Technology AB. All rights reserved.
 

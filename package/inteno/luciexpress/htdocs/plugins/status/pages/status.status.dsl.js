@@ -1,10 +1,6 @@
 $juci.module("status")
-.controller("StatsCtrl", function($scope, $rpc, $session, gettextCatalog){
+.controller("StatsCtrl", function($scope, $rpc, $session, gettext, $tr){
 		$scope.dslstats = {}; 
-		
-		function $tr(str){
-			return gettextCatalog.getString(str); 
-		}
 		
 		$scope.dslConnectionInfo = {
 			title: "test", 
@@ -75,12 +71,23 @@ $juci.module("status")
 				[ dslstats.mode, dslstats.mode_details ]
 			]; 
 			$scope.dslStatusInfo.rows = [
-				[ $tr('Line Status'), dslstats.line_status_configured, dslstats.line_status ], 
-				[ $tr('Line Type'), dslstats.line_type_configured, dslstats.line_type ]
-			]
-			$scope.dslStatusInfo.rows = [
-				[ $tr('Actual Data Rate'), dslstats.bearers[0].rate_down, dslstats.bearers[0].rate_up ]
-			]
+				[ $tr(gettext('Line Status')), dslstats.line_status_configured, dslstats.line_status ], 
+				[ $tr(gettext('Line Type')), dslstats.line_type_configured, dslstats.line_type ]
+			];
+			$scope.dslRateInfo.rows = [
+				[ $tr(gettext('Actual Data Rate')), dslstats.bearers[0].rate_down, dslstats.bearers[0].rate_up ]
+			];
+			$scope.dslOpInfo.rows = [
+				[ $tr(gettext('SNR Margin')), dslstats.snr_down, dslstats.snr_up ],
+				[ $tr(gettext('Loop Attenuation')), dslstats.attn_down, dslstats.attn_up ]
+			];
+			$scope.dslErrorInfo.rows = [
+				[ $tr(gettext('FEC Corrections')), dslstats.counters.totals.fec_down, dslstats.counters.totals.fec_up ],
+				[ $tr(gettext('CRC Errors')), dslstats.counters.totals.crc_down, dslstats.counters.totals.crc_up ]
+			];
+			$scope.dslCellInfo.rows = [
+				[ $tr(gettext('Cell Counter')), dslstats.bearers[0].total_cells_down, dslstats.bearers[0].total_cells_up ]
+			];
 			$scope.dslstats = dslstats; 
 			$scope.$apply(); 
 		}); 

@@ -1,5 +1,12 @@
 <luci-layout-with-sidebar>
 	<div ng-controller="StatusRestartPageCtrl">
-		Restart
+		<luci-config-section>
+			<luci-config-heading>{{ 'EasyBox' | translate }}</luci-config-heading>
+			<luci-config-lines>
+				<luci-config-line title="{{'Click here to restart your device'|translate}}">
+					<button class="btn btn-lg btn-default" ng-click="onRestart()">Restart</button>
+				</luci-config-line>
+			</luci-config-lines>
+		</luci-config-section>
 	</div>
 </luci-layout-with-sidebar>
