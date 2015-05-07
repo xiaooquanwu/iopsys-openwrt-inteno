@@ -50,6 +50,26 @@ $juci.module("core")
 				}).fail(function(){
 					next();
 				});; 
+			},
+			function(next){
+				var ifname = "wan"; // TODO: replace this with dynamic string after merge
+				$rpc.network.interface.dump().done(function(interfaces){
+					var conn = ""; 
+					if(interfaces && interfaces.interface){
+						interfaces.interface.map(function(i){
+							if(i.interface == ifname){
+								var dev = i.l3_device||""; 
+								if(dev.indexOf("atm") == 0) conn = "ADSL"; 
+								else if(dev.indexOf("ptm") == 0) conn = "VDSL"; 
+								else if(dev.indexOf("eth") == 0) conn = "ETH"; 
+								else if(dev.indexOf("wwan") == 0) conn = "LT-E"; 
+								else if(dev.indexOf("wl") == 0) conn = "Wi-Fi"; 
+								else conn = "N/A"; 
+							}
+						}); 
+					} 
+					$scope.wan_type = conn; 
+				}).always(function(){ next(); }); 
 			}, 
 			function(next){
 				/*$rpc.asterisk.status().done(function(data){
