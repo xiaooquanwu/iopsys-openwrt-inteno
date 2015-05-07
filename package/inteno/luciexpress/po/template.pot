@@ -32,10 +32,6 @@ msgstr ""
 msgid "Add currently connected hosts to the list"
 msgstr ""
 
-#: htdocs/plugins/wifi/pages/wifi.wps.html:53
-msgid "Attempting to Pair"
-msgstr ""
-
 #: htdocs/plugins/status/pages/status.diagnostics.html:6
 msgid "Automated Diagnostics"
 msgstr ""
@@ -45,8 +41,8 @@ msgid "Bandwidth"
 msgstr ""
 
 #: htdocs/plugins/core/widgets/luci.top_bar.html:13
-#: htdocs/themes/old/vodaphone/widgets/luci.top_bar.html:13
 #: htdocs/themes/vodafone/widgets/luci.top_bar.html:13
+#: htdocs/themes/vodaphone/widgets/luci.top_bar.html:13
 msgid "Basic"
 msgstr ""
 
@@ -175,10 +171,6 @@ msgstr ""
 msgid "Duration"
 msgstr ""
 
-#: htdocs/plugins/wifi/pages/wifi.wps.html:13
-msgid "Enable WPS on"
-msgstr ""
-
 #: htdocs/plugins/wifi/pages/wifi.general.html:11
 msgid "Enable WiFi On/Off button on EasyBox"
 msgstr ""
@@ -189,10 +181,6 @@ msgstr ""
 
 #: htdocs/plugins/settings/pages/settings.energy.html:4
 msgid "Energy Settings"
-msgstr ""
-
-#: htdocs/plugins/wifi/pages/wifi.wps.html:43
-msgid "Enter your device PIN"
 msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.dsl.html:32
@@ -223,29 +211,6 @@ msgstr ""
 msgid "Factory Settings"
 msgstr ""
 
-#: htdocs/plugins/internet/pages/internet.firewall.html:3
-msgid ""
-"Firewall settings\n"
-"\t\t<p translate=\"\">Your EasyBox provides extensive firewall functionality which protects against common attacks. Vodafone recommends not to turn off firewall.</p>\n"
-"\t\t<table class=\"table\">\n"
-"\t\t\t<tr>\n"
-"\t\t\t\t<td>\n"
-"\t\t\t\t\t<div class=\"col-md-11\"><strong style=\"font-size: 1.5em\">Enable firewall</strong></div>\n"
-"\t\t\t\t\t<div class=\"col-md-1\"><switch id=\"enabled\" name=\"enabled\" ng-model=\"firewallSwitchState\" ng-change=\"onFirewallToggle\" class=\"green\"></switch></div>\n"
-"\t\t\t\t</td>\n"
-"\t\t\t</tr>\n"
-"\t\t</table>\n"
-"\t\t<table class=\"table\" ng-show=\"firewallSwitchState\">\n"
-"\t\t\t<tr ng-repeat=\"rule in firewall['@rule']\" ng-hide=\"rule.hidden.value\">\n"
-"\t\t\t\t<td>\n"
-"\t\t\t\t\t<div class=\"col-md-11\"><strong style=\"font-size: 1.5em\">{{rule.name.value | translate}}</strong></div>\n"
-"\t\t\t\t\t<div class=\"col-md-1\"><switch id=\"enabled\" name=\"enabled\" ng-model=\"rule.enabled.value\" class=\"green\"></switch></div>\n"
-"\t\t\t\t</td>\n"
-"\t\t\t</tr>\n"
-"\t\t</table>\n"
-"\t\t<luci-config-apply></luci-config-apply>"
-msgstr ""
-
 #: htdocs/plugins/settings/pages/settings.upgrade.html:28
 msgid "Firmware File:"
 msgstr ""
@@ -264,18 +229,6 @@ msgstr ""
 
 #: htdocs/plugins/wifi/pages/wifi.general.html:5
 msgid "General WiFi Settings"
-msgstr ""
-
-#: htdocs/plugins/wifi/pages/wifi.wps.html:37
-msgid "Generate"
-msgstr ""
-
-#: htdocs/plugins/wifi/pages/wifi.wps.html:36
-msgid "Generate New PIN"
-msgstr ""
-
-#: htdocs/plugins/wifi/pages/wifi.wps.html:33
-msgid "Generated PIN"
 msgstr ""
 
 #: htdocs/plugins/core/widgets/luci.login.html:14
@@ -402,16 +355,6 @@ msgstr ""
 msgid "Operating Data"
 msgstr ""
 
-#: htdocs/plugins/wifi/pages/wifi.wps.html:24
-#: htdocs/plugins/wifi/pages/wifi.wps.html:47
-msgid "Pair"
-msgstr ""
-
-#: htdocs/plugins/wifi/pages/wifi.wps.html:23
-#: htdocs/plugins/wifi/pages/wifi.wps.html:46
-msgid "Pair (within 2 minutes)"
-msgstr ""
-
 #: htdocs/plugins/core/widgets/luci.login.html:22
 msgid "Password"
 msgstr ""
@@ -454,10 +397,6 @@ msgstr ""
 
 #: htdocs/plugins/settings/pages/settings.energy.html:16
 msgid "Power-LED Brightness"
-msgstr ""
-
-#: htdocs/plugins/wifi/pages/wifi.wps.html:20
-msgid "Pressing WiFi on/off button on EasyBox for long time activates pairing"
 msgstr ""
 
 #: htdocs/plugins/core/widgets/uci.firewall.nat.rule.edit.html:23
@@ -576,8 +515,8 @@ msgid "Today"
 msgstr ""
 
 #: htdocs/plugins/core/widgets/luci.navbar.html:4
-#: htdocs/themes/old/vodaphone/widgets/luci.navbar.html:4
 #: htdocs/themes/vodafone/widgets/luci.navbar.html:4
+#: htdocs/themes/vodaphone/widgets/luci.navbar.html:4
 msgid "Toggle navigation"
 msgstr ""
 
@@ -591,10 +530,6 @@ msgstr ""
 
 #: htdocs/plugins/settings/pages/settings.energy.html:7
 msgid "USB Port"
-msgstr ""
-
-#: htdocs/plugins/core/pages/overview.js:24
-msgid "Unknown"
 msgstr ""
 
 #: htdocs/plugins/settings/pages/settings.upgrade.html:14
@@ -645,22 +580,6 @@ msgstr ""
 msgid "WPS Function"
 msgstr ""
 
-#: htdocs/plugins/wifi/pages/wifi.wps.html:17
-msgid "WPS PBC"
-msgstr ""
-
-#: htdocs/plugins/wifi/pages/wifi.wps.html:30
-msgid "WPS Using Generated PIN"
-msgstr ""
-
-#: htdocs/plugins/wifi/pages/wifi.wps.html:40
-msgid "WPS with foreign PIN"
-msgstr ""
-
-#: htdocs/plugins/wifi/pages/wifi.wps.html:27
-msgid "WPS with own PIN"
-msgstr ""
-
 #: htdocs/plugins/status/pages/status.status.js:56
 msgid "Wifi"
 msgstr ""
@@ -675,10 +594,6 @@ msgstr ""
 
 #: htdocs/plugins/core/widgets/luci.login.html:3
 msgid "You are logged in!"
-msgstr ""
-
-#: htdocs/plugins/internet/pages/internet.firewall.html:4
-msgid "Your EasyBox provides extensive firewall functionality which protects against common attacks. Vodafone recommends not to turn off firewall."
 msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.voice.html:6
@@ -701,21 +616,19 @@ msgstr ""
 msgid "error.port.required"
 msgstr ""
 
+#: htdocs/plugins/internet/pages/internet.firewall.html:5
+msgid "internet.firewall.info"
+msgstr ""
+
+#: htdocs/plugins/internet/pages/internet.firewall.html:4
+msgid "internet.firewall.title"
+msgstr ""
+
 #: htdocs/plugins/status/pages/status.status.js:56
 #: htdocs/plugins/status/pages/status.status.js:57
 #: htdocs/plugins/status/pages/status.status.js:58
 #: htdocs/plugins/status/pages/status.status.js:59
 msgid "no"
-msgstr ""
-
-#: htdocs/plugins/core/pages/overview.js:22
-#: htdocs/plugins/core/pages/overview.js:23
-msgid "off"
-msgstr ""
-
-#: htdocs/plugins/core/pages/overview.js:22
-#: htdocs/plugins/core/pages/overview.js:23
-msgid "on"
 msgstr ""
 
 #: htdocs/plugins/phone/pages/phone.call_log.html:6
@@ -728,10 +641,6 @@ msgstr ""
 
 #: htdocs/plugins/phone/pages/phone.ringing_schedule.html:5
 msgid "phone.schedule.info"
-msgstr ""
-
-#: htdocs/plugins/wifi/pages/wifi.wps.html:57
-msgid "seconds remaining"
 msgstr ""
 
 #: htdocs/plugins/settings/pages/settings.configuration.html:5
@@ -790,6 +699,10 @@ msgstr ""
 msgid "status.voice.info"
 msgstr ""
 
+#: htdocs/plugins/internet/pages/internet.firewall.html:7
+msgid "toggle-all-rules"
+msgstr ""
+
 #: htdocs/plugins/wifi/widgets/uci.wireless.interface.html:10
 msgid "wifi-iface.closed"
 msgstr ""
@@ -829,30 +742,6 @@ msgstr ""
 
 #: htdocs/plugins/wifi/pages/wifi.wps.html:6
 msgid "wifi.wps.info"
-msgstr ""
-
-#: htdocs/plugins/wifi/pages/wifi.wps.html:41
-msgid "wifi.wps.otherpin.info"
-msgstr ""
-
-#: htdocs/plugins/wifi/pages/wifi.wps.html:18
-msgid "wifi.wps.pbc.info"
-msgstr ""
-
-#: htdocs/plugins/wifi/pages/wifi.wps.html:28
-msgid "wifi.wps.pin.info"
-msgstr ""
-
-#: htdocs/plugins/wifi/pages/wifi.wps.html:60
-msgid "wifi.wpspairmodal.failinfo"
-msgstr ""
-
-#: htdocs/plugins/wifi/pages/wifi.wps.html:56
-msgid "wifi.wpspairmodal.progressinfo"
-msgstr ""
-
-#: htdocs/plugins/wifi/pages/wifi.wps.html:59
-msgid "wifi.wpspairmodal.successinfo"
 msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.js:56

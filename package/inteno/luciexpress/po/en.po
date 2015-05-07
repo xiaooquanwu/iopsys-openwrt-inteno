@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.7.6\n"
+"X-Generator: Poedit 1.5.4\n"
 
 msgid "Overview"
 msgstr "Overview"
@@ -61,9 +61,14 @@ msgstr ""
 
 msgid "wifi.general.info"
 msgstr ""
+"Your EasyBox supports the industry-wide WiFi standards, enabling easy "
+"wireless connection of your devices."
 
 msgid "wifi.macfilter.info"
 msgstr ""
+"To make your wireless network more secure, you can specify which devices are "
+"allowed to connect. The devices are identified by their MAC address. You can "
+"manage up to 32 devices."
 
 #: htdocs/plugins/wifi/pages/wifi.general.html:11
 msgid "Enable WiFi On/Off button on EasyBox"
@@ -75,6 +80,8 @@ msgstr ""
 
 msgid "wifi.schedule.info"
 msgstr ""
+" Schedule the times when your WiFi should be turned on or off automatically. "
+"Note: If WiFi is turned off, both Main and Guest WiFi are disabled"
 
 #: htdocs/plugins/wifi/pages/wifi.wps.html:8
 msgid "WPS Function"
@@ -82,6 +89,9 @@ msgstr ""
 
 msgid "wifi.wps.info"
 msgstr ""
+"Using WPS it is possible to easily connect wireless devices with EasyBox on "
+"an encrypted channel. Below, you can choose and configure different "
+"connection methods."
 
 #: htdocs/plugins/wifi/widgets/uci.wireless.interface.macfilter.edit.html:4
 msgid "MAC Filtering"
@@ -117,6 +127,7 @@ msgstr ""
 msgid "Apply"
 msgstr ""
 
+#: htdocs/plugins/core/widgets/uci.firewall.nat.rule.edit.html:69
 #: htdocs/plugins/wifi/widgets/uci.wireless.interface.macfilter.edit.html:46
 msgid "Cancel"
 msgstr ""
@@ -132,7 +143,7 @@ msgstr ""
 msgid "DSL"
 msgstr ""
 
-#: htdocs/plugins/router/pages/status.status.js:59
+#: htdocs/plugins/status/pages/status.status.js:59
 msgid "Voice"
 msgstr ""
 
@@ -155,6 +166,7 @@ msgid "NAT"
 msgstr ""
 
 # phone
+#: htdocs/plugins/phone/pages/phone.call_log.html:5
 msgid "Call Log"
 msgstr ""
 
@@ -177,15 +189,15 @@ msgstr ""
 msgid "EasyBox Password"
 msgstr ""
 
-#: htdocs/plugins/router/pages/settings.upgrade.html:4
+#: htdocs/plugins/settings/pages/settings.upgrade.html:4
 msgid "Firmware Upgrade"
 msgstr ""
 
-#: htdocs/plugins/router/pages/settings.energy.html:4
+#: htdocs/plugins/settings/pages/settings.energy.html:4
 msgid "Energy Settings"
 msgstr ""
 
-#: htdocs/plugins/router/pages/settings.configuration.html:4
+#: htdocs/plugins/settings/pages/settings.configuration.html:4
 msgid "Configuration"
 msgstr ""
 
@@ -193,7 +205,7 @@ msgid "Advanced"
 msgstr ""
 
 msgid "application.name"
-msgstr ""
+msgstr "juci"
 
 #: htdocs/plugins/internet/pages/internet.exposed_host.html:14
 msgid ""
@@ -204,11 +216,15 @@ msgid ""
 "forwarded: {{ nonforwardedPorts || 'None'}}."
 msgstr ""
 
-#: htdocs/plugins/router/pages/status.status.js:74
+#: htdocs/plugins/status/pages/status.status.js:57
+msgid "ADSL"
+msgstr ""
+
+#: htdocs/plugins/status/pages/status.status.js:74
 msgid "Active Connections"
 msgstr ""
 
-#: htdocs/plugins/router/pages/status.status.html:20
+#: htdocs/plugins/status/pages/status.status.html:20
 msgid "Active Stations"
 msgstr ""
 
@@ -216,19 +232,13 @@ msgstr ""
 msgid "Add clients to MAC filtering list"
 msgstr ""
 
-#: htdocs/plugins/router/pages/status.status.js:57
-msgid "ADSL"
-msgstr ""
-
-#: htdocs/plugins/phone/pages/phone.call_log.js:26
-msgid "All Numbers"
-msgstr ""
-
-#: htdocs/plugins/router/pages/status.diagnostics.html:6
+#: htdocs/plugins/status/pages/status.diagnostics.html:6
 msgid "Automated Diagnostics"
 msgstr ""
 
 #: htdocs/plugins/core/widgets/luci.top_bar.html:13
+#: htdocs/themes/vodafone/widgets/luci.top_bar.html:13
+#: htdocs/themes/vodaphone/widgets/luci.top_bar.html:13
 msgid "Basic"
 msgstr ""
 
@@ -236,23 +246,23 @@ msgstr ""
 msgid "Basic Mode"
 msgstr ""
 
-#: htdocs/plugins/router/pages/status.status.dsl.html:22
+#: htdocs/plugins/status/pages/status.status.dsl.html:22
 msgid "Bit Rate"
 msgstr ""
 
-#: htdocs/plugins/router/pages/status.status.js:66
+#: htdocs/plugins/status/pages/status.status.js:66
 msgid "Buffered"
 msgstr ""
 
-#: htdocs/plugins/router/pages/status.status.dsl.html:37
+#: htdocs/plugins/status/pages/status.status.dsl.html:37
 msgid "Cell Statistics"
 msgstr ""
 
-#: htdocs/plugins/router/pages/settings.password.html:18
+#: htdocs/plugins/settings/pages/settings.password.html:9
 msgid "Change Password"
 msgstr ""
 
-#: htdocs/plugins/router/pages/settings.upgrade.html:22
+#: htdocs/plugins/settings/pages/settings.upgrade.html:22
 msgid "Check for Update"
 msgstr ""
 
@@ -276,72 +286,75 @@ msgstr "Choose Mode"
 msgid "Choose Protection"
 msgstr "Choose Protection"
 
-#: htdocs/plugins/router/pages/status.status.tv.html:6
+#: htdocs/plugins/status/pages/status.status.tv.html:6
 msgid "Connection Status"
 msgstr ""
 
-#: htdocs/plugins/router/pages/status.diagnostics.html:30
+#: htdocs/plugins/status/pages/status.diagnostics.html:30
 msgid "Connection Type"
 msgstr ""
 
-#: htdocs/plugins/router/pages/status.status.html:14
+#: htdocs/plugins/status/pages/status.status.html:14
 msgid "Connections"
 msgstr ""
 
-#: htdocs/plugins/router/pages/settings.upgrade.html:7
+#: htdocs/plugins/settings/pages/settings.upgrade.html:7
 msgid "Current Firmware Version"
 msgstr ""
 
-#: htdocs/plugins/router/pages/settings.password.html:8
-msgid "Current password"
-msgstr ""
-
-#: htdocs/plugins/core/widgets/uci.firewall.nat.rule.edit.html:3
-msgid "Device"
-msgstr ""
-
-#: htdocs/plugins/router/pages/status.status.html:17
+#: htdocs/plugins/status/pages/status.status.html:17
 msgid "DHCP Leases"
 msgstr ""
 
-#: htdocs/plugins/router/pages/status.diagnostics.html:10
+#: htdocs/plugins/status/pages/status.status.dsl.html:9
+msgid "DSL Connection"
+msgstr ""
+
+#: htdocs/plugins/status/pages/status.status.dsl.html:13
+msgid "DSL Mode"
+msgstr ""
+
+#: htdocs/plugins/status/pages/status.status.dsl.html:3
+msgid "DSL Status"
+msgstr "DSL Status"
+
+#: htdocs/plugins/status/pages/status.status.dsl.html:17
+msgid "DSL Status Information"
+msgstr ""
+
+#: htdocs/plugins/phone/pages/phone.call_log.html:18
+msgid "Date"
+msgstr ""
+
+#: htdocs/plugins/core/widgets/uci.firewall.nat.rule.edit.html:4
+msgid "Device"
+msgstr ""
+
+#: htdocs/plugins/status/pages/status.diagnostics.html:10
 msgid "Diagnose"
 msgstr ""
 
-#: htdocs/plugins/router/pages/status.diagnostics.html:4
+#: htdocs/plugins/status/pages/status.diagnostics.html:4
 msgid "Diagnostic Utility"
 msgstr ""
 
-#: htdocs/plugins/router/pages/settings.password.html:12
 #: htdocs/plugins/wifi/widgets/uci.wireless.interface.html:27
 msgid "Display Characters"
 msgstr ""
 
-#: htdocs/plugins/router/pages/status.status.dsl.html:9
-msgid "DSL Connection"
-msgstr ""
-
-#: htdocs/plugins/router/pages/status.status.dsl.html:13
-msgid "DSL Mode"
-msgstr ""
-
-#: htdocs/plugins/router/pages/status.status.dsl.html:3
-msgid "DSL Status"
-msgstr "DSL Status"
-
-#: htdocs/plugins/router/pages/status.status.dsl.html:17
-msgid "DSL Status Information"
+#: htdocs/plugins/phone/pages/phone.call_log.html:22
+msgid "Duration"
 msgstr ""
 
 #: htdocs/plugins/wifi/widgets/uci.wireless.interface.html:4
 msgid "Enabled"
 msgstr ""
 
-#: htdocs/plugins/router/pages/status.status.dsl.html:32
+#: htdocs/plugins/status/pages/status.status.dsl.html:32
 msgid "Error Counter"
 msgstr ""
 
-#: htdocs/plugins/router/pages/status.status.js:61
+#: htdocs/plugins/status/pages/status.status.js:61
 msgid "Ethernet Ports"
 msgstr ""
 
@@ -357,19 +370,23 @@ msgstr ""
 msgid "Exposed Host Function"
 msgstr ""
 
-#: htdocs/plugins/router/pages/settings.configuration.html:14
+#: htdocs/plugins/phone/pages/phone.call_log.html:20
+msgid "External Number"
+msgstr ""
+
+#: htdocs/plugins/settings/pages/settings.configuration.html:14
 msgid "Factory Settings"
 msgstr ""
 
-#: htdocs/plugins/router/pages/settings.upgrade.html:28
+#: htdocs/plugins/settings/pages/settings.upgrade.html:28
 msgid "Firmware File:"
 msgstr ""
 
-#: htdocs/plugins/router/pages/status.status.js:49
+#: htdocs/plugins/status/pages/status.status.js:49
 msgid "Firmware Version"
 msgstr ""
 
-#: htdocs/plugins/router/pages/settings.password.html:4
+#: htdocs/plugins/settings/pages/settings.password.html:4
 msgid "Gateway Password"
 msgstr ""
 
@@ -377,21 +394,18 @@ msgstr ""
 msgid "General WiFi Settings"
 msgstr ""
 
-#: htdocs/plugins/phone/pages/phone.call_log.js:32
-msgid "Guest Room"
-msgstr ""
-
-#: htdocs/plugins/phone/pages/phone.call_log.js:28
-msgid "Home Main"
-msgstr ""
-
 #: htdocs/plugins/core/widgets/luci.login.html:14
 msgid "Host"
 msgstr ""
 
-#: htdocs/plugins/router/pages/status.status.js:22
-#: htdocs/plugins/router/pages/status.status.js:47
+#: htdocs/plugins/status/pages/status.status.js:22
+#: htdocs/plugins/status/pages/status.status.js:47
 msgid "Hostname"
+msgstr ""
+
+#: htdocs/plugins/status/pages/status.status.js:22
+#: htdocs/plugins/status/pages/status.status.js:28
+msgid "IPv4-Address"
 msgstr ""
 
 #: htdocs/plugins/internet/pages/internet.exposed_host.html:4
@@ -401,9 +415,318 @@ msgid ""
 "the network device (Exposed Host)."
 msgstr ""
 
-#: htdocs/plugins/router/pages/settings.upgrade.html:29
+#: htdocs/plugins/settings/pages/settings.upgrade.html:29
 msgid "Install Upgrade"
 msgstr ""
+
+#: htdocs/plugins/status/pages/status.status.js:50
+msgid "Kernel Version"
+msgstr ""
+
+#: htdocs/plugins/status/pages/status.status.js:22
+msgid "Leasetime remaining"
+msgstr ""
+
+#: htdocs/plugins/settings/pages/settings.configuration.html:11
+msgid "Load"
+msgstr ""
+
+#: htdocs/plugins/status/pages/status.status.js:53
+msgid "Load Average"
+msgstr ""
+
+#: htdocs/plugins/settings/pages/settings.uci.html:16
+msgid "Loading"
+msgstr ""
+
+#: htdocs/plugins/internet/pages/internet.port_mapping.html:6
+msgid "Local IP"
+msgstr ""
+
+#: htdocs/plugins/core/widgets/uci.firewall.nat.rule.edit.html:19
+msgid "Local IP Address"
+msgstr ""
+
+#: htdocs/plugins/status/pages/status.status.js:51
+msgid "Local Time"
+msgstr ""
+
+#: htdocs/plugins/internet/pages/internet.port_mapping.html:6
+msgid "Local port"
+msgstr ""
+
+#: htdocs/plugins/core/widgets/luci.login.html:4
+#: htdocs/plugins/core/widgets/luci.top_bar.js:16
+msgid "Log out"
+msgstr ""
+
+#: htdocs/plugins/settings/pages/settings.password.html:6
+msgid "Login Account"
+msgstr ""
+
+#: htdocs/plugins/status/pages/status.status.js:28
+msgid "MAC address"
+msgstr ""
+
+#: htdocs/plugins/status/pages/status.status.js:22
+msgid "MAC-Address"
+msgstr ""
+
+#: htdocs/plugins/settings/pages/settings.upgrade.html:11
+msgid "Manual Firmware Upgrade"
+msgstr ""
+
+#: htdocs/plugins/status/pages/status.status.html:8
+msgid "Memory"
+msgstr ""
+
+#: htdocs/plugins/status/pages/status.status.js:48
+msgid "Model"
+msgstr ""
+
+#: htdocs/plugins/status/pages/status.status.js:24
+#: htdocs/plugins/status/pages/status.status.js:88
+msgid "No active leases"
+msgstr ""
+
+#: htdocs/plugins/status/pages/status.status.js:101
+msgid "No active stations"
+msgstr ""
+
+#: htdocs/plugins/status/pages/status.status.js:28
+msgid "Noise"
+msgstr ""
+
+#: htdocs/plugins/core/widgets/luci.footer.js:46
+msgid "Not connected"
+msgstr ""
+
+#: htdocs/plugins/settings/pages/settings.upgrade.html:18
+msgid "Online Update"
+msgstr ""
+
+#: htdocs/plugins/status/pages/status.status.dsl.html:27
+msgid "Operating Data"
+msgstr ""
+
+#: htdocs/plugins/core/widgets/luci.login.html:22
+msgid "Password"
+msgstr ""
+
+#: htdocs/plugins/status/pages/status.diagnostics.html:22
+msgid "Ping"
+msgstr ""
+
+#: htdocs/plugins/status/pages/status.diagnostics.html:13
+msgid "Ping Test"
+msgstr ""
+
+#: htdocs/plugins/core/widgets/luci.login.js:80
+msgid "Please enter correct username and password!"
+msgstr ""
+
+#: htdocs/plugins/core/widgets/luci.login.html:7
+msgid "Please sign in"
+msgstr ""
+
+#: htdocs/plugins/core/widgets/uci.firewall.nat.rule.edit.html:42
+msgid "Port"
+msgstr ""
+
+#: htdocs/plugins/internet/pages/internet.port_mapping.html:3
+msgid "Port Mapping"
+msgstr ""
+
+#: htdocs/plugins/core/widgets/uci.firewall.nat.rule.edit.html:46
+msgid "Port Range"
+msgstr ""
+
+#: htdocs/plugins/internet/pages/internet.port_mapping.html:4
+msgid ""
+"Port mapping allows remote computers to connect to a specific device within "
+"your private network."
+msgstr ""
+
+#: htdocs/plugins/settings/pages/settings.energy.html:13
+msgid "Power-LED"
+msgstr ""
+
+#: htdocs/plugins/settings/pages/settings.energy.html:16
+msgid "Power-LED Brightness"
+msgstr ""
+
+#: htdocs/plugins/core/widgets/uci.firewall.nat.rule.edit.html:23
+#: htdocs/plugins/internet/pages/internet.port_mapping.html:6
+msgid "Protocol"
+msgstr ""
+
+#: htdocs/plugins/internet/pages/internet.port_mapping.html:6
+msgid "Public Port"
+msgstr ""
+
+#: htdocs/plugins/status/pages/status.status.js:28
+msgid "RX Rate"
+msgstr ""
+
+#: htdocs/plugins/settings/pages/settings.configuration.html:17
+msgid "Reset"
+msgstr ""
+
+#: htdocs/plugins/settings/pages/settings.configuration.html:16
+msgid "Reset restores the factory default settings of your gateway"
+msgstr ""
+
+#: htdocs/plugins/settings/pages/settings.configuration.html:10
+msgid "Restore settings from a configuration saved on a computer"
+msgstr ""
+
+#: htdocs/plugins/status/pages/status.status.js:70
+msgid "Root Usage (/)"
+msgstr ""
+
+#: htdocs/plugins/settings/pages/settings.configuration.html:8
+#: htdocs/plugins/wifi/widgets/uci.wireless.interface.macfilter.edit.html:46
+msgid "Save"
+msgstr ""
+
+#: htdocs/plugins/settings/pages/settings.configuration.html:7
+msgid "Save settings to computer with password protection"
+msgstr ""
+
+#: htdocs/plugins/wifi/pages/wifi.schedule.html:7
+msgid "Schedule Function"
+msgstr ""
+
+#: htdocs/plugins/status/pages/status.status.js:65
+msgid "Shared"
+msgstr ""
+
+#: htdocs/plugins/phone/pages/phone.call_log.html:8
+msgid "Show calls for"
+msgstr ""
+
+#: htdocs/plugins/core/widgets/luci.login.html:30
+msgid "Sign in"
+msgstr ""
+
+#: htdocs/plugins/status/pages/status.status.js:28
+msgid "Signal"
+msgstr ""
+
+#: htdocs/plugins/settings/pages/settings.energy.html:10
+msgid "Status-LED"
+msgstr ""
+
+#: htdocs/plugins/status/pages/status.status.html:11
+msgid "Storage"
+msgstr ""
+
+#: htdocs/plugins/core/widgets/uci.firewall.nat.rule.edit.html:68
+msgid "Submit"
+msgstr ""
+
+#: htdocs/plugins/status/pages/status.status.js:67
+msgid "Swap"
+msgstr ""
+
+#: htdocs/plugins/status/pages/status.status.js:28
+msgid "TX Rate"
+msgstr ""
+
+#: htdocs/plugins/status/pages/status.status.js:71
+msgid "Temporary Usage (/tmp)"
+msgstr ""
+
+#: htdocs/plugins/phone/pages/phone.call_log.html:19
+msgid "Time"
+msgstr ""
+
+#: htdocs/plugins/phone/pages/phone.call_log.js:34
+msgid "Today"
+msgstr ""
+
+#: htdocs/plugins/core/widgets/luci.navbar.html:4
+#: htdocs/themes/vodafone/widgets/luci.navbar.html:4
+#: htdocs/themes/vodaphone/widgets/luci.navbar.html:4
+msgid "Toggle navigation"
+msgstr ""
+
+#: htdocs/plugins/status/pages/status.diagnostics.html:27
+msgid "Tracing Tool"
+msgstr ""
+
+#: htdocs/plugins/settings/pages/settings.upgrade.html:25
+msgid "USB Firmware Upgrade"
+msgstr ""
+
+#: htdocs/plugins/settings/pages/settings.energy.html:7
+msgid "USB Port"
+msgstr ""
+
+#: htdocs/plugins/settings/pages/settings.upgrade.html:14
+msgid "Upload file"
+msgstr ""
+
+#: htdocs/plugins/status/pages/status.status.js:52
+msgid "Uptime"
+msgstr ""
+
+#: htdocs/plugins/status/pages/status.status.js:64
+msgid "Usage"
+msgstr ""
+
+#: htdocs/plugins/core/widgets/luci.login.html:18
+msgid "Username"
+msgstr ""
+
+#: htdocs/plugins/status/pages/status.status.js:58
+msgid "VDSL"
+msgstr ""
+
+#: htdocs/plugins/status/pages/status.status.tv.html:7
+msgid "Vodaphone TV Channels"
+msgstr ""
+
+#: htdocs/plugins/status/pages/status.status.tv.html:4
+msgid "Vodaphone TV Status"
+msgstr ""
+
+#: htdocs/plugins/status/pages/status.status.js:60
+msgid "Voice Ports"
+msgstr ""
+
+#: htdocs/plugins/status/pages/status.status.voice.html:4
+#, fuzzy
+msgid "Voice Status"
+msgstr "Status"
+
+#: htdocs/plugins/status/pages/status.status.js:56
+msgid "Wifi"
+msgstr ""
+
+#: htdocs/plugins/core/widgets/luci.login.html:3
+msgid "You are logged in!"
+msgstr ""
+
+#: htdocs/plugins/status/pages/status.status.voice.html:6
+msgid "Your Phone Numbers"
+msgstr ""
+
+#: htdocs/plugins/settings/pages/settings.password.html:8
+msgid "Your account password"
+msgstr ""
+
+#: htdocs/plugins/phone/pages/phone.call_log.html:21
+msgid "Your number"
+msgstr ""
+
+#: htdocs/plugins/core/widgets/luci.input.port.html:10
+msgid "error.port.invalid"
+msgstr "Port invalid"
+
+#: htdocs/plugins/core/widgets/luci.input.port.html:9
+msgid "error.port.required"
+msgstr "Port required"
 
 #: htdocs/plugins/internet/pages/internet.firewall.html:5
 msgid "internet.firewall.info"
@@ -415,361 +738,114 @@ msgstr ""
 msgid "internet.firewall.title"
 msgstr "Firewall"
 
-#: htdocs/plugins/router/pages/status.status.js:22
-#: htdocs/plugins/router/pages/status.status.js:28
-msgid "IPv4-Address"
-msgstr ""
-
-#: htdocs/plugins/router/pages/status.status.js:50
-msgid "Kernel Version"
-msgstr ""
-
-#: htdocs/plugins/router/pages/status.status.js:22
-msgid "Leasetime remaining"
-msgstr ""
-
-#: htdocs/plugins/router/pages/settings.configuration.html:11
-msgid "Load"
-msgstr ""
-
-#: htdocs/plugins/router/pages/status.status.js:53
-msgid "Load Average"
-msgstr ""
-
-#: htdocs/plugins/router/pages/settings.uci.html:16
-msgid "Loading"
-msgstr ""
-
-#: htdocs/plugins/internet/pages/internet.port_mapping.html:6
-#: htdocs/plugins/router/pages/internet.port_mapping.html:6
-msgid "Local IP"
-msgstr ""
-
-#: htdocs/plugins/core/widgets/uci.firewall.nat.rule.edit.html:18
-msgid "Local IP Address"
-msgstr ""
-
-#: htdocs/plugins/internet/pages/internet.port_mapping.html:6
-#: htdocs/plugins/router/pages/internet.port_mapping.html:6
-msgid "Local port"
-msgstr ""
-
-#: htdocs/plugins/router/pages/status.status.js:51
-msgid "Local Time"
-msgstr ""
-
-#: htdocs/plugins/core/widgets/luci.login.html:4
-#: htdocs/plugins/core/widgets/luci.top_bar.js:16
-msgid "Log out"
-msgstr ""
-
-#: htdocs/plugins/router/pages/settings.password.html:6
-msgid "Login Account"
-msgstr ""
-
-#: htdocs/plugins/router/pages/status.status.js:28
-msgid "MAC address"
-msgstr ""
-
-#: htdocs/plugins/router/pages/status.status.js:22
-msgid "MAC-Address"
-msgstr ""
-
-#: htdocs/plugins/router/pages/settings.upgrade.html:11
-msgid "Manual Firmware Upgrade"
-msgstr ""
-
-#: htdocs/plugins/router/pages/status.status.html:8
-msgid "Memory"
-msgstr ""
-
-#: htdocs/plugins/router/pages/status.status.js:48
-msgid "Model"
-msgstr ""
-
-#: htdocs/plugins/router/pages/status.status.js:56
-#: htdocs/plugins/router/pages/status.status.js:57
-#: htdocs/plugins/router/pages/status.status.js:58
-#: htdocs/plugins/router/pages/status.status.js:59
+#: htdocs/plugins/status/pages/status.status.js:56
+#: htdocs/plugins/status/pages/status.status.js:57
+#: htdocs/plugins/status/pages/status.status.js:58
+#: htdocs/plugins/status/pages/status.status.js:59
 msgid "no"
 msgstr ""
 
-#: htdocs/plugins/router/pages/status.status.js:24
-#: htdocs/plugins/router/pages/status.status.js:88
-msgid "No active leases"
-msgstr ""
-
-#: htdocs/plugins/router/pages/status.status.js:101
-msgid "No active stations"
-msgstr ""
-
-#: htdocs/plugins/router/pages/status.status.js:28
-msgid "Noise"
-msgstr ""
-
-#: htdocs/plugins/core/widgets/luci.footer.js:46
-msgid "Not connected"
-msgstr ""
-
-#: htdocs/plugins/phone/pages/phone.call_log.js:30
-msgid "Office"
-msgstr ""
-
-#: htdocs/plugins/router/pages/settings.upgrade.html:18
-msgid "Online Update"
-msgstr ""
-
-#: htdocs/plugins/router/pages/status.status.dsl.html:27
-msgid "Operating Data"
-msgstr ""
-
-#: htdocs/plugins/core/widgets/luci.login.html:22
-#: htdocs/plugins/router/pages/settings.password.html:10
-msgid "Password"
-msgstr ""
+#: htdocs/plugins/phone/pages/phone.call_log.html:6
+msgid "phone.call_log.info"
+msgstr " "
 
 #: htdocs/plugins/phone/pages/phone.number_blocking.html:5
 msgid "phone.number_blocking.info"
 msgstr ""
+" Stay in control of your bills and block outgoing calls to unwanted numbers."
 
 #: htdocs/plugins/phone/pages/phone.ringing_schedule.html:5
 msgid "phone.schedule.info"
-msgstr ""
+msgstr "Define schedules when your phones should or should not ring."
 
-#: htdocs/plugins/router/pages/status.diagnostics.html:22
-msgid "Ping"
-msgstr ""
-
-#: htdocs/plugins/router/pages/status.diagnostics.html:13
-msgid "Ping Test"
-msgstr ""
-
-#: htdocs/plugins/core/widgets/luci.input.port.html:9
-msgid "Please add"
-msgstr ""
-
-#: htdocs/plugins/core/widgets/luci.login.js:80
-msgid "Please enter correct username and password!"
-msgstr ""
-
-#: htdocs/plugins/core/widgets/luci.login.html:7
-msgid "Please sign in"
-msgstr ""
-
-#: htdocs/plugins/core/widgets/uci.firewall.nat.rule.edit.html:41
-msgid "Port"
-msgstr ""
-
-#: htdocs/plugins/internet/pages/internet.port_mapping.html:3
-#: htdocs/plugins/router/pages/internet.port_mapping.html:3
-msgid "Port Mapping"
-msgstr ""
-
-#: htdocs/plugins/internet/pages/internet.port_mapping.html:4
-#: htdocs/plugins/router/pages/internet.port_mapping.html:4
-msgid ""
-"Port mapping allows remote computers to connect to a specific device within "
-"your private network."
-msgstr ""
-
-#: htdocs/plugins/core/widgets/uci.firewall.nat.rule.edit.html:45
-msgid "Port Range"
-msgstr ""
-
-#: htdocs/plugins/router/pages/settings.energy.html:13
-msgid "Power-LED"
-msgstr ""
-
-#: htdocs/plugins/router/pages/settings.energy.html:16
-msgid "Power-LED Brightness"
-msgstr ""
-
-#: htdocs/plugins/core/widgets/uci.firewall.nat.rule.edit.html:22
-#: htdocs/plugins/internet/pages/internet.port_mapping.html:6
-#: htdocs/plugins/router/pages/internet.port_mapping.html:6
-msgid "Protocol"
-msgstr ""
-
-#: htdocs/plugins/internet/pages/internet.port_mapping.html:6
-#: htdocs/plugins/router/pages/internet.port_mapping.html:6
-msgid "Public Port"
-msgstr ""
-
-#: htdocs/plugins/router/pages/settings.configuration.html:17
-msgid "Reset"
-msgstr ""
-
-#: htdocs/plugins/router/pages/settings.configuration.html:16
-msgid "Reset restores the factory default settings of your gateway"
-msgstr ""
-
-#: htdocs/plugins/router/pages/settings.configuration.html:10
-msgid "Restore settings from a configuration saved on a computer"
-msgstr ""
-
-#: htdocs/plugins/router/pages/status.status.js:70
-msgid "Root Usage (/)"
-msgstr ""
-
-#: htdocs/plugins/router/pages/status.status.js:28
-msgid "RX Rate"
-msgstr ""
-
-#: htdocs/plugins/router/pages/settings.configuration.html:8
-#: htdocs/plugins/wifi/widgets/uci.wireless.interface.macfilter.edit.html:46
-msgid "Save"
-msgstr ""
-
-#: htdocs/plugins/router/pages/settings.configuration.html:7
-msgid "Save settings to computer with password protection"
-msgstr ""
-
-#: htdocs/plugins/wifi/pages/wifi.schedule.html:7
-msgid "Schedule Function"
-msgstr ""
-
-#: htdocs/plugins/router/pages/settings.configuration.html:5
+#: htdocs/plugins/settings/pages/settings.configuration.html:5
 msgid "settings.config.info"
 msgstr ""
+" Save your settings, restore previously saved settings, and reset your "
+"EasyBox to its factory state.\n"
+"\n"
+"Your EasyBox can save your configuration to a computer. We recommend to "
+"always save your last changed settings to a computer."
 
-#: htdocs/plugins/router/pages/settings.energy.html:5
+#: htdocs/plugins/settings/pages/settings.energy.html:5
 msgid "settings.energy.info"
-msgstr ""
+msgstr " Reduce power consumption by switching off unused functionality."
 
-#: htdocs/plugins/router/pages/settings.password.html:5
+#: htdocs/plugins/settings/pages/settings.password.html:5
 msgid "settings.password.info"
 msgstr ""
+"Set a new Easybox password to restrict management access to the router."
 
-#: htdocs/plugins/router/pages/settings.upgrade.html:5
+#: htdocs/plugins/settings/pages/settings.upgrade.html:5
 msgid "settings.upgrade.info"
 msgstr ""
+" The Easybox automatically install the latest firmware release available. If "
+"necessary, it is possible to update the Easybox firmware manually. Your "
+"current settings will not be affected by software upgrading procedure."
 
-#: htdocs/plugins/router/pages/settings.upgrade.html:12
+#: htdocs/plugins/settings/pages/settings.upgrade.html:12
 msgid "settings.upgrade.manual.info"
 msgstr ""
+"It is possible to update the firmware from a saved update file. The latest "
+"available version can be found on www.dsl-easybox.de."
 
-#: htdocs/plugins/router/pages/settings.upgrade.html:19
+#: htdocs/plugins/settings/pages/settings.upgrade.html:19
 msgid "settings.upgrade.online.info"
 msgstr ""
+"Click \"Check for Update\" to start an online software upgrade. If a newer "
+"firmware is found, it will be automatically installed on your EasyBox "
+"(Internet connection required)."
 
-#: htdocs/plugins/router/pages/settings.upgrade.html:26
+#: htdocs/plugins/settings/pages/settings.upgrade.html:26
 msgid "settings.upgrade.usb.info"
 msgstr ""
+"It is possible to update the firmware from a file saved on a USB storage "
+"attached to the USB port of your EasyBox. Click \"Install Update\" to start "
+"the automatic firmware upgrade. Please note that there should be only one "
+"firmware file on the storage and that one shall be located under the main "
+"directory (no search under subfolders)."
 
-#: htdocs/plugins/router/pages/status.status.js:65
-msgid "Shared"
-msgstr ""
-
-#: htdocs/plugins/phone/pages/phone.call_log.html:7
-msgid "Show calls for"
-msgstr ""
-
-#: htdocs/plugins/core/widgets/luci.login.html:30
-msgid "Sign in"
-msgstr ""
-
-#: htdocs/plugins/router/pages/status.status.js:28
-msgid "Signal"
-msgstr ""
-
-#: htdocs/plugins/router/pages/settings.energy.html:10
-msgid "Status-LED"
-msgstr ""
-
-#: htdocs/plugins/router/pages/status.diagnostics.html:7
+#: htdocs/plugins/status/pages/status.diagnostics.html:7
 msgid "status.diagnostics.auto.info"
 msgstr ""
+"This diagnosis should take up to 2 minutes and cannot be cancelled once it "
+"has been started."
 
-#: htdocs/plugins/router/pages/status.diagnostics.html:5
+#: htdocs/plugins/status/pages/status.diagnostics.html:5
 msgid "status.diagnostics.info"
 msgstr ""
+" This section shows a list of tools which can be used to check the status of "
+"your network connection."
 
-#: htdocs/plugins/router/pages/status.diagnostics.html:14
+#: htdocs/plugins/status/pages/status.diagnostics.html:14
 msgid "status.diagnostics.ping.info"
-msgstr ""
+msgstr "Please enter a valid hostname or IP address to execute the Ping test."
 
-#: htdocs/plugins/router/pages/status.diagnostics.html:28
+#: htdocs/plugins/status/pages/status.diagnostics.html:28
 msgid "status.diagnostics.trace.info"
 msgstr ""
+"Please choose the connection type and location where you would like to save "
+"the tracing. The tracing will then begin automatically in a separate popup "
+"window."
 
-#: htdocs/plugins/router/pages/status.status.dsl.html:5
+#: htdocs/plugins/status/pages/status.status.dsl.html:5
 msgid "status.dsl.offline"
 msgstr ""
 
-#: htdocs/plugins/router/pages/status.status.tv.html:5
+#: htdocs/plugins/status/pages/status.status.tv.html:5
 msgid "status.tv.info"
 msgstr ""
+" This page allows to verify the connection status of your Vodafone TV "
+"Services."
 
-#: htdocs/plugins/router/pages/status.status.html:11
-msgid "Storage"
+#: htdocs/plugins/status/pages/status.status.voice.html:5
+msgid "status.voice.info"
 msgstr ""
-
-#: htdocs/plugins/router/pages/status.status.js:67
-msgid "Swap"
-msgstr ""
-
-#: htdocs/plugins/router/pages/status.status.js:71
-msgid "Temporary Usage (/tmp)"
-msgstr ""
-
-#: htdocs/plugins/core/widgets/luci.navbar.html:4
-msgid "Toggle navigation"
-msgstr ""
+" Here you find an overview of your active phone numbers. For any change you "
+"would like to make to the current section, please visit Phone menu."
 
 #: htdocs/plugins/internet/pages/internet.firewall.html:7
 msgid "toggle-all-rules"
-msgstr ""
-
-#: htdocs/plugins/router/pages/status.diagnostics.html:27
-msgid "Tracing Tool"
-msgstr ""
-
-#: htdocs/plugins/router/pages/status.status.js:28
-msgid "TX Rate"
-msgstr ""
-
-#: htdocs/plugins/router/pages/settings.upgrade.html:14
-msgid "Upload file"
-msgstr ""
-
-#: htdocs/plugins/router/pages/status.status.js:52
-msgid "Uptime"
-msgstr ""
-
-#: htdocs/plugins/router/pages/status.status.js:64
-msgid "Usage"
-msgstr ""
-
-#: htdocs/plugins/router/pages/settings.upgrade.html:25
-msgid "USB Firmware Upgrade"
-msgstr ""
-
-#: htdocs/plugins/router/pages/settings.energy.html:7
-msgid "USB Port"
-msgstr ""
-
-#: htdocs/plugins/core/widgets/luci.login.html:18
-msgid "Username"
-msgstr ""
-
-#: htdocs/plugins/router/pages/status.status.js:58
-msgid "VDSL"
-msgstr ""
-
-#: htdocs/plugins/router/pages/status.status.tv.html:7
-msgid "Vodaphone TV Channels"
-msgstr ""
-
-#: htdocs/plugins/router/pages/status.status.tv.html:4
-msgid "Vodaphone TV Status"
-msgstr ""
-
-#: htdocs/plugins/router/pages/status.status.js:60
-msgid "Voice Ports"
-msgstr ""
-
-#: htdocs/plugins/router/pages/status.status.js:56
-msgid "Wifi"
 msgstr ""
 
 #: htdocs/plugins/wifi/widgets/uci.wireless.interface.html:10
@@ -796,132 +872,130 @@ msgstr ""
 #: htdocs/plugins/wifi/pages/wifi.settings.html:6
 msgid "wifi.settings.info"
 msgstr ""
+"Below you can change parameters for the two WiFi frequencies 2.4 GHz and 5 "
+"GHz."
 
-#: htdocs/plugins/router/pages/status.status.js:56
-#: htdocs/plugins/router/pages/status.status.js:57
-#: htdocs/plugins/router/pages/status.status.js:58
-#: htdocs/plugins/router/pages/status.status.js:59
+#: htdocs/plugins/status/pages/status.status.js:56
+#: htdocs/plugins/status/pages/status.status.js:57
+#: htdocs/plugins/status/pages/status.status.js:58
+#: htdocs/plugins/status/pages/status.status.js:59
 msgid "yes"
-msgstr ""
-
-#: htdocs/plugins/core/widgets/luci.login.html:3
-msgid "You are logged in!"
 msgstr ""
 
 # share/menu.d/internet.json
 msgid "internet.title"
-msgstr ""
+msgstr "Internet"
 
 msgid "internet.port_mapping.title"
-msgstr ""
+msgstr "Port Mapping"
 
 msgid "internet.exposed_host.title"
-msgstr ""
+msgstr "Exposed Host"
 
 msgid "internet.dns.title"
-msgstr ""
+msgstr "DNS & DDNS"
 
 # share/menu.d/overview.json
 msgid "overview.title"
-msgstr ""
+msgstr "Overview"
 
 # share/menu.d/phone.json
 msgid "phone.title"
-msgstr ""
+msgstr "Phone"
 
 msgid "phone.call_log.title"
-msgstr ""
+msgstr "Call Log"
 
 msgid "phone.number_blocking.title"
-msgstr ""
+msgstr "Number Blocking"
 
 msgid "phone.ringing_schedule.title"
-msgstr ""
+msgstr "Ringing Schedule"
 
 msgid "phone.numbers.title"
-msgstr ""
+msgstr "Phone Numbers"
 
 msgid "phone.speed_dialing.title"
-msgstr ""
+msgstr "Speed Dialing"
 
 # share/menu.d/settings.json
 msgid "settings.title"
-msgstr ""
+msgstr "Settings"
 
 msgid "settings.password.title"
-msgstr ""
+msgstr "EasyBox Password"
 
 msgid "settings.upgrade.title"
-msgstr ""
+msgstr "Firmware Update"
 
 msgid "settings.energy.title"
-msgstr ""
+msgstr "Energy Settings"
 
 msgid "settings.configuration.title"
-msgstr ""
+msgstr "Configuration"
 
 msgid "settings.network.title"
-msgstr ""
+msgstr "Network"
 
 msgid "settings.uci.title"
-msgstr ""
+msgstr "UCI"
 
 # share/menu.d/status.json
 msgid "status.title"
-msgstr ""
+msgstr "Status"
 
 msgid "status.status.title"
-msgstr ""
+msgstr "Status"
 
 msgid "status.status.dsl.title"
-msgstr ""
+msgstr "DSL Status"
 
 msgid "status.diagnostics.title"
-msgstr ""
+msgstr "Diagnostic Utility"
 
 msgid "status.events.title"
-msgstr ""
+msgstr "Event Log"
 
 msgid "status.restart.title"
-msgstr ""
+msgstr "Restart"
 
 msgid "status.about.title"
-msgstr ""
+msgstr "About"
 
 msgid "status.nat.title"
-msgstr ""
+msgstr "NAT Mapping Table"
 
 # share/menu.d/status.vodafone.json
 msgid "status.status.voice.title"
-msgstr ""
+msgstr "Voice Status"
 
 msgid "status.status.tv.title"
-msgstr ""
+msgstr "Vodafone TV"
 
 # share/menu.d/wifi.json
 msgid "wifi.title"
-msgstr ""
+msgstr "WiFi"
 
 msgid "wifi.general.title"
-msgstr ""
+msgstr "General"
 
 msgid "wifi.schedule.title"
-msgstr ""
+msgstr "Schedule"
 
 msgid "wifi.wps.title"
-msgstr ""
+msgstr "WPS"
 
 msgid "wifi.mac_filter.title"
-msgstr ""
+msgstr "MAC Filter"
 
 msgid "wifi.settings.title"
-msgstr ""
+msgstr "Settings"
 
 msgid "wifi-iface.wifi-iface.ssid"
-msgstr ""
+msgstr "WiFi Name (SSID)"
 
 msgid "wifi-iface.network"
-msgstr ""
+msgstr "WiFi Network"
 
 msgid "wifi-iface.mode"
 msgstr ""
