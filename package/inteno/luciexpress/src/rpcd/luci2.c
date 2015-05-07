@@ -1009,7 +1009,7 @@ rpc_luci2_upgrade_check(struct ubus_context *ctx, struct ubus_object *obj,
 	const char *type = "--usb";
 
 	struct blob_attr *tb[__RPC_UPG_CHECK_MAX];
-	blobmsg_parse(rpc_upgrade_policy, __RPC_UPG_CHECK_MAX, tb, blob_data(msg), blob_len(msg));
+	blobmsg_parse(rpc_upgrade_check_policy, __RPC_UPG_CHECK_MAX, tb, blob_data(msg), blob_len(msg));
 
 	if (tb[RPC_UPGRADE_CHECK] && !strcmp(blobmsg_data(tb[RPC_UPGRADE_CHECK]), "online"))
 		type = "--online";
