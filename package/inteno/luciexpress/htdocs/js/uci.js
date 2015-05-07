@@ -13,6 +13,11 @@ angular.module("luci")
 			"wifibutton": 	{ dvalue: true, type: Boolean },
 			"wpsbutton": 		{ dvalue: true, type: Boolean },
 			"wpsdevicepin": { dvalue: true, type: Boolean }
+		},
+		"easybox-services": {
+			"internet": 	{ dvalue: "", type: String },
+			"voice": 	{ dvalue: "", type: String },
+			"iptv": 	{ dvalue: "", type: String }
 		}, 
 		"firewall-defaults": {
 			"syn_flood":		{ dvalue: true, type: Boolean }, 
