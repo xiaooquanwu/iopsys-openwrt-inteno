@@ -2,7 +2,7 @@
  
 $juci.module("phone")
 .controller("PhoneCallLogPageCtrl", function($scope, $uci, gettext, $tr){ 
-	/*$scope.phoneFilter = ""; 
+	$scope.phoneFilter = ""; 
 	$scope.phoneFilterSelected = {}; 
 	$scope.phoneList = []; 
 	$scope.call_log = []; 
@@ -25,5 +25,5 @@ $juci.module("phone")
 	}); 
 	$scope.onChangeFilter = function(item, model){
 		$scope.phoneFilter = model.from; 
-	}*/
+	}
 }); 
