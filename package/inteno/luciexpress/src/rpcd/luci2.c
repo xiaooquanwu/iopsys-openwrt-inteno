@@ -136,15 +136,22 @@ static const struct blobmsg_policy rpc_opkg_package_policy[__RPC_OP_MAX] = {
 
 enum {
 	RPC_UPGRADE_KEEP,
-	RPC_UPGRADE_CHECK,
 	RPC_UPGRADE_PATH,
 	__RPC_UPGRADE_MAX
 };
 
 static const struct blobmsg_policy rpc_upgrade_policy[__RPC_UPGRADE_MAX] = {
 	[RPC_UPGRADE_KEEP] = { .name = "keep",    .type = BLOBMSG_TYPE_BOOL },
-	[RPC_UPGRADE_CHECK] = { .name = "type",    .type = BLOBMSG_TYPE_STRING },
 	[RPC_UPGRADE_PATH] = { .name = "path",    .type = BLOBMSG_TYPE_STRING },
+};
+
+enum {
+	RPC_UPGRADE_CHECK,
+	__RPC_UPG_CHECK_MAX
+};
+
+static const struct blobmsg_policy rpc_upgrade_check_policy[__RPC_UPG_CHECK_MAX] = {
+	[RPC_UPGRADE_CHECK] = { .name = "type",    .type = BLOBMSG_TYPE_STRING },
 };
 
 enum {
@@ -1001,8 +1008,8 @@ rpc_luci2_upgrade_check(struct ubus_context *ctx, struct ubus_object *obj,
 {
 	const char *type = "--usb";
 
-	struct blob_attr *tb[__RPC_UPGRADE_MAX];
-	blobmsg_parse(rpc_upgrade_policy, __RPC_UPGRADE_MAX, tb, blob_data(msg), blob_len(msg));
+	struct blob_attr *tb[__RPC_UPG_CHECK_MAX];
+	blobmsg_parse(rpc_upgrade_policy, __RPC_UPG_CHECK_MAX, tb, blob_data(msg), blob_len(msg));
 
 	if (tb[RPC_UPGRADE_CHECK] && !strcmp(blobmsg_data(tb[RPC_UPGRADE_CHECK]), "online"))
 		type = "--online";
@@ -1022,7 +1029,6 @@ rpc_luci2_upgrade_test(struct ubus_context *ctx, struct ubus_object *obj,
 	struct uci_element *e;
 	struct uci_section *s;
 	struct uci_ptr ptr = { .package = "system" };
-
 
 	uci_load(cursor, ptr.package, &p);
 
@@ -2936,14 +2942,11 @@ rpc_luci2_api_init(const struct rpc_daemon_ops *o, struct ubus_context *ctx)
 		                                  rpc_password_policy),
 		UBUS_METHOD_NOARG("led_list",     rpc_luci2_led_list),
 		UBUS_METHOD_NOARG("usb_list",     rpc_luci2_usb_list),
-		UBUS_METHOD("upgrade_check", rpc_luci2_upgrade_check,
-						rpc_upgrade_policy),
+		UBUS_METHOD("upgrade_check",	  rpc_luci2_upgrade_check, rpc_upgrade_check_policy),
 		UBUS_METHOD_NOARG("upgrade_test", rpc_luci2_upgrade_test),
-		UBUS_METHOD("upgrade_start",      rpc_luci2_upgrade_start,
-		                                  rpc_upgrade_policy),
-		UBUS_METHOD_NOARG("upgrade_clean", rpc_luci2_upgrade_clean),
-		UBUS_METHOD("backup_restore", 		rpc_luci2_backup_restore, 
-											rpc_backup_policy),
+		UBUS_METHOD("upgrade_start",      rpc_luci2_upgrade_start, rpc_upgrade_policy),
+		UBUS_METHOD_NOARG("upgrade_clean",rpc_luci2_upgrade_clean),
+		UBUS_METHOD("backup_restore",	  rpc_luci2_backup_restore, rpc_backup_policy),
 		UBUS_METHOD_NOARG("backup_clean", rpc_luci2_backup_clean),
 		UBUS_METHOD_NOARG("backup_config_get", rpc_luci2_backup_config_get),
 		UBUS_METHOD("backup_config_set",  rpc_luci2_backup_config_set,
