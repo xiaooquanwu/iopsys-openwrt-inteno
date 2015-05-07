@@ -1064,6 +1064,7 @@ wifi_detect() {
 	local PDFS="$(uci -q get wireless.preferred.dfsc)"
 	local PCNT="$(uci -q get wireless.preferred.country)"
 	local PTMR="$(uci -q get wireless.preferred.scntmr)"
+	local PEXT="$(uci -q get wireless.preferred.extrassid)"
 
 	[ -n "$SSID" ] || SSID="${PSID:-Inteno}"-$BSSID4
 	[ -n "$ENCR" ] || ENCR=$PENC
@@ -1155,6 +1156,9 @@ config wifi-iface
 	option wmf_bss_enable '1'
 	option bss_max '16'
 
+EOF
+				if [ "$PEXT" == "1" ]; then
+					cat >> /etc/config/wireless <<EOF
 config wifi-iface
 	option device '$wl'
 	option network '${NET:-lan}'
@@ -1170,6 +1174,7 @@ config wifi-iface
 	option bss_max '16'
 
 EOF
+				fi
 				uci -q set wireless.$wl.dfsc="$dfsc"
 			else
 				uci -q set wireless.$wl.band="$band"
