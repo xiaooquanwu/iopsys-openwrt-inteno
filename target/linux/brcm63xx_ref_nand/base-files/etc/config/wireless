@@ -10,4 +10,6 @@ config wifi-settings preferred
 	option hw5g '11ac'
 	option hw2g 'auto'
 	option country 'EU/13'
+	option extrassid '1'
 	option guest '0'
+
