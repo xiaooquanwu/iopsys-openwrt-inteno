@@ -7,9 +7,15 @@ $juci.module("core")
 		replace: true
 	 };  
 })
-.controller("luciTopBarController", function($scope, $config, $session, $window, $localStorage, $state, gettext){
-	$scope.model = ($config.system.name || "") + " " + ($config.system.hardware || ""); 
-	
+.controller("luciTopBarController", function($scope, $config, $session, $uci, $window, $localStorage, $state, gettext){
+	$uci.sync("system").done(function(){
+		if($uci.system["@system"] && $uci.system["@system"].length){
+			$scope.model = $uci.system["@system"][0].displayname.value; 
+		} else {
+			$scope.model = ($config.system.name || "") + " " + ($config.system.hardware || ""); 
+		}
+		$scope.$apply(); 
+	}); 
 	$scope.guiModes = [
 		{id: "basic", label: gettext("Basic Mode")},
 		{id: "expert", label: gettext("Expert Mode")},

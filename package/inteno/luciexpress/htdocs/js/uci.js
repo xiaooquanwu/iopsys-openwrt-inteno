@@ -55,6 +55,15 @@ angular.module("luci")
 			"disabled":			{ dvalue: false, type: Boolean },
 			"ping_wan":			{ dvalue: false, type: Boolean }
 		},
+		"system-system": {
+			"timezone":				{ dvalue: '', type: String },
+			"zonename":				{ dvalue: '', type: String },
+			"conloglevel":		{ dvalue: 0, type: Number },
+			"cronloglevel":		{ dvalue: 0, type: Number },
+			"hostname":				{ dvalue: '', type: String },
+			"displayname":		{ dvalue: '', type: String },
+			"log_size":				{ dvalue: 200, type: Number }
+		}, 
 		"voice_client-brcm_line": {
       "extension": 			{ dvalue: '', type: String }, 
       "sip_account": 		{ dvalue: '', type: String }, 

@@ -5,10 +5,11 @@
 			<luci-config-info>{{ 'phone.call_log.info' | translate }}</luci-config-info>
 			<luci-config-lines>
 				<luci-config-line title="{{'Show calls for'|translate}}">
-					<ui-select ng-model="phoneFilterSelected" search="disabled" theme="bootstrap" style="width: 300px;" on-select="onChangeFilter($item, $model)">
+					<luci-dropdown type="button" placeholder="{{'Pick phone'|translate}}" size="lg" ng-model="phoneList" ng-selected="phoneFilterSelected" on-select="onChangeFilter()"/>
+					<!--<ui-select ng-model="phoneFilterSelected" search="disabled" theme="bootstrap" style="width: 300px;" on-select="onChangeFilter($item, $model)">
 						<ui-select-match placeholder="All Phones">{{$select.selected.from}}</ui-select-match>
 						<ui-select-choices repeat="phone in phoneList" refresh-delay="0"><div >{{phone.from}}</div></ui-select-choices>
-					</ui-select>
+					</ui-select>-->
 				</luci-config-line>
 			</luci-config-lines>
 			<table class="table">
@@ -20,7 +21,7 @@
 					<th translate>Your number</th>
 					<th translate>Duration</th>
 				</tr>
-				<tr ng-repeat="log in call_log | filter:{from:phoneFilter}">
+				<tr ng-repeat="log in call_log | filter:phoneFilter">
 					<td>
 						<i class='fa fa-arrow-left' ng-show="log.direction == 'Outgoing'"></i>
 						<i class='fa fa-arrow-right' ng-show="log.direction == 'Incoming'"></i>

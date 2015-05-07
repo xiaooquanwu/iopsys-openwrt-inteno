@@ -6,13 +6,14 @@ $juci.module("core")
 				items: '=ngModel',
 				doSelect: '&onChange',
 				selectedItem: '=ngSelected',
-				placeholder: '@placeholder'
+				placeholder: '@placeholder',
+				size: '=size'
 		},
 		link: function (scope, element, attrs) {
 			var html = '';
 			switch (attrs.type) {
 					case "button":
-							html += '<div class="btn-group"><button class="btn btn-default button-label">{{placeholder}}</button><button class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>';
+							html += '<div class="btn-group"><button class="btn btn-default button-label {{size_class}}">{{placeholder}}</button><button class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>';
 							break;
 					default:
 							html += '<div class="dropdown"><a class="dropdown-toggle" role="button" data-toggle="dropdown"  href="javascript:;">Dropdown<b class="caret"></b></a>';
@@ -20,6 +21,11 @@ $juci.module("core")
 			}
 			html += '<ul class="dropdown-menu"><li ng-repeat="item in items"><a tabindex="-1" data-ng-click="selectVal(item)" href="">{{item.label}}</a></li></ul></div>';
 			element.append($compile(html)(scope));
+			scope.$watch("size", function(){
+				scope.size_class = "btn-"+scope.size; 
+			}); 
+			if(scope.size) 
+				scope.size_class = "btn-"+scope.size; 
 			scope.$watch("items", function(){
 				if(scope.items){
 					if(scope.items.length) scope.bSelectedItem = scope.items[0];

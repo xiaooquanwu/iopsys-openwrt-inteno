@@ -15,15 +15,16 @@ $juci.module("phone")
 				log.date = $tr(gettext("Today")); 
 			else 
 				log.date = date.getDate() + ":"+date.getMonth()+":"+date.getFullYear(); 
-			log.time = date.getHours()+":"+date.getMinutes(); 
-			unique_phones[log.from] = true; 
+			log.time = date.getHours()+":"+("0"+date.getMinutes()).slice(-2); 
+			if(log.direction == "Incoming") unique_phones[log.to] = true; 
+			if(log.direction == "Outgoing") unique_phones[log.from] = true; 
 			return log; 
 		}); 
-		$scope.phoneList = Object.keys(unique_phones).map(function(x){ return { from: x }; }); 
+		$scope.phoneList = Object.keys(unique_phones).map(function(x){ return { label: x, id: x }; }); 
 		$scope.phoneFilter = ""; 
 		$scope.$apply(); 
 	}); 
-	$scope.onChangeFilter = function(item, model){
-		$scope.phoneFilter = model.from; 
+	$scope.onChangeFilter = function(){
+		$scope.phoneFilter = $scope.phoneFilterSelected.id; 
 	}
 }); 
