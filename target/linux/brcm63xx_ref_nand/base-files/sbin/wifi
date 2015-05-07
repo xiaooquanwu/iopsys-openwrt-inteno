@@ -1048,12 +1048,14 @@ wifi_detect() {
 	local SSID="$(uci -q get wireless.@wifi-iface[0].ssid)"
 	local ENCR="$(uci -q get wireless.@wifi-iface[0].encryption)"
 	local KEY="$(uci -q get wireless.@wifi-iface[0].key)"
+	local GTK="$(uci -q get wireless.@wifi-iface[0].gtk_rekey)"
 	local WPS="$(uci -q get wireless.@wifi-iface[0].wps_pbc)"
 	local NET="$(uci -q get wireless.@wifi-iface[0].network)"
 
 	local PSID="$(uci -q get wireless.preferred.sid)"
 	local PENC="$(uci -q get wireless.preferred.enc)"
 	local PKEY="$(uci -q get wireless.preferred.key)"
+	local PGTK="$(uci -q get wireless.preferred.gtk)"
 	local PWPS="$(uci -q get wireless.preferred.wpsb)"
 	local PHW5="$(uci -q get wireless.preferred.hw5g)"
 	local PHW2="$(uci -q get wireless.preferred.hw2g)"
@@ -1069,6 +1071,7 @@ wifi_detect() {
 	[ -n "$SSID" ] || SSID="${PSID:-Inteno}"-$BSSID4
 	[ -n "$ENCR" ] || ENCR=$PENC
 	[ -n "$KEY" ] || KEY=$PKEY
+	[ -n "$GTK" ] || GTK=$PGTK
 	[ -n "$WPS" ] || WPS=$PWPS
 
 	pcID() {
@@ -1150,7 +1153,7 @@ config wifi-iface
 	option encryption '${ENCR:-mixed-psk}'
 	option cipher 'auto'
 	option key '${KEY:-$WPAKEY}'
-	option gtk_rekey '0'
+	option gtk_rekey '${GTK:-3600}'
 	option macfilter '0'
 	option wps_pbc '${WPS:-1}'
 	option wmf_bss_enable '1'
@@ -1167,7 +1170,7 @@ config wifi-iface
 	option encryption '${ENCR:-mixed-psk}'
 	option cipher 'auto'
 	option key '${KEY:-$WPAKEY}'
-	option gtk_rekey '0'
+	option gtk_rekey '${GTK:-3600}'
 	option macfilter '0'
 	option wps_pbc '0'
 	option wmf_bss_enable '1'
