@@ -9,11 +9,13 @@ $juci.module("core")
 })
 .controller("luciTopBarController", function($scope, $config, $session, $uci, $window, $localStorage, $state, gettext){
 	$uci.sync("system").done(function(){
-		if($uci.system["@system"] && $uci.system["@system"].length){
-			$scope.model = $uci.system["@system"][0].displayname.value; 
+		var system = $uci.system["@system"]; 
+		if(system && system.length && system[0].displayname.value){
+			$scope.model = system[0].displayname.value; 
 		} else {
 			$scope.model = ($config.system.name || "") + " " + ($config.system.hardware || ""); 
 		}
+		
 		$scope.$apply(); 
 	}); 
 	$scope.guiModes = [
