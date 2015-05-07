@@ -449,7 +449,7 @@ populate_clients()
 			remove_newline(line);
 			clients[cno].exists = false;
 			clients[cno].wireless = false;
-			memset(clients[cno].hostname, '\0', 64);
+			memset(clients[cno].hostname, '\0', sizeof(clients[cno].hostname));
 			if (sscanf(line, "%s %s %s %s %s", clients[cno].leaseno, clients[cno].macaddr, clients[cno].hostaddr, clients[cno].hostname, mask) == 5) {
 				clients[cno].exists = true;
 				clients[cno].dhcp = true;
@@ -474,7 +474,7 @@ populate_clients()
 			there = false;
 			clients[cno].exists = false;
 			clients[cno].wireless = false;
-			memset(clients[cno].hostname, '\0', 64);
+			memset(clients[cno].hostname, '\0', sizeof(clients[cno].hostname));
 			if ((lno > 0) && sscanf(line, "%s 0x%d 0x%d %s %s %s", clients[cno].hostaddr, &hw, &flag, clients[cno].macaddr, mask, clients[cno].device)) {
 				for (i=0; i < cno; i++) {
 					if (!strcmp(clients[cno].macaddr, clients[i].macaddr)) {
@@ -556,7 +556,7 @@ populate_clients6()
 			remove_newline(line);
 			clients6[cno].exists = false;
 			clients6[cno].wireless = false;
-			memset(clients6[cno].hostname, '\0', 64);
+			memset(clients6[cno].hostname, '\0', sizeof(clients[cno].hostname));
 			if (sscanf(line, "# %s %s %x %s %d %x %d %s", clients6[cno].device, clients6[cno].duid, &iaid, clients6[cno].hostname, &ts, &id, &length, clients6[cno].ip6addr)) {
 				clients6[cno].exists = true;
 				clear_macaddr();
@@ -942,7 +942,7 @@ router_dump_wireless_stas(struct blob_buf *b, char *wname, bool vif)
 		if(!(clients[i].wireless))
 			continue;
 
-		memset(compare, '\0', 8);
+		memset(compare, '\0', sizeof(compare));
 		if (vif)
 			strcpy(compare, clients[i].wdev);
 		else
@@ -1363,7 +1363,7 @@ quest_router_wireless_stas(struct ubus_context *ctx, struct ubus_object *obj,
 	if (tb[RADIO_NAME] && strchr(blobmsg_data(tb[RADIO_NAME]), '.'))
 		return UBUS_STATUS_INVALID_ARGUMENT;
 
-	memset(lookup, '\0', 8);
+	memset(lookup, '\0', sizeof(lookup));
 	if (tb[VIF_NAME])
 		strcpy(lookup, blobmsg_data(tb[VIF_NAME]));
 	else

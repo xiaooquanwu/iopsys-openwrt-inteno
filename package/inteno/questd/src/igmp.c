@@ -1,173 +1,101 @@
 /*
- * igmp.c
+ * Copyright (C) 2012-2013 Inteno Broadband Technology AB. All rights reserved.
  *
- *  Created on: May 5, 2015
- *      Author: stefan
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA
  */
 
 #include "questd.h"
 #include "igmp.h"
 
+char* convert_to_ipaddr(int ip)
+{
+	struct in_addr ip_addr;
+	ip_addr.s_addr = ip;
+	return inet_ntoa(ip_addr);
+}
 
-static void tokenize_line(char *str, const char **tokens, size_t tokens_size) {
-	char *ptr = str;
-	const char **token = tokens; // = line;
-	while (*ptr) {
-		if (*ptr == '\t' || *ptr == ' ' || *ptr == '\n') {
-			*ptr++ = 0;
-			continue;
+char* single_space(char* str){
+	char *from, *to;
+	int space = 0;
+	from = to = str;
+	while(1) {
+		if(space && *from == ' ' && to[-1] == ' ') {
+			++from;
 		} else {
-			*token++ = ptr;
-			tokens_size--;
-			if (tokens_size == 0) {
-				return;
-			}
-			while (*ptr && *ptr != '\t' && *ptr != ' ' && *ptr != '\n')
-				ptr++;
-			continue;
+			space = (*from == ' ') ? 1 : 0;
+			*to++ = *from++;
+			if(!to[-1])
+				break;
 		}
-		ptr++;
-	}  
+	}
+	return str;
 }
 
 int igmp_rpc(struct ubus_context *ctx, struct ubus_object *obj,
 		struct ubus_request_data *req, const char *method,
 		struct blob_attr *msg) {
+
 	struct blob_buf bb;
-	int row = 0, idx = 0;
-	FILE *in;
+	IGMPtable table[MAX_IGMP_ENTRY];
+	FILE *snptable;
 	char line[256];
-	IGMPtable table[128];
-	const char *tokens[32] = { 0 };
-	void *object, *array;
+	int idx = 0;
+	void *t, *a;
+
+	if ((snptable = fopen("/proc/net/igmp_snooping", "r"))) {
+		while(fgets(line, sizeof(line), snptable) != NULL)
+		{
+			remove_newline(line);
+			table[idx].exists = false;
+			if(sscanf(single_space(line),"%s %s %s %s %x %x %x %s %x %x %x %d %x %d",
+					table[idx].bridge, table[idx].device, table[idx].srcdev, table[idx].tags, &(table[idx].lantci), &(table[idx].wantci),
+					&(table[idx].group), table[idx].mode, &(table[idx].RxGroup), &(table[idx].source), &(table[idx].reporter),
+					&(table[idx].timeout), &(table[idx].Index), &(table[idx].ExcludPt)) == 14)
+			{
+				table[idx].exists = true;
+				idx++;
+			}
+		}
+		fclose(snptable);
+	} else
+		return UBUS_STATUS_NOT_FOUND;
 
 	blob_buf_init(&bb, 0);
-	// /proc/net/
-	if (!(in = fopen("/tmp/igmp_snooping", "r")))
-		return 1;
-	array = blobmsg_open_array(&bb, "tables");
 
-	struct element {
-		char *string;
-		struct element *next;
-	};
-	while (fgets(line, sizeof(line), in)) {
-		if (row < 2) {
-			row++;
-			continue;
-		}
-		//remove_newline(line);
-
-		tokenize_line(line, tokens, sizeof(tokens) / sizeof(char*));
-		int tok_pos = 0;
-		const char **token = tokens;
-		//const char *names[] = { "bridge", "dev", "srcdev", "tags", "lantci",
-		//		"wantci", "group", "mode", "rxgroup", "source", "reporter",
-		//		"timeout", "index", "excludept" };
-
-		while (*token) {
-			printf("<%d>\n",tok_pos);
-			switch (tok_pos) {
-			case 0:
-
-				sprintf(table[row-2].bridge,"%s",*token);
-				printf("%s\n%s\n",table[row-2].bridge,*token);
-				break;
-			case 1:
-				sprintf(table[row-2].device,"%s",*token);
-				break;
-			case 2:
-				sprintf(table[row - 2].tags ,"%s",*token);
-				break;
-			case 3: {
-				uint32_t ip;
-				sscanf(*token, "%8x", &ip);
-				sprintf(table[row - 2].lantci, "%d.%d.%d.%d", (ip >> 16),
-						(ip >> 8) & 0xff, ip & 0xff, (ip >> 24) & 0xff);
-			}
-				break;
-			case 4: {
-				uint32_t ip;
-				sscanf(*token, "%8x", &ip);
-				sprintf(table[row - 2].wantci, "%d.%d.%d.%d", (ip >> 16),
-						(ip >> 8) & 0xff, ip & 0xff, (ip >> 24) & 0xff);
-			}
-				break;
-			case 5: {
-				uint32_t ip;
-				sscanf(*token, "%8x", &ip);
-				sprintf(table[row - 2].group, "%d.%d.%d.%d", (ip >> 16),
-						(ip >> 8) & 0xff, ip & 0xff, (ip >> 24) & 0xff);
-			}
-				break;
-			case 6:
-				sprintf(table[row - 2].mode,"%s",*token);
-				break;
-			case 7: {
-				uint32_t ip;
-
-				sscanf(*token, "%8x", &ip);
-				sprintf(table[row - 2].RxGroup, "%d.%d.%d.%d", (ip >> 16),
-						(ip >> 8) & 0xff, ip & 0xff, (ip >> 24) & 0xff);
-			}
-				break;
-			case 8: {
-				uint32_t ip;
-				sscanf(*token, "%8x", &ip);
-				sprintf(table[row - 2].source, "%d.%d.%d.%d", (ip >> 16),
-						(ip >> 8) & 0xff, ip & 0xff, (ip >> 24) & 0xff);
-			}
-				break;
-			case 9: {
-				uint32_t ip;
-				sscanf(*token, "%8x", &ip);
-				sprintf(table[row - 2].reporter, "%d.%d.%d.%d", (ip >> 16),
-						(ip >> 8) & 0xff, ip & 0xff, (ip >> 24) & 0xff);
-			}
-				break;
-			case 10:
-				sprintf(table[row - 2].timeout,"%s",*token);
-
-				break;
-			case 11:
-				sprintf(table[row - 2].Index,"%s",*token);
-
-				break;
-			case 12:
-				sprintf(table[row - 2].ExcludPt,"%s",*token);
-
-				break;
-			default:
-				break;
-
-			}
-			token++;
-			tok_pos++;
-			printf("</%d\n>",tok_pos);
-		}
-
-		row++;
-
-	}
-	for (idx = 0; idx < (row - 2); idx++) {
-		object = blobmsg_open_table(&bb, NULL);
+	a = blobmsg_open_array(&bb, "table");
+	for (idx = 0; idx < MAX_IGMP_ENTRY; idx++) {
+		if (!table[idx].exists)
+			break;
+		t = blobmsg_open_table(&bb, NULL);
 		blobmsg_add_string(&bb,"bridge", table[idx].bridge);
 		blobmsg_add_string(&bb,"device", table[idx].device);
 		blobmsg_add_string(&bb,"srcdev", table[idx].srcdev);
 		blobmsg_add_string(&bb,"tags", table[idx].tags);
-		blobmsg_add_string(&bb,"lantci", table[idx].lantci);
-		blobmsg_add_string(&bb,"wantci", table[idx].wantci);
-		blobmsg_add_string(&bb,"group", table[idx].group);
+		blobmsg_add_u32(&bb,"lantci", table[idx].lantci);
+		blobmsg_add_u32(&bb,"wantci", table[idx].wantci);
+		blobmsg_add_string(&bb,"group", convert_to_ipaddr(table[idx].group));
 		blobmsg_add_string(&bb,"mode", table[idx].mode);
-		blobmsg_add_string(&bb,"rxgroup", table[idx].RxGroup);
-		blobmsg_add_string(&bb,"source", table[idx].source);
-		blobmsg_add_string(&bb,"reporter", table[idx].reporter);
-		blobmsg_add_string(&bb,"timeout", table[idx].timeout);
-		blobmsg_add_string(&bb,"index", table[idx].Index);
-		blobmsg_add_string(&bb,"excludpt", table[idx].ExcludPt);
-		blobmsg_close_table(&bb, object);
+		blobmsg_add_string(&bb,"rxgroup", convert_to_ipaddr(table[idx].RxGroup));
+		blobmsg_add_string(&bb,"source", convert_to_ipaddr(table[idx].source));
+		blobmsg_add_string(&bb,"reporter", convert_to_ipaddr(table[idx].reporter));
+		blobmsg_add_u32(&bb,"timeout", table[idx].timeout);
+		blobmsg_add_u32(&bb,"index", table[idx].Index);
+		blobmsg_add_u32(&bb,"excludpt", table[idx].ExcludPt);
+		blobmsg_close_table(&bb, t);
 	}
-	blobmsg_close_array(&bb, array);
+	blobmsg_close_array(&bb, a);
 
 	ubus_send_reply(ctx, req, bb.head);
 
