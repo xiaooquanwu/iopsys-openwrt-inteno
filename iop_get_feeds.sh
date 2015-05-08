@@ -17,7 +17,6 @@
 ./scripts/feeds install minidlna
 ./scripts/feeds install smap
 ./scripts/feeds install smap-to-devinfo
-./scripts/feeds install ddns-scripts
 ./scripts/feeds install hd-idle
 ./scripts/feeds install ntpclient
 ./scripts/feeds install collectd-mod-olsrd

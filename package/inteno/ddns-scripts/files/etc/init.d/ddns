@@ -1,0 +1,21 @@
+#!/bin/sh /etc/rc.common
+START=95
+USE_PROCD=1
+
+boot() {
+	return 0
+}
+
+start_service() {
+	. /usr/lib/ddns/dynamic_dns_functions.sh
+	start_daemon_for_all_ddns_sections
+}
+
+stop_service() {
+	killall -9 dynamic_dns_updater.sh
+}
+
+service_triggers() {
+        procd_add_reload_trigger ddns
+}
+
