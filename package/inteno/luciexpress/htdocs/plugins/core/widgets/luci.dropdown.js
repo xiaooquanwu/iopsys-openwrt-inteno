@@ -41,6 +41,7 @@ $juci.module("core")
 						else if(scope.selectedItem == x.value){
 							scope.selectedText = x.label || scope.placeholder; 
 						} 
+						//alert(JSON.stringify(x)+" "+JSON.stringify(scope.selectedItem));
 						return { label: x.label, value: x.value }; 
 					} else {
 						if(scope.selectedItem == x){
@@ -66,8 +67,9 @@ $juci.module("core")
 					$('button.button-label', element).html(item.label);
 					break;
 			}
-			scope.selectedItem = item.value; 
-				
+			//alert(item.value); 
+			if(scope.selectedItem instanceof Array) scope.selectedItem.splice(0, scope.selectedItem.length); 
+			Object.assign(scope.selectedItem, item.value); 
 			scope.onChange(item);
 		};
 		//scope.selectVal(scope.selectedItem);

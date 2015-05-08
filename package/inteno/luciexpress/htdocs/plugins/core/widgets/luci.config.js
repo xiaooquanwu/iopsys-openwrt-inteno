@@ -43,17 +43,20 @@ $juci.module("core")
 	var plugin_root = $juci.module("core").plugin_root; 
 	return {
 		template: '<div class="row" style="margin-top: 20px; ">'+
-			'<div class="col-md-7">'+
+			'<div class="col-md-6">'+
 				'<label style="font-size: 1.2em">{{title}}</label>'+
 			'</div>'+
-			'<div class="col-md-5">'+
-				'<div class="pull-right" ng-transclude></div>'+
+			'<div class="col-md-6">'+
+				'<div class="{{pullClass}}" ng-transclude></div>'+
 			'</div></div>', 
 		replace: true, 
 		scope: {
 			title: "@"
 		}, 
-		transclude: true
+		transclude: true, 
+		link: function (scope, element, attrs) {
+			if(!("noPull" in attrs)) scope.pullClass = "pull-right"; 
+		}
 	 };  
 })
 .directive("luciConfigApply", function(){

@@ -28,4 +28,14 @@ $juci.module("wifi")
 			$scope.$apply(); 
 		}); 
 	}
+	
+	$scope.onEditSchedule = function(sched){
+		$scope.schedule = sched; 
+		$scope.showScheduleDialog = 1; 
+	}
+	$scope.onDeleteSchedule = function(sched){
+		sched.$delete().always(function(){
+			$scope.$apply(); 
+		}); 
+	}
 }); 

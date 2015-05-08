@@ -192,6 +192,9 @@ angular.module("luci")
 		function UCIField(value, schema){
 			if(!schema) throw new Error("No schema specified for the field!"); 
 			this.ovalue = value; 
+			if(value != null && value instanceof Array) {
+				this.ovalue = []; Object.assign(this.ovalue, value); 
+			} 
 			this.dirty = false; 
 			this.uvalue = undefined; 
 			this.schema = schema; 
@@ -199,6 +202,9 @@ angular.module("luci")
 		UCIField.prototype = {
 			$reset: function(value){
 				this.ovalue = this.uvalue = value; 
+				if(value != null && value instanceof Array) {
+					this.ovalue = []; Object.assign(this.ovalue, value); 
+				}
 				this.dirty = false; 
 			}, 
 			get value(){
@@ -497,8 +503,11 @@ angular.module("luci")
 					next("could not commit config: "+err); 
 				}); 
 			}, function(err){
-				if(err) deferred.reject(err); 
-				else deferred.resolve(err); 
+				// this is to always make sure that we do this outside of this code flow
+				setTimeout(function(){
+					if(err) deferred.reject(err); 
+					else deferred.resolve(err); 
+				},0); 
 			}); 
 		}); 
 		return deferred.promise(); 

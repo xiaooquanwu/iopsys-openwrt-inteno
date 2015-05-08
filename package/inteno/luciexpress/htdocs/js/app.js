@@ -61,7 +61,8 @@ angular.module("luci", [
 	'angularModalService', 
 	"uiSwitch",
 	"ngAnimate", 
-	"gettext"
+	"gettext", 
+	"checklist-model"
 	]); 
 	
 angular.module("luci")
