@@ -78,7 +78,21 @@ append_parm() {
 }
 
 append_server() {
-	xappend "--server=$1"
+	local serverip
+	local server
+	local dnsserver
+	local newserver
+	serverip=$(echo $1 | awk -F'/' '{print$NF}')
+
+	if ubus list network.interface.* | cut -d'.' -f3 | grep $serverip >/dev/null; then
+		network_get_dnsserver dnsserver $serverip
+		for server in $dnsserver; do
+			newserver=$(echo $1 | sed "s/\(.*\)$serverip/\1$server/")
+			xappend "--server=$newserver"
+		done
+	else
+		xappend "--server=$1"
+	fi
 }
 
 append_address() {
