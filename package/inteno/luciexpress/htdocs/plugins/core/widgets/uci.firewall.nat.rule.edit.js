@@ -10,7 +10,7 @@ $juci.module("core")
 		replace: true, 
 		require: "^ngModel"
 	 };  
-}).controller("uciFirewallNatRuleEdit", function($scope, $uci, $rpc){
+}).controller("uciFirewallNatRuleEdit", function($scope, $uci, $rpc, $log){
 	$scope.portIsRange = 0;
 	$scope.protocols = ["udp", "tcp"]; 
 	$scope.patterns = {
@@ -18,8 +18,7 @@ $juci.module("core")
 		port: /^\d{1,5}$/
 	};
 	$rpc.router.clients().done(function(clients){
-		//console.log(JSON.stringify(Object.keys(clients).map(function(x) { return clients[x]; }))); 
-		$scope.clients = []; 
+		$scope.clients = [];
 		$scope.devices = {}; 
 		Object.keys(clients).map(function(x) {
 			var c = clients[x]; 
@@ -29,5 +28,8 @@ $juci.module("core")
 			} 
 		}); 
 		$scope.$apply(); 
-	}); 
+	});
+    $scope.onAccept = function() {
+        $scope.$parent.onAddRuleConfirm();
+    }
 }); 

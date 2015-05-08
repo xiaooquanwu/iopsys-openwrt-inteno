@@ -3,7 +3,7 @@ $juci.module("internet")
 	
 	function reload(){
 		$uci.sync("firewall").done(function(){
-			$scope.redirects = $uci.firewall["@redirect"]; 
+			$scope.redirects = $uci.firewall["@firewall-forwarding"];
 			$scope.$apply(); 
 		}); 
 	} reload(); 
@@ -27,9 +27,22 @@ $juci.module("internet")
 	};
 	$scope.onAddRule = function(){
 		$scope.rule = {};
-		//$scope.redirects.push($scope.rule);  
-		$scope.showModal = 1; 
+		$scope.showModal = 1;
 	};
+    $scope.onAddRuleConfirm = function() {
+        var rule = $scope.rule;
+        if(!rule[".name"]){
+            rule[".type"] = "firewall-forwarding";
+            $uci.firewall.create(rule).done(function(rule){
+				$scope.rule_src = rule;
+                $scope.$apply();
+            });
+        }
+		Object.keys(rule).map(function(key){
+			if($scope.rule_src && key in $scope.rule_src) $scope.rule_src[key].value = rule[key];
+		});
+        $scope.showModal = 0;
+    };
 	$scope.onEditRule = function(rule){
 		$scope.rule_src = rule; 
 		$scope.rule = {
@@ -51,9 +64,9 @@ $juci.module("internet")
 		}
 		console.log("Deleting rule: "+rule[".name"]); 
 		if(rule[".name"]){
-			$uci.delete("firewall."+rule[".name"]).always(function(){
-				removeFromList(); 
-			}); 
+            rule.$delete().done( function() {
+                removeFromList();
+            });
 		} else {
 			removeFromList();
 		}
@@ -61,9 +74,8 @@ $juci.module("internet")
 	$scope.onCommit = function(){
 		if(!$scope.redirects) return; 
 		$uci.commit("firewall").always(function(){
-			$scope.$apply(); 
-			console.log("Saved firewall settings!"); 
-		}); 
+            reload();
+		});
 	};
 	$scope.onCancel = function(){
 		$uci.rollback().always(function(){
