@@ -80,7 +80,7 @@ msgstr ""
 
 msgid "wifi.schedule.info"
 msgstr ""
-" Schedule the times when your WiFi should be turned on or off automatically. "
+"Schedule the times when your WiFi should be turned on or off automatically. "
 "Note: If WiFi is turned off, both Main and Guest WiFi are disabled"
 
 #: htdocs/plugins/wifi/pages/wifi.wps.html:8
@@ -249,7 +249,7 @@ msgstr ""
 #, fuzzy
 msgid "Automated Diagnostics"
 msgstr ""
-" This section shows a list of tools which can be used to check the status of "
+"This section shows a list of tools which can be used to check the status of "
 "your network connection."
 
 #: htdocs/plugins/settings/pages/settings.configuration.html:32
@@ -989,7 +989,7 @@ msgstr " "
 #: htdocs/plugins/phone/pages/phone.number_blocking.html:5
 msgid "phone.number_blocking.info"
 msgstr ""
-" Stay in control of your bills and block outgoing calls to unwanted numbers."
+"Stay in control of your bills and block outgoing calls to unwanted numbers."
 
 #: htdocs/plugins/phone/pages/phone.ringing_schedule.html:5
 msgid "phone.schedule.info"
