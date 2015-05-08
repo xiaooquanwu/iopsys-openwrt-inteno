@@ -1,0 +1,57 @@
+--- a/bcm963xx/kernel/linux-3.4rt/net/ipv4/route.c
++++ b/bcm963xx/kernel/linux-3.4rt/net/ipv4/route.c
+@@ -2438,6 +2438,12 @@ int ip_route_input_common(struct sk_buff *skb, __be32 daddr, __be32 saddr,
+ 	int iif = dev->ifindex;
+ 	struct net *net;
+ 	int res;
++	__be32 newsaddr = saddr;
++
++	if (ipv4_is_multicast(daddr)) {
++		if(strchr(dev->name, '.') && saddr == 0xc0a80101)
++			newsaddr = 0xc6336401;
++	}
+ 
+ 	net = dev_net(dev);
+ 
+@@ -2447,12 +2453,12 @@ int ip_route_input_common(struct sk_buff *skb, __be32 daddr, __be32 saddr,
+ 		goto skip_cache;
+ 
+ 	tos &= IPTOS_RT_MASK;
+-	hash = rt_hash(daddr, saddr, iif, rt_genid(net));
++	hash = rt_hash(daddr, newsaddr, iif, rt_genid(net));
+ 
+ 	for (rth = rcu_dereference(rt_hash_table[hash].chain); rth;
+ 	     rth = rcu_dereference(rth->dst.rt_next)) {
+ 		if ((((__force u32)rth->rt_key_dst ^ (__force u32)daddr) |
+-		     ((__force u32)rth->rt_key_src ^ (__force u32)saddr) |
++		     ((__force u32)rth->rt_key_src ^ (__force u32)newsaddr) |
+ 		     (rth->rt_route_iif ^ iif) |
+ 		     (rth->rt_key_tos ^ tos)) == 0 &&
+ 		    rth->rt_mark == skb->mark &&
+@@ -2489,7 +2495,7 @@ skip_cache:
+ 		struct in_device *in_dev = __in_dev_get_rcu(dev);
+ 
+ 		if (in_dev) {
+-			int our = ip_check_mc_rcu(in_dev, daddr, saddr,
++			int our = ip_check_mc_rcu(in_dev, daddr, newsaddr,
+ 						  ip_hdr(skb)->protocol);
+ 			if (our
+ #ifdef CONFIG_IP_MROUTE
+@@ -2498,7 +2504,7 @@ skip_cache:
+ 			     IN_DEV_MFORWARD(in_dev))
+ #endif
+ 			   ) {
+-				int res = ip_route_input_mc(skb, daddr, saddr,
++				int res = ip_route_input_mc(skb, daddr, newsaddr,
+ 							    tos, dev, our);
+ 				rcu_read_unlock();
+ 				return res;
+@@ -2507,7 +2513,7 @@ skip_cache:
+ 		rcu_read_unlock();
+ 		return -EINVAL;
+ 	}
+-	res = ip_route_input_slow(skb, daddr, saddr, tos, dev);
++	res = ip_route_input_slow(skb, daddr, newsaddr, tos, dev);
+ 	rcu_read_unlock();
+ 	return res;
+ }
