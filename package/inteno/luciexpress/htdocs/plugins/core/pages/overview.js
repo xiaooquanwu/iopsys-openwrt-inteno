@@ -58,7 +58,7 @@ $juci.module("core")
 					if(interfaces && interfaces.interface){
 						interfaces.interface.map(function(i){
 							if(i.interface == ifname){
-								var dev = i.l3_device||""; 
+								var dev = i.l3_device||i.device||""; 
 								if(dev.indexOf("atm") == 0) conn = "ADSL"; 
 								else if(dev.indexOf("ptm") == 0) conn = "VDSL"; 
 								else if(dev.indexOf("eth") == 0) conn = "ETH"; 
