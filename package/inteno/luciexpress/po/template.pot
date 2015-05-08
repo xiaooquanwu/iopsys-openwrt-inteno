@@ -1,228 +1,36 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: \n"
-"POT-Creation-Date: \n"
-"PO-Revision-Date: \n"
-"Last-Translator: \n"
-"Language-Team: \n"
-"Language: se\n"
-"MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.5.4\n"
-
-msgid "Overview"
-msgstr "Översikt"
-
-msgid "Phone"
-msgstr "Telefoni"
-
-msgid "System"
-msgstr "System"
-
-msgid "Internet"
-msgstr "Internet"
-
-msgid "WiFi"
-msgstr "WiFi"
-
-msgid "Settings"
-msgstr "Inställningar"
-
-msgid "Status"
-msgstr "Status"
-
-msgid "Theme"
-msgstr "Utseende"
-
-msgid "Network"
-msgstr "Nätverk"
-
-# wifi
-#: htdocs/plugins/wifi/pages/wifi.general.html:17
-msgid "Setup"
-msgstr "Inställningar"
-
-msgid "General"
-msgstr "Inställningar"
-
-#: htdocs/plugins/wifi/pages/wifi.schedule.html:4
-msgid "Schedule"
-msgstr "Schemaläggning"
-
-#: htdocs/plugins/wifi/pages/wifi.wps.html:5
-msgid "WPS"
-msgstr "WPS"
-
-#: htdocs/plugins/wifi/pages/wifi.mac_filter.html:4
-msgid "MAC Filter"
-msgstr "MAC Filter"
-
-msgid "wifi.general.info"
-msgstr "Generell information "
-
-msgid "wifi.macfilter.info"
-msgstr ""
-"Med hjälp av MAC filter kan du begränsa åtkomst till nätverket på "
-"hårdvarunivå. "
-
-#: htdocs/plugins/wifi/pages/wifi.general.html:11
-msgid "Enable WiFi On/Off button on EasyBox"
-msgstr "On/Off knappen på din EasyBox"
-
-#: htdocs/plugins/wifi/pages/wifi.general.html:8
-msgid "Wifi Network"
-msgstr "Wifi Nätverk"
-
-msgid "wifi.schedule.info"
-msgstr ""
-"Med schemaläggninga kan du enkelt schemalägga när din wifi är tillgänglig. "
-
-#: htdocs/plugins/wifi/pages/wifi.wps.html:8
-msgid "WPS Function"
-msgstr "WPS Funktion"
-
-msgid "wifi.wps.info"
-msgstr "Med hjälp av WPS kan du enkelt autentisera med ditt wifi nätverk. "
-
-#: htdocs/plugins/wifi/widgets/uci.wireless.interface.macfilter.edit.html:4
-msgid "MAC Filtering"
-msgstr "MAC-filtrering "
-
-#: htdocs/plugins/wifi/widgets/uci.wireless.interface.macfilter.edit.html:14
-msgid "Access for listed devices"
-msgstr "Åtkomst för listade enheter"
-
-#: htdocs/plugins/wifi/widgets/uci.wireless.interface.macfilter.edit.html:19
-msgid "Currently added devices"
-msgstr "Tilllagda enheter"
-
-#: htdocs/plugins/wifi/widgets/uci.wireless.interface.macfilter.edit.html:41
-msgid "Add currently connected hosts to the list"
-msgstr "Lägg till anslutna enheter"
-
-#: htdocs/plugins/wifi/widgets/uci.wireless.device.edit.html:4
-msgid "Wifi Mode"
-msgstr "WiFi typ"
-
-#: htdocs/plugins/wifi/widgets/uci.wireless.device.edit.html:10
-msgid "Bandwidth"
-msgstr "Bandbredd"
-
-#: htdocs/plugins/wifi/widgets/uci.wireless.device.edit.html:16
-msgid "Channel"
-msgstr "Kanal"
-
-msgid "MAC filter"
-msgstr "MAC Filter"
-
-msgid "Apply"
-msgstr "Verkställ"
-
-#: htdocs/plugins/core/widgets/uci.firewall.nat.rule.edit.html:69
-#: htdocs/plugins/wifi/widgets/uci.wireless.interface.macfilter.edit.html:46
-msgid "Cancel"
-msgstr "Avbryt"
-
-# internet
-msgid "Firewall"
-msgstr "Brandvägg"
-
-msgid "DSN"
-msgstr "DSN"
-
-# status
-msgid "DSL"
-msgstr "DSL"
-
-#: htdocs/plugins/status/pages/status.status.js:59
-msgid "Voice"
-msgstr "Telefoni"
-
-msgid "Vodafone TV"
-msgstr "Vodafone TV"
-
-msgid "Diagnostics"
-msgstr "Diagnostik"
-
-msgid "Events"
-msgstr "Händelser"
-
-msgid "Restart"
-msgstr "Starta om"
-
-msgid "About"
-msgstr "Om"
-
-msgid "NAT"
-msgstr "NAT"
-
-# phone
-#: htdocs/plugins/phone/pages/phone.call_log.html:5
-msgid "Call Log"
-msgstr "Samtalslogg"
-
-#: htdocs/plugins/phone/pages/phone.number_blocking.html:4
-msgid "Number Blocking"
-msgstr "Nummerblockering"
-
-#: htdocs/plugins/phone/pages/phone.ringing_schedule.html:4
-#: htdocs/plugins/phone/pages/phone.ringing_schedule.html:7
-msgid "Ringing Schedule"
-msgstr "Telefonischema"
-
-msgid "Numbers"
-msgstr "Nummer"
-
-msgid "Speed Dialing"
-msgstr "Snabbuppringning"
-
-# settings
-msgid "EasyBox Password"
-msgstr "EasyBox Lösenord"
-
-#: htdocs/plugins/settings/pages/settings.upgrade.html:4
-msgid "Firmware Upgrade"
-msgstr "Uppgradering"
-
-#: htdocs/plugins/settings/pages/settings.energy.html:4
-msgid "Energy Settings"
-msgstr "Energi-inställningar"
-
-#: htdocs/plugins/settings/pages/settings.configuration.html:4
-msgid "Configuration"
-msgstr "Konfiguration"
-
-msgid "Advanced"
-msgstr "Avancerat"
-
-msgid "application.name"
-msgstr "LuCI-Express"
+"Project-Id-Version: \n"
 
 #: htdocs/plugins/internet/pages/internet.exposed_host.html:14
-msgid ""
-"<span class=\"glyphicon glyphicon-exclamation-sign\" aria-hidden=\"true\"></"
-"span> Warning: By using the exposed host function you bypass the firewall of "
-"your {{config.friendly_name}}. Please make sure that your computer is "
-"protected against attacks from Internet. The following ports will not be "
-"forwarded: {{ nonforwardedPorts || 'None'}}."
+msgid "<span class=\"glyphicon glyphicon-exclamation-sign\" aria-hidden=\"true\"></span> Warning: By using the exposed host function you bypass the firewall of your {{config.friendly_name}}. Please make sure that your computer is protected against attacks from Internet. The following ports will not be forwarded: {{ nonforwardedPorts || 'None'}}."
 msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.js:57
 msgid "ADSL"
-msgstr "ADSL"
+msgstr ""
+
+#: htdocs/plugins/wifi/widgets/uci.wireless.interface.macfilter.edit.html:14
+msgid "Access for listed devices"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.js:74
 msgid "Active Connections"
-msgstr "Aktiva uppkopplingar"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.html:20
 msgid "Active Stations"
-msgstr "Aktiva klienter"
+msgstr ""
 
 #: htdocs/plugins/wifi/widgets/uci.wireless.interface.macfilter.edit.html:46
 msgid "Add clients to MAC filtering list"
-msgstr "Lägg till klienter till filter-listan"
+msgstr ""
+
+#: htdocs/plugins/wifi/widgets/uci.wireless.interface.macfilter.edit.html:41
+msgid "Add currently connected hosts to the list"
+msgstr ""
 
 #: htdocs/plugins/wifi/pages/wifi.wps.html:53
 msgid "Attempting to Pair"
@@ -230,129 +38,158 @@ msgstr ""
 
 #: htdocs/plugins/status/pages/status.diagnostics.html:6
 msgid "Automated Diagnostics"
-msgstr "Automatiserad diagnostik"
+msgstr ""
+
+#: htdocs/plugins/wifi/widgets/uci.wireless.device.edit.html:10
+msgid "Bandwidth"
+msgstr ""
 
 #: htdocs/plugins/core/widgets/luci.top_bar.html:13
 #: htdocs/themes/old/vodafone/widgets/luci.top_bar.html:13
 #: htdocs/themes/vodafone/widgets/luci.top_bar.html:13
 msgid "Basic"
-msgstr "Bas"
+msgstr ""
 
 #: htdocs/plugins/core/widgets/luci.top_bar.js:14
 msgid "Basic Mode"
-msgstr "Basic Mode"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.dsl.html:22
 msgid "Bit Rate"
-msgstr "Bithastighet"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.js:66
 msgid "Buffered"
-msgstr "Buffrad"
+msgstr ""
+
+#: htdocs/plugins/phone/pages/phone.call_log.html:5
+msgid "Call Log"
+msgstr ""
+
+#: htdocs/plugins/core/widgets/uci.firewall.nat.rule.edit.html:69
+#: htdocs/plugins/wifi/widgets/uci.wireless.interface.macfilter.edit.html:46
+msgid "Cancel"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.dsl.html:37
 msgid "Cell Statistics"
-msgstr "Samtals-statistik"
+msgstr ""
 
 #: htdocs/plugins/settings/pages/settings.password.html:9
 msgid "Change Password"
-msgstr "Ändra lösenord"
+msgstr ""
+
+#: htdocs/plugins/wifi/widgets/uci.wireless.device.edit.html:16
+msgid "Channel"
+msgstr ""
 
 #: htdocs/plugins/settings/pages/settings.upgrade.html:22
 msgid "Check for Update"
-msgstr "Sök efter uppdatering"
+msgstr ""
 
 #: htdocs/plugins/wifi/widgets/uci.wireless.device.edit.html:12
 msgid "Choose Bandwidth"
-msgstr "Välj bandbredd"
+msgstr ""
 
 #: htdocs/plugins/wifi/widgets/uci.wireless.device.edit.html:18
 msgid "Choose Channel"
-msgstr "Välj kanal"
+msgstr ""
 
 #: htdocs/plugins/wifi/widgets/uci.wireless.interface.html:15
 msgid "Choose Device"
-msgstr "Välj enhet"
+msgstr ""
 
 #: htdocs/plugins/wifi/widgets/uci.wireless.device.edit.html:6
 msgid "Choose Mode"
-msgstr "Välj inställning"
+msgstr ""
 
 #: htdocs/plugins/wifi/widgets/uci.wireless.interface.html:21
 msgid "Choose Protection"
-msgstr "Välj säkerhet"
+msgstr ""
+
+#: htdocs/plugins/settings/pages/settings.configuration.html:4
+msgid "Configuration"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.tv.html:6
-#, fuzzy
 msgid "Connection Status"
-msgstr "Anslutningar"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.diagnostics.html:30
 msgid "Connection Type"
-msgstr "Anslutningstyp"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.html:14
 msgid "Connections"
-msgstr "Anslutningar"
+msgstr ""
 
 #: htdocs/plugins/settings/pages/settings.upgrade.html:7
 msgid "Current Firmware Version"
-msgstr "Nuvarande mjukvaruversion"
+msgstr ""
+
+#: htdocs/plugins/wifi/widgets/uci.wireless.interface.macfilter.edit.html:19
+msgid "Currently added devices"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.html:17
 msgid "DHCP Leases"
-msgstr "DHCP Leasar"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.dsl.html:9
 msgid "DSL Connection"
-msgstr "DSL uppkoppling"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.dsl.html:13
 msgid "DSL Mode"
-msgstr "DSL Mode"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.dsl.html:3
 msgid "DSL Status"
-msgstr "DSL Status"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.dsl.html:17
 msgid "DSL Status Information"
-msgstr "DSL Status"
+msgstr ""
 
 #: htdocs/plugins/phone/pages/phone.call_log.html:18
 msgid "Date"
 msgstr ""
 
 #: htdocs/plugins/core/widgets/uci.firewall.nat.rule.edit.html:4
-#, fuzzy
 msgid "Device"
-msgstr "Välj enhet"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.diagnostics.html:10
 msgid "Diagnose"
-msgstr "Diagnostisera"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.diagnostics.html:4
 msgid "Diagnostic Utility"
-msgstr "Diagnostikverktyg"
+msgstr ""
 
 #: htdocs/plugins/wifi/widgets/uci.wireless.interface.html:27
 msgid "Display Characters"
-msgstr "Visa tecken"
+msgstr ""
 
 #: htdocs/plugins/phone/pages/phone.call_log.html:22
-#, fuzzy
 msgid "Duration"
-msgstr "Konfiguration"
+msgstr ""
 
 #: htdocs/plugins/wifi/pages/wifi.wps.html:13
-#, fuzzy
 msgid "Enable WPS on"
-msgstr "Aktiv"
+msgstr ""
+
+#: htdocs/plugins/wifi/pages/wifi.general.html:11
+msgid "Enable WiFi On/Off button on EasyBox"
+msgstr ""
 
 #: htdocs/plugins/wifi/widgets/uci.wireless.interface.html:4
 msgid "Enabled"
-msgstr "Aktiv"
+msgstr ""
+
+#: htdocs/plugins/settings/pages/settings.energy.html:4
+msgid "Energy Settings"
+msgstr ""
 
 #: htdocs/plugins/wifi/pages/wifi.wps.html:43
 msgid "Enter your device PIN"
@@ -360,58 +197,49 @@ msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.dsl.html:32
 msgid "Error Counter"
-msgstr "Fel"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.js:61
 msgid "Ethernet Ports"
-msgstr "Ethernet portar"
+msgstr ""
 
 #: htdocs/plugins/core/widgets/luci.top_bar.js:15
 msgid "Expert Mode"
-msgstr "Expert"
+msgstr ""
 
 #: htdocs/plugins/internet/pages/internet.exposed_host.html:3
 msgid "Exposed Host"
-msgstr "Öppet klient"
+msgstr ""
 
 #: htdocs/plugins/internet/pages/internet.exposed_host.html:7
 msgid "Exposed Host Function"
-msgstr "Aktivera öppen klient"
+msgstr ""
 
 #: htdocs/plugins/phone/pages/phone.call_log.html:20
-#, fuzzy
 msgid "External Number"
-msgstr "Alla nummer"
+msgstr ""
 
 #: htdocs/plugins/settings/pages/settings.configuration.html:14
 msgid "Factory Settings"
-msgstr "Fabriksinställningar"
+msgstr ""
 
 #: htdocs/plugins/internet/pages/internet.firewall.html:3
 msgid ""
 "Firewall settings\n"
-"\t\t<p translate=\"\">Your EasyBox provides extensive firewall functionality "
-"which protects against common attacks. Vodafone recommends not to turn off "
-"firewall.</p>\n"
+"\t\t<p translate=\"\">Your EasyBox provides extensive firewall functionality which protects against common attacks. Vodafone recommends not to turn off firewall.</p>\n"
 "\t\t<table class=\"table\">\n"
 "\t\t\t<tr>\n"
 "\t\t\t\t<td>\n"
-"\t\t\t\t\t<div class=\"col-md-11\"><strong style=\"font-size: 1.5em\">Enable "
-"firewall</strong></div>\n"
-"\t\t\t\t\t<div class=\"col-md-1\"><switch id=\"enabled\" name=\"enabled\" ng-"
-"model=\"firewallSwitchState\" ng-change=\"onFirewallToggle\" class=\"green"
-"\"></switch></div>\n"
+"\t\t\t\t\t<div class=\"col-md-11\"><strong style=\"font-size: 1.5em\">Enable firewall</strong></div>\n"
+"\t\t\t\t\t<div class=\"col-md-1\"><switch id=\"enabled\" name=\"enabled\" ng-model=\"firewallSwitchState\" ng-change=\"onFirewallToggle\" class=\"green\"></switch></div>\n"
 "\t\t\t\t</td>\n"
 "\t\t\t</tr>\n"
 "\t\t</table>\n"
 "\t\t<table class=\"table\" ng-show=\"firewallSwitchState\">\n"
-"\t\t\t<tr ng-repeat=\"rule in firewall['@rule']\" ng-hide=\"rule.hidden.value"
-"\">\n"
+"\t\t\t<tr ng-repeat=\"rule in firewall['@rule']\" ng-hide=\"rule.hidden.value\">\n"
 "\t\t\t\t<td>\n"
-"\t\t\t\t\t<div class=\"col-md-11\"><strong style=\"font-size: 1.5em\">{{rule."
-"name.value | translate}}</strong></div>\n"
-"\t\t\t\t\t<div class=\"col-md-1\"><switch id=\"enabled\" name=\"enabled\" ng-"
-"model=\"rule.enabled.value\" class=\"green\"></switch></div>\n"
+"\t\t\t\t\t<div class=\"col-md-11\"><strong style=\"font-size: 1.5em\">{{rule.name.value | translate}}</strong></div>\n"
+"\t\t\t\t\t<div class=\"col-md-1\"><switch id=\"enabled\" name=\"enabled\" ng-model=\"rule.enabled.value\" class=\"green\"></switch></div>\n"
 "\t\t\t\t</td>\n"
 "\t\t\t</tr>\n"
 "\t\t</table>\n"
@@ -420,152 +248,159 @@ msgstr ""
 
 #: htdocs/plugins/settings/pages/settings.upgrade.html:28
 msgid "Firmware File:"
-msgstr "Mjukvarufil"
+msgstr ""
+
+#: htdocs/plugins/settings/pages/settings.upgrade.html:4
+msgid "Firmware Upgrade"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.js:49
 msgid "Firmware Version"
-msgstr "Firmware version"
+msgstr ""
 
 #: htdocs/plugins/settings/pages/settings.password.html:4
 msgid "Gateway Password"
-msgstr "Gateway lösenord"
+msgstr ""
 
 #: htdocs/plugins/wifi/pages/wifi.general.html:5
 msgid "General WiFi Settings"
-msgstr "Generella Inställningar"
+msgstr ""
 
 #: htdocs/plugins/wifi/pages/wifi.wps.html:37
-#, fuzzy
 msgid "Generate"
-msgstr "Inställningar"
+msgstr ""
 
 #: htdocs/plugins/wifi/pages/wifi.wps.html:36
 msgid "Generate New PIN"
 msgstr ""
 
 #: htdocs/plugins/wifi/pages/wifi.wps.html:33
-#, fuzzy
 msgid "Generated PIN"
-msgstr "Inställningar"
+msgstr ""
 
 #: htdocs/plugins/core/widgets/luci.login.html:14
 msgid "Host"
-msgstr "Namn"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.js:22
 #: htdocs/plugins/status/pages/status.status.js:47
 msgid "Hostname"
-msgstr "Datornamn"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.js:22
 #: htdocs/plugins/status/pages/status.status.js:28
 msgid "IPv4-Address"
-msgstr "IPv4-Adress"
+msgstr ""
 
 #: htdocs/plugins/internet/pages/internet.exposed_host.html:4
-msgid ""
-"If you have a local network device that cannot run an Internet application "
-"properly behind the firewall, you can allow unrestricted Internet access to "
-"the network device (Exposed Host)."
+msgid "If you have a local network device that cannot run an Internet application properly behind the firewall, you can allow unrestricted Internet access to the network device (Exposed Host)."
 msgstr ""
-"Om du har en maskin som du vill göra tillgänglig från internet så kan du "
-"använda denna funktion för att vidarekoppla samtliga uppkopplingar till "
-"denna maskin (DMZ)"
 
 #: htdocs/plugins/settings/pages/settings.upgrade.html:29
 msgid "Install Upgrade"
-msgstr "Installera uppgradering"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.js:50
 msgid "Kernel Version"
-msgstr "Kärnans version"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.js:22
 msgid "Leasetime remaining"
-msgstr "Återstående lease-tid"
+msgstr ""
 
 #: htdocs/plugins/settings/pages/settings.configuration.html:11
 msgid "Load"
-msgstr "Ladda upp"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.js:53
 msgid "Load Average"
-msgstr "Genomsnittsbelastning"
+msgstr ""
 
 #: htdocs/plugins/settings/pages/settings.uci.html:16
 msgid "Loading"
-msgstr "Laddar"
+msgstr ""
 
 #: htdocs/plugins/internet/pages/internet.port_mapping.html:6
 msgid "Local IP"
-msgstr "Lokalt IP"
+msgstr ""
 
 #: htdocs/plugins/core/widgets/uci.firewall.nat.rule.edit.html:19
-#, fuzzy
 msgid "Local IP Address"
-msgstr "Lokalt IP"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.js:51
 msgid "Local Time"
-msgstr "Lokal tid"
+msgstr ""
 
 #: htdocs/plugins/internet/pages/internet.port_mapping.html:6
 msgid "Local port"
-msgstr "Lokal port"
+msgstr ""
 
 #: htdocs/plugins/core/widgets/luci.login.html:4
 #: htdocs/plugins/core/widgets/luci.top_bar.js:16
 msgid "Log out"
-msgstr "Logga ut"
+msgstr ""
 
 #: htdocs/plugins/settings/pages/settings.password.html:6
 msgid "Login Account"
-msgstr "Login konto"
+msgstr ""
+
+#: htdocs/plugins/wifi/pages/wifi.mac_filter.html:4
+msgid "MAC Filter"
+msgstr ""
+
+#: htdocs/plugins/wifi/widgets/uci.wireless.interface.macfilter.edit.html:4
+msgid "MAC Filtering"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.js:28
 msgid "MAC address"
-msgstr "MAC-Adress"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.js:22
 msgid "MAC-Address"
-msgstr "MAC-Adress"
+msgstr ""
 
 #: htdocs/plugins/settings/pages/settings.upgrade.html:11
 msgid "Manual Firmware Upgrade"
-msgstr "Manuell uppgradering"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.html:8
 msgid "Memory"
-msgstr "Minne"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.js:48
 msgid "Model"
-msgstr "Modell"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.js:24
 #: htdocs/plugins/status/pages/status.status.js:88
 msgid "No active leases"
-msgstr "Inga aktiva leasar"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.js:101
 msgid "No active stations"
-msgstr "Inga aktiva klienter"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.js:28
 msgid "Noise"
-msgstr "Brus"
+msgstr ""
 
 #: htdocs/plugins/core/widgets/luci.footer.js:46
 msgid "Not connected"
 msgstr ""
 
+#: htdocs/plugins/phone/pages/phone.number_blocking.html:4
+msgid "Number Blocking"
+msgstr ""
+
 #: htdocs/plugins/settings/pages/settings.upgrade.html:18
 msgid "Online Update"
-msgstr "Online-uppgradering"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.dsl.html:27
 msgid "Operating Data"
-msgstr "Operationsdata"
+msgstr ""
 
 #: htdocs/plugins/wifi/pages/wifi.wps.html:24
 #: htdocs/plugins/wifi/pages/wifi.wps.html:47
@@ -579,53 +414,47 @@ msgstr ""
 
 #: htdocs/plugins/core/widgets/luci.login.html:22
 msgid "Password"
-msgstr "Lösenord"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.diagnostics.html:22
 msgid "Ping"
-msgstr "Ping"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.diagnostics.html:13
 msgid "Ping Test"
-msgstr "Ping Test"
+msgstr ""
 
 #: htdocs/plugins/core/widgets/luci.login.js:80
 msgid "Please enter correct username and password!"
-msgstr "Knappa in rätt användarnamn och lösenord! "
+msgstr ""
 
 #: htdocs/plugins/core/widgets/luci.login.html:7
 msgid "Please sign in"
-msgstr "Logga in"
+msgstr ""
 
 #: htdocs/plugins/core/widgets/uci.firewall.nat.rule.edit.html:42
-#, fuzzy
 msgid "Port"
-msgstr "USB Port"
+msgstr ""
 
 #: htdocs/plugins/internet/pages/internet.port_mapping.html:3
 msgid "Port Mapping"
-msgstr "Portmappning"
+msgstr ""
 
 #: htdocs/plugins/core/widgets/uci.firewall.nat.rule.edit.html:46
-#, fuzzy
 msgid "Port Range"
-msgstr "Portmappning"
+msgstr ""
 
 #: htdocs/plugins/internet/pages/internet.port_mapping.html:4
-msgid ""
-"Port mapping allows remote computers to connect to a specific device within "
-"your private network."
+msgid "Port mapping allows remote computers to connect to a specific device within your private network."
 msgstr ""
-"Portmappning tillåter andra datorer på internet att koppla upp sig till "
-"datorer på ditt lokala nätverk"
 
 #: htdocs/plugins/settings/pages/settings.energy.html:13
 msgid "Power-LED"
-msgstr "Power-LED"
+msgstr ""
 
 #: htdocs/plugins/settings/pages/settings.energy.html:16
 msgid "Power-LED Brightness"
-msgstr "Power-LED Ljusstyrka"
+msgstr ""
 
 #: htdocs/plugins/wifi/pages/wifi.wps.html:20
 msgid "Pressing WiFi on/off button on EasyBox for long time activates pairing"
@@ -634,68 +463,85 @@ msgstr ""
 #: htdocs/plugins/core/widgets/uci.firewall.nat.rule.edit.html:23
 #: htdocs/plugins/internet/pages/internet.port_mapping.html:6
 msgid "Protocol"
-msgstr "Protokol"
+msgstr ""
 
 #: htdocs/plugins/internet/pages/internet.port_mapping.html:6
 msgid "Public Port"
-msgstr "Publikt port"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.js:28
 msgid "RX Rate"
-msgstr "RX"
+msgstr ""
 
 #: htdocs/plugins/settings/pages/settings.configuration.html:17
 msgid "Reset"
-msgstr "Reset"
+msgstr ""
 
 #: htdocs/plugins/settings/pages/settings.configuration.html:16
 msgid "Reset restores the factory default settings of your gateway"
-msgstr "Reset återställer fabriksinställningarna på din gateway"
+msgstr ""
 
 #: htdocs/plugins/settings/pages/settings.configuration.html:10
 msgid "Restore settings from a configuration saved on a computer"
-msgstr "Återställ konfigurationsinställnignar från fil på din dator"
+msgstr ""
+
+#: htdocs/plugins/phone/pages/phone.ringing_schedule.html:4
+#: htdocs/plugins/phone/pages/phone.ringing_schedule.html:7
+msgid "Ringing Schedule"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.js:70
 msgid "Root Usage (/)"
-msgstr "Root disk (/)"
+msgstr ""
 
 #: htdocs/plugins/settings/pages/settings.configuration.html:8
 #: htdocs/plugins/wifi/widgets/uci.wireless.interface.macfilter.edit.html:46
 msgid "Save"
-msgstr "Spara"
+msgstr ""
 
 #: htdocs/plugins/settings/pages/settings.configuration.html:7
 msgid "Save settings to computer with password protection"
-msgstr "Spara konfigurationen till fil"
+msgstr ""
+
+#: htdocs/plugins/wifi/pages/wifi.schedule.html:4
+msgid "Schedule"
+msgstr ""
 
 #: htdocs/plugins/wifi/pages/wifi.schedule.html:7
 msgid "Schedule Function"
-msgstr "Schemaläggningsfunktion"
+msgstr ""
+
+#: htdocs/plugins/wifi/pages/wifi.settings.html:5
+msgid "Settings"
+msgstr ""
+
+#: htdocs/plugins/wifi/pages/wifi.general.html:17
+msgid "Setup"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.js:65
 msgid "Shared"
-msgstr "Delad"
+msgstr ""
 
 #: htdocs/plugins/phone/pages/phone.call_log.html:8
 msgid "Show calls for"
-msgstr "Visa samtal för"
+msgstr ""
 
 #: htdocs/plugins/core/widgets/luci.login.html:30
 msgid "Sign in"
-msgstr "Logga in"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.js:28
 msgid "Signal"
-msgstr "Signal"
+msgstr ""
 
 #: htdocs/plugins/settings/pages/settings.energy.html:10
 msgid "Status-LED"
-msgstr "Status-LED"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.html:11
 msgid "Storage"
-msgstr "Utrymme"
+msgstr ""
 
 #: htdocs/plugins/core/widgets/uci.firewall.nat.rule.edit.html:68
 msgid "Submit"
@@ -703,15 +549,23 @@ msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.js:67
 msgid "Swap"
-msgstr "Swap"
+msgstr ""
+
+#: htdocs/plugins/status/pages/status.status.html:5
+msgid "System"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.js:28
 msgid "TX Rate"
-msgstr "TX"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.js:71
 msgid "Temporary Usage (/tmp)"
-msgstr "Temporärt utrymme (/tmp)"
+msgstr ""
+
+#: htdocs/plugins/core/widgets/luci.navbar.html:28
+msgid "Theme"
+msgstr ""
 
 #: htdocs/plugins/phone/pages/phone.call_log.html:19
 msgid "Time"
@@ -725,19 +579,19 @@ msgstr ""
 #: htdocs/themes/old/vodafone/widgets/luci.navbar.html:4
 #: htdocs/themes/vodafone/widgets/luci.navbar.html:4
 msgid "Toggle navigation"
-msgstr "Toggla navigation"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.diagnostics.html:27
 msgid "Tracing Tool"
-msgstr "Spårningsverktyg"
+msgstr ""
 
 #: htdocs/plugins/settings/pages/settings.upgrade.html:25
 msgid "USB Firmware Upgrade"
-msgstr "USB Uppgradering"
+msgstr ""
 
 #: htdocs/plugins/settings/pages/settings.energy.html:7
 msgid "USB Port"
-msgstr "USB Port"
+msgstr ""
 
 #: htdocs/plugins/core/pages/overview.js:24
 msgid "Unknown"
@@ -745,42 +599,51 @@ msgstr ""
 
 #: htdocs/plugins/settings/pages/settings.upgrade.html:14
 msgid "Upload file"
-msgstr "Ladda upp fil"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.js:52
 msgid "Uptime"
-msgstr "Upptid"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.js:64
 msgid "Usage"
-msgstr "Användning"
+msgstr ""
 
 #: htdocs/plugins/core/widgets/luci.login.html:18
 msgid "Username"
-msgstr "Användarnamn"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.js:58
 msgid "VDSL"
-msgstr "VDSL"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.tv.html:7
-#, fuzzy
 msgid "Vodafone TV Channels"
-msgstr "Vodafone TV"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.tv.html:4
-#, fuzzy
 msgid "Vodafone TV Status"
-msgstr "Vodafone TV"
+msgstr ""
+
+#: htdocs/plugins/status/pages/status.status.js:59
+msgid "Voice"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.js:60
 msgid "Voice Ports"
-msgstr "Voice portar"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.voice.html:4
-#, fuzzy
 msgid "Voice Status"
-msgstr "Uppkopplingsstatus"
+msgstr ""
+
+#: htdocs/plugins/wifi/pages/wifi.wps.html:5
+msgid "WPS"
+msgstr ""
+
+#: htdocs/plugins/wifi/pages/wifi.wps.html:8
+msgid "WPS Function"
+msgstr ""
 
 #: htdocs/plugins/wifi/pages/wifi.wps.html:17
 msgid "WPS PBC"
@@ -800,16 +663,22 @@ msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.js:56
 msgid "Wifi"
-msgstr "WiFi"
+msgstr ""
+
+#: htdocs/plugins/wifi/widgets/uci.wireless.device.edit.html:4
+msgid "Wifi Mode"
+msgstr ""
+
+#: htdocs/plugins/wifi/pages/wifi.general.html:8
+msgid "Wifi Network"
+msgstr ""
 
 #: htdocs/plugins/core/widgets/luci.login.html:3
 msgid "You are logged in!"
-msgstr "Du är inloggad!"
+msgstr ""
 
 #: htdocs/plugins/internet/pages/internet.firewall.html:4
-msgid ""
-"Your EasyBox provides extensive firewall functionality which protects "
-"against common attacks. Vodafone recommends not to turn off firewall."
+msgid "Your EasyBox provides extensive firewall functionality which protects against common attacks. Vodafone recommends not to turn off firewall."
 msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.voice.html:6
@@ -817,9 +686,8 @@ msgid "Your Phone Numbers"
 msgstr ""
 
 #: htdocs/plugins/settings/pages/settings.password.html:8
-#, fuzzy
 msgid "Your account password"
-msgstr "Nuvarande lösenord"
+msgstr ""
 
 #: htdocs/plugins/phone/pages/phone.call_log.html:21
 msgid "Your number"
@@ -838,7 +706,7 @@ msgstr ""
 #: htdocs/plugins/status/pages/status.status.js:58
 #: htdocs/plugins/status/pages/status.status.js:59
 msgid "no"
-msgstr "Nej"
+msgstr ""
 
 #: htdocs/plugins/core/pages/overview.js:22
 #: htdocs/plugins/core/pages/overview.js:23
@@ -851,384 +719,145 @@ msgid "on"
 msgstr ""
 
 #: htdocs/plugins/phone/pages/phone.call_log.html:6
-#, fuzzy
 msgid "phone.call_log.info"
-msgstr "Samtalslogg"
+msgstr ""
 
 #: htdocs/plugins/phone/pages/phone.number_blocking.html:5
 msgid "phone.number_blocking.info"
 msgstr ""
-"Behåll kontrollen över dina räkningar och blockera utgående samtal till "
-"oönskade nummer."
 
 #: htdocs/plugins/phone/pages/phone.ringing_schedule.html:5
 msgid "phone.schedule.info"
-msgstr "Definiera scheman när dina telefoner bör eller inte bör ringa."
+msgstr ""
 
 #: htdocs/plugins/wifi/pages/wifi.wps.html:57
-#, fuzzy
 msgid "seconds remaining"
-msgstr "Återstående lease-tid"
+msgstr ""
 
 #: htdocs/plugins/settings/pages/settings.configuration.html:5
 msgid "settings.config.info"
 msgstr ""
-"Spara dina inställningar, återställa tidigare sparade inställningar och "
-"återställ EasyBox till fabrikstillstånd.Din EasyBox kan spara din "
-"konfiguration till en dator. Vi rekommenderar att alltid spara dina senaste "
-"ändrade inställningar till en dator."
 
 #: htdocs/plugins/settings/pages/settings.energy.html:5
 msgid "settings.energy.info"
-msgstr "Minska energiförbrukningen genom att stänga av oanvända funktioner."
+msgstr ""
 
 #: htdocs/plugins/settings/pages/settings.password.html:5
 msgid "settings.password.info"
 msgstr ""
-"Ställ en ny Easybox lösenord för att begränsa hanteringsåtkomst till routern."
 
 #: htdocs/plugins/settings/pages/settings.upgrade.html:5
 msgid "settings.upgrade.info"
 msgstr ""
-"Här kan du uppdatera programvaran på din EasyBox. Om det behövs, är det "
-"möjligt att uppdatera Easybox inbyggda programvaran manuellt. Dina nuvarande "
-"inställningar kommer inte att påverkas av programvara uppgradering "
-"förfarande."
 
 #: htdocs/plugins/settings/pages/settings.upgrade.html:12
 msgid "settings.upgrade.manual.info"
 msgstr ""
-"Det är möjligt att uppdatera firmware från fil en sparad uppdatering. Den "
-"senaste versionen kan hittas på www.dsl-easybox.de."
 
 #: htdocs/plugins/settings/pages/settings.upgrade.html:19
 msgid "settings.upgrade.online.info"
 msgstr ""
-"Klicka på \"Sök efter uppdatering\" för att starta en online-"
-"programvaruuppgradering. Om en ny firmware finns, kommer det att installeras "
-"automatiskt på din EasyBox (Internet-anslutning krävs)."
 
 #: htdocs/plugins/settings/pages/settings.upgrade.html:26
 msgid "settings.upgrade.usb.info"
 msgstr ""
-"Det är möjligt att uppdatera firmware från en fil som sparats på ett USB-"
-"minne ansluten till USB-porten på din EasyBox. Klicka på \"Install Update\" "
-"för att starta uppgraderingen av automatiska firmware. Observera att det bör "
-"finnas en enda firmware-fil att den bör vara placerad under huvudkatalogen "
-"(ingen sökning i undermappar)."
 
 #: htdocs/plugins/status/pages/status.diagnostics.html:7
 msgid "status.diagnostics.auto.info"
 msgstr ""
-"Denna diagnos bör ta upp till 2 minuter och kan inte avbrytas när den väl "
-"har startats."
 
 #: htdocs/plugins/status/pages/status.diagnostics.html:5
 msgid "status.diagnostics.info"
 msgstr ""
-"I det här avsnittet visas en lista över verktyg som kan användas för att "
-"kontrollera status för din nätverksanslutning."
 
 #: htdocs/plugins/status/pages/status.diagnostics.html:14
 msgid "status.diagnostics.ping.info"
-msgstr "Ange ett giltigt värdnamn eller IP-adress för att utföra Ping-test."
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.diagnostics.html:28
 msgid "status.diagnostics.trace.info"
 msgstr ""
-"Välj anslutningstypen och platsen där du vill spara spårning. Spårning "
-"kommer då att börja automatiskt i en separat popup-fönster."
 
 #: htdocs/plugins/status/pages/status.status.dsl.html:5
 msgid "status.dsl.offline"
-msgstr "DSL är offline"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.tv.html:5
-#, fuzzy
 msgid "status.tv.info"
 msgstr ""
-"I det här avsnittet visas en lista över verktyg som kan användas för att "
-"kontrollera status för din nätverksanslutning."
 
 #: htdocs/plugins/status/pages/status.status.voice.html:5
-#, fuzzy
 msgid "status.voice.info"
 msgstr ""
-"I det här avsnittet visas en lista över verktyg som kan användas för att "
-"kontrollera status för din nätverksanslutning."
 
 #: htdocs/plugins/wifi/widgets/uci.wireless.interface.html:10
 msgid "wifi-iface.closed"
-msgstr "Öppet nätverk"
+msgstr ""
 
 #: htdocs/plugins/wifi/widgets/uci.wireless.interface.html:13
 msgid "wifi-iface.device"
-msgstr "Radio"
+msgstr ""
 
 #: htdocs/plugins/wifi/widgets/uci.wireless.interface.html:19
 msgid "wifi-iface.encryption"
-msgstr "Säkerhet"
+msgstr ""
 
 #: htdocs/plugins/wifi/widgets/uci.wireless.interface.html:25
 #: htdocs/plugins/wifi/widgets/uci.wireless.interface.html:26
 msgid "wifi-iface.key"
-msgstr "Krypteringsnyckel"
+msgstr ""
 
 #: htdocs/plugins/wifi/widgets/uci.wireless.interface.html:7
 msgid "wifi-iface.ssid"
-msgstr "WiFi Namn (SSID)"
+msgstr ""
+
+#: htdocs/plugins/wifi/pages/wifi.general.html:6
+msgid "wifi.general.info"
+msgstr ""
+
+#: htdocs/plugins/wifi/pages/wifi.mac_filter.html:5
+msgid "wifi.macfilter.info"
+msgstr ""
+
+#: htdocs/plugins/wifi/pages/wifi.schedule.html:5
+msgid "wifi.schedule.info"
+msgstr ""
 
 #: htdocs/plugins/wifi/pages/wifi.settings.html:6
 msgid "wifi.settings.info"
-msgstr "Här kan du ställa in generella inställningar för wifi kort"
+msgstr ""
+
+#: htdocs/plugins/wifi/pages/wifi.wps.html:6
+msgid "wifi.wps.info"
+msgstr ""
 
 #: htdocs/plugins/wifi/pages/wifi.wps.html:41
-#, fuzzy
 msgid "wifi.wps.otherpin.info"
-msgstr "Med hjälp av WPS kan du enkelt autentisera med ditt wifi nätverk. "
+msgstr ""
 
 #: htdocs/plugins/wifi/pages/wifi.wps.html:18
-#, fuzzy
 msgid "wifi.wps.pbc.info"
-msgstr "Med hjälp av WPS kan du enkelt autentisera med ditt wifi nätverk. "
+msgstr ""
 
 #: htdocs/plugins/wifi/pages/wifi.wps.html:28
-#, fuzzy
 msgid "wifi.wps.pin.info"
-msgstr "Med hjälp av WPS kan du enkelt autentisera med ditt wifi nätverk. "
+msgstr ""
 
 #: htdocs/plugins/wifi/pages/wifi.wps.html:60
-#, fuzzy
 msgid "wifi.wpspairmodal.failinfo"
-msgstr "Med hjälp av WPS kan du enkelt autentisera med ditt wifi nätverk. "
+msgstr ""
 
 #: htdocs/plugins/wifi/pages/wifi.wps.html:56
-#, fuzzy
 msgid "wifi.wpspairmodal.progressinfo"
-msgstr "Med hjälp av WPS kan du enkelt autentisera med ditt wifi nätverk. "
+msgstr ""
 
 #: htdocs/plugins/wifi/pages/wifi.wps.html:59
-#, fuzzy
 msgid "wifi.wpspairmodal.successinfo"
-msgstr "Med hjälp av WPS kan du enkelt autentisera med ditt wifi nätverk. "
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.js:56
 #: htdocs/plugins/status/pages/status.status.js:57
 #: htdocs/plugins/status/pages/status.status.js:58
 #: htdocs/plugins/status/pages/status.status.js:59
 msgid "yes"
-msgstr "Ja"
-
-msgid "internet.title"
-msgstr "Internet"
-
-msgid "internet.firewall.title"
-msgstr "Brandvägg"
-
-msgid "internet.port_mapping.title"
-msgstr "NAT Mappning"
-
-msgid "internet.exposed_host.title"
-msgstr "Exponerad klient"
-
-msgid "internet.dns.title"
-msgstr "DNS"
-
-msgid "overview.title"
-msgstr "Översikt"
-
-# share/menu.d/phone.json
-msgid "phone.title"
-msgstr "Telefoni"
-
-msgid "phone.call_log.title"
-msgstr "Samtalslogg"
-
-msgid "phone.number_blocking.title"
-msgstr "Nummerblockering"
-
-msgid "phone.ringing_schedule.title"
-msgstr "Ringschema"
-
-msgid "phone.numbers.title"
-msgstr "Telefonnummer"
-
-msgid "phone.speed_dialing.title"
-msgstr "Snabbuppringning"
-
-msgid "settings.title"
-msgstr "Inställningar"
-
-msgid "settings.password.title"
-msgstr "Lösenord"
-
-msgid "settings.upgrade.title"
-msgstr "Uppgradera"
-
-msgid "settings.energy.title"
-msgstr "Energiförbrukning"
-
-msgid "settings.configuration.title"
-msgstr "Konfiguration"
-
-msgid "settings.network.title"
-msgstr "Nätverk"
-
-msgid "settings.uci.title"
-msgstr "UCI"
-
-# share/menu.d/status.json
-msgid "status.title"
-msgstr "Status"
-
-msgid "status.status.title"
-msgstr "Status"
-
-msgid "status.status.dsl.title"
-msgstr "DSL"
-
-msgid "status.diagnostics.title"
-msgstr "Diagnostik"
-
-msgid "status.events.title"
-msgstr "Händelser"
-
-msgid "status.restart.title"
-msgstr "Starta om"
-
-msgid "status.about.title"
-msgstr "Om"
-
-msgid "status.nat.title"
-msgstr "NAT"
-
-# share/menu.d/status.vodafone.json
-msgid "status.status.voice.title"
-msgstr "Telefoni"
-
-msgid "status.status.tv.title"
-msgstr "TV"
-
-# share/menu.d/wifi.json
-msgid "wifi.title"
-msgstr "WiFi"
-
-msgid "wifi.general.title"
-msgstr "Wifi Inställningar"
-
-msgid "wifi.schedule.title"
-msgstr "Wifi Schemaläggning"
-
-msgid "wifi.wps.title"
-msgstr "Wifi WPS"
-
-msgid "wifi.mac_filter.title"
-msgstr "Wifi MAC-filter"
-
-msgid "wifi.settings.title"
-msgstr "Wifi Inställningar"
-
-msgid "wifi-iface.wifi-iface.ssid"
-msgstr "SSID"
-
-msgid "wifi-iface.network"
-msgstr "Nätverk"
-
-msgid "wifi-iface.mode"
-msgstr "WiFi inställning"
-
-msgid "wifi-iface.cipher"
-msgstr "Kryptering"
-
-msgid "wifi-iface.gtk_rekey"
 msgstr ""
-
-msgid "wifi-iface.wps_pbc"
-msgstr ""
-
-msgid "wifi-iface.wmf_bss_enable"
-msgstr ""
-
-msgid "wifi-iface.bss_max"
-msgstr ""
-
-msgid "wifi-iface.instance"
-msgstr ""
-
-msgid "wifi-iface.up"
-msgstr "På"
-
-msgid "wifi-iface.disabled"
-msgstr ""
-
-msgid "wifi-iface.macmode"
-msgstr "Filtreringstyp"
-
-msgid "wifi-iface.macfilter"
-msgstr "MAC Filter"
-
-msgid "wifi-iface.maclist"
-msgstr ""
-
-msgid "interface.macmode.allow"
-msgstr "Tillåt"
-
-msgid "interface.macmode.deny"
-msgstr "Neka"
-
-#~ msgid "Guest Room"
-#~ msgstr "Gästrum"
-
-#~ msgid "Home Main"
-#~ msgstr "Home Main"
-
-#~ msgid "Office"
-#~ msgstr "Office"
-
-#~ msgid "Actual Data Rate"
-#~ msgstr "Nuvarande hastighet"
-
-#~ msgid "CRC Errors"
-#~ msgstr "CRC fel"
-
-#~ msgid "Cell Counter"
-#~ msgstr "Cell räknare"
-
-#~ msgid "Configured"
-#~ msgstr "Konfigurerad"
-
-#~ msgid "Current"
-#~ msgstr "Nuvarande"
-
-#~ msgid "Downstream"
-#~ msgstr "Ner"
-
-#~ msgid "FEC Corrections"
-#~ msgstr "FEC rättelser"
-
-#~ msgid "Free"
-#~ msgstr "Tillgänglig"
-
-#~ msgid "Indicator Name"
-#~ msgstr "Indikatornamn"
-
-#~ msgid "Link Type"
-#~ msgstr "Uppkopplingstyp"
-
-#~ msgid "Loop Attenuation"
-#~ msgstr "Loop attenuation"
-
-#~ msgid "Received Cells"
-#~ msgstr "Mottagna cells"
-
-#~ msgid "SNR Margin"
-#~ msgstr "SNR tolerans"
-
-#~ msgid "Test"
-#~ msgstr "Jag testar"
-
-#~ msgid "Transmitted Cells"
-#~ msgstr "Celler sänt"
-
-#~ msgid "Upstream"
-#~ msgstr "Upp"

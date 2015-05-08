@@ -74,7 +74,7 @@ msgid "DSL"
 msgstr ""
 msgid "Voice"
 msgstr ""
-msgid "Vodaphone TV"
+msgid "Vodafone TV"
 msgstr ""
 msgid "Diagnostics" 
 msgstr ""
@@ -113,3 +113,7 @@ msgstr ""
 
 msgid "application.name"
 msgstr ""
+
+msgid "encryption.none"
+msgstr "None"
+
