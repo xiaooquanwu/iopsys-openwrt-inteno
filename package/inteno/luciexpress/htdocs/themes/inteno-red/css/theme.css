@@ -49,3 +49,38 @@ div.logo {
   opacity: 0;
   padding: 0 10px;
 }
+
+h3.detail-strong,
+h4.detail-strong{
+    color: #333;
+    font-weight: 700;
+}
+
+h3.detail-strong {
+    font-size: 1.5em;
+}
+
+h4.detail-strong {
+    font-size: 1.2em;
+}
+
+.radio label.detail-strong-input {
+    font-size: 1em;
+    font-weight: 700;
+}
+
+.radio label.detail-strong-input span {
+    margin-top: -4px;
+}
+
+.radio.radio-inline.radio-align {
+    margin-top: 10px;
+}
+
+.margin-left-10 {
+    margin-left: 10px;
+}
+
+span.error {
+    color: #a94442;
+}

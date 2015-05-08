@@ -6,8 +6,8 @@
     </div>
     <div class="row" ng-show="form[name].$dirty && form[name].$invalid">
         <div class="{{messageClass}} {{messageOffsetClass}}">
-            <span class="has-error small" ng-show="form[name].$error.required">{{'error.port.required'|translate}}</span>
-            <span class="has-error small" ng-show="form[name].$error.validatePort">{{'error.port.invalid'|translate}}</span>
+            <span class="error small margin-left-10" ng-show="form[name].$error.required">{{'error.port.required'|translate}}</span>
+            <span class="error small margin-left-10" ng-show="form[name].$error.validatePort">{{'error.port.invalid'|translate}}</span>
         </div>
     </div>
 </div>
