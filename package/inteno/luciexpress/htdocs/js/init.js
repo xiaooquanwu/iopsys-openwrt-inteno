@@ -93,7 +93,7 @@ angular.module("luci")
 			$config.mode = $localStorage.getItem("mode") || "basic"; 
 			$config.theme = $localStorage.getItem("theme") || themes[$config.system.hardware] || "inteno-red"; 
 			
-			//$config.theme = "default"; 
+			$config.theme = "vodafone";
 			
 			$theme.changeTheme($config.theme).done(function(){
 				next(); 

@@ -20,8 +20,8 @@ angular.module("luci")
 			}
 		},
 		themes: [
-			"default", 
-			"inteno-red", 
+			//"default", 
+			//"inteno-red", 
 			"vodafone"
 		], 
 		plugins: [
