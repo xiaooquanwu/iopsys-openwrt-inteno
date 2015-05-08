@@ -4,6 +4,8 @@ local netcon=0
 local tvcon=0
 local wanip=0
 
+local IFACE=$1
+
 test_connection() {
 	local addr="$1"
 	local defroute="$(ip r | grep default | awk '{print$3}')"
