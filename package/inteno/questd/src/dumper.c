@@ -139,7 +139,7 @@ get_file_contents(char *path, char **val) {
 	*val = "";
 
 	if ((in = fopen(path, "r"))) {
-		fread(result, sizeof(result), 1, in);
+		fgets(result, sizeof(result), in);
 		remove_newline(result);
 		fclose(in);
 		*val = strdup(result);
