@@ -1048,12 +1048,14 @@ wifi_detect() {
 	local SSID="$(uci -q get wireless.@wifi-iface[0].ssid)"
 	local ENCR="$(uci -q get wireless.@wifi-iface[0].encryption)"
 	local KEY="$(uci -q get wireless.@wifi-iface[0].key)"
+	local GTK="$(uci -q get wireless.@wifi-iface[0].gtk_rekey)"
 	local WPS="$(uci -q get wireless.@wifi-iface[0].wps_pbc)"
 	local NET="$(uci -q get wireless.@wifi-iface[0].network)"
 
 	local PSID="$(uci -q get wireless.preferred.sid)"
 	local PENC="$(uci -q get wireless.preferred.enc)"
 	local PKEY="$(uci -q get wireless.preferred.key)"
+	local PGTK="$(uci -q get wireless.preferred.gtk)"
 	local PWPS="$(uci -q get wireless.preferred.wpsb)"
 	local PHW5="$(uci -q get wireless.preferred.hw5g)"
 	local PHW2="$(uci -q get wireless.preferred.hw2g)"
@@ -1064,10 +1066,12 @@ wifi_detect() {
 	local PDFS="$(uci -q get wireless.preferred.dfsc)"
 	local PCNT="$(uci -q get wireless.preferred.country)"
 	local PTMR="$(uci -q get wireless.preferred.scntmr)"
+	local PEXT="$(uci -q get wireless.preferred.extrassid)"
 
 	[ -n "$SSID" ] || SSID="${PSID:-Inteno}"-$BSSID4
 	[ -n "$ENCR" ] || ENCR=$PENC
 	[ -n "$KEY" ] || KEY=$PKEY
+	[ -n "$GTK" ] || GTK=$PGTK
 	[ -n "$WPS" ] || WPS=$PWPS
 
 	pcID() {
@@ -1149,12 +1153,15 @@ config wifi-iface
 	option encryption '${ENCR:-mixed-psk}'
 	option cipher 'auto'
 	option key '${KEY:-$WPAKEY}'
-	option gtk_rekey '0'
+	option gtk_rekey '${GTK:-3600}'
 	option macfilter '0'
 	option wps_pbc '${WPS:-1}'
 	option wmf_bss_enable '1'
 	option bss_max '16'
 
+EOF
+				if [ "$PEXT" == "1" ]; then
+					cat >> /etc/config/wireless <<EOF
 config wifi-iface
 	option device '$wl'
 	option network '${NET:-lan}'
@@ -1163,13 +1170,14 @@ config wifi-iface
 	option encryption '${ENCR:-mixed-psk}'
 	option cipher 'auto'
 	option key '${KEY:-$WPAKEY}'
-	option gtk_rekey '0'
+	option gtk_rekey '${GTK:-3600}'
 	option macfilter '0'
 	option wps_pbc '0'
 	option wmf_bss_enable '1'
 	option bss_max '16'
 
 EOF
+				fi
 				uci -q set wireless.$wl.dfsc="$dfsc"
 			else
 				uci -q set wireless.$wl.band="$band"

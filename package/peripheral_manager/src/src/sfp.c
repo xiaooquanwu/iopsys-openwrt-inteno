@@ -827,6 +827,7 @@ static int ddm_prepare(void)
         return 1;
 };
 
+#if 0
 static int sfp_ddm_get_temperature(struct blob_buf *b, int raw)
 {
         float x;
@@ -860,6 +861,7 @@ static int sfp_ddm_get_temperature_method(struct ubus_context *ubus_ctx, struct 
 	ubus_send_reply(ubus_ctx, req, b.head);
 	return 0;
 }
+#endif
 
 static int sfp_ddm_get_voltage(struct blob_buf *b, int raw)
 {

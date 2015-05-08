@@ -204,6 +204,15 @@ config led_map led_map
        list press_indicator led_voice1
        list press_indicator led_dect
        list press_indicator led_ext
+	list functions wifi
+	list functions wps
+	list functions lan
+	list functions status
+	list functions wan
+	list functions internet
+	list functions voice1
+	list functions ext
+	list functions dect
 
 config led_map led_wifi
        list led_action_ok     'Wireless_green = ON'

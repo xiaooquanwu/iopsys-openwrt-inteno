@@ -61,7 +61,7 @@ static int is_enabled(void)
         int ret;
 
         if (ubus_lookup_id(ubus_ctx, "catv", &id)) {
-                DBG(1, "Failed to look up catv object\n");
+                DBG(4, "Failed to look up catv object\n");
                 return 0;
         }
 

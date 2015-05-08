@@ -208,6 +208,14 @@ config led_map led_map
        list press_indicator led_wps
        list press_indicator led_internet
        list press_indicator led_cancel
+	list functions wifi
+	list functions wps
+	list functions status
+	list functions dect
+	list functions wan_phy_link
+	list functions wan_phy_speed
+	list functions internet
+	list functions cancel	
 
 config led_map led_wifi
        list led_action_ok     'Service_white = ON'
