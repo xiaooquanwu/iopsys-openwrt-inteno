@@ -5,10 +5,10 @@
 				<luci-config-heading>{{ 'WPS' | translate }}</luci-config-heading>
 				<luci-config-info>{{ 'wifi.wps.info' | translate }}</luci-config-info>
 				<luci-config-lines>
-					<luci-config-line title="{{'WPS Function'|translate}}"><switch id="enabled" name="enabled" ng-model="easybox.settings.wpsbutton.value" class="green"></switch></luci-config-line>
+					<luci-config-line title="{{'WPS Function'|translate}}"><switch id="enabled" name="enabled" ng-model="wireless.status.wps.value" class="green"></switch></luci-config-line>
 				</luci-config-lines>
 			</luci-config-section>
-			<luci-config-section>
+			<luci-config-section ng-show="wireless.status.wps.value">
 				<luci-config-lines ng-repeat="interface in wireless['@wifi-iface']">
 					<luci-config-line title="{{'Enable WPS on '|translate}} {{interface.ssid.value}}">
 						<switch id="enabled" name="enabled" ng-model="interface.wps_pbc.value" class="green" ></switch>

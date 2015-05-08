@@ -3,7 +3,8 @@
 		"wifi",
 		"widgets/uci.wireless.interface",
 		"widgets/uci.wireless.interface.macfilter.edit",
-		"widgets/uci.wireless.device.edit"
+		"widgets/uci.wireless.device.edit",
+		"widgets/uci.wireless.schedule.edit"
 	],
 	"pages": {
 		"wifi.general": {

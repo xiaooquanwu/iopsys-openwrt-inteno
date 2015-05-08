@@ -64,6 +64,9 @@ angular.module("luci")
 			}); 
 			return deferred.promise(); 
 		}, 
+		getCurrentTheme: function(){
+			return $localStorage.getItem("theme"); 
+		}, 
 		getAvailableThemes: function(){
 			return this.themes; 
 		}

@@ -153,7 +153,7 @@ h1, h2 {
 }
 
 .footer {
-	margin-top: 0px; 
+	margin-top: 100px; 
 }
 
 @media screen and ( min-width: 600px ){

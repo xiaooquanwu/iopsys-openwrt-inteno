@@ -3,8 +3,7 @@ $juci.module("wifi")
 	$scope.data = {
 		userPIN: ""
 	}
-	$uci.sync(["easybox", "wireless"]).done(function(){
-		$scope.easybox = $uci.easybox; 
+	$uci.sync(["wireless"]).done(function(){
 		$scope.wireless = $uci.wireless; 
 		$scope.$apply(); 
 	}).fail(function(err){

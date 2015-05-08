@@ -11,10 +11,19 @@ $juci.module("wifi")
 		require: "^ngModel"
 	 };  
 }).controller("WifiInterfaceController", function($scope, $uci, gettext){
-	$scope.gettext = gettext; 
 	$scope.$watch("interface", function(value){
+		try {
+			$scope.cryptoChoices = $scope.interface.encryption.schema.allow;
+		} catch(e) {} 
 		$scope.devices = $uci.wireless["@wifi-device"].map(function(x){
-			return x[".name"]; 
+			// TODO: this should be a uci "displayname" or something
+			if(x.band.value == "a") x[".label"] = gettext("5Ghz"); 
+			else if(x.band.value == "b") x[".label"] = gettext("2.4Ghz"); 
+			return { label: x[".label"], value: x[".name"] };
+		}); 
+		$uci.wireless["@wifi-iface"].map(function(x){
+			var dev = $uci.wireless[x.device.value]; 
+			x[".frequency"] = dev[".label"]; 
 		}); 
 		$scope.title = "wifi-iface.name="+$scope.interface[".name"]; 
 	}); 

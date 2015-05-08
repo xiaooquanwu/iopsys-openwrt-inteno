@@ -1,13 +1,5 @@
 <div ng-controller="JuciThemePickerController">
-	<ui-select ng-model="selectedTheme"
-			 theme="bootstrap"
-			 search-enabled="false"
-			 on-select="onChangeTheme($item, $model)"
-			 style="width: 150px;">
-			<ui-select-match placeholder="Pick your theme">{{$select.selected.label}}</ui-select-match>
-			<ui-select-choices repeat="theme in themes"
-							 refresh-delay="0">
-				<div >{{theme.label}}</div>
-			</ui-select-choices>
-	</ui-select>
+	<div class="form-group">
+		<luci-select ng-model="selectedTheme" ng-items="themes" on-change="onChangeTheme()" prefix="Theme: "></luci-select>
+	</div>
 </div>

@@ -43,10 +43,10 @@ $juci.module("core")
 	var plugin_root = $juci.module("core").plugin_root; 
 	return {
 		template: '<div class="row" style="margin-top: 20px; ">'+
-			'<div class="col-md-6">'+
+			'<div class="col-md-7">'+
 				'<label style="font-size: 1.2em">{{title}}</label>'+
 			'</div>'+
-			'<div class="col-md-6">'+
+			'<div class="col-md-5">'+
 				'<div class="pull-right" ng-transclude></div>'+
 			'</div></div>', 
 		replace: true, 
@@ -59,9 +59,9 @@ $juci.module("core")
 .directive("luciConfigApply", function(){
 	var plugin_root = $juci.module("core").plugin_root; 
 	return {
-		template: '<div class="row"><div class="btn-toolbar pull-right" >'+
+		template: '<div><div class="btn-toolbar pull-right" >'+
 			'<button class="btn btn-lg btn-primary" ng-click="onApply()" ng-disabled="busy"><i class="fa fa-spinner fa-spin" ng-show="busy"/>{{ "Apply"| translate }}</button><button class="btn btn-lg btn-default" ng-click="onCancel()">{{ "Cancel" | translate }}</button>'+
-			'</div></div>', 
+			'</div><div style="clear: both;"></div></div>', 
 		replace: true, 
 		controller: "luciConfigApplyController"
 	 }; 

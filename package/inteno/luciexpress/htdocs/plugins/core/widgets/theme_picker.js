@@ -9,14 +9,17 @@ $juci.module("core")
 })
 .controller("JuciThemePickerController", function($scope, $theme, $config){
 	$scope.themes = $config.themes.map(function(x){
-		return {
+		var item = {
 			id: x, 
 			label: x
 		}; 
+		if(x == $theme.getCurrentTheme()) $scope.selectedTheme = item; 
+		return item; 
 	}); 
-	$scope.onChangeTheme = function(item){
-		$theme.changeTheme(item.id).done(function(){
+	$scope.onChangeTheme = function(){
+		//alert($scope.selectedTheme.id); 
+		/*$theme.changeTheme($scope.selectedTheme.id).done(function(){
 			window.location.reload(); 
-		}); 
+		}); */
 	}
 }); 

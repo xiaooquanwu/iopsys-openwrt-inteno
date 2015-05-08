@@ -39,12 +39,16 @@ $juci.module("core")
 		$languages.setLanguage(lang.short_code); 
 	}; 
 	$scope.config = $config; 
-	setInterval(function(){
-		try{ 
-			$scope.wanip = $status.ubus.network.interface.wan.status["ipv4-address"][0].ipaddr; 
-		} catch(e) { 
-			$scope.wanip = $tr(gettext("Not connected")); 
-		} 
-		try{ $scope.firmware = $status.ubus.router.info.system.firmware; } catch(e) {}
-	}, 1000); 
+	$rpc.network.interface.dump().done(function(result){
+		if(result && result.interface) {
+			result.interface.map(function(i){
+				if(i.interface == "wan" && i["ipv4-address"].length){
+					$scope.wanip = i["ipv4-address"][0].address; 
+				}
+			}); 
+		}
+	}); 
+	$rpc.router.info().done(function(result){
+		if(result.system) $scope.firmware = result.system.firmware; 
+	}); 
 }); 
