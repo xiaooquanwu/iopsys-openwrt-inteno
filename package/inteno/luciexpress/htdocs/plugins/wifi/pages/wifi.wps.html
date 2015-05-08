@@ -14,7 +14,7 @@
 						<switch id="enabled" name="enabled" ng-model="interface.wps_pbc.value" class="green" ></switch>
 					</luci-config-line>
 				</luci-config-lines>
-				<h2 translate>WPS PBC</h2>
+				<h2 translate>WPS-PBC: Push Button on Device</h2>
 				<p translate>wifi.wps.pbc.info</p>
 				<luci-config-lines>
 					<luci-config-line title="{{'Pressing WiFi on/off button on EasyBox for long time activates pairing '|translate}}">
@@ -24,7 +24,7 @@
 						<button class="btn btn-default col-xs-12" ng-click="onPairPBC()" translate>Pair</button>
 					</luci-config-line>
 				</luci-config-lines>
-				<h2 translate>WPS with own PIN</h2>
+				<h2 translate>WPS-REG: EasyBox provides PIN</h2>
 				<p translate>wifi.wps.pin.info</p>
 				<luci-config-lines>
 					<luci-config-line title="{{'WPS Using Generated PIN '|translate}}">
@@ -37,7 +37,7 @@
 						<button class="btn btn-default" ng-click="onGeneratePIN()" translate>Generate</button>
 					</luci-config-line>
 				</luci-config-lines>
-				<h2 translate>WPS with foreign PIN</h2>
+				<h2 translate>WPS-PIN: Another Device provides PIN</h2>
 				<p translate>wifi.wps.otherpin.info</p>
 				<luci-config-lines>
 					<luci-config-line title="{{'Enter your device PIN'|translate}}">

@@ -17,8 +17,8 @@ $juci.module("wifi")
 		} catch(e) {} 
 		$scope.devices = $uci.wireless["@wifi-device"].map(function(x){
 			// TODO: this should be a uci "displayname" or something
-			if(x.band.value == "a") x[".label"] = gettext("5Ghz"); 
-			else if(x.band.value == "b") x[".label"] = gettext("2.4Ghz"); 
+			if(x.band.value == "a") x[".label"] = gettext("5GHz"); 
+			else if(x.band.value == "b") x[".label"] = gettext("2.4GHz"); 
 			return { label: x[".label"], value: x[".name"] };
 		}); 
 		$uci.wireless["@wifi-iface"].map(function(x){

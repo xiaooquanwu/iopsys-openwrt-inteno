@@ -646,7 +646,7 @@ msgid "WPS Function"
 msgstr ""
 
 #: htdocs/plugins/wifi/pages/wifi.wps.html:17
-msgid "WPS PBC"
+msgid "WPS-PBC: Push Button on Device"
 msgstr ""
 
 #: htdocs/plugins/wifi/pages/wifi.wps.html:30
@@ -654,11 +654,11 @@ msgid "WPS Using Generated PIN"
 msgstr ""
 
 #: htdocs/plugins/wifi/pages/wifi.wps.html:40
-msgid "WPS with foreign PIN"
+msgid "WPS-PIN: Another Device provides PIN"
 msgstr ""
 
 #: htdocs/plugins/wifi/pages/wifi.wps.html:27
-msgid "WPS with own PIN"
+msgid "WPS-REG: Router provides PIN"
 msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.js:56
@@ -821,6 +821,10 @@ msgstr ""
 
 #: htdocs/plugins/wifi/pages/wifi.schedule.html:5
 msgid "wifi.schedule.info"
+msgstr ""
+
+#: htdocs/plugins/wifi/pages/wifi.schedule.html:5
+msgid "wifi.general.setup.info"
 msgstr ""
 
 #: htdocs/plugins/wifi/pages/wifi.settings.html:6

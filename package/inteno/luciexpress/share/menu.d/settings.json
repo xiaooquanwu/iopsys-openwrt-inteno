@@ -28,11 +28,5 @@
 				"modes": [ "expert" ], 
         "acls": [  ],
         "index": 50
-    },
-    "settings/uci": {
-        "title": "Advanced",
-				"modes": [ "expert" ], 
-        "acls": [  ],
-        "index": 60
     }
 }

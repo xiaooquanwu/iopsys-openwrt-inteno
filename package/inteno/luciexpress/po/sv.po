@@ -78,6 +78,10 @@ msgid "wifi.schedule.info"
 msgstr ""
 "Med schemaläggninga kan du enkelt schemalägga när din wifi är tillgänglig. "
 
+msgid "wifi.general.setup.info"
+msgstr ""
+"Konfigurera din trådlösa gränssnitt."
+
 #: htdocs/plugins/wifi/pages/wifi.wps.html:8
 msgid "WPS Function"
 msgstr "WPS Funktion"
@@ -783,7 +787,7 @@ msgid "Voice Status"
 msgstr "Uppkopplingsstatus"
 
 #: htdocs/plugins/wifi/pages/wifi.wps.html:17
-msgid "WPS PBC"
+msgid "WPS-PBC: Push Button on Device"
 msgstr ""
 
 #: htdocs/plugins/wifi/pages/wifi.wps.html:30
@@ -791,11 +795,11 @@ msgid "WPS Using Generated PIN"
 msgstr ""
 
 #: htdocs/plugins/wifi/pages/wifi.wps.html:40
-msgid "WPS with foreign PIN"
+msgid "WPS-PIN: Another Device provides PIN"
 msgstr ""
 
 #: htdocs/plugins/wifi/pages/wifi.wps.html:27
-msgid "WPS with own PIN"
+msgid "WPS-REG: EasyBox provides PIN"
 msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.js:56
@@ -963,7 +967,7 @@ msgstr "Öppet nätverk"
 
 #: htdocs/plugins/wifi/widgets/uci.wireless.interface.html:13
 msgid "wifi-iface.device"
-msgstr "Radio"
+msgstr "Frekvens"
 
 #: htdocs/plugins/wifi/widgets/uci.wireless.interface.html:19
 msgid "wifi-iface.encryption"

@@ -61,8 +61,8 @@ $juci.module("core")
 								var dev = i.l3_device||i.device||""; 
 								if(dev.indexOf("atm") == 0) conn = "ADSL"; 
 								else if(dev.indexOf("ptm") == 0) conn = "VDSL"; 
-								else if(dev.indexOf("eth") == 0) conn = "ETH"; 
-								else if(dev.indexOf("wwan") == 0) conn = "LT-E"; 
+								else if(dev.indexOf("eth") == 0) conn = "FTTH"; 
+								else if(dev.indexOf("wwan") == 0) conn = "LTE"; 
 								else if(dev.indexOf("wl") == 0) conn = "Wi-Fi"; 
 								else conn = "N/A"; 
 							}
