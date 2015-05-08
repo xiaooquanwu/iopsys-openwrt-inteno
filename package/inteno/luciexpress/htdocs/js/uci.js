@@ -5,6 +5,13 @@ angular.module("luci")
 	$rpc = $rpcProvider.$get(); 
 	
 	var section_types = {
+		"juci-settings": {
+			"theme":					{ dvalue: "", type: String }, 
+			"lang":						{ dvalue: "", type: String }, 
+			"themes":					{ dvalue: [], type: Array }, 
+			"plugins":				{ dvalue: [], type: Array }, 
+			"languages":			{ dvalue: [], type: Array }
+		}, 
 		"easybox-settings": {
 			"usb_port": 		{ dvalue: true, type: Boolean }, 
 			"status_led": 	{ dvalue: true, type: Boolean }, 
