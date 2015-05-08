@@ -5,6 +5,6 @@
 	local ifname="$(uci -q get network.$INTERFACE.ifname)"
 	if [ "$islan" != "1" ] && [ "$proto" != "none" ] && [ "${ifname:0:1}" != "@" ]; then
 		killall testnet >/dev/null 2>&1
-		/sbin/testnet &
+		/sbin/testnet $INTERFACE &
 	fi
 }
