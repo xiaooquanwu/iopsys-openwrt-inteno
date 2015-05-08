@@ -3,12 +3,24 @@
 . /lib/functions.sh
 . /usr/share/libubox/jshn.sh
 
+wifibutton_action() {
+	local bten="$(uci -q get boardpanel.settings.wifibutton)"
+	[ "$bten" == "0" ] && return
+	if ! pidof ecobutton; then
+		/sbin/ecobutton &
+	fi
+	local buttoncomb=""
+	[ -f "/var/buttoncomb" ] && buttoncomb="$(cat /var/buttoncomb)"
+	echo  $buttoncomb"eco" > /var/buttoncomb
+}
+
 wpsbutton_action () {
+	local bten="$(uci -q get boardpanel.settings.wpsbutton)"
+	[ "$bten" == "0" ] && return
         killall -USR2 wps_monitor
 }
 
 dectbutton_action () {
-
     local parsed=$(ubus call led.dect status)
     json_load "$parsed"
     json_get_var ledstate state
@@ -24,22 +36,27 @@ dectbutton_action () {
     }
 }
 
+infobutton_action() {
+	local parsed=$(ubus call leds status)
+	json_load "$parsed"
+	json_get_var ledstate state
+
+	[ "$ledstate" == "normal" ] && {
+		ubus call leds set '{"state": "info"}'
+		ubus call led.eco set '{"state": "notice"}'
+	} || {
+		ubus call leds set '{"state": "normal"}'
+		ubus call led.eco set '{"state": "off"}'
+	}
+}
+
 case "$ACTION" in
         add|register)
         [ "resetbutton" == "$INTERFACE" ] && {
-                ubus call leds set '{ "state": "test"}'
-                printf "\n\n*** Restore to default settings ***\n\n" > /dev/console
-		rm -rf /rom/overlay/*
-		rm -rf /rom/etc/adsl/adsl_phy.bin
-		reboot
+		/sbin/defaultreset
         }
-        [ "ecobutton" == "$INTERFACE" ] && {
-		if ! pidof ecobutton; then
-			/sbin/ecobutton &
-		fi
-		local buttoncomb=""
-		[ -f "/var/buttoncomb" ] && buttoncomb="$(cat /var/buttoncomb)"
-		echo  $buttoncomb"eco" > /var/buttoncomb
+        [ "ecobutton" == "$INTERFACE" -o "wifibutton" == "$INTERFACE" ] && {
+		wifibutton_action
         }
         [ "wpsbutton" == "$INTERFACE" ] && {
 	        printf "\n\nWPS button is pressed\n\n" > /dev/console
@@ -50,17 +67,7 @@ case "$ACTION" in
         }
         [ "infobutton" == "$INTERFACE" ] && {
                 printf "\n\nINFO button is pressed\n\n" > /dev/console
-                local parsed=$(ubus call leds status)
-                json_load "$parsed"
-                json_get_var ledstate state
-
-                [ "$ledstate" == "normal" ] && {
-                        ubus call leds set '{ "state": "info"}'
-                        ubus call led.eco set '{ "state": "notice"}'
-                } || {
-                        ubus call leds set '{ "state": "normal"}'
-                        ubus call led.eco set '{ "state": "off"}'
-                }
+		infobutton_action
         }
 	[ "communicationbutton" == "$INTERFACE" ] && {
 		printf "\n\nCommunication button pressed - not implemented!\n\n" > /dev/console
