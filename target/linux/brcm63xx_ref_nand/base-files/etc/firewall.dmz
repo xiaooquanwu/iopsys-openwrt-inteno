@@ -1,0 +1,47 @@
+#!/bin/sh
+
+. /lib/functions.sh
+
+local PORTS=""
+local dmzhost exclude_ports rule_ports redirect_ports
+
+port_from_section() {
+	local dest_port start_port stop_port cnt
+
+	config_get dest_port $1 dest_port
+	case $dest_port in
+		*-*)
+			start_port=$(echo $dest_port | awk -F '-' '{print$1}')
+			stop_port=$(echo $dest_port | awk -F '-' '{print$2}')
+		;;
+	esac
+	if [ -n "$start_port" -a "$stop_port" ]; then
+		dest_port=""
+		while [ $start_port -le $stop_port ]; do
+			dest_port="$dest_port $start_port"
+			start_port=$((start_port+1))
+		done
+	fi
+	[ -n "$dest_port" ] && PORTS="$PORTS $dest_port"
+}
+
+config_load firewall
+
+config_get dmzhost dmz host
+
+[ -n "$dmzhost" ] || exit
+
+config_get exclude_ports dmz exclude_ports
+[ -n "$excl_port" ] && PORTS="$PORTS $excl_port"
+
+config_foreach port_from_section rule
+config_foreach port_from_section redirect
+
+PORTS="$(echo $PORTS | tr ' ' ',')"
+
+iptables -t filter -I zone_wan_forward -d $dmzhost -m comment --comment DMZ_Host -j ACCEPT
+#iptables -t nat -I zone_wan_prerouting -p udp "$PORTS" -m comment --comment DMZ_Host_TCP -j DNAT --to-destination $dmzhost
+#iptables -t nat -I zone_wan_prerouting -p tcp "$PORTS" -m comment --comment DMZ_Host_TCP -j DNAT --to-destination $dmzhost
+iptables -t nat -I zone_wan_prerouting -p udp -m comment --comment DMZ_Host_TCP -j DNAT --to-destination $dmzhost
+iptables -t nat -I zone_wan_prerouting -p tcp -m comment --comment DMZ_Host_TCP -j DNAT --to-destination $dmzhost
+
