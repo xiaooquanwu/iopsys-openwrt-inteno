@@ -10,6 +10,8 @@ wifibutton_action() {
 	else
 		uci -q set wireless.status.wlan="0"
 	fi
+	killall -9 wifi 2>/dev/null
+	/sbin/wifi &
 }
 
 wpsbutton_action () {
