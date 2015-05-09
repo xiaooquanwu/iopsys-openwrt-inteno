@@ -4,6 +4,8 @@
 . /usr/share/libubox/jshn.sh
 
 wifibutton_action() {
+        local bten="$(uci -q get boardpanel.settings.wifibutton)"
+        [ "$bten" == "0" ] && return
 	local wlstatus="$(uci -q get wireless.status.wlan)"
 	if [ "$wlstatus" == "0" ]; then
 		uci -q set wireless.status.wlan="1"
