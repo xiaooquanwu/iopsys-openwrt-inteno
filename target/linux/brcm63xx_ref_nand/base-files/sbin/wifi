@@ -24,11 +24,17 @@ local current_day=$(date | awk '{print$1}' | tr '[A-Z]' '[a-z]')
 local current_time=$(date +%H%M)
 
 nvset() {
-	uci -q set broadcom.nvram."$1"
+	local opt=$(echo $1 | cut -d'=' -f1)
+	local val=$(echo $1 | cut -d'=' -f2)
+	opt=${opt/./_}
+	uci -q set broadcom.nvram."$opt=$val"
 }
 
 nvget() {
-	uci -q get broadcom.nvram."$1"
+	local optval="$1"
+	optval=${optval/wl0./wl0_}
+	optval=${optval/wl1./wl1_}
+	uci -q get broadcom.nvram."$optval"
 }
 
 nvcommit() {
