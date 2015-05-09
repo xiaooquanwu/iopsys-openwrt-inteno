@@ -127,7 +127,7 @@ angular.module("luci")
 		//window.uci = $uci; 
 		
 		// set current language
-		gettextCatalog.currentLanguage = "se"; 
+		gettextCatalog.currentLanguage = "en"; 
 		gettextCatalog.debug = true;
 		/*$rootScope.$on('$routeChangeSuccess', function (event, current, previous) {
         $rootScope.title = current.$$route.title;

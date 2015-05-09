@@ -13,11 +13,11 @@ angular.module("luci")
 	gettextCatalog.currentLanguage = $localStorage.getItem("language") || "se"; 
 	return {
 		getLanguages: function(){
-			return Object.keys($config.languages).filter(function(lang){
+			return $config.languages.filter(function(lang){
 				return lang in gettextCatalog.strings; 
 			}).map(function(lang){
 				return {
-					title: $config.languages[lang].title, 
+					title: "language."+lang, 
 					short_code: lang
 				}
 			}); 

@@ -55,6 +55,8 @@ angular.module("luci")
 											if(result && result.error){
 												deferred.reject(result.error);  
 												$rootScope.$broadcast("error", result.error.message); 
+											} else {
+												deferred.reject("RPC error ("+namespace+"."+method+"): "+JSON.stringify(result)); 
 											}
 										}
 									})

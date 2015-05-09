@@ -68,7 +68,7 @@ angular.module("luci")
 			return $localStorage.getItem("theme"); 
 		}, 
 		getAvailableThemes: function(){
-			return this.themes; 
+			return this.themes||[]; 
 		}
 	}; 
 	/*

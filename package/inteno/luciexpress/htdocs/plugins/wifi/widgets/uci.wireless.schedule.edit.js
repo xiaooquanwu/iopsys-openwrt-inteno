@@ -63,6 +63,7 @@ $juci.module("wifi")
 		update_time(); 
 	}, true);
 	$scope.$watch("schedule", function(value){
+		if(!value) return; 
 		var parts = value.time.value.split("-");//.map(function(x){ return x.split(":"); }); 
 		$scope.data.timeFrom = parts[0]; 
 		$scope.data.timeTo = parts[1]; 
@@ -70,7 +71,8 @@ $juci.module("wifi")
 	}); 
 	$scope.onChangeDays = function(){ 
 		//$scope.schedule.days.value.splice(0,$scope.schedule.days.value.length); 
-		$scope.schedule.days.value = $scope.selectedTimeFram; 
+		$scope.schedule.days.value = $scope.selectedTimeFrame; 
+		//console.log($scope.selectedTimeFrame); 
 		//Object.assign($scope.schedule.days.value, $scope.selectedTimeFrame); 
 	}
 }); 

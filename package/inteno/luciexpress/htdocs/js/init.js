@@ -3,7 +3,7 @@
 angular.module("luci")
 .controller("InitPageController", function($scope, $tr, 
 	$state, $stateParams, $config, $session, $localStorage, 
-	$rpc, $navigation, $location, $rootScope, $http, gettext, $theme){
+	$rpc, $uci, $navigation, $location, $rootScope, $http, gettext, $theme){
 	//$scope.progress = {}; 
 	console.log("INIT"); 
 	function progress(text, value){
@@ -19,8 +19,25 @@ angular.module("luci")
 		function(next){
 			//$scope.progress = { text: "test", value: 20 }; 
 			progress("Getting config..", 0); 
-			// TODO: use rpc
-			next(); 
+			$uci.sync("juci").done(function(){
+				if($uci.juci && $uci.juci.settings){
+					$config.themes = $uci.juci.settings.themes.value; 
+					$config.theme = $localStorage.getItem("theme") || $uci.juci.settings.theme.value; 
+					$config.language = $uci.juci.settings.lang.value; 
+					$config.languages = $uci.juci.settings.languages.value; 
+					$config.plugins = $uci.juci.settings.plugins.value; 
+				} else {
+					$config.languages = []; 
+					$config.themes = []; 
+					$config.theme = $localStorage.getItem("theme") || "inteno-red"; 
+					$config.plugins = ["core"]; 
+					$config.language = 'en'; 
+				}
+				next(); 
+			}).fail(function(){
+				alert("FATAL: unable to get juci config from server!"); 
+				next(); 
+			}); 
 		},
 		function(next){
 			progress("Loading plugins..", 8); 
@@ -87,13 +104,8 @@ angular.module("luci")
 			// TODO: this will be moved somewhere else. What we want to do is 
 			// pick both a theme and plugins based on the router model. 
 			console.log("Detected hardware model: "+$config.system.hardware); 
-			var themes = {
-				"CG300A": "inteno-red"
-			}; 
+
 			$config.mode = $localStorage.getItem("mode") || "basic"; 
-			$config.theme = $localStorage.getItem("theme") || themes[$config.system.hardware] || "inteno-red"; 
-			
-			$config.theme = "vodafone";
 			
 			$theme.changeTheme($config.theme).done(function(){
 				next(); 

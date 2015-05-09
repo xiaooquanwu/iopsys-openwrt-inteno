@@ -316,9 +316,14 @@ angular.module("luci")
 		UCIConfig.prototype.$sync = function(){
 			var deferred = $.Deferred(); 
 			var self = this; 
-			/*Object.keys(self).map(function(k){
-				if(k.indexOf("@") == 0) self[k] = []; 
-			}); */
+			Object.keys(self).map(function(k){
+				if(k.indexOf("@") == 0) {
+					self[k].map(function(x){
+						delete self[x[".name"]]; 
+					}); 
+					self[k].splice(1, self[k].length); 
+				}
+			}); 
 			$rpc.uci.state({
 				config: self[".name"]
 			}).done(function(data){
@@ -388,13 +393,13 @@ angular.module("luci")
 				}
 			}); 
 			var deferred = $.Deferred(); 
-			console.log("Adding: "+item[".type"]+": "+JSON.stringify(values)); 
 			$rpc.uci.add({
 				"config": self[".name"], 
 				"type": item[".type"],
 				"name": item[".name"], 
 				"values": values
 			}).done(function(state){
+				console.log("Added section  @"+item[".type"]+" "+state.section+": "+JSON.stringify(values)); 
 				item[".name"] = state.section; 
 				var section = _insertSection(self, item); 
 				self[".need_commit"] = true; 
@@ -426,19 +431,21 @@ angular.module("luci")
 	UCI.prototype.sync = function(configs){
 		var deferred = $.Deferred(); 
 		var self = this; 
+		
 		async.series([
 			function(next){
 				$rpc.uci.configs().done(function(response){
 					var cfigs = response.configs; 
-					if(!cfigs) { next("could not retreive list of configs!"); return; }
+					if(!cfigs) { console.error("could not retreive list of configs!"); return; }
 					cfigs.map(function(k){
 						if(!(k in self)){
 							console.log("Adding new config "+k); 
 							self[k] = new UCI.Config(self, k); 
 						}
 					}); 
+				}).always(function(){ 
 					next(); 
-				}); 
+				});
 			}, 
 			function(next){
 				if(!(configs instanceof Array)) configs = [configs]; 
@@ -472,15 +479,15 @@ angular.module("luci")
 		var deferred = $.Deferred(); 
 		var self = this; 
 		var writes = []; 
-		var resync = []; 
+		var resync = {}; 
 		Object.keys(self).map(function(k){
 			if(self[k].constructor == UCI.Config){
 				var reqlist = self[k].$getWriteRequests(); 
-				if(self[k][".need_commit"]) resync.push(self[k][".name"]); 
+				if(self[k][".need_commit"]) resync[self[k][".name"]] = true; 
 				reqlist.map(function(x){ writes.push(x); }); 
 			}
 		}); 
-		console.log("Will do following write requests: "+JSON.stringify(writes)); 
+		console.log("Will do following write requests: "+JSON.stringify(writes)+ " "+JSON.stringify(resync)); 
 		/*if(writes.length == 0) {
 			setTimeout(function(){ deferred.resolve(); }, 0); 
 			return deferred.promise(); 
@@ -488,14 +495,15 @@ angular.module("luci")
 		async.eachSeries(writes, function(cmd, next){
 			$rpc.uci.set(cmd).done(function(){
 				console.log("Wrote config "+cmd.config); 
-				resync.push(cmd.config); 
+				resync[cmd.config] = true; 
 				next(); 
 			}).fail(function(){
 				console.error("Failed to write config "+cmd.config); 
 				next(); 
 			}); 
 		}, function(){
-			async.eachSeries(resync, function(config, next){
+			async.eachSeries(Object.keys(resync), function(key, next){
+				var config = resync[key]; 
 				console.log("Committing config "+config); 
 				$rpc.uci.commit({config: config}).done(function(){
 					console.log("Resynching config "+config); 

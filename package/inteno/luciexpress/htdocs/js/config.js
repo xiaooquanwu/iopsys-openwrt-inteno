@@ -3,9 +3,8 @@
 angular.module("luci")
 .factory('$config', function(){
 	return {
-		mode: "basic", // basic or expert supported
-		//model: "Inteno DG301",
-		languages: {
+		//mode: "basic", // basic or expert supported
+		/*languages: {
 			"tr": {
 				title: "Turkish"
 			}, 
@@ -32,7 +31,7 @@ angular.module("luci")
 			"internet",
 			//"router", 
 			"wifi"
-		], 
+		], */
 		rpc: {
 			//host: "", not used anymore because we now instead do rpc forwarding in server.js!
 			exposed_calls: [ // TODO: only login and access calls should always be available 

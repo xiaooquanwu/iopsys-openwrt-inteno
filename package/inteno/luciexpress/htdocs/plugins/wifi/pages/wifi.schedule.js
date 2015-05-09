@@ -26,7 +26,10 @@ $juci.module("wifi")
 			$scope.schedule = item; 
 			$scope.showScheduleDialog = 1; 
 			$scope.$apply(); 
-		}); 
+			console.log("Added new schedule!"); 
+		}).fail(function(err){
+			console.log("Failed to create schedule!"); 
+		}); ; 
 	}
 	
 	$scope.onEditSchedule = function(sched){

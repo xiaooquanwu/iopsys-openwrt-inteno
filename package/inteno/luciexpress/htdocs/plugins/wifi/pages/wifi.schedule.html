@@ -11,7 +11,7 @@
 			<luci-config-heading>{{ 'Setup Scheduling' | translate }}</luci-config-heading>
 			<luci-config-lines>
 				<luci-config-line title="{{'During this time the WiFi is'|translate}}">
-					<switch id="enabled" name="enabled" ng-model="status.schedule.value" class="green"></switch>
+					<switch id="enabled" name="enabled" ng-model="status.sched_status.value" class="green"></switch>
 				</luci-config-line>
 			</luci-config-lines>
 			<table class="table">
@@ -38,7 +38,7 @@
 		</table>
 		<luci-config-apply></luci-config-apply>
 		<modal title="Add a new WiFi Schedule" ng-show="showScheduleDialog" on-accept="onAcceptSchedule()" 
-			on-dismiss="onDismissSchedule()" dismiss-label="Cancel" accept-label="Save" hide-close-btn="true">
+			on-dismiss="onDismissSchedule()" dismiss-label="Cancel" accept-label="Save">
 			<uci-wireless-schedule-edit ng-model="schedule"></uci-wireless-schedule-edit>
 		</modal>
 	</div>

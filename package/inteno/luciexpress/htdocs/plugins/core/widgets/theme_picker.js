@@ -10,16 +10,17 @@ $juci.module("core")
 .controller("JuciThemePickerController", function($scope, $theme, $config){
 	$scope.themes = $config.themes.map(function(x){
 		var item = {
-			id: x, 
-			label: x
+			label: x, 
+			value: x
 		}; 
 		if(x == $theme.getCurrentTheme()) $scope.selectedTheme = item; 
 		return item; 
 	}); 
+	if(!$scope.selectedTheme) $scope.selectedTheme = $scope.themes[0]; 
 	$scope.onChangeTheme = function(){
 		//alert($scope.selectedTheme.id); 
-		/*$theme.changeTheme($scope.selectedTheme.id).done(function(){
+		$theme.changeTheme($scope.selectedTheme.value).done(function(){
 			window.location.reload(); 
-		}); */
+		});
 	}
 }); 

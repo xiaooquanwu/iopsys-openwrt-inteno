@@ -29,10 +29,6 @@
 				</luci-config-line>
 				<luci-config-line title="{{'wifi-iface.encryption'|translate}}">
 					<luci-select ng-model="interface.encryption.value" ng-items="cryptoChoices" placeholder="Choose Protection"/>
-					<!--<ui-select ng-model="interface.encryption.value"  theme="bootstrap" search-enabled="false">
-						<ui-select-match placeholder="{{ 'Choose Protection'  | translate}}">{{"encryption."+$select.selected}}</ui-select-match>
-						<ui-select-choices repeat="item in interface.encryption.schema.allow" refresh-delay="0"><div >{{"encryption."+item}}</div></ui-select-choices>
-					</ui-select>-->
 				</luci-config-line>
 				<luci-config-line title="{{'wifi-iface.key'|translate}}">
 					<input type="{{(!showPassword)?'password':'text'}}" class="form-control" placeholder="{{'wifi-iface.key'|translate}}" ng-model="interface.key.value"/>

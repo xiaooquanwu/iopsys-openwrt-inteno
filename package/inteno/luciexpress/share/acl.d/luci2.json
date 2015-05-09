@@ -5,8 +5,11 @@
 			"ubus": {
 				"luci2.ui": [
 					"themes"
+				], 
+				"uci": [
+					"juci"
 				]
-			}
+			}, 
 		}
 	},
 
