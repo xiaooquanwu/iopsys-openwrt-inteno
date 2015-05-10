@@ -29,7 +29,7 @@ $juci.module("core")
 		controller: "luciFooterController"
 	}; 
 })
-.controller("luciFooterController", function($scope, $rpc, $config, $languages, gettextCatalog, gettext, $tr, $status){
+.controller("luciFooterController", function($scope, $rpc, $config, $languages, gettextCatalog, gettext, $tr){
 	// TODO: move this into a higher level controller maybe? 
 	$scope.languages = $languages.getLanguages(); 
 	$scope.isActiveLanguage = function(lang){
@@ -42,7 +42,7 @@ $juci.module("core")
 	$rpc.network.interface.dump().done(function(result){
 		if(result && result.interface) {
 			result.interface.map(function(i){
-				if(i.interface == "wan" && i["ipv4-address"].length){
+				if(i.interface == "wan" && i["ipv4-address"] && i["ipv4-address"].length){
 					$scope.wanip = i["ipv4-address"][0].address; 
 				}
 			}); 

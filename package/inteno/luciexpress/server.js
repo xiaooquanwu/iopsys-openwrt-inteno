@@ -82,7 +82,24 @@ app.post('/ubus', function(req, res) {
 		}); 
 	} else {
 		console.log("JSON_CALL (-> "+config.ubus_uri+"): "+JSON.stringify(data)); 
-	
+		
+		function sendResponse(body){
+			var json = JSON.stringify(body); 
+			console.log("JSON_RESP: "+json); 
+			res.write(json); 
+			res.end(); 
+		}
+		
+		var timedOut = false; 
+		var timeout = setTimeout(function(){
+			var body = {
+				jsonrpc: "2.0", 
+				result: [1, "ETIMEOUT"]
+			};
+			timedOut = true; 
+			sendResponse(body); 
+		}, 10000); 
+		
 		request({ 
 			url: config.ubus_uri,
 			method: "POST",
@@ -91,16 +108,16 @@ app.post('/ubus', function(req, res) {
 		}, function (error, response, body) {
 			if(error){ 
 				console.log("ERROR: "+error); 
-				body = JSON.stringify({
+				body = {
 					jsonrpc: "2.0", 
 					result: [1, String(error)]
-				});
+				};
 				//doLocalRPC(); 
 			}
-			var json = JSON.stringify(body); 
-			console.log("JSON_RESP: "+json); 
-			res.write(json); 
-			res.end(); 
+			clearTimeout(timeout); 
+			if(!timedOut){
+				sendResponse(body); 
+			}
 		});
 		//console.log("Unknown RPC call "+name); 
 		//res.end(); 
@@ -114,11 +131,29 @@ app.post('/ubus', function(req, res) {
 });
 
 var server = app.listen(3000, function () {
-
   var host = server.address().address;
   var port = server.address().port;
 
-  console.log('Example app listening at http://%s:%s', host, port);
-
+	for(var i = 0; i < process.argv.length; i++){
+		switch(process.argv[i]){
+			case "-p": {
+				var paths = process.argv[++i].split(";"); 
+				paths.map(function(k){
+					var url, path; 
+					if(k.indexOf(":") >= 0){
+						var parts = k.split(":"); 
+						path = parts[1]; 
+						url = parts[0]; 
+					} else {
+						url = k.split("/").pop(); 
+						path = k; 
+					}
+					console.log("Adding extra plugin search path: "+path+" at "+url); 
+					app.use(url, express.static(path + '/'));
+				}); 
+			} break; 
+		}
+	}
+  console.log('Local server listening on http://%s:%s', host, port);
 });
 

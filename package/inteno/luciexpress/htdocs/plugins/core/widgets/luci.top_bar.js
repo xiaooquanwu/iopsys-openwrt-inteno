@@ -7,7 +7,7 @@ $juci.module("core")
 		replace: true
 	 };  
 })
-.controller("luciTopBarController", function($scope, $config, $session, $uci, $window, $localStorage, $state, gettext){
+.controller("luciTopBarController", function($scope, $config, $session, $uci, $rpc, $window, $localStorage, $state, gettext){
 	$uci.sync("system").done(function(){
 		var system = $uci.system["@system"]; 
 		if(system && system.length && system[0].displayname.value){

@@ -54,6 +54,7 @@ require([
 		angular.bootstrap(document, ['luci']);
 });
 */
+
 angular.module("luci", [
 	"ui.bootstrap",
 	"ui.router", 
@@ -63,9 +64,9 @@ angular.module("luci", [
 	"ngAnimate", 
 	"gettext", 
 	"checklist-model"
-	]); 
-	
-angular.module("luci")
+]); 
+
+	angular.module("luci")
 	.config(function ($stateProvider, $locationProvider, $compileProvider, $urlRouterProvider, $controllerProvider, $provide) {
 		//$locationProvider.otherwise({ redirectTo: "/" });
 		$locationProvider.hashPrefix('!');
@@ -83,7 +84,7 @@ angular.module("luci")
 			console.log(JSON.stringify($delegate[0])); 
 			return $delegate; 
 		});*/ 
-	
+
 		$juci.$urlRouterProvider = $urlRouterProvider; 
 		$juci.redirect = function(page){
 			window.location.href = "#!"+page; 
@@ -121,7 +122,7 @@ angular.module("luci")
 			luci_config: {}
 		}); 
 	})
-	.run(function($rootScope, $state, $session, gettextCatalog, $rpc, $uci, $config, $location, $navigation){
+	.run(function($rootScope, $state, $session, gettextCatalog, $rpc, $config, $location, $navigation){
 		$rootScope.config = $config; 
 		//window.rpc = $rpc; 
 		//window.uci = $uci; 
@@ -130,8 +131,8 @@ angular.module("luci")
 		gettextCatalog.currentLanguage = "en"; 
 		gettextCatalog.debug = true;
 		/*$rootScope.$on('$routeChangeSuccess', function (event, current, previous) {
-        $rootScope.title = current.$$route.title;
-    });*/
+				$rootScope.title = current.$$route.title;
+		});*/
 		var path = $location.path().replace(/\//g, "").replace(/\./g, "_");  
 		
 		$config.system = {}; 
@@ -156,26 +157,35 @@ angular.module("luci")
 			//$state.go("login"); 
 		}); 
 	})
+		
+	.directive("luciFooter", function(){ return {} })
+	.directive("luciLayoutNaked", function(){ return {} })
+	.directive("luciLayoutSingleColumn", function(){ return {} })
+	.directive("luciLayoutWithSidebar", function(){ return {} })
+	.directive("luciNav", function(){ return {} })
+	.directive("luciNavbar", function(){ return {} })
+	.directive("luciTopBar", function(){ return {} })
+	.directive('ngOnload', [function(){
+		return {
+			scope: {
+					callBack: '&ngOnload'
+			},
+			link: function(scope, element, attrs){
+					element.on('load', function(){
+							return scope.callBack();
+					})
+			}
+	}}]); 
 
-.directive("luciFooter", function(){ return {} })
-.directive("luciLayoutNaked", function(){ return {} })
-.directive("luciLayoutSingleColumn", function(){ return {} })
-.directive("luciLayoutWithSidebar", function(){ return {} })
-.directive("luciNav", function(){ return {} })
-.directive("luciNavbar", function(){ return {} })
-.directive("luciTopBar", function(){ return {} })
-.directive('ngOnload', [function(){
-	return {
-    scope: {
-        callBack: '&ngOnload'
-    },
-    link: function(scope, element, attrs){
-        element.on('load', function(){
-            return scope.callBack();
-        })
-    }
-}}])
+angular.element(document).ready(function() {
+	window.rpc.$init().done(function(){ 
+		console.log("RPC INIT DONE!"); 
+		angular.bootstrap(document, ["luci"]);
+	}); 
+});
 
+
+/*
 angular.module("luci")
 .factory("$hosts", function($rpc, $uci){
 	var hosts = {}; 
@@ -266,4 +276,4 @@ angular.module("luci")
 $(document).ready(function(){
 	          
 	$("#loading-indicator").hide(); 
-}); 
+}); */

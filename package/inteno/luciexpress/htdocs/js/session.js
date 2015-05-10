@@ -6,13 +6,13 @@ angular.module("luci")
 	var saved_sid = $localStorage.getItem("sid");
 	var default_sid = "00000000000000000000000000000000";  
 	if(saved_sid){
-		$rootScope.sid = saved_sid; 
+		window.rpc.$sid(saved_sid); 
 	} 
 	
 	function setupUbusRPC(acls){
 		Object.keys(acls).map(function(key){
 			acls[key].map(function(func){
-				$rpc.register_method(key+"."+func); 
+				//$rpc.register_method(key+"."+func); 
 			}); 
 		}); 
 	}
@@ -53,7 +53,8 @@ angular.module("luci")
 				"username": obj.username, 
 				"password": obj.password
 			}).done(function(result){
-				$rootScope.sid = self.sid = result.ubus_rpc_session;
+				self.sid = result.ubus_rpc_session;
+				window.rpc.$sid(self.sid); 
 				self.data = result; 
 				$localStorage.setItem("sid", self.sid); 
 				if(result && result.acls && result.acls.ubus) setupUbusRPC(result.acls.ubus); 
