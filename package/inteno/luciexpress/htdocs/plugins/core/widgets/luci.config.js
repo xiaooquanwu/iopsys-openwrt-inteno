@@ -63,7 +63,7 @@ $juci.module("core")
 	var plugin_root = $juci.module("core").plugin_root; 
 	return {
 		template: '<div><div class="btn-toolbar pull-right" >'+
-			'<button class="btn btn-lg btn-primary" ng-click="onApply()" ng-disabled="busy"><i class="fa fa-spinner fa-spin" ng-show="busy"/>{{ "Apply"| translate }}</button><button class="btn btn-lg btn-default" ng-click="onCancel()">{{ "Cancel" | translate }}</button>'+
+			'<button class="btn btn-lg btn-primary" ng-click="onApply()" ng-disabled="busy"><i class="fa fa-spinner" ng-show="busy"/>{{ "Apply"| translate }}</button><button class="btn btn-lg btn-default" ng-click="onCancel()">{{ "Cancel" | translate }}</button>'+
 			'</div><div style="clear: both;"></div></div>', 
 		replace: true, 
 		controller: "luciConfigApplyController"
