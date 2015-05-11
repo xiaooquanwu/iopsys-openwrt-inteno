@@ -29,6 +29,6 @@ $juci.module("phone")
 		}
 	},
 	onEnter: function($state){
-		$juci.redirect("phone.call_log"); 
+		$juci.redirect("phone-call-log"); 
 	},
 }); 

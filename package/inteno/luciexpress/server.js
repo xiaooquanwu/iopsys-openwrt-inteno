@@ -66,7 +66,6 @@ app.post('/ubus', function(req, res) {
 		return;
 	}
 	
-	//console.log("Call: "+data.method+" "+JSON.stringify(data.params)); 
 	var name = data.params[1]+"."+data.params[2]; 
 	if(name in rpc_calls){
 		console.log("JSON_LOCAL: "+JSON.stringify(data)); 
@@ -98,7 +97,7 @@ app.post('/ubus', function(req, res) {
 			};
 			timedOut = true; 
 			sendResponse(body); 
-		}, 10000); 
+		}, 5000); 
 		
 		request({ 
 			url: config.ubus_uri,

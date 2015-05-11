@@ -35,7 +35,8 @@ $juci.module("core")
 })
 .controller("NavCtrl", function($scope, $navigation, $location, $state, $rootScope, $config){
 	var path = $location.path().replace(/^\/+|\/+$/g, ''); 
-	var subtree = path.split(".")[0]; 
+	//console.log("NAV: "+path); 
+	var subtree = path.split("/")[0]; 
 	
 	$scope.tree = $navigation.tree(subtree); 
 	
@@ -56,7 +57,7 @@ $juci.module("core")
 	
 	function activate(){
 		var path = $location.path().replace(/^\/+|\/+$/g, ''); 
-		var subtree = path.split(".")[0]; 
+		var subtree = path.split("-")[0]; 
 		$scope.tree = $navigation.tree(subtree);
 		
 		setTimeout(function(){
@@ -65,7 +66,7 @@ $juci.module("core")
 		}, 0); 
 	}; 
 	$rootScope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams){
-    activate(); 
+    //activate(); 
   });
 	activate(); 
 	

@@ -15,7 +15,8 @@ angular.module("luci")
 		return this.findLeaf(path); 
 	}
 	this.findLeaf = function(path){
-		var parts = path.split("."); 
+		//console.log("FIND LEAF: "+path); 
+		var parts = path.split("/"); 
 		var obj = data; 
 		// find the right leaf node
 		while(parts.length){
@@ -28,7 +29,8 @@ angular.module("luci")
 		return obj; 
 	}
 	this.insertLeaf = function(path, item){
-		var parts = item.path.split("."); 
+		//console.log("INSERT LEAF: "+path); 
+		var parts = item.path.split("/"); 
 		var obj = data; 
 		// find the right leaf node
 		while(parts.length > 1){

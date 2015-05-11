@@ -8,6 +8,6 @@ $juci.module("wifi")
 	}, 
 	onEnter: function($state){
 		
-		$juci.redirect("wifi.general"); 
+		$juci.redirect("wifi-general"); 
 	}
 }); 

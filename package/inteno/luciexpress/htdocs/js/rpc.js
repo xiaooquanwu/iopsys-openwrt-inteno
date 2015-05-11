@@ -1,9 +1,15 @@
 //! Author: Martin K. Schröder <mkschreder.uk@gmail.com>
 
-(function(){
+(function($juci){
 	var RPC_HOST = ""; //(($config.rpc.host)?$config.rpc.host:"")
 	var RPC_SESSION_ID = "00000000000000000000000000000000"; 
-	var gettext = function(text){ return text; }
+	var gettext = function(text){ return text; }; 
+	var default_calls = [
+		"session.access", 
+		"session.login", 
+		"local.features", 
+		"local.set_rpc_host"
+	]; 
 	function rpc_request(type, namespace, method, data){
 		var sid = ""; 
 		var deferred = $.Deferred(); 
@@ -18,7 +24,7 @@
 			this.request(type, {
 				params: [ RPC_SESSION_ID, namespace, method, data],
 				success: function(result){
-					//alert("SID: "+sid + " :: "+ JSON.stringify(result)); 
+					//console.log("SID: "+sid + " :: "+ JSON.stringify(result)); 
 					if(type == "call" && result && result.result) {
 						// TODO: modify all rpc UCI services so that they ALWAYS return at least 
 						// an empty json object. Otherwise we have no way to differentiate success 
@@ -42,7 +48,10 @@
 							deferred.resolve(result.result[1]);
 						}
 					} else if(type == "list" && result && result.result){
-						deferred.resolve(result.result); 
+						if((typeof result.result) == "object")
+							deferred.resolve(result.result); 
+						else 
+							deferred.reject(result.result[1]); // for etimeout [1, "ETIMEOUT"]
 					} else {
 						deferred.reject(); 
 					}
@@ -58,13 +67,14 @@
 		});
 		return deferred.promise(); 
 	}
-	var rpc = window.rpc = {
+	var rpc = window.rpc = $juci.ubus = {
 		$sid: function(sid){
 			if(sid) RPC_SESSION_ID = sid; 
 			else return RPC_SESSION_ID; 
 		}, 
 		$register: function(call){
 			//console.log("registering: "+call); 
+			if(!call) return; 
 			var self = this; 
 			function _find(path, obj){
 				if(!obj.hasOwnProperty(path[0])){
@@ -90,7 +100,9 @@
 		}, 
 		$init: function(){
 			var self = this; 
+			console.log("Init UBUS"); 
 			var deferred = $.Deferred(); 
+			default_calls.map(function(x){ self.$register(x); }); 
 			// request list of all methods and construct rpc object containing all of the methods in javascript. 
 			rpc_request("list", "*", "", {}).done(function(result){
 				//console.log("RESULT: "+JSON.stringify(result)); 
@@ -106,7 +118,7 @@
 							
 						}
 					}); 
-					if(is_leaf){
+					if(is_leaf && cur_path){
 						// add a new rpc call 
 						//console.log("Leaf: "+namespace+", "+method); 
 						self.$register(cur_path); 
@@ -114,22 +126,24 @@
 						//console.log("Processing node: "+cur_path); 
 						Object.keys(leafs).map(function(x){
 							var path = ((cur_path)?(cur_path+"."):"")+x; 
-							//var namespace = parent[x] = {}; 
 							_processNode(leafs[x], path); 
 						}); 
 					}
 				}
 				_processNode(result, null); 
 				deferred.resolve(); 
+			}).fail(function(){
+				deferred.reject(); 
 			}); 
 			return deferred.promise(); 
 		}
 	}; 
-})(); 
-
-// luci rpc module for communicating with the server
-angular.module("luci")
-.factory('$rpc', function($rootScope, $config, gettext){
 	
-	return window.rpc; 
-}); 
+	// luci rpc module for communicating with the server
+	angular.module("luci")
+	.factory('$rpc', function($rootScope, $config, gettext){
+		
+		return window.rpc; 
+	}); 
+})(JUCI); 
+

@@ -67,9 +67,9 @@ $juci.module("core")
 					$('button.button-label', element).html(item.label);
 					break;
 			}
-			//alert(item.value); 
-			if(scope.selectedItem instanceof Array) scope.selectedItem.splice(0, scope.selectedItem.length); 
-			Object.assign(scope.selectedItem, item.value); 
+			//console.log("DROPDOWN: "+JSON.stringify(scope.selectedItem)+", "+item.value); 
+			if("value" in item) scope.selectedItem = item.value; 
+			else scope.selectedItem = item; 
 			scope.onChange(item);
 		};
 		//scope.selectVal(scope.selectedItem);

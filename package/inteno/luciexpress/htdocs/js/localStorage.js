@@ -1,14 +1,19 @@
 //! Author: Martin K. Schröder <mkschreder.uk@gmail.com>
 
-// service for managing session data
-angular.module("luci")
-.factory('$localStorage', function() {
-	return {
-		getItem: function(item){
+(function(){
+	function JUCILocalStorage(){
+		this.getItem = function(item){
 			return localStorage.getItem(item); 
-		}, 
-		setItem: function(item, value){
+		}; 
+		this.setItem = function(item, value){
 			return localStorage.setItem(item, value); 
 		}
-	}; 
-});
+	}
+	$juci.localStorage = new JUCILocalStorage(); 
+	
+	angular.module("luci")
+	.factory('$localStorage', function() {
+		return $juci.localStorage; 
+	});
+})(JUCI); 
+

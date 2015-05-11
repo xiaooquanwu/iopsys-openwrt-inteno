@@ -3,16 +3,16 @@
 		"internet"
 	],
 	"pages": {
-		"internet.dns": {
+		"internet/dns": {
 			"view": "pages/internet.dns"
 		},
-		"internet.exposed_host": {
+		"internet/exposed_host": {
 			"view": "pages/internet.exposed_host"
 		},
-		"internet.firewall": {
+		"internet/firewall": {
 			"view": "pages/internet.firewall"
 		},
-		"internet.port_mapping": {
+		"internet/port_mapping": {
 			"view": "pages/internet.port_mapping"
 		}
 	}

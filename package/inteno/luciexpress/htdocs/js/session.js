@@ -2,20 +2,12 @@
 
 // service for managing session data
 angular.module("luci")
-.factory('$session', function($rpc, $rootScope, $localStorage, $rpc) {
+.factory('$session', function($rpc, $rootScope, $localStorage) {
 	var saved_sid = $localStorage.getItem("sid");
 	var default_sid = "00000000000000000000000000000000";  
 	if(saved_sid){
-		window.rpc.$sid(saved_sid); 
+		$rpc.$sid(saved_sid); 
 	} 
-	
-	function setupUbusRPC(acls){
-		Object.keys(acls).map(function(key){
-			acls[key].map(function(func){
-				//$rpc.register_method(key+"."+func); 
-			}); 
-		}); 
-	}
 	
 	return {
 		sid: (saved_sid)?saved_sid:default_sid, 
@@ -34,14 +26,14 @@ angular.module("luci")
 					console.log("Session: Not authenticated!"); 
 					deferred.reject(); 
 				} else {
-					if(result && result.ubus) setupUbusRPC(result.ubus); 
 					self.data = result; 
 					console.log("Session: Loggedin!"); 
 					deferred.resolve(result); 
 				}  
 			}).fail(function err(result){
-				$rootScope.sid = self.sid = default_sid; 
+				self.sid = default_sid; 
 				$localStorage.setItem("sid", self.sid); 
+				$rpc.$sid(self.sid); 
 				deferred.reject(); 
 			}); 
 			return deferred.promise(); 
@@ -57,7 +49,7 @@ angular.module("luci")
 				window.rpc.$sid(self.sid); 
 				self.data = result; 
 				$localStorage.setItem("sid", self.sid); 
-				if(result && result.acls && result.acls.ubus) setupUbusRPC(result.acls.ubus); 
+				//if(result && result.acls && result.acls.ubus) setupUbusRPC(result.acls.ubus); 
 				deferred.resolve(self.sid); 
 			}).fail(function(result){
 				deferred.reject(result); 

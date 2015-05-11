@@ -17,31 +17,8 @@ angular.module("luci")
 	var scripts = []; 
 	async.series([
 		function(next){
-			//$scope.progress = { text: "test", value: 20 }; 
-			progress("Getting config..", 0); 
-			$uci.sync("juci").done(function(){
-				if($uci.juci && $uci.juci.settings){
-					$config.themes = $uci.juci.settings.themes.value; 
-					$config.theme = $localStorage.getItem("theme") || $uci.juci.settings.theme.value; 
-					$config.language = $uci.juci.settings.lang.value; 
-					$config.languages = $uci.juci.settings.languages.value; 
-					$config.plugins = $uci.juci.settings.plugins.value; 
-				} else {
-					$config.languages = []; 
-					$config.themes = []; 
-					$config.theme = $localStorage.getItem("theme") || "inteno-red"; 
-					$config.plugins = ["core"]; 
-					$config.language = 'en'; 
-				}
-				next(); 
-			}).fail(function(){
-				alert("FATAL: unable to get juci config from server!"); 
-				next(); 
-			}); 
-		},
-		function(next){
 			progress("Loading plugins..", 8); 
-			var count = 0; 
+			/*var count = 0; 
 			async.each($config.plugins, function(id, next){
 				count++; 
 				progress(".."+id, 10+((80/$config.plugins.length) * count)); 
@@ -59,10 +36,12 @@ angular.module("luci")
 							var page = data.pages[k]; 
 							if(page.view){
 								//scripts.push(plugin_root + "/" + page.view); 
-								//console.log("Registering state "+k.replace(/\./g, "_")); 
+								var url = k.replace(/\./g, "-").replace(/_/g, "-").replace(/\//g, "-"); 
+								var name = url.replace(/\//g, "_").replace(/-/g, "_"); 
+								console.log("Registering state "+name+" at "+url); 
 								// TODO: there is still a problem with state changes where template gets loaded before the dependencies so controller is not found
-								$juci.$stateProvider.state(k.replace(/\./g, "_"), {
-									url: "/"+k, 
+								$juci.$stateProvider.state(name, {
+									url: "/"+url, 
 									views: {
 										"content": {
 											templateUrl: plugin_root + "/" + page.view + ".html", 
@@ -98,7 +77,8 @@ angular.module("luci")
 			}, function(){
 				
 				next(); 
-			});
+			});*/
+			next(); 
 		}, 
 		function(next){
 			// TODO: this will be moved somewhere else. What we want to do is 
@@ -114,7 +94,7 @@ angular.module("luci")
 			}); 
 		}, 
 		function(next){
-			async.each(scripts, function(script, next){
+			/*async.each(scripts, function(script, next){
 				//console.log("...."+script); 
 				//progress("...."+script, 10 + ((80 / $config.plugins.length) * count)); 
 				require([script], function(module){
@@ -123,39 +103,40 @@ angular.module("luci")
 			}, function(){
 				// goto next plugin
 				next(); 
-			}); 
+			}); */
+			next(); 
 		}, 
 		function(next){
 			progress("Getting navigation..", 100); 
 			
 			// get the menu navigation
-			$rpc.luci2.ui.menu().done(function(data){
-				//console.log(JSON.stringify(data)); 
-				Object.keys(data.menu).map(function(key){
-					var menu = data.menu[key]; 
-					var view = menu.view; 
-					var path = key.replace(/\//g, "."); 
-					var obj = {
-						path: path, 
-						modes: data.menu[key].modes || [ ], 
-						text: data.menu[key].title, 
-						index: data.menu[key].index || 0, 
-					}; 
-					/*if(menu.redirect){
-						obj.redirect = menu.redirect; 
-					}*/
-					/*if(view){
-						obj.page = "/pages/"+path.replace(/\//g, ".")+".html"; 
-					}*/
-					$navigation.register(obj); 
-					
+			if($rpc.luci2){
+				$rpc.luci2.ui.menu().done(function(data){
+					//console.log(JSON.stringify(data)); 
+					Object.keys(data.menu).map(function(key){
+						var menu = data.menu[key]; 
+						var view = menu.view; 
+						var path = key; 
+						//console.log("MENU: "+path); 
+						var obj = {
+							path: path, 
+							href: path.replace(/\//g, "-").replace(/_/g, "-"), 
+							modes: data.menu[key].modes || [ ], 
+							text: data.menu[key].title, 
+							index: data.menu[key].index || 0, 
+						}; 
+						$navigation.register(obj); 
+						
+					}); 
+					//console.log("NAV: "+JSON.stringify($navigation.tree())); 
+					//$rootScope.$apply(); 
+					next(); 
+				}).fail(function(){
+					next();
 				}); 
-				//console.log("NAV: "+JSON.stringify($navigation.tree())); 
-				//$rootScope.$apply(); 
+			} else {
 				next(); 
-			}).fail(function(){
-				next();
-			}); 
+			}
 		}
 	], function(err){
 		if(err) {

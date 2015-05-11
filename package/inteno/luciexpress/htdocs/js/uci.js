@@ -1,8 +1,7 @@
 //! Author: Martin K. Schröder <mkschreder.uk@gmail.com>
 
-angular.module("luci")
-.provider('$uci', function($rpcProvider){
-	$rpc = $rpcProvider.$get(); 
+(function($juci){
+	$rpc = $juci.ubus; 
 	
 	var section_types = {
 		"juci-settings": {
@@ -528,14 +527,13 @@ angular.module("luci")
 	}
 	
 	var uci = window.uci = new UCI(); 
-	
+})(JUCI); 
+
+angular.module("luci")
+.provider('$uci', function(){
 	return {
     $get: function() {
       return uci; 
     }
   };
-	/*if(window.uci) return window.uci; 
-	else window.uci = new UCI(); 
-	return window.uci; */
-	//return new UCI(); 
 }); 
