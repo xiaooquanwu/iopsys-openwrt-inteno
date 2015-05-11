@@ -1,4 +1,4 @@
-(function(){
+angular.module("luci").config(function($provide){
 	var overrides = {
 		"luciFooterDirective": "/widgets/luci.footer.html", 
 		"luciLayoutNakedDirective": "/widgets/luci.layout.naked.html", 
@@ -8,11 +8,13 @@
 		"luciNavbarDirective": "/widgets/luci.navbar.html", 
 		"luciTopBarDirective": "/widgets/luci.top_bar.html"
 	}; 
+	var plugin_root = "/themes/vodafone/"; 
 	Object.keys(overrides).map(function(k){
-		$juci.decorator(k, function($delegate){
-			var plugin_root = $juci.module("vodafone").plugin_root; 
-			$delegate[1].templateUrl = plugin_root + overrides[k]; 
+		$provide.decorator(k, function($delegate){
+			//console.log("VF DECORATOR: "+JSON.stringify($delegate)); 
+			if($delegate.length > 1) 
+				$delegate[1].templateUrl = plugin_root + overrides[k]; 
 			return $delegate; 
 		}); 
 	}); 
-})(); 
+}); 

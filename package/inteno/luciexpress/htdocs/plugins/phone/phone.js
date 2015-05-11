@@ -20,15 +20,12 @@
  * 02110-1301 USA
  */
  
-$juci.module("phone")
-.state("phone", {
-	url: "/phone", 
-	views: {
-		"content": {
-			templateUrl: "pages/phone.call_log.html", 
-		}
-	},
-	onEnter: function($state){
-		$juci.redirect("phone-call-log"); 
-	},
+angular.module("luci").config(function($stateProvider) {
+	var plugin_root = $juci.module("phone").plugin_root; 
+	$stateProvider.state("phone", {
+		url: "/phone", 
+		onEnter: function($state){
+			$juci.redirect("phone-call-log"); 
+		},
+	}); 
 }); 

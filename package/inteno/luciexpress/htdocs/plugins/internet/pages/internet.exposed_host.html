@@ -1,8 +1,9 @@
 <luci-layout-with-sidebar>
 	<div ng-controller="InternetExHostPageCtrl">
 		<luci-config>
-			<luci-config-section>
-				<luci-config-heading>{{'Exposed Host'|translate}}</luci-config-heading>
+			<luci-config-heading>{{'Exposed Host'|translate}}</luci-config-heading>
+			<p translate>Exposed host function is not available (dmz section missing in firewall!)</p>
+			<luci-config-section ng-show="available">
 				<luci-config-info>{{'internet.exposed_host.info'|translate}}</luci-config-info>
 				<luci-config-lines>
 					<luci-config-line title="{{'Exposed Host Function'|translate}}">
@@ -23,8 +24,8 @@
 						<input type="text" class="form-control" placeholder="{{ip.address.label}}" ng-model="firewall.dmz.host.value"/>
 					</luci-config-line>
 				</luci-config-lines>
-			</luci-config-section>
 			<luci-config-apply></luci-config-apply>
+			</luci-config-section>
 		</luci-config>
 	</div>
 </luci-layout-with-sidebar>

@@ -11,7 +11,7 @@
 			var themes = this.themes; 
 			if(!(theme_id in themes)) {
 				var theme_root = "themes/"+theme_id; 
-				$http.get(theme_root+"/theme.json").success(function(data){
+				$.getJSON(theme_root+"/theme.json").done(function(data){
 					if(!data) return; 
 					
 					// create new module
@@ -30,7 +30,7 @@
 					} else {
 						deferred.resolve(data); 
 					}
-				}).error(function(){
+				}).fail(function(){
 					console.log("Could not retreive theme config for theme: "+theme_id); 
 					self.changeTheme("default"); 
 				}); 

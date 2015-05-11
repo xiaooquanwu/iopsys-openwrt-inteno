@@ -79,7 +79,7 @@ angular.module("luci")
 				next(); 
 			});*/
 			next(); 
-		}, 
+		}, /*
 		function(next){
 			// TODO: this will be moved somewhere else. What we want to do is 
 			// pick both a theme and plugins based on the router model. 
@@ -92,7 +92,7 @@ angular.module("luci")
 			}).fail(function(){
 				next(); 
 			}); 
-		}, 
+		}, */
 		function(next){
 			/*async.each(scripts, function(script, next){
 				//console.log("...."+script); 

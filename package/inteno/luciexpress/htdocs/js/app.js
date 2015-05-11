@@ -145,6 +145,7 @@ angular.module("luci")
 			$rootScope.title = current.$$route.title;
 	});*/
 	var path = $location.path().replace(/\//g, "").replace(/\./g, "_");  
+	if(path == "") path = "overview"; 
 	
 	Object.keys($juci.plugins).map(function(pname){
 		var plugin = $juci.plugins[pname]; 
@@ -186,25 +187,17 @@ angular.module("luci")
 			}
 		}); 
 	}); 
-	$config.system = {}; 
-	$session.init().done(function(){
-		// here we get router info part of the config. It will allow us to 
-		// pick the correct theme in the init script. TODO: perhaps do this somewhere else? 
-		$rpc.router.info().done(function(info){
-			//console.log("Router info: "+JSON.stringify(info.system)); 
-			if(info && info.system) $config.system = info.system; 
-			$state.go("init", {"redirect": path}); 
-		}).fail(function(){
-			console.error("Could not get system info. This gui depends on questd. You likely do not have it installed on your system!"); 
-			$state.go("init", {"redirect": path}); 
-		});
-	}).fail(function(){
-		console.log("Failed to verify session."); 
-		$state.go("init", {"redirect": "login"}); 
-		//$state.go("login"); 
-	}); 
+	//$config.system = {}; 
+	if(!$session.isLoggedIn()){
+		console.log("redirecting to login"); 
+		$juci.redirect("login"); 
+	} else {
+		console.log("redirecting to "+path); 
+		$juci.redirect(path); 
+		//$state.go(path); 
+	}
 })
-	
+// TODO: figure out how to avoid forward declarations of things we intend to override. 
 .directive("luciFooter", function(){ return {} })
 .directive("luciLayoutNaked", function(){ return {} })
 .directive("luciLayoutSingleColumn", function(){ return {} })
@@ -229,17 +222,16 @@ angular.element(document).ready(function() {
 	async.series([
 		function(next){
 			$juci.ubus.$init().fail(function(){
-				console.error("JUCI ubus failed to initialize!"); 
+				console.error("UBUS failed to initialize!"); 
 			}).always(function(){ next(); }); 
 		}, 
 		function(next){
 			$juci.config.$init().fail(function(){
-				console.error("JUCI config failed to initialize!"); 
+				console.error("CONFIG failed to initialize!"); 
 			}).always(function(){ next(); }); 
 		}, 
 		function(next){
 			var count = 0; 
-			var scripts = []; 
 			async.each($juci.config.plugins, function(id, next){
 				count++; 
 				console.log(".."+id, 10+((80/$juci.config.plugins.length) * count)); 
@@ -312,6 +304,28 @@ angular.element(document).ready(function() {
 			});
 		}, 
 		function(next){
+			$juci.session.$init().done(function(){
+				// here we get router info part of the config. It will allow us to 
+				// pick the correct theme in the init script. TODO: perhaps do this somewhere else? 
+				$juci.ubus.router.info().done(function(info){
+					//console.log("Router info: "+JSON.stringify(info.system)); 
+					if(info && info.system) $juci.config.system = info.system; 
+					next(); 
+				}).fail(function(){
+					console.error("Could not get system info. This gui depends on questd. You likely do not have it installed on your system!"); 
+					next(); 
+				});
+			}).fail(function(){
+				console.log("Failed to verify session."); 
+				next(); 
+			}); 
+		}, 
+		function(next){
+			$juci.uci.$init().fail(function(){
+				console.error("UCI failed to initialize!"); 
+			}).always(function(){ next(); }); 
+		}, 
+		function(next){
 			// TODO: this will be moved somewhere else. What we want to do is 
 			// pick both a theme and plugins based on the router model. 
 			//console.log("Detected hardware model: "+$juci.config.system.hardware); 
@@ -335,6 +349,38 @@ angular.element(document).ready(function() {
 			require(scripts, function(module){
 				next(); 
 			}); 
+		}, 
+		function(next){
+			var $rpc = $juci.ubus; 
+			// get the menu navigation
+			if($rpc.luci2){
+				console.log("Getting menu.."); 
+				$rpc.luci2.ui.menu().done(function(data){
+					//console.log(JSON.stringify(data)); 
+					Object.keys(data.menu).map(function(key){
+						var menu = data.menu[key]; 
+						var view = menu.view; 
+						var path = key; 
+						//console.log("MENU: "+path); 
+						var obj = {
+							path: path, 
+							href: path.replace(/\//g, "-").replace(/_/g, "-"), 
+							modes: data.menu[key].modes || [ ], 
+							text: data.menu[key].title, 
+							index: data.menu[key].index || 0, 
+						}; 
+						$juci.navigation.register(obj); 
+					}); 
+					//console.log("NAV: "+JSON.stringify($navigation.tree())); 
+					//$rootScope.$apply(); 
+					next(); 
+				}).fail(function(){
+					next();
+				}); 
+			} else {
+				console.error("Menu call is not present!"); 
+				next(); 
+			}
 		}
 	], function(){
 		angular.bootstrap(document, ["luci"]);

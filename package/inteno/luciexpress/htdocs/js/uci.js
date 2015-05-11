@@ -426,25 +426,31 @@
 		UCI.Config = UCIConfig; 
 	})(); 
 	
+	UCI.prototype.$init = function(){
+		var deferred = $.Deferred(); 
+		console.log("Init UCI"); 
+		var self = this; 
+		$rpc.uci.configs().done(function(response){
+			var cfigs = response.configs; 
+			if(!cfigs) { next("could not retreive list of configs!"); return; }
+			cfigs.map(function(k){
+				if(!(k in self)){
+					//console.log("Adding new config "+k); 
+					self[k] = new UCI.Config(self, k); 
+				}
+			}); 
+			deferred.resolve(); 
+		}).fail(function(){
+			deferred.reject(); 
+		}); 
+		return deferred.promise(); 
+	}
+	
 	UCI.prototype.sync = function(configs){
 		var deferred = $.Deferred(); 
 		var self = this; 
 		
 		async.series([
-			function(next){
-				$rpc.uci.configs().done(function(response){
-					var cfigs = response.configs; 
-					if(!cfigs) { console.error("could not retreive list of configs!"); return; }
-					cfigs.map(function(k){
-						if(!(k in self)){
-							console.log("Adding new config "+k); 
-							self[k] = new UCI.Config(self, k); 
-						}
-					}); 
-				}).always(function(){ 
-					next(); 
-				});
-			}, 
 			function(next){
 				if(!(configs instanceof Array)) configs = [configs]; 
 				if(!configs || configs.length == 0) { next(); return; }; 
@@ -526,14 +532,11 @@
 		return deferred.promise(); 
 	}
 	
-	var uci = window.uci = new UCI(); 
-})(JUCI); 
+	$juci.uci = window.uci = new UCI(); 
+	
+	angular.module("luci")
+	.factory('$uci', function(){
+		return $juci.uci; 
+	}); 
 
-angular.module("luci")
-.provider('$uci', function(){
-	return {
-    $get: function() {
-      return uci; 
-    }
-  };
-}); 
+})(JUCI); 

@@ -9,13 +9,15 @@ $juci.module("internet")
 		function(next){
 			$uci.sync("firewall").done(function(){
 				$scope.firewall = $uci.firewall; 
+				$scope.available = "dmz" in $uci.firewall; 
 			}).always(function(){ next(); }); 
 		}, 
 		function(next){
 			$rpc.network.interface.status({
 				"interface": "wan"
 			}).done(function(wan){
-				$scope.wan.ip = wan["ipv4-address"][0].address; 
+				if("ipv4-address" in wan)
+					$scope.wan.ip = wan["ipv4-address"][0].address; 
 			}).always(function(){ next(); }); 
 		}
 	]); 
