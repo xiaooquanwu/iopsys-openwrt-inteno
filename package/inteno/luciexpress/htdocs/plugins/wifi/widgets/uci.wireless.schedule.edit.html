@@ -2,6 +2,7 @@
 	<div class="modal-body">
 		<luci-config>
 			<luci-config-section>
+				<p>{{schedule.time.value}}</p>
 				<luci-config-lines>
 					<luci-config-line title="{{'Time Frame'|translate}}">
 						<luci-select ng-model="selectedTimeFrame" on-change="onChangeDays()" ng-items="allTimeFrames"></luci-select>

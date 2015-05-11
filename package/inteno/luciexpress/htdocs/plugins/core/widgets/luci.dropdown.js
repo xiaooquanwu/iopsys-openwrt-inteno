@@ -53,7 +53,7 @@ $juci.module("core")
 			}
 		}); 
 		scope.$watch("selectedItem", function(value){
-			console.log("Selected item: "+JSON.stringify(value)); 
+			//console.log("Selected item: "+JSON.stringify(value)); 
 			if(value != undefined && (typeof value) == "object" && "value" in value) scope.selectedText = value.value; 
 			else if(value != undefined) { 
 				scope.itemList.map(function(x){

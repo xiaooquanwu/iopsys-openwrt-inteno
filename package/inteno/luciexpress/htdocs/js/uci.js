@@ -272,7 +272,7 @@
 		}
 		UCISection.prototype.$delete = function(){
 			var self = this; 
-			if(self[".config"]) return self[".config"].$deleteSection(self[".name"]); 
+			if(self[".config"]) return self[".config"].$deleteSection(self); 
 			var def = $.Deferred(); def.reject(); 
 			return def.promise(); 
 		}
@@ -283,7 +283,7 @@
 			var changed = {}; 
 			Object.keys(type).map(function(k){
 				if(self[k] && self[k].dirty){
-					console.log("Adding dirty field: "+k); 
+					//console.log("Adding dirty field: "+k); 
 					changed[k] = self[k].value; 
 				}
 			}); 
@@ -349,30 +349,42 @@
 				}
 			}); 
 		}
-		UCIConfig.prototype.$deleteSection = function(name){
+		UCIConfig.prototype.$deleteSection = function(section){
 			var self = this; 
 			var deferred = $.Deferred(); 
-			//console.log("Deleting section "+name); 
-			$rpc.uci.delete({
-				"config": self[".name"], 
-				"section": name
-			}).done(function(){
-				var item = self[name]; 
+			console.log("Deleting section "+section[".name"]); 
+			
+			function _unlinkSection(section){
 				self[".need_commit"] = true; 
 				for(var i = 0; i < self["@all"].length; i++){
-					if(self["@all"][i][".name"] == name) {
-						var jlist = self["@"+item[".type"]]||[]; 
+					if(self["@all"][i] == section) {
+						var jlist = self["@"+section[".type"]]||[]; 
 						for(var j = 0; j < jlist.length; j++){
-							if(jlist[j][".name"] == name) jlist.splice(j, 1); 
+							if(jlist[j] == section) jlist.splice(j, 1); 
 						}
 						self["@all"].splice(i, 1); 
 					}; 
-					delete self[name]; 
+					if(section[".name"]) delete self[section[".name"]]; 
 				}; 
-				deferred.resolve(); 
-			}).fail(function(){
-				deferred.reject(); 
-			}); 
+			}
+			
+			if(section[".new"] == true){
+				_unlinkSection(section); 
+				setTimeout(function(){
+					deferred.resolve(); 
+				}, 0); 
+			} else {
+				$rpc.uci.delete({
+					"config": self[".name"], 
+					"section": section[".name"]
+				}).done(function(){
+					console.log("Deleted section "+section[".name"]+" from server"); 
+					_unlinkSection(section); 
+					deferred.resolve(); 
+				}).fail(function(){
+					deferred.reject(); 
+				}); 
+			}
 			return deferred.promise(); 
 		}
 		// creates a new object that will have values set to values
@@ -391,7 +403,14 @@
 				}
 			}); 
 			var deferred = $.Deferred(); 
-			$rpc.uci.add({
+			console.log("Adding: "+item[".type"]+": "+JSON.stringify(values)); 
+			var section = _insertSection(self, item); 
+			section[".new"] = true; 
+			self[".need_commit"] = true; 
+			setTimeout(function(){
+				deferred.resolve(section);
+			}, 0);  
+			/*$rpc.uci.add({
 				"config": self[".name"], 
 				"type": item[".type"],
 				"name": item[".name"], 
@@ -404,7 +423,7 @@
 				deferred.resolve(section); 
 			}).fail(function(){
 				deferred.reject(); 
-			}); 
+			}); */
 			return deferred.promise(); 
 		}
 		UCIConfig.prototype.$getWriteRequests = function(){
@@ -418,6 +437,24 @@
 						"config": self[".name"], 
 						"section": section[".name"], 
 						"values": changed
+					}); 
+				}
+			}); 
+			return reqlist; 
+		}
+		UCIConfig.prototype.$getAddRequests = function(){
+			var self = this; 
+			var reqlist = []; 
+			self["@all"].map(function(section){
+				if(section[".new"] == true){
+					reqlist.push({
+						section: section, 
+						cmd: {
+							"config": self[".name"], 
+							"type": section[".type"],
+							"name": section[".name"], 
+							"values": {}
+						}
 					}); 
 				}
 			}); 
@@ -483,52 +520,91 @@
 		var deferred = $.Deferred(); 
 		var self = this; 
 		var writes = []; 
-		var resync = {}; 
+		var add_requests = []; 
+		var resync = []; 
+		/*
 		Object.keys(self).map(function(k){
 			if(self[k].constructor == UCI.Config){
 				var reqlist = self[k].$getWriteRequests(); 
 				if(self[k][".need_commit"]) resync[self[k][".name"]] = true; 
 				reqlist.map(function(x){ writes.push(x); }); 
+				var adds = self[k].$getAddRequests(); 
+				adds.map(function(x){ add_requests.push(x); }); 
 			}
-		}); 
-		console.log("Will do following write requests: "+JSON.stringify(writes)+ " "+JSON.stringify(resync)); 
+		}); */
 		/*if(writes.length == 0) {
 			setTimeout(function(){ deferred.resolve(); }, 0); 
 			return deferred.promise(); 
 		}*/
-		async.eachSeries(writes, function(cmd, next){
-			$rpc.uci.set(cmd).done(function(){
-				console.log("Wrote config "+cmd.config); 
-				resync[cmd.config] = true; 
-				next(); 
-			}).fail(function(){
-				console.error("Failed to write config "+cmd.config); 
-				next(); 
-			}); 
-		}, function(){
-			async.eachSeries(Object.keys(resync), function(key, next){
-				var config = resync[key]; 
-				console.log("Committing config "+config); 
-				$rpc.uci.commit({config: config}).done(function(){
-					console.log("Resynching config "+config); 
-					self[config][".need_commit"] = false; 
-					self[config].$sync().done(function(){
-						next(); 
-					}).fail(function(err){
-						console.log("error synching config "+config+": "+err); 
-						next("syncerror"); 
-					}); 
-				}).fail(function(err){
-					next("could not commit config: "+err); 
+		async.series([
+			function(next){
+				Object.keys(self).map(function(k){
+					if(self[k].constructor == UCI.Config){
+						var adds = self[k].$getAddRequests(); 
+						adds.map(function(x){ add_requests.push(x); }); 
+					}
 				}); 
-			}, function(err){
-				// this is to always make sure that we do this outside of this code flow
-				setTimeout(function(){
-					if(err) deferred.reject(err); 
-					else deferred.resolve(err); 
-				},0); 
-			}); 
-		}); 
+				async.eachSeries(add_requests, function(req, next){
+					console.log("Adding new section "+req.cmd.config+".@"+req.cmd.type); 
+					$rpc.uci.add(req.cmd).done(function(state){
+						req.section[".name"] = state.section; 
+						self[req.cmd.config][state.section] = req.section; 
+						delete req.section[".new"]; 
+						next(); 
+					}).fail(function(){
+						next(); 
+					});
+				}, function(){
+					next(); 
+				}); 
+			}, 
+			function(next){
+				Object.keys(self).map(function(k){
+					if(self[k].constructor == UCI.Config){
+						var reqlist = self[k].$getWriteRequests(); 
+						if(self[k][".need_commit"]) resync.push(self[k][".name"]); 
+						reqlist.map(function(x){ writes.push(x); });  
+					}
+				}); 
+				console.log("Will do following write requests: "+JSON.stringify(writes)); 
+				async.eachSeries(writes, function(cmd, next){
+					$rpc.uci.set(cmd).done(function(){
+						console.log("Wrote config "+cmd.config); 
+						resync.push(cmd.config); 
+						next(); 
+					}).fail(function(){
+						console.error("Failed to write config "+cmd.config); 
+						next(); 
+					}); 
+				}, function(){
+					next(); 
+				}); 
+			}, 
+			
+			function(next){
+				async.eachSeries(resync, function(config, next){
+					console.log("Committing config "+config); 
+					$rpc.uci.commit({config: config}).done(function(){
+						console.log("Resynching config "+config); 
+						self[config][".need_commit"] = false; 
+						self[config].$sync().done(function(){
+							next(); 
+						}).fail(function(err){
+							console.log("error synching config "+config+": "+err); 
+							next("syncerror"); 
+						}); 
+					}).fail(function(err){
+						next("could not commit config: "+err); 
+					}); 
+				}, function(err){
+					// this is to always make sure that we do this outside of this code flow
+					setTimeout(function(){
+						if(err) deferred.reject(err); 
+						else deferred.resolve(err); 
+					},0); 
+				}); 
+			}
+		]); 
 		return deferred.promise(); 
 	}
 	

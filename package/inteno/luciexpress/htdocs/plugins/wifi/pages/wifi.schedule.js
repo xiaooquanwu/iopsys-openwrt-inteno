@@ -4,6 +4,7 @@ $juci.module("wifi")
 		{ label: gettext("Enabled"), value: 1 },
 		{ label: gettext("Disabled"), value: 0 }
 	]; 
+	$scope.editedData = { days: [], time: "123 "}; 
 	
 	$uci.sync(["wireless"]).done(function(){
 		console.log("Got status"); 
@@ -24,6 +25,8 @@ $juci.module("wifi")
 	}
 	
 	$scope.onDismissSchedule = function(schedule){
+		if($scope.schedule[".new"] == true) 
+			$scope.schedule.$delete(); 
 		$scope.showScheduleDialog = 0; 
 	}
 	
@@ -39,6 +42,7 @@ $juci.module("wifi")
 	}
 	
 	$scope.onEditSchedule = function(sched){
+		console.log("Editing: "+sched[".name"]); 
 		$scope.schedule = sched; 
 		$scope.showScheduleDialog = 1; 
 	}

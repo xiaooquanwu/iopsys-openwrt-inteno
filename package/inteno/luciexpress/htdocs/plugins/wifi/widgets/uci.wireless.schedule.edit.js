@@ -4,7 +4,7 @@ $juci.module("wifi")
 	return {
 		templateUrl: plugin_root+"/widgets/uci.wireless.schedule.edit.html", 
 		scope: {
-			schedule: "=ngModel"
+			schedule: "=schedule"
 		}, 
 		controller: "uciWirelessScheduleEdit", 
 		replace: true, 
@@ -24,6 +24,7 @@ $juci.module("wifi")
 }).controller("uciWirelessScheduleEdit", function($scope, gettext, $uci){
 	$scope.selectedTimeFrame = []; 
 	$scope.data = {}; 
+	
 	$scope.allTimeFrames = [
 		{ label: gettext("Individual Days"), id: "inddays", value: [] }, 
 		{ label: gettext("Every Day"), value: ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] }, 
@@ -56,23 +57,31 @@ $juci.module("wifi")
 			}
 		} catch(e) {}
 	}
+	
 	$scope.$watch("data.timeFrom", function(){
 		update_time(); 
 	}, true); 
 	$scope.$watch("data.timeTo", function(){
 		update_time(); 
 	}, true);
+	
 	$scope.$watch("schedule", function(value){
-		if(value == undefined) return; 
-		var parts = value.time.value.split("-");//.map(function(x){ return x.split(":"); }); 
-		$scope.data.timeFrom = parts[0]; 
-		$scope.data.timeTo = parts[1]; 
-		console.log("New model" + value.time.value); 
-	}); 
+		console.log("New schedule "); 
+		if(value != undefined && value.days && value.time){
+			$scope.data.days = value.days.value.map(function(x){ return x; }); 
+			var parts = value.time.value.split("-");//.map(function(x){ return x.split(":"); }); 
+			$scope.data.timeFrom = parts[0]; 
+			$scope.data.timeTo = parts[1]; 
+		} else {
+			// create new
+			//$scope.data = { _new: true }; 
+		}
+		//console.log("New model" + value.time.value); 
+	});
+	 
 	$scope.onChangeDays = function(){ 
 		//$scope.schedule.days.value.splice(0,$scope.schedule.days.value.length); 
 		$scope.schedule.days.value = $scope.selectedTimeFrame; 
-		//console.log($scope.selectedTimeFrame); 
 		//Object.assign($scope.schedule.days.value, $scope.selectedTimeFrame); 
 	}
 }); 
