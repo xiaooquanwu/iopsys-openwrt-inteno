@@ -16,12 +16,12 @@ $juci.module("wifi")
 	}); 
 	
 	$scope.onAcceptSchedule = function(schedule){
-		$uci.save().done(function(){
+		//$uci.save().done(function(){
 			$scope.showScheduleDialog = 0; 
-			$scope.$apply(); 
-		}).fail(function(error){
-			alert("Error saving config! "+error);
-		}); 
+		//	$scope.$apply(); 
+		//}).fail(function(error){
+		//	alert("Error saving config! "+error);
+		//}); 
 	}
 	
 	$scope.onDismissSchedule = function(schedule){

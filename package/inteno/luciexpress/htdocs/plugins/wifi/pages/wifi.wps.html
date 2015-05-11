@@ -5,20 +5,22 @@
 				<luci-config-heading>{{ 'WPS' | translate }}</luci-config-heading>
 				<luci-config-info>{{ 'wifi.wps.info' | translate }}</luci-config-info>
 				<luci-config-lines>
-					<luci-config-line title="{{'WPS Function'|translate}}"><switch id="enabled" name="enabled" ng-model="wireless.status.wps.value" class="green"></switch></luci-config-line>
+					<luci-config-line title="{{'WPS Function'|translate}}">
+						<switch id="enabled" name="enabled" ng-model="wireless.status.wps.value" class="green" ng-change="save()"></switch>
+					</luci-config-line>
 				</luci-config-lines>
 			</luci-config-section>
 			<luci-config-section ng-show="wireless.status.wps.value">
 				<luci-config-lines ng-repeat="interface in wireless['@wifi-iface']">
 					<luci-config-line title="{{'Enable WPS on '|translate}} {{interface.ssid.value}}">
-						<switch id="enabled" name="enabled" ng-model="interface.wps_pbc.value" class="green" ></switch>
+						<switch id="enabled" name="enabled" ng-model="interface.wps_pbc.value" class="green" ng-change="save()" ></switch>
 					</luci-config-line>
 				</luci-config-lines>
 				<h2 translate>WPS-PBC: Push Button on Device</h2>
 				<p translate>wifi.wps.pbc.info</p>
 				<luci-config-lines>
 					<luci-config-line title="{{'Pressing WiFi on/off button on EasyBox for long time activates pairing '|translate}}">
-						<switch id="enabled" name="enabled" ng-model="easybox.settings.wifibutton.value" class="green" ></switch>
+						<switch id="enabled" name="enabled" ng-model="easybox.settings.wifibutton.value" class="green" ng-change="save()" ></switch>
 					</luci-config-line>
 					<luci-config-line title="{{'Pair (within 2 minutes)'|translate}}">
 						<button class="btn btn-default col-xs-12" ng-click="onPairPBC()" translate>Pair</button>
@@ -28,7 +30,7 @@
 				<p translate>wifi.wps.pin.info</p>
 				<luci-config-lines>
 					<luci-config-line title="{{'WPS Using Generated PIN '|translate}}">
-						<switch id="enabled" name="enabled" ng-model="easybox.settings.wpsdevicepin.value" ng-change="save" class="green"></switch>
+						<switch id="enabled" name="enabled" ng-model="easybox.settings.wpsdevicepin.value" ng-change="save()" class="green"></switch>
 					</luci-config-line>
 					<luci-config-line title="{{'Generated PIN'|translate}}">
 						<input type="text" class="form-control"  ng-model="generatedPIN" />
