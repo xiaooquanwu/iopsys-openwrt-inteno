@@ -39,7 +39,7 @@
 		<luci-config-apply></luci-config-apply>
 		<modal title="Add a new WiFi Schedule" ng-show="showScheduleDialog" on-accept="onAcceptSchedule()" 
 			on-dismiss="onDismissSchedule()" dismiss-label="Cancel" accept-label="Save" hide-close-btn="true">
-			<uci-wireless-schedule-edit ng-model="schedule" schedule="schedule" data="editedData"></uci-wireless-schedule-edit>
+			<uci-wireless-schedule-edit ng-model="schedule" schedule="schedule" valid="scheduleValid"></uci-wireless-schedule-edit>
 		</modal>
 	</div>
 </luci-layout-with-sidebar>

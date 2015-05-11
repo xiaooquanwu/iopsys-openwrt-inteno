@@ -5,6 +5,7 @@ $juci.module("wifi")
 		{ label: gettext("Disabled"), value: 0 }
 	]; 
 	$scope.editedData = { days: [], time: "123 "}; 
+	$scope.scheduleValid = false; 
 	
 	$uci.sync(["wireless"]).done(function(){
 		console.log("Got status"); 
@@ -17,7 +18,11 @@ $juci.module("wifi")
 	
 	$scope.onAcceptSchedule = function(schedule){
 		//$uci.save().done(function(){
+		if($scope.scheduleValid){
 			$scope.showScheduleDialog = 0; 
+		} else {
+			alert("Please enter valid values"); 
+		}
 		//	$scope.$apply(); 
 		//}).fail(function(error){
 		//	alert("Error saving config! "+error);
@@ -25,13 +30,19 @@ $juci.module("wifi")
 	}
 	
 	$scope.onDismissSchedule = function(schedule){
-		if($scope.schedule[".new"] == true) 
-			$scope.schedule.$delete(); 
-		$scope.showScheduleDialog = 0; 
+		if($scope.schedule[".new"]){
+			$scope.schedule.$delete().done(function(){
+				$scope.showScheduleDialog = 0; 
+				$scope.$apply(); 
+			}); 
+		} else {
+			$scope.showScheduleDialog = 0; 
+		}
 	}
 	
 	$scope.onAddSchedule = function(){
 		$uci.wireless.create({".type": "wifi-schedule"}).done(function(item){
+			item[".new"] = true; 
 			$scope.schedule = item; 
 			$scope.showScheduleDialog = 1; 
 			$scope.$apply(); 

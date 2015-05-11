@@ -4,7 +4,8 @@ $juci.module("wifi")
 	return {
 		templateUrl: plugin_root+"/widgets/uci.wireless.schedule.edit.html", 
 		scope: {
-			schedule: "=schedule"
+			schedule: "=schedule", 
+			valid: "="
 		}, 
 		controller: "uciWirelessScheduleEdit", 
 		replace: true, 
@@ -49,11 +50,14 @@ $juci.module("wifi")
 			if(from[0] >= 0 && from[0] < 24 && to[0] >= 0 && to[0] < 24 && from[1] >= 0 && from[1] < 60 && to[1] >= 0 && to[1] < 60){
 				if((from[0]*60+from[1]) < (to[0]*60+to[1])) {
 					$scope.schedule.time.value = ("0"+from[0]).slice(-2)+":"+("0"+from[1]).slice(-2)+"-"+("0"+to[0]).slice(-2)+":"+("0"+to[1]).slice(-2); 
+					$scope.valid = true; 
 				} else {
 					console.log("'from' value must be less than 'to' value"); 
+					$scope.valid = false; 
 				}
 			} else {
 				console.log("invalid time"); 
+				$scope.valid = false; 
 			}
 		} catch(e) {}
 	}
@@ -66,17 +70,12 @@ $juci.module("wifi")
 	}, true);
 	
 	$scope.$watch("schedule", function(value){
-		console.log("New schedule "); 
 		if(value != undefined && value.days && value.time){
 			$scope.data.days = value.days.value.map(function(x){ return x; }); 
 			var parts = value.time.value.split("-");//.map(function(x){ return x.split(":"); }); 
 			$scope.data.timeFrom = parts[0]; 
 			$scope.data.timeTo = parts[1]; 
-		} else {
-			// create new
-			//$scope.data = { _new: true }; 
-		}
-		//console.log("New model" + value.time.value); 
+		} 
 	});
 	 
 	$scope.onChangeDays = function(){ 
