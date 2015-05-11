@@ -7,7 +7,7 @@
 						<luci-select ng-model="selectedTimeFrame" on-change="onChangeDays()" ng-items="allTimeFrames"></luci-select>
 					</luci-config-line>
 					<luci-config-line title="{{'Days'|translate}}" no-pull >
-						<div class="row" >
+						<div class="row" ng-class="{'field-error': schedule.days.error}" >
 							<div class="col-xs-6" ng-repeat="day in allDayNames">
 								<label >
 									<input type="checkbox" checklist-model="schedule.days.value" checklist-value="day.value"> {{day.label}}
@@ -16,12 +16,7 @@
 						</div>
 					</luci-config-line>
 					<luci-config-line title="{{'Time'|translate}}" no-pull>
-						<div class="row">
-							<div class="col-xs-2"><label translate>from</label></div>
-							<div class="col-xs-4"><input class="form-control" type="text" ng-model="data.timeFrom" placeholder="09:00"/></div>
-							<div class="col-xs-2"><label translate>to</label></div>
-							<div class="col-xs-4"><input class="form-control" type="text" ng-model="data.timeTo" placeholder="09:00"/></div>
-						</div>
+						<luci-input-timespan ng-model="schedule.time" luci-timespan-validator="schedule.time.value"></luci-input-timespan>
 					</luci-config-line>
 				</luci-config-lines>
 			</luci-config-section>

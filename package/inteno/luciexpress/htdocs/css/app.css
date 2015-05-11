@@ -14,3 +14,9 @@ input[type="checkbox"]:not(:checked) + label, [type="checkbox"]:checked + label 
     position: relative;
     z-index: 2;
 }
+
+.field-error {
+	background-color: rgba(255, 0, 0, 0.1);
+	padding: 2px;
+	border-radius: 5px;
+}

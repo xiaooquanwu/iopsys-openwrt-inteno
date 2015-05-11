@@ -5,7 +5,6 @@ $juci.module("wifi")
 		templateUrl: plugin_root+"/widgets/uci.wireless.schedule.edit.html", 
 		scope: {
 			schedule: "=schedule", 
-			valid: "="
 		}, 
 		controller: "uciWirelessScheduleEdit", 
 		replace: true, 
@@ -27,7 +26,7 @@ $juci.module("wifi")
 	$scope.data = {}; 
 	
 	$scope.allTimeFrames = [
-		{ label: gettext("Individual Days"), id: "inddays", value: [] }, 
+		{ label: gettext("Individual Days"), value: [] }, 
 		{ label: gettext("Every Day"), value: ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] }, 
 		{ label: gettext("Every Workday"), value: ["mon", "tue", "wed", "thu", "fri"] }, 
 		{ label: gettext("All Weekend"), value: ["sat", "sun"] }
@@ -43,7 +42,11 @@ $juci.module("wifi")
 	]; 
 	$scope.selectedTimeFrame = $scope.allTimeFrames[0].value; 
 	function update_time(){
-		try {
+		
+		if($scope.schedule){
+			$scope.schedule.time.value = $scope.data.timeFrom+"-"+$scope.data.timeTo; 
+		}
+		/*try {
 			function split(value) { return value.split(":").map(function(x){ return Number(x); }); };
 			var from = split($scope.data.timeFrom);
 			var to = split($scope.data.timeTo); 
@@ -59,7 +62,7 @@ $juci.module("wifi")
 				console.log("invalid time"); 
 				$scope.valid = false; 
 			}
-		} catch(e) {}
+		} catch(e) {}*/
 	}
 	
 	$scope.$watch("data.timeFrom", function(){
@@ -78,7 +81,8 @@ $juci.module("wifi")
 		} 
 	});
 	 
-	$scope.onChangeDays = function(){ 
+	$scope.onChangeDays = function(value){
+		console.log("Changing days to: "+JSON.stringify($scope.selectedTimeFrame));  
 		//$scope.schedule.days.value.splice(0,$scope.schedule.days.value.length); 
 		$scope.schedule.days.value = $scope.selectedTimeFrame; 
 		//Object.assign($scope.schedule.days.value, $scope.selectedTimeFrame); 

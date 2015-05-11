@@ -3,6 +3,45 @@
 (function($juci){
 	$rpc = $juci.ubus; 
 	
+	// just for the extractor
+	var gettext = function(str) { return str; }; 
+	
+	function DefaultValidator(){
+		this.validate = function(field){
+			return null; // return null to signal that there was no error
+		}
+	}
+	
+	function TimespanValidator(){
+		this.validate = function(field){
+			var parts = field.value.split("-"); 
+			if(parts.length != 2) return gettext("Please specify both start time and end time for schedule!"); 
+			function split(value) { return value.split(":").map(function(x){ return Number(x); }); };
+			var from = split(parts[0]);
+			var to = split(parts[1]); 
+			if(from[0] >= 0 && from[0] < 24 && to[0] >= 0 && to[0] < 24 && from[1] >= 0 && from[1] < 60 && to[1] >= 0 && to[1] < 60){
+				if((from[0]*60+from[1]) < (to[0]*60+to[1])) {
+					return null; 
+				} else {
+					return gettext("Schedule start time must be lower than schedule end time!"); 
+				}
+			} else {
+				return gettext("Please enter valid time value for start and end time!"); 
+			}
+		}
+	}
+	
+	function WeekDayListValidator(){
+		this.validate = function(field){
+			if(!field.schema.allow) return null; 
+			var days_valid = field.value.filter(function(x){
+				return field.schema.allow.indexOf(x) != -1; 
+			}).length; 
+			if(!days_valid) return gettext("Please pick days between mon-sun"); 
+			return null; 
+		}
+	}
+	
 	var section_types = {
 		"juci-settings": {
 			"theme":					{ dvalue: "", type: String }, 
@@ -21,9 +60,9 @@
 			"wpsdevicepin": { dvalue: true, type: Boolean }
 		},
 		"easybox-services": {
-			"internet": 	{ dvalue: "", type: String },
-			"voice": 	{ dvalue: "", type: String },
-			"iptv": 	{ dvalue: "", type: String }
+			"internet":				{ dvalue: "", type: String },
+			"voice":					{ dvalue: "", type: String },
+			"iptv":						{ dvalue: "", type: String }
 		}, 
 		"firewall-defaults": {
 			"syn_flood":		{ dvalue: true, type: Boolean }, 
@@ -131,8 +170,8 @@
 			"sched_status":	{ dvalue: false, type: Boolean }
 		},
 		"wifi-schedule": {
-			"days":		{ dvalue: [], type: Array },
-			"time":		{ dvalue: "", type: String }
+			"days":		{ dvalue: [], type: Array, allow: ["mon", "tue", "wed", "thu", "fri", "sat", "sun"], validator: WeekDayListValidator},
+			"time":		{ dvalue: "", type: String, validator: TimespanValidator}
 		},
 		"wifi-device": {
 			"type": 			{ dvalue: "", type: String },
@@ -204,6 +243,8 @@
 			this.dirty = false; 
 			this.uvalue = undefined; 
 			this.schema = schema; 
+			if(schema.validator) this.validator = new schema.validator(); 
+			else this.validator = new DefaultValidator(); 
 		}
 		UCIField.prototype = {
 			$reset: function(value){
@@ -220,6 +261,10 @@
 			set value(val){
 				if(!this.dirty && this.ovalue != val) this.dirty = true; 
 				this.uvalue = val; 
+				this.error = this.validator.validate(this); 
+				//if(errors && errors.length)	this.error = this.errors.join("\n"); 
+				//else this.error = null; 
+				this.valid = this.error == null; 
 			}
 		}
 		UCI.Field = UCIField; 
@@ -276,13 +321,26 @@
 			var def = $.Deferred(); def.reject(); 
 			return def.promise(); 
 		}
+		
+		UCISection.prototype.$getErrors = function(){
+			var errors = []; 
+			var self = this; 
+			var type = self[".section_type"]; 
+			Object.keys(type).map(function(k){
+				if(self[k] && self[k].error){
+					errors.push(self[k].error); 
+				}
+			}); 
+			return errors; 
+		}
+		
 		UCISection.prototype.$getChangedValues = function(){
 			var type = this[".section_type"]; 
 			if(!type) return {}; 
 			var self = this; 
 			var changed = {}; 
 			Object.keys(type).map(function(k){
-				if(self[k] && self[k].dirty){
+				if(self[k] && self[k].dirty){ 
 					//console.log("Adding dirty field: "+k); 
 					changed[k] = self[k].value; 
 				}
@@ -492,57 +550,14 @@
 		var self = this; 
 		var writes = []; 
 		var add_requests = []; 
-		var resync = []; 
+		var resync = {}; 
 		
 		async.series([
-		/*
-			function(next){
-				var del_reqs = []; 
-				Object.keys(self).map(function(k){
-					if(self[k].constructor == UCI.Config){
-						var reqs = self[k].$getDeleteRequests(); 
-						reqs.map(function(x){ del_reqs.push(x); }); 
-					}
-				}); 
-				async.eachSeries(del_reqs, function(req, next){
-					console.log("Deleting section "+req.cmd.config+".@"+req.cmd.section); 
-					$rpc.uci.delete(req.cmd).done(function(){
-						console.log("Deleted section "+req.cmd.section[".name"]+" from server"); 
-						self[req.cmd.config].$unlinkSection(req.cmd.section); 
-						next(); 
-					}).fail(function(){
-						next(); 
-					}); 
-				}, function(){
-					next(); 
-				}); 
-			}, 
-			function(next){
-				Object.keys(self).map(function(k){
-					if(self[k].constructor == UCI.Config){
-						var adds = self[k].$getAddRequests(); 
-						adds.map(function(x){ add_requests.push(x); }); 
-					}
-				}); 
-				async.eachSeries(add_requests, function(req, next){
-					console.log("Adding new section "+req.cmd.config+".@"+req.cmd.type); 
-					$rpc.uci.add(req.cmd).done(function(state){
-						req.section[".name"] = state.section; 
-						self[req.cmd.config][state.section] = req.section; 
-						delete req.section[".new"]; 
-						next(); 
-					}).fail(function(){
-						next(); 
-					});
-				}, function(){
-					next(); 
-				}); 
-			}, */
 			function(next){
 				Object.keys(self).map(function(k){
 					if(self[k].constructor == UCI.Config){
 						var reqlist = self[k].$getWriteRequests(); 
-						if(self[k][".need_commit"]) resync.push(self[k][".name"]); 
+						if(self[k][".need_commit"]) resync[self[k][".name"]] = true; 
 						reqlist.map(function(x){ writes.push(x); });  
 					}
 				}); 
@@ -550,7 +565,7 @@
 				async.eachSeries(writes, function(cmd, next){
 					$rpc.uci.set(cmd).done(function(){
 						console.log("Wrote config "+cmd.config); 
-						resync.push(cmd.config); 
+						resync[cmd.config] = true; 
 						next(); 
 					}).fail(function(){
 						console.error("Failed to write config "+cmd.config); 
@@ -561,7 +576,7 @@
 				}); 
 			}, 
 			function(next){
-				async.eachSeries(resync, function(config, next){
+				async.eachSeries(Object.keys(resync), function(config, next){
 					console.log("Committing config "+config); 
 					$rpc.uci.commit({config: config}).done(function(){
 						console.log("Resynching config "+config); 
