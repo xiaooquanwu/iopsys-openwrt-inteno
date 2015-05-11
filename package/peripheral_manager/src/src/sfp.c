@@ -930,7 +930,7 @@ static int sfp_ddm_get_current_method(struct ubus_context *ubus_ctx, struct ubus
 static int sfp_ddm_get_tx_pwr(struct blob_buf *b, int raw)
 {
         float x;
-        char buf[10];
+        char buf[16];
         if (!ddm_prepare())
                 return 0;
 
@@ -944,7 +944,9 @@ static int sfp_ddm_get_tx_pwr(struct blob_buf *b, int raw)
         }
         snprintf(buf, sizeof(buf), "%.4f mW", x * (1.0/10000));
         blobmsg_add_string(b, "tx-pwr", buf);
-
+        snprintf(buf, sizeof(buf), "%.4f dBm", 
+                10.0f * log10f(x * 1e-7) + 30.0f);
+        blobmsg_add_string(b, "tx-pwr-dBm", buf);
         return 1;
 }
 
@@ -965,7 +967,7 @@ static int sfp_ddm_get_rx_pwr(struct blob_buf *b, int raw)
 {
         unsigned i;
         float x;
-        char buf[10];
+        char buf[16];
 
         if (!ddm_prepare())
                 return 0;
@@ -988,6 +990,9 @@ static int sfp_ddm_get_rx_pwr(struct blob_buf *b, int raw)
 
         snprintf(buf, sizeof(buf), "%.4f mW", x * (1.0/10000));
         blobmsg_add_string(b, "rx-pwr", buf);
+        snprintf(buf, sizeof(buf), "%.4f dBm",
+                10.0 * log10(x * 1e-7) + 30.0);
+        blobmsg_add_string(b, "rx-pwr-dBm", buf);
         blobmsg_add_string(b, "rx-pwr-type",
                            (sfp_ddm.type & 8) ? "average" : "OMA");
         return 1;
