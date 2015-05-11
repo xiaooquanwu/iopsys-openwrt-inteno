@@ -11,7 +11,7 @@
 			<luci-config-heading>{{ 'Setup Scheduling' | translate }}</luci-config-heading>
 			<luci-config-lines>
 				<luci-config-line title="{{'During this time the WiFi is'|translate}}">
-					<switch id="enabled" name="enabled" ng-model="status.sched_status.value" class="green"></switch>
+					<luci-select ng-model="status.sched_status.value" ng-items="statusItems"></luci-select>
 				</luci-config-line>
 			</luci-config-lines>
 			<table class="table">

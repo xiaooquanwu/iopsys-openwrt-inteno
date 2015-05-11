@@ -63,7 +63,7 @@ $juci.module("wifi")
 		update_time(); 
 	}, true);
 	$scope.$watch("schedule", function(value){
-		if(!value) return; 
+		if(value == undefined) return; 
 		var parts = value.time.value.split("-");//.map(function(x){ return x.split(":"); }); 
 		$scope.data.timeFrom = parts[0]; 
 		$scope.data.timeTo = parts[1]; 

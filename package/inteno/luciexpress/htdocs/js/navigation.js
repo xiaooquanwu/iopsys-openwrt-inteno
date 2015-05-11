@@ -75,8 +75,7 @@
 	}
 	JUCI.navigation = new JUCINavigation(); 
 	
-	angular.module("luci")
-	.factory('$navigation', function navigationProvider(){
+	JUCI.app.factory('$navigation', function navigationProvider(){
 		return JUCI.navigation; 
 	}); 
 })(JUCI); 

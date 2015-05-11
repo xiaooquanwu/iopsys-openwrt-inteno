@@ -74,8 +74,7 @@
 	
 	$juci.session = new JUCISession(); 
 	
-	angular.module("luci")
-	.factory('$session', function($rpc, $rootScope, $localStorage) {
+	JUCI.app.factory('$session', function($rpc, $rootScope, $localStorage) {
 		return $juci.session; 
 	});
 })(JUCI); 

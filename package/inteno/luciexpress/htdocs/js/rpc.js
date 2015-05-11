@@ -67,7 +67,7 @@
 		});
 		return deferred.promise(); 
 	}
-	var rpc = window.rpc = $juci.ubus = {
+	var rpc = {
 		$sid: function(sid){
 			if(sid) RPC_SESSION_ID = sid; 
 			else return RPC_SESSION_ID; 
@@ -139,10 +139,10 @@
 		}
 	}; 
 	
+	window.rpc = $juci.ubus = rpc; 
+	
 	// luci rpc module for communicating with the server
-	angular.module("luci")
-	.factory('$rpc', function($rootScope, $config, gettext){
-		
+	JUCI.app.factory('$rpc', function($rootScope, $config, gettext){
 		return window.rpc; 
 	}); 
 })(JUCI); 

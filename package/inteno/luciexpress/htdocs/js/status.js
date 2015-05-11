@@ -1,7 +1,6 @@
 //! Author: Martin K. Schröder <mkschreder.uk@gmail.com>
 
-angular.module("luci")
-.factory('$status', function($rpc) {
+JUCI.app.factory('$status', function($rpc) {
 	var updates = {
 		"router.info": 4000,
 		"network.interface.wan": 1000

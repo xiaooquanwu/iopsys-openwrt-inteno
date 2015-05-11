@@ -1,6 +1,12 @@
 $juci.module("wifi")
-.controller("WifiSchedulePageCtrl", function($scope, $uci){
+.controller("WifiSchedulePageCtrl", function($scope, $uci, gettext){
+	$scope.statusItems = [
+		{ label: gettext("Enabled"), value: 1 },
+		{ label: gettext("Disabled"), value: 0 }
+	]; 
+	
 	$uci.sync(["wireless"]).done(function(){
+		console.log("Got status"); 
 		$scope.status = $uci.wireless.status; 
 		$scope.schedules = $uci.wireless["@wifi-schedule"]; 
 		$scope.$apply(); 

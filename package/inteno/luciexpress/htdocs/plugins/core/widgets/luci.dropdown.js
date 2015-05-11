@@ -36,7 +36,7 @@ $juci.module("core")
 				scope.itemList = value.map(function(x){
 					//alert(JSON.stringify(x)+" "+JSON.stringify(scope.selectedItem)); 
 					if(typeof x == "object" && "value" in x){
-						if(scope.selectedItem && scope.selectedItem.value == x.value)
+						if(scope.selectedItem != undefined && scope.selectedItem.value == x.value)
 							scope.selectedText = scope.selectedItem.label || scope.placeholder;
 						else if(scope.selectedItem == x.value){
 							scope.selectedText = x.label || scope.placeholder; 
@@ -53,8 +53,14 @@ $juci.module("core")
 			}
 		}); 
 		scope.$watch("selectedItem", function(value){
-			//if(value && "value" in value) scope.selectedText = value.value; 
-			//else scope.selectedText = value || scope.placeholder; 
+			console.log("Selected item: "+JSON.stringify(value)); 
+			if(value != undefined && (typeof value) == "object" && "value" in value) scope.selectedText = value.value; 
+			else if(value != undefined) { 
+				scope.itemList.map(function(x){
+					if(x.value == value) scope.selectedText = x.label;
+				}); 
+			} 
+			else scope.selectedText = value || scope.placeholder; 
 		}); 
 		
 		scope.selectVal = function (item) {
