@@ -15,7 +15,7 @@
         <div class="error small" ng-show="form.endPort.$dirty && form.endPort.$error.invalid">{{'error.port.range.end.invalid'|translate}}</div>
         <div class="error small" ng-show="form.startPort.$error.startgreaterthanend || form.endPort.$error.startgreaterthanend">{{'error.port.range.startgreaterthanend'|translate}}</div>
     </div>
-</div>-->
+</div>
 	<div class="has-feedback " ng-class="{ 'has-error': model.error }">
 		<input type="text" name="startPort" ng-model="startPort" class="form-control" placeholder="Add port..." maxlength="5" validate-port-range="model" required />
 		<span ng-show="model.error" class="glyphicon glyphicon-remove form-control-feedback"></span>
@@ -23,5 +23,5 @@
 	<div class="has-feedback " ng-class="{ 'has-error': model.error }">
 		<input type="text" name="startPort" ng-model="endPort" class="form-control" placeholder="Add port..." maxlength="5" validate-port-range="model" required />
 		<span ng-show="model.error" class="glyphicon glyphicon-remove form-control-feedback"></span>
-	</div>
+	</div>-->
 </div>

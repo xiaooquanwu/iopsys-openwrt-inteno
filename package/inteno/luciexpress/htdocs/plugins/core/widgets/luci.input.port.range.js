@@ -1,4 +1,4 @@
-$juci.module("core")
+/*$juci.module("core")
 	.directive("luciInputPortRange", function () {
 		var plugin_root = $juci.module("core").plugin_root;
 		return {
@@ -33,7 +33,7 @@ $juci.module("core")
 			$scope.$watch("endPort", updateModel); 
 		})(); 
 	}); 
-    /*
+    
     .directive("validatePortRange", function () {
         var PORT_REGEX = /^\d{1,5}$/;
         return {

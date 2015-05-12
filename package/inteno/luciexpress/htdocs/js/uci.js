@@ -260,6 +260,16 @@
 				"maclist":		{ dvalue: [], type: Array, match_each: /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/ }
 			}
 		}, 
+		"network": {
+			"interface":		{ dvalue: "", type: String }, 
+			"is_lan": 			{ dvalue: 1, type: Number }, 
+			"ifname":				{ dvalue: "", type: String }, 
+			"proto":				{ dvalue: "dhcp", type: String }, 
+			"ipaddr":				{ dvalue: "", type: String }, 
+			"netmask":			{ dvalue: "", type: String }, 
+			"peerdns": 			{ dvalue: false, type: String }, 
+			"dns": 					{ dvalue: [], type: Array }
+		}, 
 		"unknown": {
 			"host": {
 				"hostname":		{ dvalue: "", type: String, required: true}, 
@@ -633,8 +643,10 @@
 				}); 
 			}
 		], function(err){
-			if(err) deferred.reject(err); 
-			else deferred.resolve(); 
+			setTimeout(function(){ // in case async did not defer
+				if(err) deferred.reject(err); 
+				else deferred.resolve(); 
+			}, 0); 
 		}); 
 		return deferred.promise(); 
 	}
