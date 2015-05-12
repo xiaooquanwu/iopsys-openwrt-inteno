@@ -19,34 +19,34 @@
 				<h2 translate>WPS-PBC: Push Button on Device</h2>
 				<p translate>wifi.wps.pbc.info</p>
 				<luci-config-lines>
-					<luci-config-line title="{{'Pressing WiFi on/off button on EasyBox for long time activates pairing '|translate}}">
+					<luci-config-line  ng-show="easybox"  title="{{'Pressing WiFi on/off button on EasyBox for long time activates pairing '|translate}}">
 						<switch id="enabled" name="enabled" ng-model="easybox.settings.wifibutton.value" class="green" ng-change="save()" ></switch>
 					</luci-config-line>
 					<luci-config-line title="{{'Pair (within 2 minutes)'|translate}}">
-						<button class="btn btn-default col-xs-12" ng-click="onPairPBC()" translate>Pair</button>
+						<button class="btn btn-lg btn-default col-xs-12" ng-click="onPairPBC()" translate>Pair</button>
 					</luci-config-line>
 				</luci-config-lines>
 				<h2 translate>WPS-REG: EasyBox provides PIN</h2>
 				<p translate>wifi.wps.pin.info</p>
 				<luci-config-lines>
-					<luci-config-line title="{{'WPS Using Generated PIN '|translate}}">
+					<luci-config-line ng-show="easybox" title="{{'WPS Using Generated PIN'|translate}}">
 						<switch id="enabled" name="enabled" ng-model="easybox.settings.wpsdevicepin.value" ng-change="save()" class="green"></switch>
 					</luci-config-line>
 					<luci-config-line title="{{'Generated PIN'|translate}}">
-						<input type="text" class="form-control"  ng-model="generatedPIN" />
+						<input type="text" class="form-control input-lg"  ng-model="generatedPIN" />
 					</luci-config-line>
 					<luci-config-line title="{{'Generate New PIN'|translate}}">
-						<button class="btn btn-default" ng-click="onGeneratePIN()" translate>Generate</button>
+						<button class="btn btn-lg btn-default" ng-click="onGeneratePIN()" translate>Generate</button>
 					</luci-config-line>
 				</luci-config-lines>
 				<h2 translate>WPS-PIN: Another Device provides PIN</h2>
 				<p translate>wifi.wps.otherpin.info</p>
 				<luci-config-lines>
 					<luci-config-line title="{{'Enter your device PIN'|translate}}">
-						<input type="text" class="form-control" ng-model="data.userPIN" />
+						<input type="text" class="form-control input-lg" ng-model="data.userPIN" />
 					</luci-config-line>
 					<luci-config-line title="{{'Pair (within 2 minutes)'|translate}}">
-						<button class="btn btn-default" ng-click="onPairUserPIN()" translate>Pair</button>
+						<button class="btn btn-lg btn-default" ng-click="onPairUserPIN()" translate>Pair</button>
 					</luci-config-line>
 				</luci-config-lines>
 			</luci-config-section>

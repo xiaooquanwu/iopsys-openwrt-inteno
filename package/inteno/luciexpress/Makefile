@@ -44,7 +44,7 @@ define Package/luciexpress/install
 	$(CP) ./htdocs/* $(1)/www/
 	$(INSTALL_DIR) $(1)/usr/share/rpcd
 	$(CP) ./share/* $(1)/usr/share/rpcd/
-	$(CP) ./etc/* $(1)/etc/
+	./install_menus.sh $(1)
 	$(INSTALL_DIR) $(1)/usr/lib/rpcd
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/rpcd/luciexpress.so $(1)/usr/lib/rpcd/
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/rpcd/bwmon.so $(1)/usr/lib/rpcd/
