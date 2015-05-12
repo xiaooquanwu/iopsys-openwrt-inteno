@@ -3,7 +3,7 @@
 		<div class="modal-content">
 			<div class="modal-header">
 				<button ng-hide="hideCloseBtn" type="button" class="close" ng-click="onDismiss()" aria-hidden="true">&times;</button>
-				<h4 class="modal-title">{{title|translate}}</h4>
+				<h3 class="modal-title">{{title|translate}}</h3>
 			</div>
             <div ng-show="formIncluded" ng-transclude></div>
 			<div ng-hide="formIncluded" class="modal-body" ng-transclude></div>

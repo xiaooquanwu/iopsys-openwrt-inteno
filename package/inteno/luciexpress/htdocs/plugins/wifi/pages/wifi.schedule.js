@@ -42,6 +42,7 @@ $juci.module("wifi")
 	$scope.onAddSchedule = function(){
 		$uci.wireless.create({".type": "wifi-schedule"}).done(function(item){
 			$scope.schedule = item; 
+			$scope.schedule[".new"] = true; 
 			$scope.showScheduleDialog = 1; 
 			$scope.$apply(); 
 			console.log("Added new schedule!"); 

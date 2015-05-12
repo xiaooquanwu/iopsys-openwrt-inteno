@@ -34,7 +34,7 @@ $juci.module("core")
 		scope.$watch("items", function(value){
 			if(value){
 				scope.itemList = value.map(function(x){
-					console.log(JSON.stringify(x)+" "+JSON.stringify(scope.selectedItem)); 
+					//console.log(JSON.stringify(x)+" "+JSON.stringify(scope.selectedItem)); 
 					if(typeof x == "object" && "value" in x){
 						if(scope.selectedItem != undefined && scope.selectedItem.value == x.value)
 							scope.selectedText = scope.selectedItem.label || scope.placeholder;
@@ -73,7 +73,7 @@ $juci.module("core")
 					$('button.button-label', element).html(item.label);
 					break;
 			}
-			console.log("DROPDOWN: "+JSON.stringify(scope.selectedItem)+", "+item.value); 
+			//console.log("DROPDOWN: "+JSON.stringify(scope.selectedItem)+", "+item.value); 
 			scope.selectedItem.splice(0, scope.selectedItem.length); 
 			if("value" in item) Object.assign(scope.selectedItem, item.value); 
 			else Object.assign(scope.selectedItem, item); 
