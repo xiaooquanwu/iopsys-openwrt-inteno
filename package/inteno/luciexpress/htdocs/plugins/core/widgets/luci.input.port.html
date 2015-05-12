@@ -1,13 +1,13 @@
-<div class="form-group has-feedback" ng-class="{ 'has-error': form[name].$invalid }">
+<div class="form-group has-feedback">
     <label for="{{id}}" class="control-label {{labelClass}}">{{label|translate}}</label>
-    <div class="{{inputOuterClass}}">
-        <input id="{{id}}" name="{{name}}" type="text" class="form-control" ng-model="model" placeholder="..." validate-port required />
-        <span ng-show="form[name].$invalid" class="glyphicon glyphicon-remove form-control-feedback"></span>
+    <div class="{{inputOuterClass}}" ng-class="{ 'has-error': form[name].$dirty && form[name].$invalid }">
+        <input id="{{id}}" name="{{name}}" type="text" class="form-control" ng-model="model" placeholder="Add port..." maxlength="5" validate-port required />
+        <span ng-show="form[name].$dirty && form[name].$invalid" class="glyphicon glyphicon-remove form-control-feedback"></span>
     </div>
-    <div class="row" ng-show="form[name].$dirty && form[name].$invalid">
+    <div ng-show="form[name].$dirty && form[name].$invalid">
         <div class="{{messageClass}} {{messageOffsetClass}}">
-            <span class="error small margin-left-10" ng-show="form[name].$error.required">{{'error.port.required'|translate}}</span>
-            <span class="error small margin-left-10" ng-show="form[name].$error.validatePort">{{'error.port.invalid'|translate}}</span>
+            <div class="error small" ng-show="form[name].$error.required">{{'error.port.required'|translate}}</div>
+            <div class="error small" ng-show="form[name].$error.validatePort">{{'error.port.invalid'|translate}}</div>
         </div>
     </div>
 </div>
