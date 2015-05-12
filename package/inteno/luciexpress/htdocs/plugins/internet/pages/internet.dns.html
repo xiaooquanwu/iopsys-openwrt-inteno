@@ -1,5 +1,41 @@
 <luci-layout-with-sidebar>
 	<div ng-controller="InternetDNSPageCtrl">
-		DNS settings
+		<h2 translate>DNS</h2>
+
+		<p translate>The DNS configuration is done automatically when you connect to the network. Alternatively you can manually configure your own DNS settings.</p>
+
+		<div class="row">
+			<div class="col-md-5 col-md-offset-1">
+				<h4 class="detail-strong" translate>DNS configuration</h4>
+			</div>
+			<div class="col-md-2">
+				<luci-input-radio id="auto" name="auto" value="0" model="manualDns" label="'automatically'" label-class="detail-strong-input" inline="true"/>
+			</div>
+			<div class="col-md-2 col-lg-offset-1">
+				<luci-input-radio id="manual" name="manual" value="1" model="manualDns" label="'manually'" label-class="detail-strong-input" inline="true"/>
+			</div>
+		</div>
+
+		<div class="row" ng-show="manualDns">
+			<br/>
+
+			<div class="col-md-10 col-md-offset-2">
+				<!--<luci-input-ipaddress id="firstDNSAddress" label="'Domain Name Server (DNS) Address'" label-class="detail-strong-input" model=""/>-->
+			</div>
+			<hr class="col-md-9 col-md-offset-2"/>
+			<div class="col-md-6 col-md-offset-2">
+				<h4 class="detail-strong" translate>Secondary DNS Address (optional)</h4>
+			</div>
+			<div class="col-md-4">
+
+			</div>
+		</div>
+
+		<h2 translate>DDNS (Dynamic DNS)</h2>
+
+		<p translate>DDNS allows you to access your EasyBox from the Internet using a domain name instead of IP address. You will need an account on a DDNS service provider.</p>
+
 	</div>
 </luci-layout-with-sidebar>
+
+
