@@ -1,0 +1,9 @@
+{
+	"scripts": [
+	], 
+	"pages": {
+		"settings/dropbear": {
+			"view": "pages/services.dropbear"
+		}
+	}
+}
