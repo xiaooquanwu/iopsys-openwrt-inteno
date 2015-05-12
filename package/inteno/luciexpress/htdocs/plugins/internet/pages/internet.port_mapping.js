@@ -1,9 +1,8 @@
-$juci.module("internet")
+$juci.app
 .controller("InternetPortMappingPageCtrl", function($scope, $uci, ModalService, $rpc){
-	
 	function reload(){
 		$uci.sync("firewall").done(function(){
-			$scope.redirects = $uci.firewall["@firewall-forwarding"];
+			$scope.redirects = $uci.firewall["@redirect"];
 			$scope.$apply(); 
 		}); 
 	} reload(); 
@@ -26,60 +25,43 @@ $juci.module("internet")
 		$scope.showModal = 0;
 	};
 	$scope.onAddRule = function(){
-		$scope.rule = {};
-		$scope.showModal = 1;
-	};
-    $scope.onAddRuleConfirm = function() {
-        var rule = $scope.rule;
-        if(!rule[".name"]){
-            rule[".type"] = "firewall-forwarding";
-            $uci.firewall.create(rule).done(function(rule){
-				$scope.rule_src = rule;
-                $scope.$apply();
-            });
-        }
-		Object.keys(rule).map(function(key){
-			if($scope.rule_src && key in $scope.rule_src) $scope.rule_src[key].value = rule[key];
-		});
-        $scope.showModal = 0;
-    };
-	$scope.onEditRule = function(rule){
-		$scope.rule_src = rule; 
-		$scope.rule = {
-			".name": rule[".name"], 
-			dest_ip: rule.dest_ip.value, 
-			proto: rule.proto.value,
-			dest_port: rule.dest_port.value, 
-			src_dport: rule.src_dport.value 
-		}; 
-		$scope.modalTitle = "Edit port mapping ("+(rule['.name'] || 'new')+")"; 
-		$scope.showModal = 1; 
-	};
-	$scope.onDeleteRule = function(rule){
-		function removeFromList(){
-			if($scope.redirects) {
-				$scope.redirects = $scope.redirects.filter(function(x){ return x !== rule; }); 
-				$scope.$apply(); 
-			}
-		}
-		console.log("Deleting rule: "+rule[".name"]); 
-		if(rule[".name"]){
-            rule.$delete().done( function() {
-                removeFromList();
-            });
-		} else {
-			removeFromList();
-		}
-	};
-	$scope.onCommit = function(){
-		if(!$scope.redirects) return; 
-		$uci.commit("firewall").always(function(){
-            reload();
-		});
-	};
-	$scope.onCancel = function(){
-		$uci.rollback().always(function(){
-			reload(); 
+		$uci.firewall.create({".type": "redirect"}).done(function(section){
+			$scope.rule = section; 
+			$scope.rule[".new"] = true; 
+			$scope.rule[".edit"] = true; 
+			$scope.showModal = 1;
+			$scope.$apply(); 
 		}); 
+	};
+	
+	$scope.onEditRule = function(rule){
+		$scope.rule = rule; 
+		rule[".edit"] = true; 
+	};
+	
+	$scope.onDeleteRule = function(rule){
+		rule.$delete().done(function(){
+			$scope.$apply(); 
+		}); 
+	};
+	
+	$scope.onAcceptEdit = function(rule){
+		$uci.save().done(function(){
+			rule[".edit"] = false; 
+			$scope.$apply(); 
+		}); 
+	};
+	
+	$scope.onCancelEdit = function(rule){
+		rule[".edit"] = false; 
+		if(rule[".new"]){
+			rule.$delete().done(function(){
+				$scope.$apply(); 
+			}); 
+		} else {
+			rule.$sync().done(function(){
+				$scope.$apply(); 
+			}); 
+		}
 	}
 }); 

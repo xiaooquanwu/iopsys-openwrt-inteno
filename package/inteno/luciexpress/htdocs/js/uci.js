@@ -42,220 +42,235 @@
 		}
 	}
 
-    function PortValidator(){
-        var PORT_REGEX = /^\d{1,5}$/;
+	function PortValidator(){
+		var PORT_REGEX = /^\d{1,5}$/;
 
-        this.validate = function(field){
-            var parts = field.value.split("-");
-            if (parts.length > 1) {  // check if it is a port range or not
-                for (var i = 0; i < parts.length; i++) {
-                    var outcome = this.validatePort(parts[i]);
-                    if (outcome != null) { return outcome; }
-                }
-            } else {
-                return this.validatePort(parts)
-            }
-        };
+		this.validate = function(field){
+			if(field.value == undefined || !field.value.split) return null; 
+			var parts = field.value.split("-");
+			if (parts.length > 1) {  // check if it is a port range or not
+				for (var i = 0; i < parts.length; i++) {
+					var outcome = this.validatePort(parts[i]);
+					if (outcome != null) { return outcome; }
+				}
+			} else {
+				return this.validatePort(parts)
+			}
+		};
 
-        this.validatePort = function(port) {
-            if (PORT_REGEX.test(port)) { // valid regex
-                if (port <= 0 || port > 65535) {
-                    return gettext("Port value must be between 0 and 65536");
-                } else {
-                    return null;
-                }
-            } else {
-                return gettext("Port value is invalid");
-            }
-        }
-    }
+		this.validatePort = function(port) {
+			if (PORT_REGEX.test(port)) { // valid regex
+				if (port <= 0 || port > 65535) {
+					return gettext("Port value must be between 0 and 65536");
+				} else {
+					return null;
+				}
+			} else {
+				return gettext("Port value is invalid");
+			}
+		}
+	}
 	
 	var section_types = {
-		"juci-settings": {
-			"theme":					{ dvalue: "", type: String }, 
-			"lang":						{ dvalue: "", type: String }, 
-			"themes":					{ dvalue: [], type: Array }, 
-			"plugins":				{ dvalue: [], type: Array }, 
-			"languages":			{ dvalue: [], type: Array }
+		"juci": {
+			"settings": {
+				"theme":					{ dvalue: "", type: String }, 
+				"lang":						{ dvalue: "", type: String }, 
+				"themes":					{ dvalue: [], type: Array }, 
+				"plugins":				{ dvalue: [], type: Array }, 
+				"languages":			{ dvalue: [], type: Array }
+			}
 		}, 
-		"easybox-settings": {
-			"usb_port": 		{ dvalue: true, type: Boolean }, 
-			"status_led": 	{ dvalue: true, type: Boolean }, 
-			"power_led": 		{ dvalue: true, type: Boolean }, 
-			"power_led_br":	{ dvalue: 100, type: Number },
-			"wifibutton": 	{ dvalue: true, type: Boolean },
-			"wpsbutton": 		{ dvalue: true, type: Boolean },
-			"wpsdevicepin": { dvalue: true, type: Boolean }
-		},
-		"easybox-services": {
-			"internet":				{ dvalue: "", type: String },
-			"voice":					{ dvalue: "", type: String },
-			"iptv":						{ dvalue: "", type: String }
+		"easybox": {
+			"easybox-settings": {
+				"usb_port": 		{ dvalue: true, type: Boolean }, 
+				"status_led": 	{ dvalue: true, type: Boolean }, 
+				"power_led": 		{ dvalue: true, type: Boolean }, 
+				"power_led_br":	{ dvalue: 100, type: Number },
+				"wifibutton": 	{ dvalue: true, type: Boolean },
+				"wpsbutton": 		{ dvalue: true, type: Boolean },
+				"wpsdevicepin": { dvalue: true, type: Boolean }
+			},
+			"easybox-services": {
+				"internet":				{ dvalue: "", type: String },
+				"voice":					{ dvalue: "", type: String },
+				"iptv":						{ dvalue: "", type: String }
+			}
 		}, 
-		"firewall-defaults": {
-			"syn_flood":		{ dvalue: true, type: Boolean }, 
-			"intput":				{ dvalue: "ACCEPT", type: String }, 
-			"output":				{ dvalue: "ACCEPT", type: String }, 
-			"forward":			{ dvalue: "REJECT", type: String }, 
+		"firewall": {
+			"defaults": {
+				"syn_flood":		{ dvalue: true, type: Boolean }, 
+				"intput":				{ dvalue: "ACCEPT", type: String }, 
+				"output":				{ dvalue: "ACCEPT", type: String }, 
+				"forward":			{ dvalue: "REJECT", type: String }, 
+			}, 
+			"zone": {
+				"name":					{ dvalue: "", type: String }, 
+				"input":				{ dvalue: "ACCEPT", type: String }, 
+				"output":				{ dvalue: "ACCEPT", type: String }, 
+				"forward":			{ dvalue: "REJECT", type: String }, 
+				"network": 			{ dvalue: [], type: Array }, 
+				"masq":					{ dvalue: true, type: Boolean }, 
+				"mtu_fix": 			{ dvalue: true, type: Boolean }
+			}, 
+			"redirect": {
+				"src_ip":				{ dvalue: "", type: String },
+				"src_dport":		{ dvalue: 0, type: String, validator: PortValidator },
+				"proto":				{ dvalue: "tcp", type: String }, 
+				"dest_ip":			{ dvalue: "", type: String }, 
+				"dest_port":		{ dvalue: 0, type: String, validator: PortValidator }
+			}, 
+			"rule": {
+				"name":					{ dvalue: "", type: String }, 
+				"src":					{ dvalue: "lan", type: String }, 
+				"src_ip":				{ dvalue: "", type: String }, 
+				"src_port":			{ dvalue: 0, type: Number }, 
+				"proto":				{ dvalue: "tcp", type: String }, 
+				"dest":					{ dvalue: "*", type: String }, 
+				"dest_ip":			{ dvalue: "", type: String }, 
+				"dest_port":		{ dvalue: 0, type: Number }, 
+				"target":				{ dvalue: "REJECT", type: String }, 
+				"family": 			{ dvalue: "ipv4", type: String }, 
+				"icmp_type": 		{ dvalue: [], type: Array },
+				"enabled": 			{ dvalue: true, type: Boolean },
+				"hidden": 			{ dvalue: true, type: Boolean }
+			}, 
+			"settings": {
+				"disabled":			{ dvalue: false, type: Boolean },
+				"ping_wan":			{ dvalue: false, type: Boolean }
+			}
 		}, 
-		"firewall-zone": {
-			"name":					{ dvalue: "", type: String }, 
-			"input":				{ dvalue: "ACCEPT", type: String }, 
-			"output":				{ dvalue: "ACCEPT", type: String }, 
-			"forward":			{ dvalue: "REJECT", type: String }, 
-			"network": 			{ dvalue: [], type: Array }, 
-			"masq":					{ dvalue: true, type: Boolean }, 
-			"mtu_fix": 			{ dvalue: true, type: Boolean }
+		"system": {
+			"system": {
+				"timezone":				{ dvalue: '', type: String },
+				"zonename":				{ dvalue: '', type: String },
+				"conloglevel":		{ dvalue: 0, type: Number },
+				"cronloglevel":		{ dvalue: 0, type: Number },
+				"hostname":				{ dvalue: '', type: String },
+				"displayname":		{ dvalue: '', type: String },
+				"log_size":				{ dvalue: 200, type: Number }
+			}
 		}, 
-		"firewall-forwarding": {
-			"src_ip":				{ dvalue: "", type: String },
-			"src_dport":			{ dvalue: 0, type: Number, required: true, validator: PortValidator },
-			"proto":				{ dvalue: "tcp", type: String }, 
-			"dest_ip":			{ dvalue: "", type: String }, 
-			"dest_port":		{ dvalue: 0, type: Number, required: true, validator: PortValidator }
+		"voice_client": {
+			"brcm_line": {
+				"extension": 			{ dvalue: '', type: String }, 
+				"sip_account": 		{ dvalue: '', type: String }, 
+				"noise":					{ dvalue: false, type: Boolean }, 
+				"vad":						{ dvalue: false, type: Boolean }, 
+				"txgain":					{ dvalue: false, type: Boolean }, 
+				"rxgain":					{ dvalue: false, type: Boolean }, 
+				"echo_cancel":		{ dvalue: true, type: Boolean }, 
+				"callwaiting":		{ dvalue: false, type: Boolean }, 
+				"clir":						{ dvalue: false, type: Boolean }, 
+				"name":						{ dvalue: '', type: String }, 
+				"instance":				{ dvalue: '', type: String }
+			}, 
+			"sip_service_provider": {           
+				"name":							{ dvalue: "Account 1", type: String },
+				"codec0":						{ dvalue: "alaw", type: String },  
+				"codec1":						{ dvalue: "ulaw", type: String },       
+				"codec2":						{ dvalue: "g729", type: String },   
+				"codec3":						{ dvalue: "g726", type: String },
+				"autoframing":			{ dvalue: false, type: Boolean },
+				"cfim_on":					{ dvalue: "*21*", type: String },  
+				"cfim_off":					{ dvalue: "#21#", type: String },
+				"cfbs_on":					{ dvalue: "*61*", type: String }, 
+				"cfbs_off":					{ dvalue: "#61#", type: String }, 
+				"call_return":			{ dvalue: "*69", type: String },         
+				"redial":						{ dvalue: "*66", type: String },   
+				"is_fax":						{ dvalue: false, type: Boolean },      
+				"transport":				{ dvalue: "udp", type: String },
+				"priority_ulaw":		{ dvalue: 0, type: Number },
+				"priority_alaw":		{ dvalue: 0, type: Number }, 
+				"priority_g729":		{ dvalue: 0, type: Number },  
+				"priority_g723":		{ dvalue: 0, type: Number },
+				"priority_g726":		{ dvalue: 0, type: Number },   
+				"enabled":					{ dvalue: true, type: Boolean },
+				"target":						{ dvalue: "direct", type: String },       
+				"call_lines":				{ dvalue: "BRCM/4", type: String },
+				"mailbox":					{ dvalue: "-", type: String },     
+				"call_filter":			{ dvalue: "-", type: String },     
+				"domain":						{ dvalue: "217.27.161.62", type: String },      
+				"user":							{ dvalue: "0854601910", type: String }, 
+				"authuser":					{ dvalue: "0854601910", type: String }, 
+				"displayname":			{ dvalue: "TEST", type: String }, 
+				"ptime_ulaw":				{ dvalue: 20, type: Number }, 
+				"ptime_g726":				{ dvalue: 20, type: Number },     
+				"ptime_g729":				{ dvalue: 20, type: Number }, 
+				"ptime_alaw":				{ dvalue: 20, type: Number }, 
+				"host":							{ dvalue: "217.27.161.62", type: String },  
+				"outboundproxy":		{ dvalue: "217.27.161.62", type: String }
+			}
 		}, 
-		"firewall-rule": {
-			"name":					{ dvalue: "", type: String }, 
-			"src":					{ dvalue: "lan", type: String }, 
-			"src_ip":				{ dvalue: "", type: String }, 
-			"src_port":			{ dvalue: 0, type: Number }, 
-			"proto":				{ dvalue: "tcp", type: String }, 
-			"dest":					{ dvalue: "*", type: String }, 
-			"dest_ip":			{ dvalue: "", type: String }, 
-			"dest_port":		{ dvalue: 0, type: Number }, 
-			"target":				{ dvalue: "REJECT", type: String }, 
-			"family": 			{ dvalue: "ipv4", type: String }, 
-			"icmp_type": 		{ dvalue: [], type: Array },
-			"enabled": 			{ dvalue: true, type: Boolean },
-			"hidden": 			{ dvalue: true, type: Boolean }
+		"wireless": {
+			"wifi-status": {
+				"wlan":		{ dvalue: true, type: Boolean }, 
+				"wps":		{ dvalue: true, type: Boolean },
+				"schedule":	{ dvalue: false, type: Boolean },
+				"sched_status":	{ dvalue: false, type: Boolean }
+			},
+			"wifi-schedule": {
+				"days":		{ dvalue: [], type: Array, allow: ["mon", "tue", "wed", "thu", "fri", "sat", "sun"], validator: WeekDayListValidator},
+				"time":		{ dvalue: "", type: String, validator: TimespanValidator}
+			},
+			"wifi-device": {
+				"type": 			{ dvalue: "", type: String },
+				"country": 		{ dvalue: "", type: String},
+				"band": 			{ dvalue: "none", type: String, allow: [ "a", "b" ] },
+				"bandwidth": 	{ dvalue: 0, type: String, allow: [ "20", "40", "80" ] },
+				"channel":		{ dvalue: "auto", type: String, allow: [ "auto", 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 36, 40, 44, 48 ] },
+				"scantimer":	{ dvalue: 0, type: Number },
+				"wmm":				{ dvalue: false, type: Boolean },
+				"wmm_noack":	{ dvalue: false, type: Boolean },
+				"wmm_apsd":		{ dvalue: false, type: Boolean },
+				"txpower":		{ dvalue: 0, type: Number },
+				"rateset":		{ dvalue: "default", type: String, allow: [ "default" ] },
+				"frag":				{ dvalue: 0, type: Number },
+				"rts":				{ dvalue: 0, type: Number },
+				"dtim_period":{ dvalue: 0, type: Number },
+				"beacon_int":	{ dvalue: 0, type: Number },
+				"rxchainps":	{ dvalue: false, type: Boolean },
+				"rxchainps_qt":{ dvalue: 0, type: Number },
+				"rxchainps_pps":{ dvalue: 0, type: Number },
+				"rifs":				{ dvalue: false, type: Boolean },
+				"rifs_advert":{ dvalue: false, type: Boolean },
+				"maxassoc":		{ dvalue: 0, type: Number },
+				"doth":				{ dvalue: 0, type: Boolean },
+				"hwmode":			{ dvalue: "auto", type: String, allow: [ "auto", "11a", "11n", "11ac" ] },
+				"disabled":		{ dvalue: false, type: Boolean }
+			}, 
+			"wifi-iface": {
+				"device": 		{ dvalue: "wl0", type: String, match: /^wl0|wl1$/ },
+				"network":		{ dvalue: "lan", type: String, allow: [ "lan", "guest" ] },
+				"mode":				{ dvalue: "ap", type: String, allow: [ "ap" ] },
+				"ssid":				{ dvalue: "Inteno", type: String },
+				"encryption":	{ dvalue: "mixed-psk", type: String, allow: [ "none", "wep", "psk", "psk2", "mixed-psk" ] },
+				"cipher":			{ dvalue: "auto", type: String, allow: [ "auto" ] },
+				"key":				{ dvalue: "", type: String },
+				"gtk_rekey":	{ dvalue: false, type: Boolean },
+				"wps_pbc":		{ dvalue: false, type: Boolean },
+				"wmf_bss_enable":{ dvalue: false, type: Boolean },
+				"bss_max":		{ dvalue: 0, type: Number },
+				"instance":		{ dvalue: 0, type: Number },
+				"up":					{ dvalue: false, type: Boolean },
+				"closed":			{ dvalue: false, type: Boolean },
+				"disabled":		{ dvalue: false, type: Boolean },
+				"macmode":		{ dvalue: 1, type: Number, allow: [ 0, 1, 2 ] },
+				"macfilter":	{ dvalue: false, type: Boolean },
+				"maclist":		{ dvalue: [], type: Array, match_each: /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/ }
+			}
 		}, 
-		"firewall-settings": {
-			"disabled":			{ dvalue: false, type: Boolean },
-			"ping_wan":			{ dvalue: false, type: Boolean }
-		},
-		"system-system": {
-			"timezone":				{ dvalue: '', type: String },
-			"zonename":				{ dvalue: '', type: String },
-			"conloglevel":		{ dvalue: 0, type: Number },
-			"cronloglevel":		{ dvalue: 0, type: Number },
-			"hostname":				{ dvalue: '', type: String },
-			"displayname":		{ dvalue: '', type: String },
-			"log_size":				{ dvalue: 200, type: Number }
-		}, 
-		"voice_client-brcm_line": {
-      "extension": 			{ dvalue: '', type: String }, 
-      "sip_account": 		{ dvalue: '', type: String }, 
-      "noise":					{ dvalue: false, type: Boolean }, 
-      "vad":						{ dvalue: false, type: Boolean }, 
-      "txgain":					{ dvalue: false, type: Boolean }, 
-      "rxgain":					{ dvalue: false, type: Boolean }, 
-      "echo_cancel":		{ dvalue: true, type: Boolean }, 
-      "callwaiting":		{ dvalue: false, type: Boolean }, 
-      "clir":						{ dvalue: false, type: Boolean }, 
-      "name":						{ dvalue: '', type: String }, 
-      "instance":				{ dvalue: '', type: String }
-		}, 
-		"voice_client-sip_service_provider": {           
-			"name":							{ dvalue: "Account 1", type: String },
-			"codec0":						{ dvalue: "alaw", type: String },  
-			"codec1":						{ dvalue: "ulaw", type: String },       
-			"codec2":						{ dvalue: "g729", type: String },   
-			"codec3":						{ dvalue: "g726", type: String },
-			"autoframing":			{ dvalue: false, type: Boolean },
-			"cfim_on":					{ dvalue: "*21*", type: String },  
-			"cfim_off":					{ dvalue: "#21#", type: String },
-			"cfbs_on":					{ dvalue: "*61*", type: String }, 
-			"cfbs_off":					{ dvalue: "#61#", type: String }, 
-			"call_return":			{ dvalue: "*69", type: String },         
-			"redial":						{ dvalue: "*66", type: String },   
-			"is_fax":						{ dvalue: false, type: Boolean },      
-			"transport":				{ dvalue: "udp", type: String },
-			"priority_ulaw":		{ dvalue: 0, type: Number },
-			"priority_alaw":		{ dvalue: 0, type: Number }, 
-			"priority_g729":		{ dvalue: 0, type: Number },  
-			"priority_g723":		{ dvalue: 0, type: Number },
-			"priority_g726":		{ dvalue: 0, type: Number },   
-			"enabled":					{ dvalue: true, type: Boolean },
-			"target":						{ dvalue: "direct", type: String },       
-			"call_lines":				{ dvalue: "BRCM/4", type: String },
-			"mailbox":					{ dvalue: "-", type: String },     
-			"call_filter":			{ dvalue: "-", type: String },     
-			"domain":						{ dvalue: "217.27.161.62", type: String },      
-			"user":							{ dvalue: "0854601910", type: String }, 
-			"authuser":					{ dvalue: "0854601910", type: String }, 
-			"displayname":			{ dvalue: "TEST", type: String }, 
-			"ptime_ulaw":				{ dvalue: 20, type: Number }, 
-			"ptime_g726":				{ dvalue: 20, type: Number },     
-			"ptime_g729":				{ dvalue: 20, type: Number }, 
-			"ptime_alaw":				{ dvalue: 20, type: Number }, 
-			"host":							{ dvalue: "217.27.161.62", type: String },  
-			"outboundproxy":		{ dvalue: "217.27.161.62", type: String }
-		}, 
-		"wifi-status": {
-			"wlan":		{ dvalue: true, type: Boolean }, 
-			"wps":		{ dvalue: true, type: Boolean },
-			"schedule":	{ dvalue: false, type: Boolean },
-			"sched_status":	{ dvalue: false, type: Boolean }
-		},
-		"wifi-schedule": {
-			"days":		{ dvalue: [], type: Array, allow: ["mon", "tue", "wed", "thu", "fri", "sat", "sun"], validator: WeekDayListValidator},
-			"time":		{ dvalue: "", type: String, validator: TimespanValidator}
-		},
-		"wifi-device": {
-			"type": 			{ dvalue: "", type: String },
-			"country": 		{ dvalue: "", type: String},
-			"band": 			{ dvalue: "none", type: String, allow: [ "a", "b" ] },
-			"bandwidth": 	{ dvalue: 0, type: String, allow: [ "20", "40", "80" ] },
-			"channel":		{ dvalue: "auto", type: String, allow: [ "auto", 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 36, 40, 44, 48 ] },
-			"scantimer":	{ dvalue: 0, type: Number },
-			"wmm":				{ dvalue: false, type: Boolean },
-			"wmm_noack":	{ dvalue: false, type: Boolean },
-			"wmm_apsd":		{ dvalue: false, type: Boolean },
-			"txpower":		{ dvalue: 0, type: Number },
-			"rateset":		{ dvalue: "default", type: String, allow: [ "default" ] },
-			"frag":				{ dvalue: 0, type: Number },
-			"rts":				{ dvalue: 0, type: Number },
-			"dtim_period":{ dvalue: 0, type: Number },
-			"beacon_int":	{ dvalue: 0, type: Number },
-			"rxchainps":	{ dvalue: false, type: Boolean },
-			"rxchainps_qt":{ dvalue: 0, type: Number },
-			"rxchainps_pps":{ dvalue: 0, type: Number },
-			"rifs":				{ dvalue: false, type: Boolean },
-			"rifs_advert":{ dvalue: false, type: Boolean },
-			"maxassoc":		{ dvalue: 0, type: Number },
-			"doth":				{ dvalue: 0, type: Boolean },
-			"hwmode":			{ dvalue: "auto", type: String, allow: [ "auto", "11a", "11n", "11ac" ] },
-			"disabled":		{ dvalue: false, type: Boolean }
-		}, 
-		"wifi-iface": {
-			"device": 		{ dvalue: "wl0", type: String, match: /^wl0|wl1$/ },
-			"network":		{ dvalue: "lan", type: String, allow: [ "lan", "guest" ] },
-			"mode":				{ dvalue: "ap", type: String, allow: [ "ap" ] },
-			"ssid":				{ dvalue: "Inteno", type: String },
-			"encryption":	{ dvalue: "mixed-psk", type: String, allow: [ "none", "wep", "psk", "psk2", "mixed-psk" ] },
-			"cipher":			{ dvalue: "auto", type: String, allow: [ "auto" ] },
-			"key":				{ dvalue: "", type: String },
-			"gtk_rekey":	{ dvalue: false, type: Boolean },
-			"wps_pbc":		{ dvalue: false, type: Boolean },
-			"wmf_bss_enable":{ dvalue: false, type: Boolean },
-			"bss_max":		{ dvalue: 0, type: Number },
-			"instance":		{ dvalue: 0, type: Number },
-			"up":					{ dvalue: false, type: Boolean },
-			"closed":			{ dvalue: false, type: Boolean },
-			"disabled":		{ dvalue: false, type: Boolean },
-			"macmode":		{ dvalue: 1, type: Number, allow: [ 0, 1, 2 ] },
-			"macfilter":	{ dvalue: false, type: Boolean },
-			"maclist":		{ dvalue: [], type: Array, match_each: /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/ }
-		},
-		"host": {
-			"hostname":		{ dvalue: "", type: String, required: true}, 
-			"macaddr":		{ dvalue: "", type: String, match: /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/, required: true}
-		},
-		"upgrade": {
-			"fw_check_url":		{ dvalue: "", type: String, required: false},
-			"fw_path_url":		{ dvalue: "", type: String, required: false},
-			"fw_find_ext":		{ dvalue: "", type: String, required: false},
-			"fw_down_path":		{ dvalue: "", type: String, required: false}
+		"unknown": {
+			"host": {
+				"hostname":		{ dvalue: "", type: String, required: true}, 
+				"macaddr":		{ dvalue: "", type: String, match: /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/, required: true}
+			},
+			"upgrade": {
+				"fw_check_url":		{ dvalue: "", type: String, required: false},
+				"fw_path_url":		{ dvalue: "", type: String, required: false},
+				"fw_find_ext":		{ dvalue: "", type: String, required: false},
+				"fw_down_path":		{ dvalue: "", type: String, required: false}
+			}
 		}
 	}; 
 	function UCI(){
@@ -307,8 +322,7 @@
 		UCISection.prototype.$update = function(data){
 			if(!(".type" in data)) throw new Error("Supplied object does not have required '.type' field!"); 
 			// try either <config>-<type> or just <type>
-			var type = 	section_types[data[".type"]] || 
-									section_types[this[".config"][".name"]+"-"+data[".type"]]; 
+			var type = 	section_types[this[".config"][".name"]][data[".type"]]; 
 			if(!type) {
 				console.error("Section.$update: unrecognized section type "+this[".config"][".name"]+"-"+data[".type"]); 
 				return; 
@@ -345,6 +359,39 @@
 				field.$reset(value); 
 			}); 
 		}
+		
+		UCISection.prototype.$sync = function(){
+			var deferred = $.Deferred(); 
+			var self = this; 
+
+			$rpc.uci.state({
+				config: self[".config"][".name"], 
+				section: self[".name"]
+			}).done(function(data){
+				self.$update(data.values);
+				deferred.resolve(); 
+			}).fail(function(){
+				deferred.reject(); 
+			}); 
+			return deferred.promise(); 
+		}
+		
+		UCISection.prototype.$save = function(){
+			var deferred = $.Deferred(); 
+			var self = this; 
+			
+			$rpc.uci.set({
+				config: self[".config"][".name"], 
+				section: self[".name"], 
+				values: self.$getChangedValues()
+			}).done(function(data){
+				deferred.resolve(); 
+			}).fail(function(){
+				deferred.reject(); 
+			}); 
+			return deferred.promise(); 
+		}
+		
 		UCISection.prototype.$delete = function(){
 			var self = this; 
 			if(self[".config"]) return self[".config"].$deleteSection(self); 
@@ -381,9 +428,14 @@
 	})(); 
 	(function(){
 		function UCIConfig(uci, name){
-			this.uci = uci; 
-			this[".name"] = name; 
-			this["@all"] = []; 
+			var self = this; 
+			self.uci = uci; 
+			self[".name"] = name; 
+			self["@all"] = []; 
+			// set up slots for all known types of objects so we can reference them in widgets
+			Object.keys(section_types[name]||{}).map(function(type){
+				self["@"+type] = []; 
+			}); 
 			//this["@deleted"] = []; 
 		}
 		
@@ -477,10 +529,10 @@
 		}
 		
 		// creates a new object that will have values set to values
-		UCIConfig.prototype.create = function(item){
+		UCIConfig.prototype.create = function(item, offline){
 			var self = this; 
 			if(!(".type" in item)) throw new Error("Missing '.type' parameter!"); 
-			var type = section_types[item[".type"]] || section_types[self[".name"]+"-"+item[".type"]]; 
+			var type = section_types[self[".name"]][item[".type"]]; 
 			if(!type) throw Error("Trying to create section of unrecognized type!"); 
 			
 			// TODO: validate values!
@@ -595,11 +647,28 @@
 		var resync = {}; 
 		
 		async.series([
-			function(next){
+			function(next){ // commit configs that need committing first
+				var commit_list = []; 
+				Object.keys(self).map(function(k){
+					if(self[k].constructor == UCI.Config){
+						if(self[k][".need_commit"]) commit_list.push(self[k][".name"]); 
+					}
+				}); 
+				async.each(commit_list, function(config, next){
+					console.log("Committing changes to "+config); 
+					$rpc.uci.commit({config: config}).done(function(){
+						next(); 
+					}).fail(function(err){
+						next("could not commit config: "+err); 
+					});
+				}, function(){
+					next(); 
+				});
+			}, 
+			function(next){ // send all changes to the server
 				Object.keys(self).map(function(k){
 					if(self[k].constructor == UCI.Config){
 						var reqlist = self[k].$getWriteRequests(); 
-						if(self[k][".need_commit"]) resync[self[k][".name"]] = true; 
 						reqlist.map(function(x){ writes.push(x); });  
 					}
 				}); 
@@ -619,9 +688,8 @@
 			}, 
 			function(next){
 				async.eachSeries(Object.keys(resync), function(config, next){
-					console.log("Committing config "+config); 
+					console.log("Committing changes to "+config); 
 					$rpc.uci.commit({config: config}).done(function(){
-						console.log("Resynching config "+config); 
 						self[config][".need_commit"] = false; 
 						self[config].$sync().done(function(){
 							next(); 

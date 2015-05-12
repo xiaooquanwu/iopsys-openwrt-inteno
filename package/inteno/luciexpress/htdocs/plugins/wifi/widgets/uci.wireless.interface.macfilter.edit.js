@@ -10,7 +10,7 @@ $juci.module("wifi")
 		replace: true, 
 		require: "^ngModel"
 	 };  
-}).controller("uciWirelessInterfaceMacfilterEditController", function($scope, $rpc, $uci, $hosts){
+}).controller("uciWirelessInterfaceMacfilterEditController", function($scope, $rpc, $uci){
 	$scope.maclist = []; 
 	/*
 	// updates scratch model for the view
@@ -51,7 +51,7 @@ $juci.module("wifi")
 			});
 			//$scope.$apply();  
 		}
-	}, true); 
+	}); 
 	
 	// watch maclist for changes by the user
 	$scope.rebuildMacList = function(){

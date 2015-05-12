@@ -1,6 +1,7 @@
 {
 	"scripts": [
-		"internet"
+		"internet",
+		"widgets/uci.firewall.nat.rule.edit"
 	],
 	"pages": {
 		"internet/dns": {

@@ -1,5 +1,5 @@
 $juci.module("wifi")
-.controller("WifiMacFilterPageCtrl", function($scope, $uci, $hosts){
+.controller("WifiMacFilterPageCtrl", function($scope, $uci){
 	window.uci = $uci; 
 	$scope.uci = $uci; 
 	

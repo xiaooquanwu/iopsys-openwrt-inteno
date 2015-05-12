@@ -1,25 +1,39 @@
 $juci.module("core")
-    .directive("luciInputPortRange", function () {
-        var plugin_root = $juci.module("core").plugin_root;
-        return {
-            templateUrl: plugin_root + "/widgets/luci.input.port.range.html",
-            restrict: 'E',
-            replace: true,
-            scope: {
-                name: "@",
-                label: "@",
-                model: "=",
-                form: "=",
-                labelClass: "@",
-                inputOuterClass: "@",
-                messageClass: "@",
-                messageOffsetClass: "@"
-            },
-            link: function() {
-
-            }
-        };
-    })
+	.directive("luciInputPortRange", function () {
+		var plugin_root = $juci.module("core").plugin_root;
+		return {
+			templateUrl: plugin_root + "/widgets/luci.input.port.range.html",
+			restrict: 'E',
+			replace: true,
+			scope: {
+				model: "=ngModel"
+			},
+			link: function() {
+				
+			}, 
+			controller: "luciInputPortRange"
+		};
+	})
+	.controller("luciInputPortRange", function($scope){
+		$scope.startPort = ""; 
+		$scope.endPort = ""; 
+		
+		$scope.$watch("model", function(value){
+			if(value && value.split){
+				var parts = value.split("-"); 
+				$scope.startPort = parts[0]; 
+				$scope.endPort = parts[1]; 
+			}
+		}); 
+		(function(){
+			function updateModel(){
+				$scope.model = $scope.startPort + "-" + $scope.endPort; 
+			}
+			$scope.$watch("startPort", updateModel); 
+			$scope.$watch("endPort", updateModel); 
+		})(); 
+	}); 
+    /*
     .directive("validatePortRange", function () {
         var PORT_REGEX = /^\d{1,5}$/;
         return {
@@ -30,18 +44,11 @@ $juci.module("core")
             restrict: 'A',
             link: function (scope, el, attrs, ctrl) {
                 ctrl.$validators.validatePortRange = function (modelValue, viewValue) {
-                    console.log('ctrl', ctrl);
-                    console.log('scope', scope);
-                    console.log('scope model', scope.model);
-                    console.log('model value', modelValue);
-                    console.log('view value', viewValue);
                     if (ctrl.$isEmpty(modelValue)) { // consider empty models to be valid
-                        console.log('empty model');
                         ctrl.$setValidity('invalid', true);
                         return true;
                     }
                     if (PORT_REGEX.test(viewValue)) { // valid regex
-                        console.log('view value = ' + viewValue);
                         if (viewValue <= 0 || viewValue > 65535) {
                             ctrl.$setValidity('invalid', false);
                             return false;
@@ -113,5 +120,5 @@ $juci.module("core")
             }
             return false
         }
-    });
+    });*/
 

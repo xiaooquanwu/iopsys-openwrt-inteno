@@ -55,7 +55,7 @@ $juci.module("core")
 		scope.$watch("selectedItem", function(value){
 			//console.log("Selected item: "+JSON.stringify(value)); 
 			if(value != undefined && (typeof value) == "object" && "value" in value) scope.selectedText = value.value; 
-			else if(value != undefined) { 
+			else if(value != undefined && scope.itemList != undefined) { 
 				scope.itemList.map(function(x){
 					if(x.value == value) scope.selectedText = x.label;
 				}); 
@@ -74,9 +74,17 @@ $juci.module("core")
 					break;
 			}
 			//console.log("DROPDOWN: "+JSON.stringify(scope.selectedItem)+", "+item.value); 
-			scope.selectedItem.splice(0, scope.selectedItem.length); 
-			if("value" in item) Object.assign(scope.selectedItem, item.value); 
-			else Object.assign(scope.selectedItem, item); 
+			var value = item; 
+			if("value" in item) 
+				value = item.value; 
+			if(value instanceof Array) { // make it work for lists without changing reference
+				if(!(scope.selectedItem instanceof Array)) scope.selectedItem = []; 
+				value.map(function(x){ scope.selectedItem.push(x); }); 
+			} else if(value instanceof Object){ // make it work for objects without changing reference
+				Object.assign(scope.selectedItem, value);
+			} else {
+				scope.selectedItem = value; // make it work for primitive types
+			}
 			scope.onChange(item);
 		};
 		//scope.selectVal(scope.selectedItem);
