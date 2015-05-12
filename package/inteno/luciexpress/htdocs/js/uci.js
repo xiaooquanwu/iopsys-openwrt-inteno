@@ -41,6 +41,34 @@
 			return null; 
 		}
 	}
+
+    function PortValidator(){
+        var PORT_REGEX = /^\d{1,5}$/;
+
+        this.validate = function(field){
+            var parts = field.value.split("-");
+            if (parts.length > 1) {  // check if it is a port range or not
+                for (var i = 0; i < parts.length; i++) {
+                    var outcome = this.validatePort(parts[i]);
+                    if (outcome != null) { return outcome; }
+                }
+            } else {
+                return this.validatePort(parts)
+            }
+        };
+
+        this.validatePort = function(port) {
+            if (PORT_REGEX.test(port)) { // valid regex
+                if (port <= 0 || port > 65535) {
+                    return gettext("Port value must be between 0 and 65536");
+                } else {
+                    return null;
+                }
+            } else {
+                return gettext("Port value is invalid");
+            }
+        }
+    }
 	
 	var section_types = {
 		"juci-settings": {
@@ -80,11 +108,11 @@
 			"mtu_fix": 			{ dvalue: true, type: Boolean }
 		}, 
 		"firewall-forwarding": {
-			"src_ip":				{ dvalue: "", type: String }, 
-			"src_dport":			{ dvalue: 0, type: Number }, 
+			"src_ip":				{ dvalue: "", type: String },
+			"src_dport":			{ dvalue: 0, type: Number, required: true, validator: PortValidator },
 			"proto":				{ dvalue: "tcp", type: String }, 
 			"dest_ip":			{ dvalue: "", type: String }, 
-			"dest_port":		{ dvalue: 0, type: Number }
+			"dest_port":		{ dvalue: 0, type: Number, required: true, validator: PortValidator }
 		}, 
 		"firewall-rule": {
 			"name":					{ dvalue: "", type: String }, 

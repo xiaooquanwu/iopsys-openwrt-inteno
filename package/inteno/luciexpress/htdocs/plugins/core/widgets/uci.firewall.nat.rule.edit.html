@@ -48,16 +48,16 @@
             </div>
         </div>
         <div ng-show="portIsRange">
-            <luci-input-port-range name="publicPortRange" model="rule.src_dport.value" form="ruleForm" label="Public port range" label-class="col-xs-4" input-outer-class="col-xs-3" message-class="col-xs-8" message-offset-class="col-xs-offset-4" />
+            <luci-input-port-range name="publicPortRange" model="rule.src_dport" form="ruleForm" label="Public port range" label-class="col-xs-4" input-outer-class="col-xs-3" message-class="col-xs-8" message-offset-class="col-xs-offset-4" />
         </div>
         <div ng-show="portIsRange">
-            <luci-input-port-range name="privatePortRange" model="rule.dest_port.value" form="ruleForm" label="Private port range" label-class="col-xs-4" input-outer-class="col-xs-3" message-class="col-xs-8" message-offset-class="col-xs-offset-4" />
+            <luci-input-port-range name="privatePortRange" model="rule.dest_port" form="ruleForm" label="Private port range" label-class="col-xs-4" input-outer-class="col-xs-3" message-class="col-xs-8" message-offset-class="col-xs-offset-4" />
         </div>
         <div ng-show="!portIsRange">
-            <luci-input-port id="publicPortId" name="publicPort" model="rule.src_dport.value" form="ruleForm" label="Public port" label-class="col-xs-4" input-outer-class="col-xs-3" message-class="col-xs-8" message-offset-class="col-xs-offset-4" />
+            <luci-input-port id="publicPortId" name="publicPort" model="rule.src_dport" form="ruleForm" label="Public port" label-class="col-xs-4" input-outer-class="col-xs-3" message-class="col-xs-8" message-offset-class="col-xs-offset-4" />
         </div>
         <div ng-show="!portIsRange">
-            <luci-input-port id="privatePortId" name="privatePort" model="rule.dest_port.value" form="ruleForm" label="Private port" label-class="col-xs-4" input-outer-class="col-xs-3" message-class="col-xs-8" message-offset-class="col-xs-offset-4" />
+            <luci-input-port id="privatePortId" name="privatePort" model="rule.dest_port" form="ruleForm" label="Private port" label-class="col-xs-4" input-outer-class="col-xs-3" message-class="col-xs-8" message-offset-class="col-xs-offset-4" />
         </div>
     </div>
     <div class="modal-footer">
