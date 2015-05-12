@@ -18,3 +18,12 @@ input[type="checkbox"]:not(:checked) + label, [type="checkbox"]:checked + label 
 .field-error {
 	border-left: 4px solid rgba(255, 0, 0, 0.6); 
 }
+
+.no-side-padding {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.no-padding {
+    padding: 0;
+}

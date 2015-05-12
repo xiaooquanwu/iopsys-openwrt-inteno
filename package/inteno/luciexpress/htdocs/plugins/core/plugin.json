@@ -17,7 +17,8 @@
 		"widgets/luci.input.port",
 		"widgets/luci.input.port.range",
 		"widgets/luci.input.timespan", 
-		"widgets/luci.input.radio"
+		"widgets/luci.input.radio",
+        "widgets/luci.input.ipaddress"
 	],
 	"pages": {
 		"overview": {

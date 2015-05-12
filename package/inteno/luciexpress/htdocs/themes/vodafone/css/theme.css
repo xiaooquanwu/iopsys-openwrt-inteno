@@ -187,3 +187,13 @@ h1, h2 {
   opacity: 0;
   padding: 0 10px;
 }
+
+.no-side-padding {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.no-padding {
+    padding: 0;
+}
+
