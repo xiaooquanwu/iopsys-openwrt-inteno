@@ -80,6 +80,8 @@ build_minimal_rootfs() {
 	cp -d /bin/sh bin
 	cp -d /bin/umount bin
 
+	local ubi_ctrl_minor=$(awk -F= '/MINOR/ {print $2}' \
+				/sys/devices/virtual/misc/ubi_ctrl/uevent)
 	mkdir dev
 	mknod -m 644 dev/kmsg     c   1 11
 	mknod -m 644 dev/mtd0     c  90  0
@@ -89,7 +91,7 @@ build_minimal_rootfs() {
 	mknod -m 644 dev/mtd4     c  90  8
 	mknod -m 644 dev/mtd5     c  90 10
 	mknod -m 644 dev/mtd6     c  90 12
-	mknod -m 644 dev/ubi_ctrl c  10 63
+	mknod -m 644 dev/ubi_ctrl c  10 $ubi_ctrl_minor
 	mknod -m 644 dev/ubi0     c 254  0
 	mknod -m 644 dev/ubi0_0   c 254  1
 	mknod -m 644 dev/ubi0_1   c 254  2
@@ -168,12 +170,15 @@ iopsys_upgrade_handling() {
 	fi
 
 	# upgrading jffs2 -> ubifs
-	umount /proc
+	mount sysfs /sys -t sysfs
 
 	echo "====== Start flash partition update ======"
 
 	mount tmpfs /tmp -t tmpfs -o size=100M,mode=0755
 	build_minimal_rootfs /tmp
+
+	umount /sys
+	umount /proc
 
 	cd /tmp
 	pivot_root . /tmp/old_root
