@@ -11,7 +11,8 @@
 		"settings", 
 		"status",
 		"internet",
-		"wifi", 
-		"juci-mod-dropbear"
+		"wifi" 
+		//"juci-mod-dropbear", 
+		//"testrunner"
 	]
 }

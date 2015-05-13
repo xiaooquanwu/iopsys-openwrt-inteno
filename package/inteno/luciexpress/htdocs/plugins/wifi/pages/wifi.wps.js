@@ -1,9 +1,12 @@
 $juci.module("wifi")
-.controller("WifiWPSPageCtrl", function($scope, $uci){
+.controller("WifiWPSPageCtrl", function($scope, $uci, $rpc){
+	console.log("WIFI PAGE CONTROLLER"); 
 	$scope.data = {
 		userPIN: ""
 	}
-	$uci.sync(["wireless"]).done(function(){
+	$uci.sync(["wireless", "easybox"]).done(function(){
+		if($uci.easybox == undefined) $scope.$emit("error", "Easybox config is not present on this system!"); 
+		else $scope.easybox = $uci.easybox; 
 		$scope.wireless = $uci.wireless; 
 		$scope.$apply(); 
 	}).fail(function(err){

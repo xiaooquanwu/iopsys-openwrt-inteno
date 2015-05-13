@@ -2,17 +2,22 @@
   "name": "LuCi",
   "version": "0.0.1",
   "dependencies": {
-		"JSON": "*", 
-		"express": "*", 
-		"body-parser": "*",
-		"grunt": "*",
- 		"grunt-angular-gettext": "*",
-		"request": "*",
-		"glob": "*", 
-		"async": "*"
- },
+    "JSON": "*",
+    "express": "*",
+    "body-parser": "*",
+    "grunt": "*",
+    "grunt-angular-gettext": "*",
+    "request": "*",
+    "glob": "*",
+    "async": "*"
+  },
   "engines": {
     "node": "0.10.x",
     "npm": "1.2.x"
+  },
+  "devDependencies": {
+    "jasmine-core": "~2.3.3",
+    "karma-jasmine": "~0.3.5",
+    "karma-firefox-launcher": "~0.1.6"
   }
 }

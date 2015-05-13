@@ -13,6 +13,7 @@
 		"widgets/luci.nav",
 		"widgets/luci.navbar",
 		"widgets/luci.top_bar",
+		"widgets/luci.errors",
 		"widgets/core.modal",
 		"widgets/luci.input.port",
 		"widgets/luci.input.port.range",

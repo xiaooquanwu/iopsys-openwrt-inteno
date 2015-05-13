@@ -262,14 +262,15 @@
 			}
 		}, 
 		"network": {
-			"interface":		{ dvalue: "", type: String }, 
-			"is_lan": 			{ dvalue: 1, type: Number }, 
-			"ifname":				{ dvalue: "", type: String }, 
-			"proto":				{ dvalue: "dhcp", type: String }, 
-			"ipaddr":				{ dvalue: "", type: String }, 
-			"netmask":			{ dvalue: "", type: String }, 
-			"peerdns": 			{ dvalue: false, type: String }, 
-			"dns": 					{ dvalue: [], type: Array }
+			"ineterface": {
+				"is_lan": 			{ dvalue: 1, type: Number }, 
+				"ifname":				{ dvalue: "", type: String }, 
+				"proto":				{ dvalue: "dhcp", type: String }, 
+				"ipaddr":				{ dvalue: "", type: String }, 
+				"netmask":			{ dvalue: "", type: String }, 
+				"peerdns": 			{ dvalue: false, type: String }, 
+				"dns": 					{ dvalue: [], type: Array }
+			}
 		}, 
 		"unknown": {
 			"host": {

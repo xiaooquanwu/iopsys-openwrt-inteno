@@ -68,6 +68,12 @@ JUCI.app.config(function ($stateProvider, $locationProvider, $compileProvider, $
 .run(function($rootScope, $state, $session, gettextCatalog, $tr, gettext, $rpc, $config, $location, $navigation){
 	console.log("RUN"); 
 	
+	// TODO: maybe use some other way to gather errors than root scope? 
+	$rootScope.errors = []; 
+	$rootScope.$on("error", function(ev, data){
+		$rootScope.errors.push({message: data}); 
+		console.log("ERROR: "+ev.name+": "+JSON.stringify(Object.keys(ev.currentScope))); 
+	}); 
 	// set current language
 	gettextCatalog.currentLanguage = "se"; 
 	gettextCatalog.debug = true;
@@ -81,7 +87,7 @@ JUCI.app.config(function ($stateProvider, $locationProvider, $compileProvider, $
 	// Generate states for all loaded pages
 	Object.keys($juci.plugins).map(function(pname){
 		var plugin = $juci.plugins[pname]; 
-		Object.keys(plugin.pages).map(function(k){
+		Object.keys(plugin.pages||{}).map(function(k){
 			var page = plugin.pages[k]; 
 			if(page.view){
 				//scripts.push(plugin_root + "/" + page.view); 
@@ -109,7 +115,8 @@ JUCI.app.config(function ($stateProvider, $locationProvider, $compileProvider, $
 							return deferred.promise;
 						}
 					},*/
-					onEnter: function($window){
+					onEnter: function($window, $rootScope){
+						$rootScope.errors.splice(0, $rootScope.errors.length); 
 						document.title = $tr(k+".title")+" - "+$tr(gettext("application.name")); 
 					},
 				}); 

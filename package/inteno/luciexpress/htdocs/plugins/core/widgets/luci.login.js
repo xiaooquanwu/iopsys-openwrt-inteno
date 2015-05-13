@@ -20,8 +20,8 @@
  * 02110-1301 USA
  */
  
-$juci.module("core")
-	.directive("luciLogin", function(){
+JUCI.app
+.directive("luciLogin", function(){
 		var plugin_root = $juci.module("core").plugin_root; 
 		return {
 			// accepted parameters for this tag
@@ -94,4 +94,6 @@ $juci.module("core")
 				alert("Error logging out!");
 			});  
 		}
+
 	}); 
+		

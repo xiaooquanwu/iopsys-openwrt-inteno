@@ -263,7 +263,7 @@
       _response: function(json) {
         if (json === undefined) {
           return {
-            error: 'Internal server error',
+            error: 'JSONRPC: server returned empty string',
             version: '2.0'
           };
         }
@@ -282,7 +282,7 @@
           }
           catch (e) {
             return {
-              error: 'Internal server error: ' + e,
+              error: 'JSONRPC error: ' + e,
               version: '2.0'
             }
           }

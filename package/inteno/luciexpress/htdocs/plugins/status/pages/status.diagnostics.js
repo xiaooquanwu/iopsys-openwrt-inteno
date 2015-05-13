@@ -1,5 +1,5 @@
 $juci.module("status")
-.controller("StatusDiagnostics", function($scope){
+.controller("StatusDiagnostics", function($scope, $rpc){
 	$scope.data = {}; 
 	$rpc.router.networks().done(function(result){
 		if(result){
