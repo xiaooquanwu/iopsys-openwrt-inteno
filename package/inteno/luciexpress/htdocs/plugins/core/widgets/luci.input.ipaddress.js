@@ -8,17 +8,33 @@ $juci.module("core")
             scope: {
                 id: "@",
                 label: "@",
-                model: "=",
+                ngModel: "=",
                 labelClass: "@"
-            }
-            //controller: "luciInputIpAddressController"
+            },
+            require: "ngModel",
+            controller: "luciInputIpAddressController"
         };
     })
     .controller("luciInputIpAddressController", function($scope, $log) {
-//$scope.data = "";
-//$scope.$watch("data", function(){
-//    $log.debug('model', $scope.model);
-//    $log.debug('data', $scope.data);
-//    if ($scope.model) $scope.model.value = $scope.data;
-//}, true);
+        $scope.data = [];
+        $scope.ipAddress = "";
+
+        $scope.$watch("ngModel", function(value){
+            if(value && value.split){
+                var parts = value.split(".");
+                $scope.data[0] = parts[0]||"";
+                $scope.data[1] = parts[1]||"";
+                $scope.data[2] = parts[2]||"";
+                $scope.data[3] = parts[3]||"";
+            } else {
+                $scope.ipAddress = value;
+            }
+        });
+
+        $scope.$watch("data", function(){
+            $log.debug('data', $scope.data);
+            var ipAddress = $scope.data.join('.');
+            $log.debug('ip address', ipAddress);
+            if ($scope.ngModel) $scope.ngModel = ipAddress;
+        }, true);
     });

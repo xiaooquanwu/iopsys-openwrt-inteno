@@ -260,18 +260,26 @@
 				"macfilter":	{ dvalue: false, type: Boolean },
 				"maclist":		{ dvalue: [], type: Array, match_each: /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/ }
 			}
-		}, 
+		},
 		"network": {
-			"ineterface": {
-				"is_lan": 			{ dvalue: 1, type: Number }, 
-				"ifname":				{ dvalue: "", type: String }, 
-				"proto":				{ dvalue: "dhcp", type: String }, 
-				"ipaddr":				{ dvalue: "", type: String }, 
-				"netmask":			{ dvalue: "", type: String }, 
-				"peerdns": 			{ dvalue: false, type: String }, 
-				"dns": 					{ dvalue: [], type: Array }
-			}
-		}, 
+			"interface": {
+                "is_lan":       {dvalue: 1, type: Number},
+                "ifname":       {dvalue: "", type: String},
+                "proto":        {dvalue: "dhcp", type: String},
+                "ipaddr":       {dvalue: "", type: String},
+                "netmask":      {dvalue: "", type: String},
+                "peerdns":      {dvalue: false, type: String},
+                "dns":          {dvalue: [], type: Array}
+            }
+		},
+        //"ddns": {
+        //    "interface":            { dvalue: "", type: String },
+        //    "enabled":              { dvalue: 0, type: Number },
+        //    "service_name":         { dvalue: "", type: String },
+        //    "domain":               { dvalue: "", type: String },
+        //    "username":             { dvalue: "", type: String },
+        //    "password":             { dvalue: "", type: String }
+        //},
 		"unknown": {
 			"host": {
 				"hostname":		{ dvalue: "", type: String, required: true}, 
@@ -603,7 +611,7 @@
 		var self = this; 
 		$rpc.uci.configs().done(function(response){
 			var cfigs = response.configs; 
-			if(!cfigs) { next("could not retreive list of configs!"); return; }
+			if(!cfigs) { next("could not retrieve list of configs!"); return; }
 			cfigs.map(function(k){
 				if(!(k in self)){
 					//console.log("Adding new config "+k); 

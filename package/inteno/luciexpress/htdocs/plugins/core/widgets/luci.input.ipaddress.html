@@ -1,28 +1,28 @@
-<div class="form-group" class="col-md-6" ng-class="{ 'field-error': model.error }" data-toggle="tooltip" data-placement="top" title="{{model.error}}">
+<div class="form-group" class="col-md-6" ng-class="{ 'field-error': ngModel.error }" data-toggle="tooltip" data-placement="top" title="{{ngModel.error}}">
     <div class="col-md-5">
         <label class="{{labelClass}}">{{label|translate}}</label>
     </div>
     <div class="col-md-7">
         <div class="col-sm-2 no-side-padding col-sm-offset-1">
-            <input type="text" class="form-control input-lg no-padding text-center" ng-model="data.field_1" placeholder="..." maxlength="3" />
+            <input type="text" class="form-control input-lg no-padding text-center" ng-model="data[0]" placeholder="..." maxlength="3" />
         </div>
         <div class="col-xs-1 no-side-padding text-center input-lg">
             <strong>.</strong>
         </div>
         <div class="col-sm-2 no-side-padding">
-            <input type="text" class="form-control input-lg no-padding text-center" ng-model="data.field_2" placeholder="..." maxlength="3" />
+            <input type="text" class="form-control input-lg no-padding text-center" ng-model="data[1]" placeholder="..." maxlength="3" />
         </div>
         <div class="col-xs-1 no-side-padding text-center input-lg">
             <strong>.</strong>
         </div>
         <div class="col-sm-2 no-side-padding">
-            <input type="text" class="form-control input-lg no-padding text-center" ng-model="data.field_3" placeholder="..." maxlength="3" />
+            <input type="text" class="form-control input-lg no-padding text-center" ng-model="data[2]" placeholder="..." maxlength="3" />
         </div>
         <div class="col-xs-1 no-side-padding text-center input-lg">
             <strong>.</strong>
         </div>
         <div class="col-sm-2 no-side-padding">
-            <input type="text" class="form-control input-lg no-padding text-center" ng-model="data.field_4" placeholder="..." maxlength="3" />
+            <input type="text" class="form-control input-lg no-padding text-center" ng-model="data[3]" placeholder="..." maxlength="3" />
         </div>
     </div>
 </div>

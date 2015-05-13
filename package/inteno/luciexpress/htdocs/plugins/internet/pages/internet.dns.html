@@ -6,20 +6,20 @@
 			<luci-config-lines>
 				<luci-config-line title="{{'DNS configuration'|translate}}">
 					<div class="col-md-6">
-						<luci-input-radio id="auto" name="auto" value="0" model="$parent.$parent.manualDns" label="'automatically'" label-class="detail-strong-input" inline="true"/>
+                        <luci-input-radio id="autoDns" value="0" ng-model="wan.peerdns" label="'automatically'" label-class="detail-strong-input" inline="true" />
 					</div>
 					<div class="col-md-5 col-lg-offset-1">
-						<luci-input-radio id="manual" name="manual" value="1" model="$parent.$parent.manualDns" label="'manually'" label-class="detail-strong-input" inline="true"/>
+						<luci-input-radio id="manualDns" value="1" ng-model="wan.peerdns" label="'manually'" label-class="detail-strong-input" inline="true"/>
 					</div>
 				</luci-config-line>
-				<div ng-show="manualDns">
+				<div ng-show="wan.peerdns.value == 1">
 					<br/>
 					<div class="col-md-12">
-						<luci-input-ip-address id="firstDNSAddress" label="Domain Name Server (DNS) Address" label-class="detail-strong-input" />
+						<luci-input-ip-address id="firstDNSAddress" ng-model="wan.dns.value[0]" label="Domain Name Server (DNS) Address" label-class="detail-strong-input" />
 					</div>
 					<hr class="col-md-12"/>
 					<div class="col-md-12">
-						<luci-input-ip-address id="secondDNSAddress" label="Secondary DNS Address (optional)" label-class="detail-strong-input" />
+						<luci-input-ip-address id="secondDNSAddress" ng-model="wan.dns.value[1]" label="Secondary DNS Address (optional)" label-class="detail-strong-input" />
 					</div>
 				</div>
 			</luci-config-lines>
@@ -62,7 +62,7 @@
                         </div>
                         <div class="col-md-6">
                             <div class="col-sm-8 col-sm-offset-4 no-side-padding">
-                                <input type="text" class="form-control" ng-model="data.field_4" placeholder="{{'Add domain name'|translate}}" maxlength="3" />
+                                <input type="text" class="form-control" ng-model="domain" placeholder="{{'Add domain name'|translate}}" />
                             </div>
                         </div>
                     </div>
@@ -73,7 +73,7 @@
                         </div>
                         <div class="col-md-6">
                             <div class="col-sm-8 col-sm-offset-4 no-side-padding">
-                                <input type="text" class="form-control" ng-model="data.field_4" placeholder="{{'Add account'|translate}}" maxlength="3" />
+                                <input type="text" class="form-control" ng-model="account" placeholder="{{'Add account'|translate}}" />
                             </div>
                         </div>
                     </div>
@@ -84,12 +84,14 @@
                         </div>
                         <div class="col-md-6">
                             <div class="col-sm-8 col-sm-offset-4 no-side-padding">
-                                <input type="text" class="form-control" ng-model="data.field_4" placeholder="{{'Add password'|translate}}" maxlength="3" />
+                                <input type="password" class="form-control" ng-model="password" placeholder="{{'Add password'|translate}}" />
                             </div>
                         </div>
                     </div>
                 </div>
 			</luci-config-lines>
 		</luci-config-section>
+        <hr class="col-md-12"/>
+        <luci-config-apply></luci-config-apply>
 	</div>
 </luci-layout-with-sidebar>
