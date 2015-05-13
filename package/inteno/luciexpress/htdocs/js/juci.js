@@ -1,6 +1,9 @@
-var JUCI = {}, $juci = JUCI; 
+//var JUCI = {}, $juci = JUCI; 
 
-(function(){
+(function(scope){
+	var $uci = scope.UCI; 
+	var $rpc = scope.UBUS; 
+	
 	function JUCIMain(){
 		this.plugins = {}; 
 	}
@@ -38,7 +41,7 @@ var JUCI = {}, $juci = JUCI;
 		var deferred = $.Deferred(); 
 		async.series([
 			function(next){
-				$juci.ubus.$init().fail(function(){
+				scope.UBUS.$init().fail(function(){
 					console.error("UBUS failed to initialize!"); 
 				}).always(function(){ next(); }); 
 			}, 
@@ -124,7 +127,7 @@ var JUCI = {}, $juci = JUCI;
 				$juci.session.$init().done(function(){
 					// here we get router info part of the config. It will allow us to 
 					// pick the correct theme in the init script. TODO: perhaps do this somewhere else? 
-					$juci.ubus.router.info().done(function(info){
+					$rpc.router.info().done(function(info){
 						//console.log("Router info: "+JSON.stringify(info.system)); 
 						if(info && info.system) $juci.config.system = info.system; 
 						next(); 
@@ -138,7 +141,7 @@ var JUCI = {}, $juci = JUCI;
 				}); 
 			}, 
 			function(next){
-				$juci.uci.$init().fail(function(){
+				$uci.$init().fail(function(){
 					console.error("UCI failed to initialize!"); 
 				}).always(function(){ next(); }); 
 			}, 
@@ -168,7 +171,6 @@ var JUCI = {}, $juci = JUCI;
 				}); 
 			}, 
 			function(next){
-				var $rpc = $juci.ubus; 
 				// get the menu navigation
 				if($rpc.luci2){
 					console.log("Getting menu.."); 
@@ -205,10 +207,9 @@ var JUCI = {}, $juci = JUCI;
 		return deferred.promise(); 
 	}
 	
-	JUCI = window.juci = $juci = new JUCIMain(); 
-	
-	JUCI.app = 
-		angular.module("luci", [
+	scope.JUCI = scope.$juci = new JUCIMain(); 
+	if(typeof angular !== "undefined"){
+		var app = scope.JUCI.app = angular.module("luci", [
 			"ui.bootstrap",
 			"ui.router", 
 			'ui.select',
@@ -218,4 +219,11 @@ var JUCI = {}, $juci = JUCI;
 			"gettext", 
 			"checklist-model"
 		]); 
-})(); 
+		app.factory('$rpc', function(){
+			return scope.UBUS; 
+		});
+		app.factory('$uci', function(){
+			return scope.UCI; 
+		}); 
+	}
+})(typeof exports === 'undefined'? this : exports); 

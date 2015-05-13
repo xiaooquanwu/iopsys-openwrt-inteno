@@ -1,6 +1,6 @@
 //! Author: Martin K. Schröder <mkschreder.uk@gmail.com>
 
-(function($juci){
+(function(scope){
 	var RPC_HOST = ""; //(($config.rpc.host)?$config.rpc.host:"")
 	var RPC_SESSION_ID = "00000000000000000000000000000000"; 
 	var gettext = function(text){ return text; }; 
@@ -10,6 +10,7 @@
 		"local.features", 
 		"local.set_rpc_host"
 	]; 
+	
 	function rpc_request(type, namespace, method, data){
 		var sid = ""; 
 		var deferred = $.Deferred(); 
@@ -98,8 +99,11 @@
 			}
 			_find(call.split("."), self); 
 		}, 
-		$init: function(){
+		$init: function(host){
 			var self = this; 
+			if(host) {
+				if(host.host) RPC_HOST = host.host;
+			} 
 			console.log("Init UBUS"); 
 			var deferred = $.Deferred(); 
 			default_calls.map(function(x){ self.$register(x); }); 
@@ -139,11 +143,20 @@
 		}
 	}; 
 	
-	window.rpc = $juci.ubus = rpc; 
+	scope.UBUS = rpc; 
+	/*if(exports.JUCI){
+		var JUCI = exports.JUCI; 
+		JUCI.ubus = rpc; 
+		console.log(JSON.stringify(JUCI.app)); 
+		// luci rpc module for communicating with the server
+		if(JUCI.app) {
+			JUCI.app.factory('$rpc', function($rootScope, $config, gettext){
+				return window.rpc; 
+			}); 
+		}
+	} else {
+		console.log("RPC: Not registering as JUCI plugin!"); 
+	}*/
 	
-	// luci rpc module for communicating with the server
-	JUCI.app.factory('$rpc', function($rootScope, $config, gettext){
-		return window.rpc; 
-	}); 
-})(JUCI); 
+})(typeof exports === 'undefined'? this : exports); 
 

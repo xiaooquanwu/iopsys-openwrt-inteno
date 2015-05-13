@@ -7,7 +7,7 @@
 				<luci-config-line title="{{'Schedule Function'|translate}}"><switch id="enabled" name="enabled" ng-model="status.schedule.value" class="green"></switch></luci-config-line>
 			</luci-config-lines>
 		</luci-config-section>
-		<luci-config-section>
+		<luci-config-section ng-show="status.schedule.value">
 			<luci-config-heading>{{ 'Setup Scheduling' | translate }}</luci-config-heading>
 			<luci-config-lines>
 				<luci-config-line title="{{'During this time the WiFi is'|translate}}">

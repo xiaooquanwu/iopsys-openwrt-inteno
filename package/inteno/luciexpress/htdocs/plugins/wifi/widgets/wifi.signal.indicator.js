@@ -1,6 +1,6 @@
-$juci.module("core")
+$juci.app
 .directive("wifiSignalIndicator", function($compile, $parse){
-	var plugin_root = $juci.module("core").plugin_root; 
+	var plugin_root = $juci.module("wifi").plugin_root; 
 	return {
 		templateUrl: plugin_root+"/widgets/wifi.signal.indicator.html", 
 		scope: {

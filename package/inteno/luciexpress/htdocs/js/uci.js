@@ -1,7 +1,8 @@
 //! Author: Martin K. Schröder <mkschreder.uk@gmail.com>
 
-(function($juci){
-	$rpc = $juci.ubus; 
+(function(scope){
+	//var JUCI = exports.JUCI; 
+	var $rpc = scope.UBUS; 
 	
 	// just for the extractor
 	var gettext = function(str) { return str; }; 
@@ -724,10 +725,15 @@
 		return deferred.promise(); 
 	}
 	
-	$juci.uci = window.uci = new UCI(); 
+	scope.UCI = new UCI(); 
 	
-	JUCI.app.factory('$uci', function(){
-		return $juci.uci; 
-	}); 
-
-})(JUCI); 
+	/*if(exports.JUCI){
+		var JUCI = exports.JUCI; 
+		JUCI.uci = exports.uci = new UCI(); 
+		if(JUCI.app){
+			JUCI.app.factory('$uci', function(){
+				return $juci.uci; 
+			}); 
+		}
+	}*/
+})(typeof exports === 'undefined'? this : exports); 
