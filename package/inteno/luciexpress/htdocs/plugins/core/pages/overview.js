@@ -97,5 +97,4 @@ $juci.module("core")
 			$scope.$apply(); 
 		}); 
 	} refresh(); 
-	//setInterval(refresh, 5000); 
 }); 

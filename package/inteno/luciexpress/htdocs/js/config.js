@@ -11,6 +11,7 @@
 		$.get("/config.json", {
 			format: "json"
 		}).done(function(data){
+			if(!data || data == undefined) throw new Error("Could not get config.json!"); 
 			Object.keys(data).map(function(k) { self[k] = data[k]; }); 
 			deferred.resolve(); 
 		}).fail(function(){

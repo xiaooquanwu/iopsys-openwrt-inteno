@@ -102,8 +102,11 @@ $juci.module("status")
 				]; 
 			}
 			$scope.$apply(); 
+		}, function(){
+			setTimeout(function(){
+				doUpdate();
+			}, 5000); 
 		}); 
 	}
 	doUpdate(); 
-	setInterval(doUpdate, 5000); 
 }); 
