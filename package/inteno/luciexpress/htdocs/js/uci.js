@@ -159,24 +159,24 @@
 			}
 		},
 		"network": {
-			"interface": {
-                "is_lan":       {dvalue: 1, type: Number},
-                "ifname":       {dvalue: "", type: String},
-                "proto":        {dvalue: "dhcp", type: String},
-                "ipaddr":       {dvalue: "", type: String},
-                "netmask":      {dvalue: "", type: String},
-                "peerdns":      {dvalue: false, type: String},
-                "dns":          {dvalue: [], type: Array}
-            }
-		},
-        //"ddns": {
-        //    "interface":            { dvalue: "", type: String },
-        //    "enabled":              { dvalue: 0, type: Number },
-        //    "service_name":         { dvalue: "", type: String },
-        //    "domain":               { dvalue: "", type: String },
-        //    "username":             { dvalue: "", type: String },
-        //    "password":             { dvalue: "", type: String }
-        //},
+			"ineterface": {
+				"is_lan": 			{ dvalue: 1, type: Number }, 
+				"ifname":				{ dvalue: "", type: String }, 
+				"proto":				{ dvalue: "dhcp", type: String }, 
+				"ipaddr":				{ dvalue: "", type: String }, 
+				"netmask":			{ dvalue: "", type: String }, 
+				"peerdns": 			{ dvalue: false, type: String }, 
+				"dns": 					{ dvalue: [], type: Array }
+			}
+		}, 
+		//"ddns": {
+		//    "interface":            { dvalue: "", type: String },
+		//    "enabled":              { dvalue: 0, type: Number },
+		//    "service_name":         { dvalue: "", type: String },
+		//    "domain":               { dvalue: "", type: String },
+		//    "username":             { dvalue: "", type: String },
+		//    "password":             { dvalue: "", type: String }
+		//},
 		"unknown": {
 			"upgrade": {
 				"fw_check_url":		{ dvalue: "", type: String, required: false},
