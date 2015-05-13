@@ -34,6 +34,61 @@
 				<luci-config-line title="{{'Dynamic DNS'|translate}}">
 					<switch ng-model="status.wlan.value" class="green" ng-change="onApply()"></switch>
 				</luci-config-line>
+                <div>
+                    <br/>
+                    <div class="form-group" class="col-md-12" ng-class="{ 'field-error': model.error }" data-toggle="tooltip" data-placement="top" title="{{model.error}}">
+                        <div class="col-md-6 text-left">
+                            <label class="detail-strong-input">{{'Provider'|translate}}</label>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="col-sm-8 col-sm-offset-4 no-side-padding">
+                                <ui-select ng-model="selectedSection"
+                                           theme="bootstrap"
+                                           search-enabled="false"
+                                           on-select="onChangeProvider($item)">
+                                    <ui-select-match placeholder="{{'Select provider'|translate}}">{{$select.selected}}</ui-select-match>
+                                    <ui-select-choices repeat="provider in providers"
+                                                       refresh-delay="0">
+                                        <div >{{provider}}</div>
+                                    </ui-select-choices>
+                                </ui-select>
+                            </div>
+                        </div>
+                    </div>
+                    <hr class="col-md-12"/>
+                    <div class="form-group" class="col-md-12" ng-class="{ 'field-error': model.error }" data-toggle="tooltip" data-placement="top" title="{{model.error}}">
+                        <div class="col-md-6 text-left">
+                            <label class="detail-strong-input">{{'Domain name'|translate}}</label>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="col-sm-8 col-sm-offset-4 no-side-padding">
+                                <input type="text" class="form-control" ng-model="data.field_4" placeholder="{{'Add domain name'|translate}}" maxlength="3" />
+                            </div>
+                        </div>
+                    </div>
+                    <hr class="col-md-12"/>
+                    <div class="form-group" class="col-md-12" ng-class="{ 'field-error': model.error }" data-toggle="tooltip" data-placement="top" title="{{model.error}}">
+                        <div class="col-md-6 text-left">
+                            <label class="detail-strong-input">{{'Account'|translate}}</label>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="col-sm-8 col-sm-offset-4 no-side-padding">
+                                <input type="text" class="form-control" ng-model="data.field_4" placeholder="{{'Add account'|translate}}" maxlength="3" />
+                            </div>
+                        </div>
+                    </div>
+                    <hr class="col-md-12"/>
+                    <div class="form-group" class="col-md-12" ng-class="{ 'field-error': model.error }" data-toggle="tooltip" data-placement="top" title="{{model.error}}">
+                        <div class="col-md-6 text-left">
+                            <label class="detail-strong-input">{{'Password'|translate}}</label>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="col-sm-8 col-sm-offset-4 no-side-padding">
+                                <input type="text" class="form-control" ng-model="data.field_4" placeholder="{{'Add password'|translate}}" maxlength="3" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
 			</luci-config-lines>
 		</luci-config-section>
 	</div>
