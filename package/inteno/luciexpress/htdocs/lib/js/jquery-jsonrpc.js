@@ -178,6 +178,7 @@
       // Internal method used for generic ajax requests
       _doRequest: function(data, options) {
         var _that = this;
+        
         $.ajax({
           type: 'POST',
           async: false !== options.async,
@@ -194,7 +195,7 @@
           success: function(json) {
             _that._requestSuccess.call(_that, json, options.success, options.error);
           }
-        })
+        }); 
       },
 
       // Determines the appropriate request URL to call for a request

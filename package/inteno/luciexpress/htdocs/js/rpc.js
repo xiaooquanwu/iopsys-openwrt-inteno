@@ -74,6 +74,22 @@
 			if(sid) RPC_SESSION_ID = sid; 
 			else return RPC_SESSION_ID; 
 		}, 
+		$login: function(opts){
+			var self = this; 
+			var deferred  = $.Deferred(); 
+			self.session.login({
+				"username": opts.username, 
+				"password": opts.password
+			}).done(function(result){
+				RPC_SESSION_ID = result.ubus_rpc_session;
+				//JUCI.localStorage.setItem("sid", self.sid); 
+				//if(result && result.acls && result.acls.ubus) setupUbusRPC(result.acls.ubus); 
+				deferred.resolve(self.sid); 
+			}).fail(function(result){
+				deferred.reject(result); 
+			}); 
+			return deferred.promise(); 
+		},
 		$register: function(call){
 			//console.log("registering: "+call); 
 			if(!call) return; 
@@ -159,5 +175,5 @@
 		console.log("RPC: Not registering as JUCI plugin!"); 
 	}*/
 	
-})(typeof exports === 'undefined'? this : exports); 
+})(typeof exports === 'undefined'? this : global); 
 
