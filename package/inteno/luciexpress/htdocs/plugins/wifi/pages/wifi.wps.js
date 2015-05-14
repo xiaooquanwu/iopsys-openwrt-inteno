@@ -7,6 +7,13 @@ $juci.module("wifi")
 	$uci.sync(["wireless", "easybox"]).done(function(){
 		if($uci.easybox == undefined) $scope.$emit("error", "Easybox config is not present on this system!"); 
 		else $scope.easybox = $uci.easybox; 
+		if(!$uci.easybox.settings){
+			$uci.easybox.create({".type": "settings", ".name": "settings"}).done(function(section){
+				$uci.save(); 
+			}).fail(function(){
+				$scope.$emit("error", "Could not create required section easybox.settings in config!"); 
+			}); 
+		} 
 		$scope.wireless = $uci.wireless; 
 		$scope.$apply(); 
 	}).fail(function(err){

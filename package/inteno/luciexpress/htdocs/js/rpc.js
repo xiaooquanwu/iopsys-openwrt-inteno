@@ -31,9 +31,8 @@
 						// an empty json object. Otherwise we have no way to differentiate success 
 						// from failure of a request. This has to be done on the host side. 
 						if(result.result[0] != 0){ // || result.result[1] == undefined) {
-							console.log("RPC succeeded, but returned error: "+JSON.stringify(result));
-							deferred.reject((function(){
-								switch(result.result[0]){
+							function _errstr(error){
+								switch(error){
 									case 0: return gettext("Parse error"); 
 									case 1: return gettext("Invalid request"); 
 									case 2: return gettext("Invalid parameters"); 
@@ -44,7 +43,9 @@
 									case 7: return gettext("Timed out"); 
 									default: return gettext("RPC error #")+result.result[0]+": "+result.result[1]; 
 								}
-							})()); 
+							}
+							console.log("RPC succeeded ("+namespace+"."+method+"), but returned error: "+JSON.stringify(result)+": "+_errstr(result.result[0]));
+							deferred.reject(_errstr(result.result[0])); 
 						} else {
 							deferred.resolve(result.result[1]);
 						}

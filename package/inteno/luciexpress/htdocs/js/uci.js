@@ -83,7 +83,7 @@
 			}
 		}, 
 		"easybox": {
-			"easybox-settings": {
+			"settings": {
 				"usb_port": 		{ dvalue: true, type: Boolean }, 
 				"status_led": 	{ dvalue: true, type: Boolean }, 
 				"power_led": 		{ dvalue: true, type: Boolean }, 
@@ -92,7 +92,7 @@
 				"wpsbutton": 		{ dvalue: true, type: Boolean },
 				"wpsdevicepin": { dvalue: true, type: Boolean }
 			},
-			"easybox-services": {
+			"services": {
 				"internet":				{ dvalue: "", type: String },
 				"voice":					{ dvalue: "", type: String },
 				"iptv":						{ dvalue: "", type: String }
@@ -150,57 +150,6 @@
 				"hostname":				{ dvalue: '', type: String },
 				"displayname":		{ dvalue: '', type: String },
 				"log_size":				{ dvalue: 200, type: Number }
-			}
-		}, 
-		"voice_client": {
-			"brcm_line": {
-				"extension": 			{ dvalue: '', type: String }, 
-				"sip_account": 		{ dvalue: '', type: String }, 
-				"noise":					{ dvalue: false, type: Boolean }, 
-				"vad":						{ dvalue: false, type: Boolean }, 
-				"txgain":					{ dvalue: false, type: Boolean }, 
-				"rxgain":					{ dvalue: false, type: Boolean }, 
-				"echo_cancel":		{ dvalue: true, type: Boolean }, 
-				"callwaiting":		{ dvalue: false, type: Boolean }, 
-				"clir":						{ dvalue: false, type: Boolean }, 
-				"name":						{ dvalue: '', type: String }, 
-				"instance":				{ dvalue: '', type: String }
-			}, 
-			"sip_service_provider": {           
-				"name":							{ dvalue: "Account 1", type: String },
-				"codec0":						{ dvalue: "alaw", type: String },  
-				"codec1":						{ dvalue: "ulaw", type: String },       
-				"codec2":						{ dvalue: "g729", type: String },   
-				"codec3":						{ dvalue: "g726", type: String },
-				"autoframing":			{ dvalue: false, type: Boolean },
-				"cfim_on":					{ dvalue: "*21*", type: String },  
-				"cfim_off":					{ dvalue: "#21#", type: String },
-				"cfbs_on":					{ dvalue: "*61*", type: String }, 
-				"cfbs_off":					{ dvalue: "#61#", type: String }, 
-				"call_return":			{ dvalue: "*69", type: String },         
-				"redial":						{ dvalue: "*66", type: String },   
-				"is_fax":						{ dvalue: false, type: Boolean },      
-				"transport":				{ dvalue: "udp", type: String },
-				"priority_ulaw":		{ dvalue: 0, type: Number },
-				"priority_alaw":		{ dvalue: 0, type: Number }, 
-				"priority_g729":		{ dvalue: 0, type: Number },  
-				"priority_g723":		{ dvalue: 0, type: Number },
-				"priority_g726":		{ dvalue: 0, type: Number },   
-				"enabled":					{ dvalue: true, type: Boolean },
-				"target":						{ dvalue: "direct", type: String },       
-				"call_lines":				{ dvalue: "BRCM/4", type: String },
-				"mailbox":					{ dvalue: "-", type: String },     
-				"call_filter":			{ dvalue: "-", type: String },     
-				"domain":						{ dvalue: "217.27.161.62", type: String },      
-				"user":							{ dvalue: "0854601910", type: String }, 
-				"authuser":					{ dvalue: "0854601910", type: String }, 
-				"displayname":			{ dvalue: "TEST", type: String }, 
-				"ptime_ulaw":				{ dvalue: 20, type: Number }, 
-				"ptime_g726":				{ dvalue: 20, type: Number },     
-				"ptime_g729":				{ dvalue: 20, type: Number }, 
-				"ptime_alaw":				{ dvalue: 20, type: Number }, 
-				"host":							{ dvalue: "217.27.161.62", type: String },  
-				"outboundproxy":		{ dvalue: "217.27.161.62", type: String }
 			}
 		}, 
 		"wireless": {
@@ -528,6 +477,15 @@
 			}); 
 		}
 		
+		UCIConfig.prototype.$registerSectionType = function(name, descriptor){
+			var config = this[".name"]; 
+			var conf_type = section_types[config]; 
+			if(typeof conf_type === "undefined") conf_type = section_types[config] = {}; 
+			conf_type[name] = descriptor; 
+			this["@"+name] = []; 
+			console.log("Registered new section type "+config+"."+name); 
+		}
+		
 		UCIConfig.prototype.$deleteSection = function(section){
 			var self = this; 
 			var deferred = $.Deferred(); 
@@ -590,7 +548,7 @@
 			var reqlist = []; 
 			self["@all"].map(function(section){
 				var changed = section.$getChangedValues(); 
-				console.log(JSON.stringify(changed) +": "+Object.keys(changed).length); 
+				//console.log(JSON.stringify(changed) +": "+Object.keys(changed).length); 
 				if(Object.keys(changed).length){
 					reqlist.push({
 						"config": self[".name"], 
@@ -625,6 +583,11 @@
 		return deferred.promise(); 
 	}
 	
+	UCI.prototype.$registerConfig = function(name){
+		if(!(name in section_types)) section_types[name] = {}; 
+		if(!(name in this)) this[name] = new UCI.Config(this, name); 
+	}
+	
 	UCI.prototype.sync = function(configs){
 		var deferred = $.Deferred(); 
 		var self = this; 
@@ -657,6 +620,32 @@
 				if(err) deferred.reject(err); 
 				else deferred.resolve(); 
 			}, 0); 
+		}); 
+		return deferred.promise(); 
+	}
+	
+	UCI.prototype.$revert = function(){
+		var revert_list = []; 
+		var deferred = $.Deferred(); 
+		var errors = []; 
+		var self = this; 
+		
+		Object.keys(self).map(function(k){
+			if(self[k].constructor == UCI.Config){
+				if(self[k][".need_commit"]) revert_list.push(self[k][".name"]); 
+			}
+		}); 
+		async.eachSeries(revert_list, function(item, next){
+			$rpc.uci.revert({"config": item[".name"], "ubus_rpc_session": $rpc.$sid()}).done(function(){
+				console.log("Reverted config "+item[".name"]); 
+				next(); 
+			}).fail(function(){
+				errors.push("Failed to revert config "+item[".name"]); 
+				next(); 
+			}); 
+		}, function(){
+			if(errors.length) deferred.reject(errors); 
+			else deferred.resolve(); 
 		}); 
 		return deferred.promise(); 
 	}

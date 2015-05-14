@@ -1,5 +1,23 @@
 <luci-layout-with-sidebar>
 	<div ng-controller="StatusEventsPageCtrl">
-		Events
+		<luci-config-section>
+			<luci-config-heading>{{ 'Event Log' | translate }}</luci-config-heading>
+			<luci-config-info>{{ 'status.eventlog.info' | translate }}</luci-config-info>
+			<luci-config-lines>
+				<luci-config-line title="Categories to Show">
+					<div class="row" ng-class="{'field-error': schedule.days.error}" >
+							<div class="col-xs-4" ng-repeat="type in allLogTypes">
+								<label >
+									<input type="checkbox" checklist-model="selectedLogTypes" checklist-value="type.value"> {{type.label}}
+								</label>
+							</div>
+						</div>
+				</luci-config-line>
+				<luci-config-line title="Events to Show">
+					<luci-select ng-model="selectedShownType" ng-items="allEventTypes" placeholder="Select events to show"></luci-select>
+				</luci-config-line>
+			</luci-config-lines>
+			<luci-config-heading>{{'Log' | translate}}</luci-config-heading>
+		</luci-config-section>
 	</div>
 </luci-layout-with-sidebar>

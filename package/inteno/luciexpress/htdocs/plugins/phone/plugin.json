@@ -1,6 +1,7 @@
 {
 	"scripts": [
-		"phone"
+		"phone", 
+		"widgets/uci.voice_client.call_filter"
 	], 
 	"pages": {
 		"phone/number_blocking": {

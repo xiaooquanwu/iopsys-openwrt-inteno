@@ -115,10 +115,11 @@ JUCI.app.config(function ($stateProvider, $locationProvider, $compileProvider, $
 							return deferred.promise;
 						}
 					},*/
-					onEnter: function($window, $rootScope){
+					onEnter: function($uci, $rootScope){
 						$rootScope.errors.splice(0, $rootScope.errors.length); 
-						document.title = $tr(k+".title")+" - "+$tr(gettext("application.name")); 
-					},
+						$uci.$revert(); 
+						document.title = $tr(k.replace(/\//g, ".")+".title")+" - "+$tr(gettext("application.name")); 
+					}
 				}); 
 			}
 		}); 
