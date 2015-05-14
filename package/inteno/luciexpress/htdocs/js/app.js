@@ -148,6 +148,18 @@ JUCI.app.config(function ($stateProvider, $locationProvider, $compileProvider, $
 		}
 }}]); 
 
+// make autofocus directive work as expected
+JUCI.app.directive('autofocus', ['$timeout', function($timeout) {
+  return {
+    restrict: 'A',
+    link : function($scope, $element) {
+      $timeout(function() {
+        $element[0].focus();
+      });
+    }
+  }
+}]);
+
 angular.element(document).ready(function() {
 	JUCI.$init().done(function(){
 		angular.bootstrap(document, ["luci"]);

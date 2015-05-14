@@ -2,22 +2,13 @@
 	<luci-config-section>
 		<luci-config-lines>
 			<luci-config-line title="{{'Wifi Mode'|translate}}">
-				<ui-select ng-model="device.hwmode.value" search-enabled="false" style="width: 200px;">
-					<ui-select-match placeholder="{{ 'Choose Mode' | translate}}">{{$select.selected|translate}}</ui-select-match>
-					<ui-select-choices repeat="item in device.hwmode.schema.allow" refresh-delay="0"><div>{{item|translate}}</div></ui-select-choices>
-				</ui-select>
+				<luci-select ng-model="device.hwmode.value" ng-items="device.hwmode.schema.allow"/>
 			</luci-config-line>
 			<luci-config-line title="{{'Bandwidth'|translate}}">
-				<ui-select ng-model="device.bandwidth.value" theme="bootstrap" search-enabled="false" style="width: 200px;">
-					<ui-select-match placeholder="{{ 'Choose Bandwidth'  | translate}}">{{$select.selected|translate}}</ui-select-match>
-					<ui-select-choices repeat="item in device.bandwidth.schema.allow" refresh-delay="0"><div >{{item|translate}}</div></ui-select-choices>
-				</ui-select>
+				<luci-select ng-model="device.bandwidth.value" ng-items="device.bandwidth.schema.allow"/>
 			</luci-config-line>
 			<luci-config-line title="{{'Channel'|translate}}">
-				<ui-select ng-model="device.channel.value" theme="bootstrap" search-enabled="false" style="width: 200px;">
-					<ui-select-match placeholder="{{ 'Choose Channel'  | translate}}">{{$select.selected | translate}}</ui-select-match>
-					<ui-select-choices repeat="item in device.channel.schema.allow" refresh-delay="0"><div >{{item|translate}}</div></ui-select-choices>
-				</ui-select>
+				<luci-select ng-model="device.channel.value" ng-items="device.channel.schema.allow"/>
 			</luci-config-line>
 		</luci-config-lines>
 	</luci-config-section>
