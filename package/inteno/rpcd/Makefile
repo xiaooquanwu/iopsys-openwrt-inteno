@@ -11,16 +11,6 @@ PKG_NAME:=rpcd
 PKG_VERSION:=2014-07-04
 PKG_RELEASE=$(PKG_SOURCE_VERSION)
 
-PKG_SOURCE_PROTO:=git
-PKG_SOURCE_URL:=git://nbd.name/luci2/rpcd.git
-PKG_SOURCE_SUBDIR:=$(PKG_NAME)
-PKG_SOURCE_VERSION:=7fd4564b8acb60254817cb341b84c6468c8c6440
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
-PKG_MAINTAINER:=Jo-Philipp Wich <jow@openwrt.org>
-
-PKG_LICENSE:=ISC
-PKG_LICENSE_FILES:=
-
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)
 PKG_BUILD_PARALLEL:=1
 
@@ -30,6 +20,12 @@ include $(INCLUDE_DIR)/cmake.mk
 define Build/InstallDev
 	$(INSTALL_DIR) $(1)/usr/include
 	$(CP) $(PKG_BUILD_DIR)/include/rpcd $(1)/usr/include/
+endef
+
+
+define Build/Prepare
+	mkdir -p $(PKG_BUILD_DIR)
+	$(CP) ./src/* $(PKG_BUILD_DIR)/
 endef
 
 define Package/rpcd/default
