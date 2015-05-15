@@ -32,7 +32,7 @@ config_get dmzhost dmz host
 [ -n "$dmzhost" ] || exit
 
 config_get exclude_ports dmz exclude_ports
-[ -n "$excl_port" ] && PORTS="$PORTS $excl_port"
+[ -n "$exclude_ports" ] && PORTS="$PORTS $exclude_ports"
 
 config_foreach port_from_section rule
 config_foreach port_from_section redirect
@@ -40,8 +40,13 @@ config_foreach port_from_section redirect
 PORTS="$(echo $PORTS | tr ' ' ',')"
 
 iptables -t filter -I zone_wan_forward -d $dmzhost -m comment --comment DMZ_Host -j ACCEPT
-#iptables -t nat -I zone_wan_prerouting -p udp "$PORTS" -m comment --comment DMZ_Host_TCP -j DNAT --to-destination $dmzhost
-#iptables -t nat -I zone_wan_prerouting -p tcp "$PORTS" -m comment --comment DMZ_Host_TCP -j DNAT --to-destination $dmzhost
-iptables -t nat -I zone_wan_prerouting -p udp -m comment --comment DMZ_Host_TCP -j DNAT --to-destination $dmzhost
-iptables -t nat -I zone_wan_prerouting -p tcp -m comment --comment DMZ_Host_TCP -j DNAT --to-destination $dmzhost
+if [ -n "$PORTS" ]; then
+	iptables -t nat -I zone_wan_prerouting -p tcp --match multiport ! --dports $PORTS -m comment --comment DMZ_Host_TCP -j DNAT --to-destination $dmzhost
+	iptables -t nat -I zone_wan_prerouting -p udp --match multiport ! --dports $PORTS -m comment --comment DMZ_Host_UDP -j DNAT --to-destination $dmzhost
+else
+	iptables -t nat -I zone_wan_prerouting -p udp -m comment --comment DMZ_Host_TCP -j DNAT --to-destination $dmzhost
+	iptables -t nat -I zone_wan_prerouting -p tcp -m comment --comment DMZ_Host_TCP -j DNAT --to-destination $dmzhost
+fi
+
+
 
