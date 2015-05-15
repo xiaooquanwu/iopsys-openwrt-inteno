@@ -499,10 +499,10 @@ populate_clients()
 							clients[cno].wireless = true;
 						else if(!(clients[cno].connected = arping(clients[cno].ipaddr, clients[cno].device, toms)))
 							recalc_sleep_time(true, toms);
-						cno++;
 
 						if (clients[cno].connected)
 							details[cno].connum = active_connections(clients[cno].ipaddr);
+						cno++;
 					}
 				}
 			}
