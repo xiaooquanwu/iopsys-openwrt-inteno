@@ -4,7 +4,21 @@ require("./lib-juci");
 describe("UCI", function(){
 	beforeEach(function(done){
 		$uci.sync().done(function(){
-			done(); 
+			var to_delete = $uci.juci["@test"].map(function(x){
+				return x; 
+			}); 
+			// have to use a copy of the array because deletion modifies the array
+			async.eachSeries(to_delete, function(section, next){
+				section.$delete().done(function(){
+					next(); 
+				}).fail(function(){
+					throw new Error("Was unable to delete section "+section[".name"]+" from config juci!"); 
+				}); 
+			}, function(){
+				$uci.save().done(function(){
+					done(); 
+				}); 
+			}); 
 		}); 
 	}); 
 	it("should have schema definition for each data field found in each defined uci config", function(done){
@@ -42,29 +56,6 @@ describe("UCI", function(){
 				done(); 
 			}); 
 		//}); 
-	}); 
-	// deletes all sections that have type "test" from juci config and commits the changes
-	it("should be able to delete unused test sections in juci config", function(done){ // this is just to get to a known state, but we can do it as a test :)
-		$uci.sync("juci").done(function(){
-			expect($uci.juci["@test"]).to.be.an(Array); 
-			var to_delete = $uci.juci["@test"].map(function(x){
-				return x; 
-			}); 
-			// have to use a copy of the array because deletion modifies the array
-			async.eachSeries(to_delete, function(section, next){
-				expect(section).to.be.ok(); 
-				section.$delete().done(function(){
-					next(); 
-				}).fail(function(){
-					throw new Error("Was unable to delete section "+section[".name"]+" from config juci!"); 
-				}); 
-			}, function(){
-				expect($uci.juci["@test"]).to.be.empty(); 
-				$uci.save().done(function(){
-					done(); 
-				}); 
-			}); 
-		}); 
 	}); 
 	// will create an anonymous 'test' section and then delete it, commiting the changes
 	it("should be able to add and delete an anonymous section", function(done){
@@ -147,10 +138,14 @@ describe("UCI", function(){
 	it("should not be able to add a section that already exists", function(done){
 		expect($uci.juci["@test"]).to.be.empty(); 
 		$uci.juci.create({".type": "test", ".name": "testname"}).done(function(section){
-			$uci.juci.create({".type": "test", ".name": "testname"}).done(function(section){
+			$uci.juci.create({".type": "test", ".name": "testname"}).done(function(section2){
 				throw new Error("Creating a section that already exists returned success when it should fail!"); 
 			}).fail(function(){
-				done(); 
+				section.$delete().done(function(){
+					$uci.save().done(function(){
+						done(); 
+					}); 
+				}); 
 			}); 
 		}).fail(function(){
 			throw new Error("Failed to create section testname when it was supposed to work fine!");  

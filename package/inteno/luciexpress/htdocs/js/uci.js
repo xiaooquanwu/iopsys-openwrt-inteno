@@ -405,10 +405,10 @@
 				if(self[x].constructor == UCI.Section) to_delete[x] = self[x]; 
 			}); 
 			//console.log("To delete: "+Object.keys(to_delete)); 
-			$rpc.uci.rollback({
+			/*$rpc.uci.rollback({
 				config: self[".name"], 
 				ubus_rpc_session: $rpc.$sid()
-			}).done(function(){
+			}).done(function(){*/
 				$rpc.uci.state({
 					config: self[".name"]
 				}).done(function(data){
@@ -433,9 +433,9 @@
 				}).fail(function(){
 					deferred.reject(); 
 				}); 
-			}).fail(function(){
+			/*}).fail(function(){
 				deferred.reject("Could not revert config before sync!"); 
-			}); 
+			}); */
 			return deferred.promise(); 
 		}
 		// set object values on objects that match search criteria 
