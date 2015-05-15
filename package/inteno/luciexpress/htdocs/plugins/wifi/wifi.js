@@ -6,7 +6,9 @@ JUCI.app
 			$juci.redirect("wifi-general"); 
 		}
 	}); 
-	
+}); 
+
+(function(){
 	UCI.$registerConfig("wireless"); 
 	UCI.wireless.$registerSectionType("wifi-status", {
 		"wlan":		{ dvalue: true, type: Boolean }, 
@@ -71,4 +73,4 @@ JUCI.app
 		"hostname":		{ dvalue: "", type: String, required: true}, 
 		"macaddr":		{ dvalue: "", type: String, match: /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/, required: true}
 	}); 
-}); 
+})(); 

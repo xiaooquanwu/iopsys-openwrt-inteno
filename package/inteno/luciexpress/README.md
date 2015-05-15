@@ -36,6 +36,17 @@ No you can run the server using:
 	
 You may need to use 'nodejs' command instead of 'node' depending on your distro. 
 
+Unit testing
+------------
+
+Unit testing is done using grunt task "test". You can invoke this task using command: 
+
+	grunt test --host=<router ip> --user=<rpc user> --pass=<rpc user pass>
+	
+This will typically search htdocs folder for all files located in "tests" directory and begining with "test-" (and ending with ".js"). Running tests will ensure that the router is working as the gui expects it to work. If any tests fail then you will know ahead of time that some key functionality is broken, bofore interacting with the gui in browser. 
+
+In all of your unit tests you should include the lib-juci file that is located in tests directory. This file will setup the test environment so that you can use the core functions just like you would use them in angular. Note that angular is currently not available in test environment. 
+
 Using UCI from the web console
 ---------------------
 

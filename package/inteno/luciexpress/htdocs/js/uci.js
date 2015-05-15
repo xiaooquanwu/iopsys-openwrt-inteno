@@ -229,7 +229,9 @@
 		UCISection.prototype.$update = function(data){
 			if(!(".type" in data)) throw new Error("Supplied object does not have required '.type' field!"); 
 			// try either <config>-<type> or just <type>
-			var type = 	section_types[this[".config"][".name"]][data[".type"]]; 
+			var sconfig = section_types[this[".config"][".name"]]; 
+			if((typeof sconfig) == "undefined") throw new Error("Type for config "+this[".config"][".name"]+" is undefined!"); 
+			var type = 	sconfig[data[".type"]]; 
 			if(!type) {
 				console.error("Section.$update: unrecognized section type "+this[".config"][".name"]+"-"+data[".type"]); 
 				return; 
