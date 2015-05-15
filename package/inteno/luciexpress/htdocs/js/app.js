@@ -168,12 +168,6 @@ angular.element(document).ready(function() {
 	}); 
 });
 
-request('/config.json', function(er, response, body) {
-  if(er)
-    throw er;
-  alert("I got: " + body);
-})
-
 /*
 angular.module("luci")
 .factory("$hosts", function($rpc, $uci){

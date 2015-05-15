@@ -1,12 +1,12 @@
 #!javascript
 var assert = require("assert"); 
 var JSON = require("JSON"); 
-global.XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; 
+//global.XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; 
 global.$ = global.jQuery = require("jquery-deferred"); 
 global.$.ajax = require("najax"); 
 var async = require("async"); 
 require("../htdocs/lib/js/jquery-jsonrpc"); 
-global.request = require("../htdocs/lib/js/request").request; 
+//global.request = require("../htdocs/lib/js/request").request; 
 require("../htdocs/js/rpc"); 
 require("../htdocs/js/uci"); 
 var $rpc = global.UBUS; 
