@@ -80,6 +80,11 @@
 				"themes":					{ dvalue: [], type: Array }, 
 				"plugins":				{ dvalue: [], type: Array }, 
 				"languages":			{ dvalue: [], type: Array }
+			}, 
+			"test": { // used for unit testing!
+				"str":						{ dvalue: "", type: String }, 
+				"num":						{ dvalue: 0, type: Number },
+				"bool":						{ dvalue: false, type: Boolean }
 			}
 		}, 
 		"easybox": {
@@ -101,7 +106,7 @@
 		"firewall": {
 			"defaults": {
 				"syn_flood":		{ dvalue: true, type: Boolean }, 
-				"intput":				{ dvalue: "ACCEPT", type: String }, 
+				"input":				{ dvalue: "ACCEPT", type: String }, 
 				"output":				{ dvalue: "ACCEPT", type: String }, 
 				"forward":			{ dvalue: "REJECT", type: String }, 
 			}, 
@@ -134,7 +139,8 @@
 				"family": 			{ dvalue: "ipv4", type: String }, 
 				"icmp_type": 		{ dvalue: [], type: Array },
 				"enabled": 			{ dvalue: true, type: Boolean },
-				"hidden": 			{ dvalue: true, type: Boolean }
+				"hidden": 			{ dvalue: true, type: Boolean }, 
+				"limit":				{ dvalue: "", type: String }
 			}, 
 			"settings": {
 				"disabled":			{ dvalue: false, type: Boolean },
@@ -230,7 +236,7 @@
 			if(!(".type" in data)) throw new Error("Supplied object does not have required '.type' field!"); 
 			// try either <config>-<type> or just <type>
 			var sconfig = section_types[this[".config"][".name"]]; 
-			if((typeof sconfig) == "undefined") throw new Error("Type for config "+this[".config"][".name"]+" is undefined!"); 
+			if((typeof sconfig) == "undefined") throw new Error("Missing type definition for config "+this[".config"][".name"]+"!"); 
 			var type = 	sconfig[data[".type"]]; 
 			if(!type) {
 				console.error("Section.$update: unrecognized section type "+this[".config"][".name"]+"-"+data[".type"]); 
@@ -304,7 +310,10 @@
 		UCISection.prototype.$delete = function(){
 			var self = this; 
 			if(self[".config"]) return self[".config"].$deleteSection(self); 
-			var def = $.Deferred(); def.reject(); 
+			var def = $.Deferred(); 
+			setTimeout(function(){
+				def.reject(); 
+			}, 0); 
 			return def.promise(); 
 		}
 		
@@ -341,6 +350,8 @@
 			self.uci = uci; 
 			self[".name"] = name; 
 			self["@all"] = []; 
+			if(!name in section_types) throw new Error("Missing type definition for config "+name); 
+			
 			// set up slots for all known types of objects so we can reference them in widgets
 			Object.keys(section_types[name]||{}).map(function(type){
 				self["@"+type] = []; 
@@ -367,7 +378,7 @@
 		function _unlinkSection(self, section){
 			// NOTE: can not use filter() because we must edit the list in place 
 			// in order to play well with controls that reference the list! 
-			console.log("Removing local section: "+self[".name"]+"."+section[".name"]+" - "+section[".type"]); 
+			console.log("Removing local section: "+self[".name"]+"."+section[".name"]+" of type "+section[".type"]); 
 			var all = self["@all"]; 
 			for(var i = 0; i < all.length; i++){
 				if(all[i][".name"] === section[".name"]) {
@@ -388,18 +399,42 @@
 		UCIConfig.prototype.$sync = function(){
 			var deferred = $.Deferred(); 
 			var self = this; 
-
-			$rpc.uci.state({
-				config: self[".name"]
-			}).done(function(data){
-				var vals = data.values;
-				Object.keys(vals).map(function(k){
-					if(!(k in self)) _insertSection(self, vals[k]); 
-					else _updateSection(self, vals[k]); 
+			
+			var to_delete = {}; 
+			Object.keys(self).map(function(x){
+				if(self[x].constructor == UCI.Section) to_delete[x] = self[x]; 
+			}); 
+			//console.log("To delete: "+Object.keys(to_delete)); 
+			$rpc.uci.rollback({
+				config: self[".name"], 
+				ubus_rpc_session: $rpc.$sid()
+			}).done(function(){
+				$rpc.uci.state({
+					config: self[".name"]
+				}).done(function(data){
+					var vals = data.values;
+					Object.keys(vals).filter(function(x){
+						return vals[x][".type"] in section_types[self[".name"]]; 
+					}).map(function(k){
+						if(!(k in self)) _insertSection(self, vals[k]); 
+						else _updateSection(self, vals[k]); 
+						delete to_delete[k]; 
+					}); 
+					
+					// now delete any section that no longer exists in our local cache
+					async.eachSeries(Object.keys(to_delete), function(x, next){
+						var section = to_delete[x]; 
+						//console.log("Would delete section "+section[".name"]+" of type "+section[".type"]); 
+						_unlinkSection(self, section); 
+						next(); 
+					}, function(){
+						deferred.resolve();
+					});  
+				}).fail(function(){
+					deferred.reject(); 
 				}); 
-				deferred.resolve(); 
 			}).fail(function(){
-				deferred.reject(); 
+				deferred.reject("Could not revert config before sync!"); 
 			}); 
 			return deferred.promise(); 
 		}
@@ -463,6 +498,14 @@
 				}
 			}); 
 			var deferred = $.Deferred(); 
+			
+			if((".name" in item) && (item[".name"] in self)){ // section with specified name already exists
+				setTimeout(function(){
+					deferred.reject("Section with name "+item[".name"]+" already exists in config "+self[".name"]); 
+				}, 0); 
+				return deferred.promise(); 
+			}
+			
 			console.log("Adding: "+item[".type"]+": "+JSON.stringify(values)); 
 			$rpc.uci.add({
 				"config": self[".name"], 
@@ -511,6 +554,10 @@
 			var cfigs = response.configs; 
 			if(!cfigs) { next("could not retrieve list of configs!"); return; }
 			cfigs.map(function(k){
+				if(!(k in section_types)) {
+					console.log("Missing type definition for config "+k); 
+					return; 
+				}
 				if(!(k in self)){
 					//console.log("Adding new config "+k); 
 					self[k] = new UCI.Config(self, k); 
@@ -528,19 +575,35 @@
 		if(!(name in this)) this[name] = new UCI.Config(this, name); 
 	}
 	
+	UCI.prototype.$eachConfig = function(cb){
+		var self = this; 
+		Object.keys(self).filter(function(x){ 
+			return self[x].constructor == UCI.Config; 
+		}).map(function(x){
+			cb(self[x]); 
+		});
+	}
+	 
 	UCI.prototype.sync = function(configs){
 		var deferred = $.Deferred(); 
 		var self = this; 
 		
 		async.series([
 			function(next){
-				if(!(configs instanceof Array)) configs = [configs]; 
-				if(!configs || configs.length == 0) { next(); return; }; 
+				if(configs == undefined || configs.length == 0) { 
+					// if no argument provided then we sync all configs
+					configs = Object.keys(self).filter(function(x){ 
+						return self[x].constructor == UCI.Config; 
+					}); 
+					//next(); return; 
+				} else if(!(configs instanceof Array)) {
+					configs = [configs]; 
+				}
 				async.eachSeries(configs, function(cf, next){
 					if(!(cf in self)) { 
-						console.error("invalid config name "+cf); 
-						next(); 
-						return; 
+						throw new Error("invalid config name "+cf); 
+						//next(); 
+						//return; 
 					}; 
 					self[cf].$sync().done(function(){
 						console.log("Synched config "+cf); 
