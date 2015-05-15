@@ -1063,8 +1063,8 @@ wifi_updown() {
 	# handle wireless led
 	ubus call led.eco set '{"state" : "off"}'
 	if [ $_enWifi -le 0 ]; then
-	    ubus call led.eco set '{"state" : "ok"}'
-	    return
+		ubus call led.eco set '{"state" : "ok"}'
+		return
 	else
 		[ -n "$(nvget wl_2g_radio)" ] && ubus call led.wifi  set '{"state" : "ok"}'
 		[ -n "$(nvget wl_5g_radio)" ] && ubus call led.wifi  set '{"state" : "eok"}'
@@ -1284,7 +1284,7 @@ wifi_onoff() {
 	cursta="${cursta:-1}"
 
 	if [ "$status" == "$cursta" ]; then
-		exit
+		return
 	fi
 
 	uci -q set wireless.status.wlan="$status"

@@ -114,7 +114,8 @@ config include
 	option path /etc/firewall.sip
 	option reload 1
 
-config include dmzhost
+# include a file with rules for DMZ Host
+config include dmz
 	option path /etc/firewall.dmz
 	option reload 1
 

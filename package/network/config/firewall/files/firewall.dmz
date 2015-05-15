@@ -48,5 +48,3 @@ else
 	iptables -t nat -I zone_wan_prerouting -p tcp -m comment --comment DMZ_Host_TCP -j DNAT --to-destination $dmzhost
 fi
 
-
-

@@ -4,6 +4,22 @@ START=19
 USE_PROCD=1
 QUIET=""
 
+reindex_dmz()
+{
+	uci -q get firewall.dmz >/dev/null || return
+
+	local path host cfgno
+	path=$(uci -q get firewall.dmz.path)
+	host=$(uci -q get firewall.dmz.host)
+	uci delete firewall.dmz
+	cfgno=$(uci -q add firewall include)
+	uci rename firewall.$cfgno=dmz
+	uci -q set firewall.dmz.path="$path"
+	uci -q set firewall.dmz.host="$host"
+	uci -q set firewall.dmz.reload="1"
+	uci commit firewall
+}
+
 validate_firewall_redirect()
 {
 	uci_validate_section firewall redirect "${1}" \
@@ -59,3 +75,5 @@ boot() {
 	QUIET=-q
 	start
 }
+
+reindex_dmz
