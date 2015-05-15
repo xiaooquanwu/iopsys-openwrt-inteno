@@ -313,7 +313,7 @@ load_wireless()
 }
 
 static void
-match_client_to_network(Network *lan, char *hostaddr, bool *local, char *net, char *dev)
+match_client_to_network(Network *lan, char *ipaddr, bool *local, char *net, char *dev)
 {
 	if(!lan->ipaddr || !lan->netmask)
 		return;
@@ -322,7 +322,7 @@ match_client_to_network(Network *lan, char *hostaddr, bool *local, char *net, ch
 
 	inet_pton(AF_INET, lan->ipaddr, &(ip.s_addr));
 	inet_pton(AF_INET, lan->netmask, &(mask.s_addr));
-	inet_pton(AF_INET, hostaddr, &(host.s_addr));
+	inet_pton(AF_INET, ipaddr, &(host.s_addr));
 
 	snet.s_addr = (ip.s_addr & mask.s_addr);
 	rslt.s_addr = (host.s_addr & mask.s_addr);
@@ -344,10 +344,10 @@ handle_client(Client *clnt)
 	int netno;
 
 	clnt->local = false;
-	if (sscanf(clnt->hostaddr, "%d.%d.%d.%d", &ip[0], &ip[1], &ip[2], &ip[3]) == 4) {
+	if (sscanf(clnt->ipaddr, "%d.%d.%d.%d", &ip[0], &ip[1], &ip[2], &ip[3]) == 4) {
 		for (netno=0; network[netno].exists; netno++) {
 			if (network[netno].is_lan) {
-				match_client_to_network(&network[netno], clnt->hostaddr, &clnt->local, clnt->network, clnt->device);
+				match_client_to_network(&network[netno], clnt->ipaddr, &clnt->local, clnt->network, clnt->device);
 				if (clnt->local)
 					break;
 			}
@@ -450,17 +450,17 @@ populate_clients()
 			clients[cno].exists = false;
 			clients[cno].wireless = false;
 			memset(clients[cno].hostname, '\0', sizeof(clients[cno].hostname));
-			if (sscanf(line, "%s %s %s %s %s", clients[cno].leaseno, clients[cno].macaddr, clients[cno].hostaddr, clients[cno].hostname, mask) == 5) {
+			if (sscanf(line, "%s %s %s %s %s", clients[cno].leaseno, clients[cno].macaddr, clients[cno].ipaddr, clients[cno].hostname, mask) == 5) {
 				clients[cno].exists = true;
 				clients[cno].dhcp = true;
 				handle_client(&clients[cno]);
 				if((clients[cno].connected = wireless_sta(&clients[cno], &details[cno])))
 					clients[cno].wireless = true;
-				else if(!(clients[cno].connected = arping(clients[cno].hostaddr, clients[cno].device, toms)))
+				else if(!(clients[cno].connected = arping(clients[cno].ipaddr, clients[cno].device, toms)))
 					recalc_sleep_time(true, toms);
 
 				if (clients[cno].connected)
-					details[cno].connum = active_connections(clients[cno].hostaddr);
+					details[cno].connum = active_connections(clients[cno].ipaddr);
 				cno++;
 			}
 		}
@@ -475,7 +475,7 @@ populate_clients()
 			clients[cno].exists = false;
 			clients[cno].wireless = false;
 			memset(clients[cno].hostname, '\0', sizeof(clients[cno].hostname));
-			if ((lno > 0) && sscanf(line, "%s 0x%d 0x%d %s %s %s", clients[cno].hostaddr, &hw, &flag, clients[cno].macaddr, mask, clients[cno].device)) {
+			if ((lno > 0) && sscanf(line, "%s 0x%d 0x%d %s %s %s", clients[cno].ipaddr, &hw, &flag, clients[cno].macaddr, mask, clients[cno].device)) {
 				for (i=0; i < cno; i++) {
 					if (!strcmp(clients[cno].macaddr, clients[i].macaddr)) {
 						if (clients[i].connected) {
@@ -485,7 +485,7 @@ populate_clients()
 							strcpy(clients[cno].hostname, clients[i].hostname);
 						}
 					}
-					if (!strcmp(clients[cno].hostaddr, clients[i].hostaddr)) {
+					if (!strcmp(clients[cno].ipaddr, clients[i].ipaddr)) {
 						there = true;
 						break;
 					}
@@ -497,12 +497,12 @@ populate_clients()
 						clients[cno].dhcp = false;
 						if((clients[cno].connected = wireless_sta(&clients[cno], &details[cno])))
 							clients[cno].wireless = true;
-						else if(!(clients[cno].connected = arping(clients[cno].hostaddr, clients[cno].device, toms)))
+						else if(!(clients[cno].connected = arping(clients[cno].ipaddr, clients[cno].device, toms)))
 							recalc_sleep_time(true, toms);
 						cno++;
 
 						if (clients[cno].connected)
-							details[cno].connum = active_connections(clients[cno].hostaddr);
+							details[cno].connum = active_connections(clients[cno].ipaddr);
 					}
 				}
 			}
@@ -735,7 +735,7 @@ router_dump_clients(struct blob_buf *b)
 		sprintf(clientnum, "client-%d", num);
 		t = blobmsg_open_table(b, clientnum);
 		blobmsg_add_string(b, "hostname", clients[i].hostname);
-		blobmsg_add_string(b, "ipaddr", clients[i].hostaddr);
+		blobmsg_add_string(b, "ipaddr", clients[i].ipaddr);
 		blobmsg_add_string(b, "macaddr", clients[i].macaddr);
 		blobmsg_add_string(b, "network", clients[i].network);
 		blobmsg_add_string(b, "device", clients[i].device);
@@ -775,7 +775,7 @@ router_dump_connected_clients(struct blob_buf *b)
 		sprintf(clientnum, "client-%d", num);
 		t = blobmsg_open_table(b, clientnum);
 		blobmsg_add_string(b, "hostname", clients[i].hostname);
-		blobmsg_add_string(b, "ipaddr", clients[i].hostaddr);
+		blobmsg_add_string(b, "ipaddr", clients[i].ipaddr);
 		blobmsg_add_string(b, "macaddr", clients[i].macaddr);
 		blobmsg_add_string(b, "network", clients[i].network);
 		blobmsg_add_string(b, "device", clients[i].device);
@@ -812,7 +812,7 @@ router_dump_network_clients(struct blob_buf *b, char *net)
 		sprintf(clientnum, "client-%d", num);
 		t = blobmsg_open_table(b, clientnum);
 		blobmsg_add_string(b, "hostname", clients[i].hostname);
-		blobmsg_add_string(b, "ipaddr", clients[i].hostaddr);
+		blobmsg_add_string(b, "ipaddr", clients[i].ipaddr);
 		blobmsg_add_string(b, "macaddr", clients[i].macaddr);
 		blobmsg_add_string(b, "network", clients[i].network);
 		blobmsg_add_string(b, "device", clients[i].device);
@@ -908,7 +908,7 @@ router_dump_stas(struct blob_buf *b)
 		sprintf(stanum, "sta-%d", num);
 		t = blobmsg_open_table(b, stanum);
 		blobmsg_add_string(b, "hostname", clients[i].hostname);
-		blobmsg_add_string(b, "ipaddr", clients[i].hostaddr);
+		blobmsg_add_string(b, "ipaddr", clients[i].ipaddr);
 		blobmsg_add_string(b, "macaddr", clients[i].macaddr);
 		blobmsg_add_string(b, "network", clients[i].network);
 		blobmsg_add_u8(b, "dhcp", clients[i].dhcp);
@@ -954,7 +954,7 @@ router_dump_wireless_stas(struct blob_buf *b, char *wname, bool vif)
 		sprintf(stanum, "sta-%d", num);
 		t = blobmsg_open_table(b, stanum);
 		blobmsg_add_string(b, "hostname", clients[i].hostname);
-		blobmsg_add_string(b, "ipaddr", clients[i].hostaddr);
+		blobmsg_add_string(b, "ipaddr", clients[i].ipaddr);
 		blobmsg_add_string(b, "macaddr", clients[i].macaddr);
 		blobmsg_add_string(b, "network", clients[i].network);
 		blobmsg_add_u8(b, "dhcp", clients[i].dhcp);
@@ -1059,7 +1059,7 @@ router_dump_ports(struct blob_buf *b, char *interface)
 			for(j=0; port[i].client[j].exists; j++) {
 				h = blobmsg_open_table(b, "NULL");
 				blobmsg_add_string(b, "hostname", port[i].client[j].hostname);
-				blobmsg_add_string(b, "ipaddr", port[i].client[j].hostaddr);
+				blobmsg_add_string(b, "ipaddr", port[i].client[j].ipaddr);
 				blobmsg_add_string(b, "macaddr", port[i].client[j].macaddr);
 				blobmsg_close_table(b, h);
 			}
@@ -1092,7 +1092,7 @@ network_dump_leases(struct blob_buf *b, char *leasenet)
 			t = blobmsg_open_table(b, leasenum);
 			blobmsg_add_string(b, "leaseno", clients[i].leaseno);
 			blobmsg_add_string(b, "hostname", clients[i].hostname);
-			blobmsg_add_string(b, "ipaddr", clients[i].hostaddr);
+			blobmsg_add_string(b, "ipaddr", clients[i].ipaddr);
 			blobmsg_add_string(b, "macaddr", clients[i].macaddr);
 			blobmsg_add_string(b, "device", clients[i].device);
 			blobmsg_add_u8(b, "connected", clients[i].connected);
@@ -1108,7 +1108,7 @@ host_dump_status(struct blob_buf *b, char *addr, bool byIP)
 
 	if(byIP) {
 		for (i=0; clients[i].exists; i++)
-			if(!strcmp(clients[i].hostaddr, addr)) {
+			if(!strcmp(clients[i].ipaddr, addr)) {
 				blobmsg_add_string(b, "hostname", clients[i].hostname);
 				blobmsg_add_string(b, "macaddr", clients[i].macaddr);
 				blobmsg_add_string(b, "network", clients[i].network);
@@ -1133,7 +1133,7 @@ host_dump_status(struct blob_buf *b, char *addr, bool byIP)
 		for (i=0; clients[i].exists; i++)
 			if(!strcasecmp(clients[i].macaddr, addr)) {
 				blobmsg_add_string(b, "hostname", clients[i].hostname);
-				blobmsg_add_string(b, "ipaddr", clients[i].hostaddr);
+				blobmsg_add_string(b, "ipaddr", clients[i].ipaddr);
 				blobmsg_add_string(b, "network", clients[i].network);
 				blobmsg_add_string(b, "device", clients[i].device);
 				blobmsg_add_u8(b, "connected", clients[i].connected);

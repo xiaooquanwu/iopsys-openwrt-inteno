@@ -55,7 +55,7 @@ typedef struct {
 	bool dhcp;
 	char leaseno[24];
 	char macaddr[24];
-	char hostaddr[24];
+	char ipaddr[24];
 	char hostname[64];
 	char network[32];
 	char device[32];
