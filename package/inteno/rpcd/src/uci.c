@@ -1161,7 +1161,35 @@ rpc_uci_revert(struct ubus_context *ctx, struct ubus_object *obj,
                struct ubus_request_data *req, const char *method,
                struct blob_attr *msg)
 {
-	return rpc_uci_revert_commit(ctx, msg, false);
+	struct blob_attr *tb[__RPC_C_MAX];
+	//struct uci_package *p = NULL;
+	struct uci_ptr ptr = { 0 };
+
+	blobmsg_parse(rpc_uci_config_policy, __RPC_C_MAX, tb,
+	              blob_data(msg), blob_len(msg));
+
+	if (!tb[RPC_C_CONFIG])
+		return UBUS_STATUS_INVALID_ARGUMENT;
+
+	if (!rpc_uci_write_access(tb[RPC_C_SESSION], tb[RPC_C_CONFIG]))
+		return UBUS_STATUS_PERMISSION_DENIED;
+
+	char *package = blobmsg_data(tb[RPC_C_CONFIG]);
+	int ret = UCI_OK; 
+	
+	if (uci_lookup_ptr(cursor, &ptr, package, true) == UCI_OK){
+		//printf("Reverting %s\n", ptr.package); 
+		ret = uci_revert(cursor, &ptr);
+		if(ptr.p) uci_unload(cursor, ptr.p);
+	}
+	
+	blob_buf_init(&buf, 0);
+
+	blobmsg_add_u32(&buf, "code", ret);
+	
+	ubus_send_reply(ctx, req, buf.head);
+	
+	return ret; 
 }
 
 static int

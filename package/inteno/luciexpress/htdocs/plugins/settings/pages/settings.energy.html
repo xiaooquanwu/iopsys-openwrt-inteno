@@ -17,6 +17,7 @@
 					<switch id="enabled" name="enabled" ng-model="settings.power_led.value" class="green"></switch>
 				</luci-config-line>
 				<luci-config-line title="{{'Power-LED Brightness'|translate}}">
+					<luci-slider ng-model="settings.power_led_br.value"></luci-slider>
 					<switch id="enabled" name="enabled" ng-model="settings.power_led_br.value" class="green"></switch>
 				</luci-config-line>
 			</luci-config-lines>

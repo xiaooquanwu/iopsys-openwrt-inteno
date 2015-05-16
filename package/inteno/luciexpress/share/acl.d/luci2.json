@@ -141,7 +141,8 @@
 				"dropbear", 
 				"easybox", 
 				"hosts",
-				"voice_client"
+				"voice_client", 
+				"juci"
 			]
 		},
 		"write": {
