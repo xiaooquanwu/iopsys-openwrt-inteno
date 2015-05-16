@@ -47,6 +47,7 @@ $juci.module("wifi")
 						added = { hostname: host.hostname.value, macaddr: mac}; 
 					}
 				}); 
+				added.maclist = i.maclist; 
 				$scope.maclist.push(added); 
 			});
 			//$scope.$apply();  
@@ -93,6 +94,7 @@ $juci.module("wifi")
 	
 	$scope.onDeleteHost = function(host){
 		$scope.maclist = ($scope.maclist||[]).filter(function(x) { return x.macaddr != host.macaddr; }); 
+		host.maclist.value = host.maclist.value.filter(function(x) { return x != host.macaddr; }); 
 	}
 	
 	$scope.onAddClients = function(){
