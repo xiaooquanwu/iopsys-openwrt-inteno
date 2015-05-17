@@ -7,9 +7,19 @@
 
 include $(TOPDIR)/rules.mk
 
-PKG_NAME:=rpcd
-PKG_VERSION:=2014-07-04
+PKG_NAME:=juci-rpcd
+PKG_VERSION:=2015-05-17
 PKG_RELEASE=$(PKG_SOURCE_VERSION)
+
+PKG_SOURCE_PROTO:=git
+PKG_SOURCE_URL:=https://github.com/mkschreder/openwrt-rpcd.git
+PKG_SOURCE_SUBDIR:=$(PKG_NAME)
+PKG_SOURCE_VERSION:=1f65f0b80e7df999eb8139c0e3efbdbc729124c0
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
+PKG_MAINTAINER:=Martin Schröder <mkschreder.uk@gmail.com>
+
+PKG_LICENSE:=ISC
+PKG_LICENSE_FILES:=
 
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)
 PKG_BUILD_PARALLEL:=1
@@ -20,12 +30,6 @@ include $(INCLUDE_DIR)/cmake.mk
 define Build/InstallDev
 	$(INSTALL_DIR) $(1)/usr/include
 	$(CP) $(PKG_BUILD_DIR)/include/rpcd $(1)/usr/include/
-endef
-
-
-define Build/Prepare
-	mkdir -p $(PKG_BUILD_DIR)
-	$(CP) ./src/* $(PKG_BUILD_DIR)/
 endef
 
 define Package/rpcd/default
@@ -89,4 +93,4 @@ endef
 
 $(eval $(call BuildPackage,rpcd))
 $(eval $(call BuildPlugin,file,,Provides ubus calls for file and directory operations.))
-$(eval $(call BuildPlugin,iwinfo,+libiwinfo,Provides ubus calls for accessing iwinfo data.))
+#$(eval $(call BuildPlugin,iwinfo,+libiwinfo,Provides ubus calls for accessing iwinfo data.))
