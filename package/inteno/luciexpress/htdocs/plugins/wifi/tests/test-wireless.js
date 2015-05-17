@@ -2,7 +2,18 @@
 global.JUCI = require("../../../../tests/lib-juci"); 
 require("../wifi"); 
 
-describe("WIFI", function(){
+var completed = {
+	"general": 1, 
+	"mac_filter": 1, 
+	"schedule": 1, 
+	"settings": 1, 
+	"wps": 0
+}
+
+describe("Wireless plugin", function(){
+	it("should be completed", function(){
+		expect(Object.keys(completed).filter(function(x){ return completed[x] == 0; })).to.be.empty(); 
+	}); 
 	it("should have wireless config", function(done){
 		$uci.sync("wireless").done(function(){
 			expect($uci.wireless).to.be.an(Object); 

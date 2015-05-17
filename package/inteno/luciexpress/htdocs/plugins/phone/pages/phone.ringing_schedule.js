@@ -22,8 +22,8 @@
  
 $juci.module("phone")
 .controller("PhoneRingingScheduleCtrl", function($scope, $uci){
-	$uci.sync(["phone"]).done(function(){
+	$uci.sync(["voice_client"]).done(function(){
 		// TODO add config for phone
-		if($uci.phone) $scope.settings = $uci.phone.settings; 
+		//if($uci.voice_client && $uci.voice_client.settings) $scope.settings = $uci.voice_client.settings; 
 	}); 
 }); 

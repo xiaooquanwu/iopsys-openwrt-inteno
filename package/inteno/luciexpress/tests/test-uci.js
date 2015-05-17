@@ -4,6 +4,7 @@ require("./lib-juci");
 describe("UCI", function(){
 	beforeEach(function(done){
 		$uci.sync().done(function(){
+			expect($uci).to.have.property("juci");
 			var to_delete = $uci.juci["@test"].map(function(x){
 				return x; 
 			}); 

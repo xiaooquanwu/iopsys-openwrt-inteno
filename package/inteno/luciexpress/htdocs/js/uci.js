@@ -126,6 +126,14 @@
 				"dest_ip":			{ dvalue: "", type: String }, 
 				"dest_port":		{ dvalue: 0, type: String, validator: PortValidator }
 			}, 
+			"include": {
+				"path": 				{ dvalue: "", type: String }, 
+				"reload": 			{ dvalue: true, type: Boolean }
+			}, 
+			"dmzhost": {
+				"enabled": 			{ dvalue: false, type: Boolean }, 
+				"host": 				{ dvalue: "", type: String } // TODO: change to ip address
+			}, 
 			"rule": {
 				"name":					{ dvalue: "", type: String }, 
 				"src":					{ dvalue: "lan", type: String }, 
