@@ -8,7 +8,9 @@ reindex_dmz()
 {
 	uci -q get firewall.dmz >/dev/null || return
 
-	local path host cfgno
+	local enabled reload path host cfgno
+	enabled=$(uci -q get firewall.dmz.enabled)
+	[ "$enabled" == "0" ] && return
 	path=$(uci -q get firewall.dmz.path)
 	host=$(uci -q get firewall.dmz.host)
 	uci delete firewall.dmz
