@@ -1074,6 +1074,9 @@ wifi_detect() {
 	[ -n "$GTK" ] || GTK=$PGTK
 	[ -n "$WPS" ] || WPS=$PWPS
 
+	# zero PEXT tag if not dual wifi
+	wlctl -i wl1 ap >/dev/null 2>&1 || PEXT="0"
+
 	pcID() {
 		wlctl -i $1 revinfo | awk 'FNR == 2 {print}' | cut -d'x' -f2
 	}
