@@ -48,6 +48,7 @@ define Image/Prepare
 	$(STAGING_DIR_HOST)/bin/lzma e -d22 -lp2 -lc1 $(KDIR)/vmlinux.bcm $(KDIR)/vmlinux.lzma
 	$(STAGING_DIR_HOST)/bin/imagetag_nand -K -i $(KDIR)/vmlinux.lzma -o $(KDIR)/vmlinux.lz -e $(KERNEL_ENTRY)
 
+    ifneq ($(CONFIG_TARGET_ROOTFS_UBIFS),)
 	# make kernel jffs2 image (.x.y)
 	mkdir -p $(KDIR)/kernel_fs
 	cp $(KDIR)/vmlinux.lz $(KDIR)/kernel_fs/
@@ -58,6 +59,7 @@ define Image/Prepare
 		-v -e 128KiB --big-endian --squash --no-cleanmarkers \
 		--pad -N $(KDIR)/nocomprlist \
 		-d $(KDIR)/kernel_fs -o $(KDIR)/vmlinux.jffs2
+    endif
 
 	# generate jffs2 eof file marker of 128k size (.w)
 	dd if=/dev/zero of=$(KDIR)/file128k.tmp bs=1k count=128
@@ -132,6 +134,7 @@ define Image/Build/CFE
                 -c $(CONFIG_BCM_CHIP_ID) \
 		-q NAND128
 
+    ifneq ($(CONFIG_TARGET_ROOTFS_UBIFS),)
 	# Make header (.z)
 	$(call Image/Build/Header,header.z,cfe$(CONFIG_BCM_CHIP_ID)_nand.v,void,void)
 
@@ -143,6 +146,7 @@ define Image/Build/CFE
 	# Attach checksum to combined image (.z)
 	md5sum $(BIN_DIR)/$(IHGSP_BUILD_VERSION).z |awk '{printf "%s",$$$$1}' \
 		>> $(BIN_DIR)/$(IHGSP_BUILD_VERSION).z
+    endif
 
 	$(eval CFE_BUILT:=1)
 endef
@@ -180,6 +184,7 @@ define Image/Build/jffs2-128k
 endef
 
 define Image/Build/ubi
+	# This function will only be called if CONFIG_TARGET_ROOTFS_UBIFS = y
 
 	echo "In Image/Build/ubi $(1) $(2)"
 
