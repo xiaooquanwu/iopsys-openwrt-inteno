@@ -2,7 +2,7 @@ $juci.module("wifi")
 .controller("WifiGeneralPageCtrl", function($scope, $uci, $tr){
 	async.series([
 		function(next){
-			$uci.sync(["wireless", "easybox"]).done(function(){
+			$uci.sync(["wireless", "boardpanel"]).done(function(){
 				if(!$uci.wireless.status){
 					$uci.wireless.create({
 						".type": "wifi-status", 
@@ -24,25 +24,13 @@ $juci.module("wifi")
 			}); 
 		}, 
 		function(next){
-			window.uci = $uci; 
 			$scope.interfaces = $uci.wireless['@wifi-iface']; 
 			$scope.status = $uci.wireless.status; 
-			if($uci.easybox) 
-				$scope.easybox = $uci.easybox.settings; 
+			if($uci.boardpanel) 
+				$scope.boardpanel = $uci.boardpanel; 
 			$scope.$apply(); 
 			
 			next(); 
 		}
 	]); 
-	
-	$scope.onApply = function(){
-		$scope.busy = 1; 
-		$uci.save().done(function(){
-			console.log("Settings saved!"); 
-		}).fail(function(){
-			console.error("Could not save wifi settings!"); 
-		}).always(function(){
-			$scope.busy = 0; 
-		}); 
-	}
 }); 

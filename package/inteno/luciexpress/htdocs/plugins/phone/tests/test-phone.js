@@ -8,12 +8,8 @@ var completed = {
 	"numbers": 0
 }
 
-describe("Phone plugin", function(){
+describe("Phone", function(){
 	it("should be completed", function(){
-		expect(completed.call_log).to.be(1); 
-		expect(completed.number_blocking).to.be(1); 
-		expect(completed.ringing_schedule).to.be(1); 
-		expect(completed.speed_dialing).to.be(1); 
-		expect(completed.numbers).to.be(1); 
+		expect(Object.keys(completed).filter(function(x){ return completed[x] == 0; })).to.be.empty(); 
 	}); 
 }); 

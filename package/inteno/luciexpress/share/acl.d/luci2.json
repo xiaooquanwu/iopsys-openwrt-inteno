@@ -139,7 +139,7 @@
 			},
 			"uci": [
 				"dropbear", 
-				"easybox", 
+				"boardpanel", 
 				"hosts",
 				"voice_client", 
 				"juci"
@@ -164,7 +164,7 @@
 			},
 			"uci": [
 				"dropbear", 
-				"easybox", 
+				"boardpanel", 
 				"hosts",
 				"voice_client", 
 				"juci"

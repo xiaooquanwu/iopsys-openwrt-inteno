@@ -7,7 +7,7 @@ var completed = {
 	"port_mapping": 1
 }
 
-describe("Internet plugin", function(){
+describe("Internet", function(){
 	it("should be completed", function(){
 		expect(Object.keys(completed).filter(function(x){ return completed[x] == 0; })).to.be.empty(); 
 	}); 

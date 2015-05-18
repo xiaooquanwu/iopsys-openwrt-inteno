@@ -87,15 +87,11 @@ module.exports = function(grunt){
 		var files = grunt.file.expand(["./tests/test-*.js", "./htdocs/**/test-*.js"]); 
 		console.log("Will run tests: "+files); 
 		var done = this.async(); 
-		async.eachSeries(files, function(file, next){
-			var spawn = require('child_process').spawn;
-			spawn('mocha', [file, '--host', grunt.option("host"), "--user", grunt.option("user"), "--pass", grunt.option("pass")], { customFds: [0,1,2] })
-			.on("exit", function(code){
-				if(code != 0 && !grunt.option("ignore-errors")) throw new Error("A test has failed. To run all tests without exiting, specify --ignore-errors option"); 
-				else next(); 
-			}); 
-		}, function(){
-			done();
+		var spawn = require('child_process').spawn;
+		spawn('mocha', files.concat(['--host', grunt.option("host"), "--user", grunt.option("user"), "--pass", grunt.option("pass")]), { customFds: [0,1,2] })
+		.on("exit", function(code){
+			if(code != 0 && !grunt.option("ignore-errors")) throw new Error("A test has failed. To run all tests without exiting, specify --ignore-errors option"); 
+			else next(); 
 		}); 
 		console.log(files); 
 	}); 

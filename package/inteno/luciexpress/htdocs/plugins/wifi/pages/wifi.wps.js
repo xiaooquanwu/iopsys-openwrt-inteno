@@ -4,14 +4,14 @@ $juci.module("wifi")
 	$scope.data = {
 		userPIN: ""
 	}
-	$uci.sync(["wireless", "easybox"]).done(function(){
-		if($uci.easybox == undefined) $scope.$emit("error", "Easybox config is not present on this system!"); 
-		else $scope.easybox = $uci.easybox; 
-		if(!$uci.easybox.settings){
-			$uci.easybox.create({".type": "settings", ".name": "settings"}).done(function(section){
+	$uci.sync(["wireless", "boardpanel"]).done(function(){
+		if($uci.boardpanel == undefined) $scope.$emit("error", "Boardpanel config is not present on this system!"); 
+		else $scope.boardpanel = $uci.boardpanel; 
+		if(!$uci.boardpanel.settings){
+			$uci.boardpanel.create({".type": "settings", ".name": "settings"}).done(function(section){
 				$uci.save(); 
 			}).fail(function(){
-				$scope.$emit("error", "Could not create required section easybox.settings in config!"); 
+				$scope.$emit("error", "Could not create required section boardpanel.settings in config!"); 
 			}); 
 		} 
 		$scope.wireless = $uci.wireless; 

@@ -10,7 +10,7 @@ var completed = {
 	"wps": 0
 }
 
-describe("Wireless plugin", function(){
+describe("Wireless", function(){
 	it("should be completed", function(){
 		expect(Object.keys(completed).filter(function(x){ return completed[x] == 0; })).to.be.empty(); 
 	}); 
@@ -27,15 +27,21 @@ describe("Wireless plugin", function(){
 		expect($uci.wireless["@wifi-iface"].length).not.to.be(0); 
 		done(); 
 	}); 
-	it("should have easybox config present", function(done){
-		$uci.sync("easybox").done(function(){
-			expect($uci.easybox).to.be.an(Object); 
+	it("should have boardpanel config present", function(done){
+		$uci.sync("boardpanel").done(function(){
+			expect($uci.boardpanel).to.be.an(Object); 
 			done(); 
 		}); 
 	}); 
-	it("should have easybox.settings section present", function(done){
-		expect($uci.easybox["@settings"]).to.be.an(Array); 
+	it("should have boardpanel.settings section present", function(done){
+		expect($uci.boardpanel["@settings"]).to.be.an(Array);
+		expect($uci.boardpanel.settings).to.be.ok(); 
 		done(); 
+	}); 
+	it("should have boardpanel network section of type services", function(){
+		expect($uci.boardpanel["@services"]).to.be.an(Array); 
+		expect($uci.boardpanel["@services"]).not.to.be.empty(); 
+		expect($uci.boardpanel.network).to.be.ok(); 
 	}); 
 	it("should have hosts config present", function(done){
 		$uci.sync("hosts").done(function(){

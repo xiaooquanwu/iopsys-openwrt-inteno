@@ -87,7 +87,7 @@
 				"bool":						{ dvalue: false, type: Boolean }
 			}
 		}, 
-		"easybox": {
+		"boardpanel": {
 			"settings": {
 				"usb_port": 		{ dvalue: true, type: Boolean }, 
 				"status_led": 	{ dvalue: true, type: Boolean }, 
@@ -617,6 +617,9 @@
 				async.eachSeries(configs, function(cf, next){
 					if(!(cf in self)) { 
 						//throw new Error("invalid config name "+cf); 
+						// NOTE: this can not throw because we need to sync all configs that we can sync
+						// TODO: decide on whether to always resolve if at least one config compiles
+						// or to always reject if at least one config fails. 
 						next(); 
 						return; 
 					}; 
