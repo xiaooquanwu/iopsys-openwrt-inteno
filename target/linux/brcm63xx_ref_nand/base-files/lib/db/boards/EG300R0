@@ -1,7 +1,7 @@
 
 config board 'board'
 	option hardware 'EG300'
-	option lan1_gtxclk 'true'
+	option gtxclk '0xf0'
 	option hasAdsl '0'
 	option hasVdsl '0'
 	option hasVoice '1'
