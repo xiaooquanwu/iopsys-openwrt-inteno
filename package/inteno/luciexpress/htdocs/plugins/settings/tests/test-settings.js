@@ -2,7 +2,7 @@ require("../../../../tests/lib-juci");
 
 var completed = {
 	"configuration": 1, 
-	"energy": 0, 
+	"energy": 1, 
 	"network": 0, 
 	"password": 0, 
 	"upgrade": 0

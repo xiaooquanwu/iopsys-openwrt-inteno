@@ -43,6 +43,7 @@ JUCI.app
 		"rifs_advert":{ dvalue: false, type: Boolean },
 		"maxassoc":		{ dvalue: 0, type: Number },
 		"doth":				{ dvalue: 0, type: Boolean },
+		"dfsc":				{ dvalue: 0, type: Boolean }, // ? 
 		"hwmode":			{ dvalue: "auto", type: String, allow: [ "auto", "11a", "11n", "11ac" ] },
 		"disabled":		{ dvalue: false, type: Boolean }
 	}); 
