@@ -9,8 +9,22 @@ for i in `lspci | cut -d':' -f4 `; do
 
 iopsys_initialize_db() {
 	echo "Initializing iopsys db"
+
 	OLDCFERAM="`uci -q get /lib/db/config/hw.board.cferam`"
-	NEWCFERAM="`ls /cferam* | awk -F'.' '{print$NF}'`"
+	if cat /proc/cmdline |grep -q ubi:rootfs_0; then
+		NEWCFERAM="`brcm_fw_tool -s -1 update /dev/mtd0`"
+		FILESYSTEM="UBIFS"
+		BANK="low"
+	elif cat /proc/cmdline |grep -q ubi:rootfs_1; then
+		NEWCFERAM="`brcm_fw_tool -s -1 update /dev/mtd1`"
+		FILESYSTEM="UBIFS"
+		BANK="high"
+	else
+		NEWCFERAM="`ls /cferam* | awk -F'.' '{print$NF}'`"
+		FILESYSTEM="JFFS2"
+		cat /proc/cmdline |grep -q bank=low && BANK="low" || BANK="high"
+	fi
+
 	if [ -f "/lib/db/config/hw" ] && [ "$NEWCFERAM" == "$OLDCFERAM" ]; then
 		echo "Static db already initialized"
 		IOPVERSION="`cat /lib/db/version/iop_version`"
@@ -24,7 +38,6 @@ iopsys_initialize_db() {
 		cp /lib/db/boards/$BOARDID /lib/db/config/hw
 
 		echo "Populating dynamic db parameters"
-		CFERAM="`ls /cferam* | awk -F'.' '{print$NF}'`"
 		HARDWARE="`uci get /lib/db/config/hw.board.hardware`"
 		SERIALNR="`cat /proc/nvram/SerialNumber`"
 		AUTHKEY="`cat /proc/nvram/AuthKey`"
@@ -51,7 +64,9 @@ iopsys_initialize_db() {
 		BASEMAC=${BASEMAC// /}
 		RFPI=${RFPI// /}
 
-		uci set /lib/db/config/hw.board.cferam="$CFERAM"
+		uci set /lib/db/config/hw.board.cferam="$NEWCFERAM"
+		uci set /lib/db/config/hw.board.filesystem="$FILESYSTEM"
+		uci set /lib/db/config/hw.board.bank="$BANK"
 		uci set /lib/db/config/hw.board.hardwareVersion="$HARDWARE$DSLANNEX"
 		uci set /lib/db/config/hw.board.serialNumber="$SERIALNR"
 		uci set /lib/db/config/hw.board.authKey="$AUTHKEY"
