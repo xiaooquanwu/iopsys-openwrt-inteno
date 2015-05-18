@@ -9,7 +9,11 @@
     "grunt-angular-gettext": "*",
     "request": "*",
     "glob": "*",
-    "async": "*"
+    "async": "*",
+    "expect.js": "*",
+    "object-assign": "*",
+    "jquery-deferred": "*",
+    "najax": "*"
   },
   "engines": {
     "node": "0.10.x",

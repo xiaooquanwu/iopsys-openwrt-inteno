@@ -128,6 +128,8 @@
 			}, 
 			"include": {
 				"path": 				{ dvalue: "", type: String }, 
+				"type": 				{ dvalue: "", type: String }, 
+				"family": 			{ dvalue: "", type: String }, 
 				"reload": 			{ dvalue: true, type: Boolean }
 			}, 
 			"dmzhost": {
@@ -558,6 +560,11 @@
 		var deferred = $.Deferred(); 
 		console.log("Init UCI"); 
 		var self = this; 
+		if(!$rpc.uci) {
+			setTimeout(function(){ deferred.reject(); }, 0); 
+			return deferred.promise(); 
+		}
+		
 		$rpc.uci.configs().done(function(response){
 			var cfigs = response.configs; 
 			if(!cfigs) { next("could not retrieve list of configs!"); return; }
@@ -609,9 +616,9 @@
 				}
 				async.eachSeries(configs, function(cf, next){
 					if(!(cf in self)) { 
-						throw new Error("invalid config name "+cf); 
-						//next(); 
-						//return; 
+						//throw new Error("invalid config name "+cf); 
+						next(); 
+						return; 
 					}; 
 					self[cf].$sync().done(function(){
 						console.log("Synched config "+cf); 
