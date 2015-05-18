@@ -4,6 +4,16 @@
 START=10
 STOP=98
 
+get_sw_upgrade_count() {
+	if cat /proc/cmdline |grep -q ubi:rootfs_0; then
+		brcm_fw_tool -s -1 update /dev/mtd0
+	elif cat /proc/cmdline |grep -q ubi:rootfs_1; then
+		brcm_fw_tool -s -1 update /dev/mtd1
+	else
+		ls /cferam* | awk -F'.' '{print$NF}'
+	fi
+}
+
 system_config() {
 	local cfg="$1"
 
@@ -57,7 +67,7 @@ start() {
 	[ -f /proc/net/vlan/config ] && vconfig set_name_type DEV_PLUS_VID_NO_PAD
 
 	echo "" > /dev/kmsg
-	echo "Software Upgrade Count: $(ls /cferam* | awk -F'.' '{print$NF}')" > /dev/kmsg
+	echo "Software Upgrade Count: $(get_sw_upgrade_count)" > /dev/kmsg
 	echo "Software version: $(db get hw.board.iopVersion)" > /dev/kmsg
 	rm -f /usr/lib/lua/luci/controller/info.lua
 
