@@ -27,10 +27,10 @@ $juci.module("core")
 					$scope.wifi = $uci.wireless; 
 					$scope.boardpanel = $uci.boardpanel; 
 					$scope.voice_client = $uci.voice_client; 
-					if($uci.wireless && $uci.wireless.status) 
+					if($uci.wireless && $uci.wireless.status) {
 						$scope.wifiSchedStatus = (($uci.wireless.status.schedule.value)?gettext("on"):gettext("off")); 
-					if($uci.wireless && $uci.wireless.wps)
-						$scope.wifiWPSStatus = (($scope.boardpanel.settings.wpsbutton.value)?gettext("on"):gettext("off")); 
+						$scope.wifiWPSStatus = (($uci.wireless.status.wps.value)?gettext("on"):gettext("off")); 
+					}
 					if($uci.voice_client && $uci.voice_client["@sip_service_provider"]){
 						$scope.sipAccounts = $uci.voice_client["@sip_service_provider"]; 
 					}

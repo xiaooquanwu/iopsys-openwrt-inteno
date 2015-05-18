@@ -20,6 +20,9 @@ describe("Wireless", function(){
 			done(); 
 		}); 
 	}); 
+	it("should have hosts config", function(){
+		expect($uci.hosts).to.be.ok(); 
+	}); 
 	it("should have at least one wireless device and interface defined", function(done){
 		expect($uci.wireless["@wifi-device"]).to.be.an(Array); 
 		expect($uci.wireless["@wifi-iface"]).to.be.an(Array); 

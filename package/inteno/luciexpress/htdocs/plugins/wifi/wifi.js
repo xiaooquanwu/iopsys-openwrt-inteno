@@ -55,6 +55,7 @@ JUCI.app
 		"encryption":	{ dvalue: "mixed-psk", type: String, allow: [ "none", "wep", "psk", "psk2", "mixed-psk" ] },
 		"cipher":			{ dvalue: "auto", type: String, allow: [ "auto" ] },
 		"key":				{ dvalue: "", type: String },
+		"ifname":			{ dvalue: "", type: String },
 		"gtk_rekey":	{ dvalue: false, type: Boolean },
 		"wps_pbc":		{ dvalue: false, type: Boolean },
 		"wmf_bss_enable":{ dvalue: false, type: Boolean },
