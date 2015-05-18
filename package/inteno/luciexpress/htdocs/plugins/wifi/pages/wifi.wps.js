@@ -22,49 +22,45 @@ $juci.module("wifi")
 	$rpc.wps.showpin().done(function(data){
 		$scope.generatedPIN = data.pin; 
 	}); 
-	function pair(){
-		$scope.showProgress = 1; 
-		$scope.pairState = 'progress';
-		$scope.timeRemaining = 60;  
-		$uci.save().done(function(){
-			var interval = setInterval(function(){
-				$scope.timeRemaining --; 
-				if($scope.timeRemaining == 0){
-					clearInterval(interval); 
-				}
-			}, 1000); 
-			$rpc.wps.pbc().done(function(){
-				clearInterval(interval); 
-				$scope.pairState = 'success'; 
-				$scope.$apply(); 
-				setTimeout(function(){
-					$scope.showProgress = 0; 
-					$scope.$apply(); 
-				}, 2000); 
-			}).fail(function(){
-				clearInterval(interval); 
-				$scope.pairState = 'fail'; 
-				$scope.$apply(); 
-				setTimeout(function(){
-					$scope.showProgress = 0; 
-					$scope.$apply(); 
-				}, 2000); 
-			}).always(function(){
-				$scope.showProgress = 0; 
-			}); 
-		}); 
+	function wpsSuccess(){
+		$scope.pairState = 'success'; 
+		$scope.$apply(); 
+		setTimeout(function(){
+			$scope.showProgress = 0; 
+			$scope.$apply(); 
+		}, 2000); 
+	}
+	function wpsFail(){
+		$scope.pairState = 'fail'; 
+		$scope.$apply(); 
+		setTimeout(function(){
+			$scope.showProgress = 0; 
+			$scope.$apply(); 
+		}, 2000); 
 	}
 	$scope.save = function(){
 		$uci.save(); 
 	}
 	$scope.onPairPBC = function(){
-		
-		pair(); 
+		$scope.showProgress = 1; 
+		$scope.pairState = 'progress';
+		$rpc.wps.pbc().done(function(){
+			wpsSuccess(); 
+		}).fail(function(){
+			wpsFail(); 
+		}); 
 	}
 	$scope.onPairUserPIN = function(){
+		$scope.showProgress = 1; 
+		$scope.pairState = 'progress';
 		$rpc.wps.stapin({ pin: $scope.data.userPIN }).done(function(data){
-			pair(); 
-		}); 
+			wpsSuccess(); 
+		}).fail(function(){
+			wpsFail(); 
+		}).always(function(){
+			$scope.data.userPIN = ""; 
+			$scope.$apply(); 
+		});  
 	}
 	$scope.onGeneratePIN = function(){
 		$rpc.wps.genpin().done(function(data){

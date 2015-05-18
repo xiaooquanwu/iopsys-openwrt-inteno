@@ -19,6 +19,9 @@
 				<h2 translate>WPS-PBC: Push Button on Device</h2>
 				<p translate>wifi.wps.pbc.info</p>
 				<luci-config-lines>
+					<luci-config-line  ng-show="boardpanel"  title="{{'Enable WPS button on router'|translate}}">
+						<switch id="enabled" name="enabled" ng-model="boardpanel.settings.wpsbutton.value" class="green" ng-change="save()" ></switch>
+					</luci-config-line>
 					<luci-config-line  ng-show="boardpanel"  title="{{'Pressing WiFi on/off button on your router for long time activates pairing '|translate}}">
 						<switch id="enabled" name="enabled" ng-model="boardpanel.settings.wifibutton.value" class="green" ng-change="save()" ></switch>
 					</luci-config-line>
