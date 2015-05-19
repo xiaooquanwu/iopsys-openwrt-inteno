@@ -4,7 +4,7 @@ var completed = {
 	"configuration": 1, 
 	"energy": 1, 
 	"network": 0, 
-	"password": 0, 
+	"password": 1, 
 	"upgrade": 0
 }
 
