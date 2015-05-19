@@ -15,20 +15,6 @@ describe("Settings", function(){
 	it("should have required rpc functions", function(){
 		expect($rpc.luci2.system.password_set).to.be.a(Function); 
 	}); 
-	it("should be able to check for online upgrade", function(done){
-		$rpc.luci2.system.upgrade_check({type: "online"}).done(function(){
-			done(); 
-		}).fail(function(){
-			throw new Error("Could not check for online upgrade!"); 
-		}); 
-	}); 
-	it("should be able to check for usb upgrade", function(done){
-		$rpc.luci2.system.upgrade_check({type: "usb"}).done(function(){
-			done(); 
-		}).fail(function(){
-			throw new Error("Could not check for online upgrade!"); 
-		}); 
-	}); 
 	it("should not be able to set password without providing current password", function(done){
 		console.log("Trying to set password for user "+PARAMS.username); 
 		$rpc.luci2.system.password_set({"user": PARAMS.username, "password": "abrakadabra"}).done(function(){
