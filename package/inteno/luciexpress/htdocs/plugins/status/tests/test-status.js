@@ -6,10 +6,10 @@ var completed = {
 	"events": 0, 
 	"nat": 0, 
 	"restart": 1, 
-	"status.dsl": 0, 
+	"status.dsl": 1, 
 	"status.status": 1, 
-	"status.tv": 0, 
-	"status.voice": 0
+	"status.tv": 1, 
+	"status.voice": 1
 }
 
 describe("Status", function(){
