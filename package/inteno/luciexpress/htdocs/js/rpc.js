@@ -82,9 +82,8 @@
 			self.session.access({
 				"keys": ""
 			}).done(function(result){
-                if(!("username" in (result.data||{}))) {
-					console.log("Session: Not authenticated!");
-					RPC_SESSION_ID = RPC_DEFAULT_SESSION_ID; // reset sid to 000..
+				if(!("username" in result.data)) {
+					console.log("Session: Not authenticated!"); 
 					deferred.reject(); 
 				} else {
 					self.$session = result; 
@@ -93,7 +92,7 @@
 					deferred.resolve(result); 
 				}  
 			}).fail(function err(result){
-				RPC_SESSION_ID = RPC_DEFAULT_SESSION_ID; 
+				self.sid = RPC_DEFAULT_SESSION_ID; 
 				deferred.reject(); 
 			}); 
 			return deferred.promise(); 
