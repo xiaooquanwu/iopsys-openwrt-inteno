@@ -37,6 +37,7 @@ static struct ubus_context *ctx = NULL;
 static struct blob_buf bb;
 static const char *ubus_path;
 
+static Radio radio[MAX_RADIO];
 static Wireless wireless[MAX_VIF];
 static Network network[MAX_NETWORK];
 static Detail details[MAX_CLIENT];
@@ -271,8 +272,11 @@ load_wireless()
 	const char *device = NULL;
 	const char *network = NULL;
 	const char *ssid = NULL;
+	char *token;
 	char wdev[16];
+	int rno = 0;
 	int wno = 0;
+	int chn;
 	int vif;
 	int vif0 = 0;
 	int vif1 = 0;
@@ -307,6 +311,46 @@ load_wireless()
 
 					wno++;
 				}
+			} else if (!strcmp(s->type, "wifi-device")) {
+				radio[rno].name = s->e.name;
+				if(!(radio[rno].band = uci_lookup_option_string(uci_ctx, s, "band")))
+					radio[rno].band = "b";
+				radio[rno].frequency = !strcmp(radio[rno].band, "a") ? 5 : 2;
+				radio[rno].pcid = chrCmd("wlctl -i %s revinfo | awk 'FNR == 2 {print}' | cut -d'x' -f2", radio[rno].name);
+				radio[rno].is_ac = (atoi(chrCmd("db -q get hw.%s.is_ac", radio[rno].pcid)) == 1) ? true : false;
+
+				if(radio[rno].frequency == 2) {
+					radio[rno].hwmodes[0] = "11b";
+					radio[rno].hwmodes[1] = "11g";
+					radio[rno].hwmodes[2] = "11bg";
+					radio[rno].hwmodes[3] = "11n";
+					radio[rno].bwcaps[0] = 20;
+					radio[rno].bwcaps[1] = 40;
+					radio[rno].bwcaps[2] = '\0';
+				} else if (radio[rno].frequency == 5) {
+					radio[rno].hwmodes[0] = "11a";
+					radio[rno].hwmodes[1] = "11n";
+					radio[rno].hwmodes[2] = '\0';
+					radio[rno].hwmodes[3] = '\0';
+					radio[rno].bwcaps[0] = 20;
+					radio[rno].bwcaps[1] = 40;
+					radio[rno].bwcaps[2] = 80;
+					radio[rno].bwcaps[3] = '\0';
+					if (radio[rno].is_ac)
+						radio[rno].hwmodes[2] = "11ac";
+				}
+
+				chn = 0;
+				token = strtok(chrCmd("wlctl -i %s channels", radio[rno].name), " ");
+				while (token != NULL)
+				{
+					radio[rno].channels[chn] = atoi(token);
+					token = strtok (NULL, " ");
+					chn++;
+				}
+				radio[rno].channels[chn] = '\0';
+
+				rno++;
 			}
 		}
 	}
@@ -1488,6 +1532,46 @@ quest_host_status(struct ubus_context *ctx, struct ubus_object *obj,
 }
 
 static int
+quest_router_radios(struct ubus_context *ctx, struct ubus_object *obj,
+		  struct ubus_request_data *req, const char *method,
+		  struct blob_attr *msg)
+{
+	void *t, *c;
+	int i, j;
+
+	blob_buf_init(&bb, 0);
+
+	for (i = 0; i < MAX_RADIO; i++) {
+		if (!radio[i].name)
+			break;
+		t = blobmsg_open_table(&bb, radio[i].name);
+		blobmsg_add_string(&bb, "band", radio[i].band);
+		blobmsg_add_u32(&bb, "frequency", radio[i].frequency);
+		c = blobmsg_open_array(&bb, "hwmodes");
+		for(j=0; radio[i].hwmodes[j]; j++) {
+			blobmsg_add_string(&bb, "", radio[i].hwmodes[j]);
+		}
+		blobmsg_close_array(&bb, c);
+		c = blobmsg_open_array(&bb, "bwcaps");
+		for(j=0; radio[i].bwcaps[j]; j++) {
+			blobmsg_add_u32(&bb, "", radio[i].bwcaps[j]);
+		}
+		blobmsg_close_array(&bb, c);
+		c = blobmsg_open_array(&bb, "channels");
+		for(j=0; radio[i].channels[j]; j++) {
+			blobmsg_add_u32(&bb, "", radio[i].channels[j]);
+		}
+		blobmsg_close_array(&bb, c);
+		blobmsg_close_table(&bb, t);
+	}
+
+	ubus_send_reply(ctx, req, bb.head);
+
+	return 0;
+}
+
+
+static int
 quest_reload(struct ubus_context *ctx, struct ubus_object *obj,
 		  struct ubus_request_data *req, const char *method,
 		  struct blob_attr *msg)
@@ -1515,6 +1599,7 @@ static struct ubus_method router_object_methods[] = {
 	UBUS_METHOD("leases", quest_network_leases, network_policy),
 	UBUS_METHOD("host", quest_host_status, host_policy),
 	UBUS_METHOD_NOARG("usb", quest_router_usbs),
+	UBUS_METHOD_NOARG("radios", quest_router_radios),
 	UBUS_METHOD_NOARG("reload", quest_reload),
 };
 
@@ -1655,6 +1740,18 @@ wps_showpin(struct ubus_context *ctx, struct ubus_object *obj,
 	return 0;
 }
 
+static int
+wps_stop(struct ubus_context *ctx, struct ubus_object *obj,
+		  struct ubus_request_data *req, const char *method,
+		  struct blob_attr *msg)
+{
+	system("killall -SIGTERM wps_monitor");
+	system("nvram set wps_proc_status=0");
+	system("wps_monitor &");
+	return 0;
+}
+
+
 static struct ubus_method wps_object_methods[] = {
 	UBUS_METHOD_NOARG("pbc", wps_pbc),
 	UBUS_METHOD_NOARG("genpin", wps_genpin),
@@ -1662,6 +1759,7 @@ static struct ubus_method wps_object_methods[] = {
 	UBUS_METHOD("stapin", wps_stapin, pin_policy),
 	UBUS_METHOD("setpin", wps_setpin, pin_policy),
 	UBUS_METHOD_NOARG("showpin", wps_showpin),
+	UBUS_METHOD_NOARG("stop", wps_stop),
 };
 
 static struct ubus_object_type wps_object_type =

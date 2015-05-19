@@ -25,6 +25,7 @@
 #include "dslstats.h"
 #include "igmp.h"
 
+#define MAX_RADIO	4
 #define MAX_VIF		8
 #define MAX_NETWORK	16
 #define MAX_CLIENT	128
@@ -37,6 +38,17 @@ typedef struct {
 	const char *ssid;
 	const char *network;
 } Wireless;
+
+typedef struct {
+	const char *name;
+	const char *band;
+	int frequency;
+	const char *hwmodes[6];
+	int channels[16];
+	const char *pcid;
+	int bwcaps[4];
+	bool is_ac;
+} Radio;
 
 typedef struct {
 	int connum;

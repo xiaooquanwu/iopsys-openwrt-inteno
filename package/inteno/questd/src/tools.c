@@ -73,6 +73,7 @@ chrCmd(const char *pFmt, ...)
 		fgets(buffer, sizeof(buffer), pipe);
 	pclose(pipe);
 
+	remove_newline(buffer);
 	if (strlen(buffer))
 		return strdup(buffer);
 	else
