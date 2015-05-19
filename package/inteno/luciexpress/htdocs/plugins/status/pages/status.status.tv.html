@@ -7,13 +7,19 @@
 			<h3>{{'Vodafone TV Channels'|translate}}</h3>
 			<table class="table">
 				<tr>
-					<th>Group IP</th>
-					<th>Bandwidth Usage (kbps)</th>
-					<th>PID/CC Error</th>
-					<th>LAN Port</th>
-					<th>Client IP</th>
+					<th translate>Group IP</th>
+					<th translate>Client IP</th>
+					<th translate>LAN Port</th>
+					<th translate>WAN Port</th>
+					<th translate>Timeout</th>
 				</tr>
-				<tr></tr>
+				<tr ng-repeat="row in igmptable">
+					<td>{{row.group}}</td>
+					<td>{{row.reporter}}</td>
+					<td>{{row.device}}</td>
+					<td>{{row.srcdevice}}</td>
+					<td>{{row.timeout}}</td>
+				</tr>
 			</table>
 		</luci-config-section>
 	</div>

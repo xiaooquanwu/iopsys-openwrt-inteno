@@ -1,6 +1,7 @@
 $juci.module("internet")
 .controller("InternetExHostPageCtrl", function($scope, $rpc, $config, $uci, $tr){
 	$scope.config = $config; 
+	$scope.wan = {}; 
 	
 	async.parallel([
 		function(next){
