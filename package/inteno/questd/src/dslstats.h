@@ -59,12 +59,12 @@ typedef struct dsl_counters {
 } DSLCounters; 
 
 typedef struct dsl_stats {
-	char *mode; 
-	char *traffic;
-	char *status; 
-	char *link_power_state; 
-	char *line_status; 
-	char *vdsl2_profile; 
+	char mode[64]; 
+	char traffic[64];
+	char status[64]; 
+	char link_power_state[64]; 
+	char line_status[64]; 
+	char vdsl2_profile[64]; 
 	UpDown trellis; 
 	UpDown snr; 
 	UpDown pwr; 

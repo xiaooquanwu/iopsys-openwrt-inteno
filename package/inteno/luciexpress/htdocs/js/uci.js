@@ -272,7 +272,10 @@
 							if(isNaN(n)) n = type.dvalue;
 							value = n; 
 							break; 
-						case Array: value = data[k];  break; 
+						case Array: 
+							if(data[k] instanceof String) value = [data[k]]; 
+							else value = data[k];  
+							break; 
 						case Boolean: 
 							if(data[k] === "true" || data[k] === "1") value = true; 
 							else if(data[k] === "false" || data[k] === "0") value = false; 

@@ -4,18 +4,18 @@
 		<div ng-hide="online">
 			{{'status.dsl.offline'|translate}}
 		</div>
-		<div ng-show="online">
-			<luci-table 
+		<div >
+			<!--<luci-table 
 				title="{{'DSL Connection'|translate}}"
 				data="dslConnectionInfo">
-			</luci-table>
+			</luci-table>-->
 			<luci-table 
 				title="{{'DSL Mode'|translate}}"
 				data="dslModeInfo">
 			</luci-table>
 			<luci-table
 				title="{{'DSL Status Information'|translate}}"
-				columns="[ '', 'Configured', 'Current' ]"
+				columns="[ '', '', 'Current' ]"
 				data="dslStatusInfo">
 			</luci-table>
 			<luci-table

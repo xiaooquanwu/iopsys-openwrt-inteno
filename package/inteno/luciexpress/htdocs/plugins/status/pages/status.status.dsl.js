@@ -64,15 +64,15 @@ $juci.module("status")
 			//alert("Settings stats to: "+JSON.stringify(stats)); 
 			// map data to the view tables
 			
-			$scope.dslConnectionInfo.rows = [
+			/*$scope.dslConnectionInfo.rows = [
 				[ dslstats.ip, dslstats.ipstate ]
-			]; 
+			];*/ 
 			$scope.dslModeInfo.rows = [
-				[ dslstats.mode, dslstats.mode_details ]
+				[ dslstats.mode, dslstats.traffic ]
 			]; 
 			$scope.dslStatusInfo.rows = [
-				[ $tr(gettext('Line Status')), dslstats.line_status_configured, dslstats.line_status ], 
-				[ $tr(gettext('Line Type')), dslstats.line_type_configured, dslstats.line_type ]
+				[ $tr(gettext('Line Status')), "", dslstats.status ], 
+				//[ $tr(gettext('Line Type')), dslstats.line_type_configured, dslstats.line_type ]
 			];
 			$scope.dslRateInfo.rows = [
 				[ $tr(gettext('Actual Data Rate')), dslstats.bearers[0].rate_down, dslstats.bearers[0].rate_up ]

@@ -27,4 +27,9 @@ describe("UCI.firewall", function(){
 		expect($uci.firewall).to.have.property("dmzhost"); 
 		expect($uci.firewall.dmzhost[".type"]).to.be("dmzhost"); 
 	}); 
+	it("should have Allow-Ping firewall rule set to visible (hidden=0)", function(done){
+		var ping_rule = $uci.firewall["@rule"].filter(function(x){ return x.name.value == "Allow-Ping"; }); 
+		expect(ping_rule).not.to.be.empty(); 
+		if(ping_rule[0].hidden.value != 0) throw new Error("Allow-Ping firewall rule should be configured with hidden=0"); 
+	}); 
 }); 

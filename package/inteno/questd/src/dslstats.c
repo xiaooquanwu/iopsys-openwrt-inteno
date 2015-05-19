@@ -26,12 +26,6 @@
 
 void dslstats_init(struct dsl_stats *self){
 	*self = (struct dsl_stats){0}; 
-	self->mode = ""; 
-	self->traffic = ""; 
-	self->status = ""; 
-	self->link_power_state = ""; 
-	self->line_status = ""; 
-	self->vdsl2_profile = ""; 
 }
 
 void dslstats_load(struct dsl_stats *self){
@@ -76,13 +70,13 @@ void dslstats_load(struct dsl_stats *self){
 			case 1: { // various one liners
 				if(strstr(line, "Total time =") == line) counters = &self->counters[DSLSTATS_COUNTER_TOTALS]; 
 				else if(strstr(line, "Latest 15 minutes time =") == line) done = 1; // we stop parsing at this right now
-				
+				else if(strstr(line, "Status") == line && strlen(line) > 9) strncpy(self->status, line + 8, sizeof(self->status)); 
 			} break; 
 			case 3: {
-				if(strstr(name, "Link Power State") == name) self->link_power_state = strdup(arg1); 
-				else if(strstr(name, "Mode") == name) self->mode = strdup(arg1); 
-				else if(strstr(name, "VDSL2 Profile") == name) self->vdsl2_profile = strdup(arg1); 
-				else if(strstr(name, "TPS") == name) self->traffic = strdup(arg1); 
+				if(strstr(name, "Link Power State") == name) strncpy(self->link_power_state, arg1, sizeof(self->link_power_state)); 
+				else if(strstr(name, "Mode") == name) strncpy(self->mode, arg1, sizeof(self->mode)); 
+				else if(strstr(name, "VDSL2 Profile") == name) strncpy(self->vdsl2_profile, arg1, sizeof(self->vdsl2_profile));
+				else if(strstr(name, "TPS") == name) strncpy(self->traffic, arg1, sizeof(self->traffic)); 
 				else if(strstr(name, "Trellis") == name){
 					char tmp[2][64]; 
 					if(sscanf(arg1, "U:%s /D:%s", tmp[0], tmp[1])){
@@ -93,8 +87,7 @@ void dslstats_load(struct dsl_stats *self){
 						else self->trellis.up = 0; 
 					}
 				}
-				else if(strstr(name, "Training Status") == name) self->status = strdup(arg1); 
-				else if(strstr(name, "Line Status") == name) self->line_status = strdup(arg1); 
+				else if(strstr(name, "Line Status") == name) strncpy(self->line_status, arg1, sizeof(self->line_status)); 
 				else if(strstr(name, "Bearer") == name){
 					unsigned long id, up, down, ret; 
 					if((ret = sscanf(arg1, "%lu, Upstream rate = %lu Kbps, Downstream rate = %lu Kbps", &id, &up, &down)) == 3){
@@ -239,6 +232,10 @@ void dslstats_load(struct dsl_stats *self){
 	pclose(fp);
 }
 
+void dslstats_free(struct dsl_stats *self){
+	
+}
+
 void dslstats_to_blob_buffer(struct dsl_stats *self, struct blob_buf *b){
 	void *t, *array, *obj;
 	DSLBearer *bearer = &self->bearers[0]; 
@@ -346,5 +343,8 @@ int dslstats_rpc(struct ubus_context *ctx, struct ubus_object *obj,
 	dslstats_to_blob_buffer(&dslstats, &bb); 
 	
 	ubus_send_reply(ctx, req, bb.head); 
+	
+	dslstats_free(&dslstats); 
+	
 	return 0; 	
 }
