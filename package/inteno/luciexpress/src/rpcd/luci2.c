@@ -36,6 +36,7 @@
 #include <libubox/avl-cmp.h>
 #include <libubus.h>
 #include <uci.h>
+#include <shadow.h>
 
 #include <rpcd/plugin.h>
 
@@ -104,12 +105,14 @@ static const struct blobmsg_policy rpc_sshkey_policy[__RPC_K_MAX] = {
 enum {
 	RPC_P_USER,
 	RPC_P_PASSWORD,
+	RPC_P_CURPASSWORD,
 	__RPC_P_MAX
 };
 
 static const struct blobmsg_policy rpc_password_policy[__RPC_P_MAX] = {
 	[RPC_P_USER]     = { .name = "user",     .type = BLOBMSG_TYPE_STRING },
 	[RPC_P_PASSWORD] = { .name = "password", .type = BLOBMSG_TYPE_STRING },
+	[RPC_P_CURPASSWORD] = { .name = "curpass", .type = BLOBMSG_TYPE_STRING }
 };
 
 enum {
@@ -758,6 +761,8 @@ rpc_luci2_password_set(struct ubus_context *ctx, struct ubus_object *obj,
 {
 	pid_t pid;
 	int fd, fds[2];
+	char *hash;
+	struct spwd *sp;
 	struct stat s;
 	struct blob_attr *tb[__RPC_P_MAX];
 
@@ -766,6 +771,17 @@ rpc_luci2_password_set(struct ubus_context *ctx, struct ubus_object *obj,
 
 	if (!tb[RPC_P_USER] || !tb[RPC_P_PASSWORD])
 		return UBUS_STATUS_INVALID_ARGUMENT;
+
+	if(tb[RPC_P_CURPASSWORD])
+	{
+		if (!(sp = getspnam(blobmsg_data(tb[RPC_P_USER]))))
+			return UBUS_STATUS_PERMISSION_DENIED;
+
+		hash = crypt(blobmsg_data(tb[RPC_P_CURPASSWORD]), sp->sp_pwdp);
+
+		if(strcmp(hash, sp->sp_pwdp))
+			return UBUS_STATUS_PERMISSION_DENIED;
+	}
 
 	if (stat("/usr/bin/passwd", &s))
 		return UBUS_STATUS_NOT_FOUND;
