@@ -3,6 +3,7 @@
 (function(scope){
 	var RPC_HOST = ""; //(($config.rpc.host)?$config.rpc.host:"")
 	var RPC_SESSION_ID = "00000000000000000000000000000000"; 
+	var RPC_DEFAULT_SESSION_ID = "00000000000000000000000000000000"; 
 	var gettext = function(text){ return text; }; 
 	var default_calls = [
 		"session.access", 
@@ -74,14 +75,38 @@
 			if(sid) RPC_SESSION_ID = sid; 
 			else return RPC_SESSION_ID; 
 		}, 
+		$authenticate: function(){
+			var self = this; 
+			var deferred  = $.Deferred(); 
+			
+			self.session.access({
+				"keys": ""
+			}).done(function(result){
+				if(!("username" in result.data)) {
+					console.log("Session: Not authenticated!"); 
+					deferred.reject(); 
+				} else {
+					self.$session = result; 
+					if(!("data" in self.$session)) self.$session.data = {}; 
+					console.log("Session: Loggedin! "); 
+					deferred.resolve(result); 
+				}  
+			}).fail(function err(result){
+				self.sid = RPC_DEFAULT_SESSION_ID; 
+				deferred.reject(); 
+			}); 
+			return deferred.promise(); 
+		}, 
 		$login: function(opts){
 			var self = this; 
 			var deferred  = $.Deferred(); 
+			
 			self.session.login({
 				"username": opts.username, 
 				"password": opts.password
 			}).done(function(result){
 				RPC_SESSION_ID = result.ubus_rpc_session;
+				self.$session = result; 
 				//JUCI.localStorage.setItem("sid", self.sid); 
 				//if(result && result.acls && result.acls.ubus) setupUbusRPC(result.acls.ubus); 
 				deferred.resolve(self.sid); 

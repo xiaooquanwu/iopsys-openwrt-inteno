@@ -1,5 +1,5 @@
 $juci.module("settings")
-.controller("SettingsPasswordCtrl", function($scope, $tr, gettext){
+.controller("SettingsPasswordCtrl", function($scope, $rpc, $tr, $session, gettext){
 	$scope.showPassword = 0; 
 	$scope.showModal = 0; 
 	$scope.modal = {
@@ -32,7 +32,7 @@ $juci.module("settings")
 		if($scope.modal.password != $scope.modal.password2) alert($tr(gettext("Passwords do not match!"))); 
 		else {
 			// TODO: change to correct username
-			$rpc.luci2.system.password_set({user: "root", password: $scope.modal.password}).done(function(data){
+			$rpc.luci2.system.password_set({user: $rpc.$session.data.username, password: $scope.modal.password, curpass: $scope.modal.old_password}).done(function(data){
 				$scope.showModal = 0; 
 				$scope.$apply(); 
 			}).fail(function(){

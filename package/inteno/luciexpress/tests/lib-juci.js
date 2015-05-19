@@ -12,30 +12,34 @@ var $rpc = global.$rpc = global.UBUS;
 var $uci = global.$uci = global.UCI; 
 Object.prototype.assign = require("object-assign"); 
 
-var host = "localhost"; 
-var username; 
-var password; 
+var PARAMS = {
+	host: "localhost", 
+	username: "",  
+	password: ""
+};  
 
 for(var i = 0; i < process.argv.length; i++){
 	switch(process.argv[i]){
-		case "--pass": password = process.argv[++i]; break; 
-		case "--user": username = process.argv[++i]; break; 
-		case "--host": host = process.argv[++i]; break; 
+		case "--pass": PARAMS.password = process.argv[++i]; break; 
+		case "--user": PARAMS.username = process.argv[++i]; break; 
+		case "--host": PARAMS.host = process.argv[++i]; break; 
 	}; 
 }
 
-if(!username || !password ){
+if(!PARAMS.username || !PARAMS.password ){
 	console.error("Please specify --user <rpcuser> and --pass <rpcpassword> arguments!"); 
 	process.exit(); 
 }
+
+global.PARAMS = PARAMS; 
 
 function init(){
 	var deferred = $.Deferred(); 
 	async.series([
 		function(next){
-			console.log("Trying to connect to RPC host '"+host+"'..."); 
+			console.log("Trying to connect to RPC host '"+PARAMS.host+"'..."); 
 
-			$rpc.$init({host: "http://"+host}).done(function(){
+			$rpc.$init({host: "http://"+PARAMS.host}).done(function(){
 				//console.log("Initialized rpc: "+Object.keys($rpc)); 
 				next(); 
 			}).fail(function(){
@@ -43,7 +47,7 @@ function init(){
 			}); 
 		}, 
 		function(next){
-			$rpc.$login({username: username, password: password}).done(function(){
+			$rpc.$login({username: PARAMS.username, password: PARAMS.password}).done(function(){
 				next(); 
 			}).fail(function(){
 				throw new Error("Could not login over RPC using specified username and password!"); 
