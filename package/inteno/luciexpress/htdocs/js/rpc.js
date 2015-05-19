@@ -93,7 +93,7 @@
 					deferred.resolve(result); 
 				}  
 			}).fail(function err(result){
-				self.sid = RPC_DEFAULT_SESSION_ID; 
+				RPC_SESSION_ID = RPC_DEFAULT_SESSION_ID; 
 				deferred.reject(); 
 			}); 
 			return deferred.promise(); 
