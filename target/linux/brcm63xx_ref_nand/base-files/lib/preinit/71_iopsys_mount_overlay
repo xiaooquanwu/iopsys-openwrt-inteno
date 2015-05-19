@@ -4,40 +4,6 @@
 iopsys_rootfs_pivot() {
 	[ "$pi_iopsys_skip_overlay" = "true" ] && return
 	echo "mounting and populating overlay"
-	local iop3_first_boot=$(ls -1 / | grep IOP3 | wc -l)
-	if [ "$iop3_first_boot" == "1" ]; then
-		# only do this once after flashing a new image
-		rm /IOP3
-		#Check if previous image was IOP3 or not
-		local mtdpart=$(find_mtd_part rootfs_update)
-		local iVersion=`cat /proc/nvram/iVersion`
-		if [ "$iVersion" == "03 " ]; then
-			echo "iVersion == 3 detected"
-			mount -t jffs2 $mtdpart /mnt
-			local save_config=$(ls -1 /mnt/overlay/ | grep SAVE_CONFIG | wc -l)
-			if [ "$save_config" == "1" ]; then
-				echo "Copying config"
-				cp -rfd /mnt/overlay/* /overlay/
-				rm /overlay/SAVE_CONFIG
-			fi
-		elif [ "$iVersion" == "ff " ]; then
-			echo "iVersion == ff detected, forcing config copy and setting iVersion=03"
-			echo 03 >/proc/nvram/iVersion
-			local mtdpart=$(find_mtd_part rootfs_update_data)
-			mount -t jffs2 $mtdpart /mnt
-			if [ -e /etc/clean ]; then
-			  echo "Config will not be saved"
-			else
-			  cp -rfd /mnt/* /overlay/
-			fi
-		else
-			echo "Unknown iVersion==$iVersion detected, doing nothing, config lost"
-		fi
-		umount /mnt
-		#remove db
-		rm /overlay/lib/db/config/hw
-	fi
-	# mount overlay
 	fopivot /overlay /rom && pi_mount_skip_next=true
 }
 

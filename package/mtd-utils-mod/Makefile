@@ -8,40 +8,42 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=mtd-utils
-PKG_REV:=a2d010f8fca904fffa3c6e5a5d148cc96a37a08a
-PKG_VERSION:=20090227
-PKG_RELEASE:=1.1
+PKG_VERSION:=1.5.1
+PKG_RELEASE:=1
 PKG_INSTALL:=1
 
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
-PKG_SOURCE_URL:=git://git.infradead.org/mtd-utils.git
+PKG_SOURCE_URL:=git@iopsys.inteno.se:mtd-utils
 PKG_SOURCE_PROTO:=git
+
+PKG_SOURCE_VERSION:=04fdc787a3cdd7e779724762c2daff0762c78af4
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
-PKG_SOURCE_VERSION:=$(PKG_REV)
 
 include $(INCLUDE_DIR)/package.mk
 
 FILES:= \
-	doc_loadbios \
 	docfdisk \
+	doc_loadbios \
+	flashcp \
 	flash_erase \
-	flash_eraseall \
-	flash_info \
 	flash_lock \
 	flash_otp_dump \
 	flash_otp_info \
+	flash_otp_lock \
+	flash_otp_write \
 	flash_unlock \
-	flashcp \
 	ftl_check \
 	ftl_format \
+	imagewrite \
 	jffs2dump \
+	jffs2reader \
 	mkfs.jffs2 \
 	mtd_debug \
 	nanddump \
 	nandtest \
 	nandwrite \
-	nftl_format \
 	nftldump \
+	nftl_format \
 	recv_image \
 	rfddump \
 	rfdformat \
@@ -50,28 +52,21 @@ FILES:= \
 
 ifneq ($(CONFIG_LINUX_2_4),y)
 FILES += \
-	bin2nand \
-	mkbootenv \
 	mkfs.ubifs \
-	mkpfi \
-	nand2bin \
-	pddcustomize \
-	pfi2bin \
-	pfiflash \
+	mtdinfo \
 	ubiattach \
+	ubiblock \
 	ubicrc32 \
-	ubicrc32.pl \
 	ubidetach \
 	ubiformat \
-	ubigen \
-	ubimirror \
 	ubimkvol \
 	ubinfo \
 	ubinize \
+	deubinize \
 	ubirename \
 	ubirmvol \
-	ubiupdatevol \
-	unubi
+	ubirsvol \
+	ubiupdatevol
 endif
 
 define PartGen
