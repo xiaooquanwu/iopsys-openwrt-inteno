@@ -19,6 +19,9 @@
 		},
 		"internet/port_mapping": {
 			"view": "pages/internet.port_mapping"
+		},
+		"status.nat": {
+			"view": "pages/status.nat"
 		}
 	}
 }

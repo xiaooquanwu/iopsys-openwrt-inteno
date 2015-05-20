@@ -24,9 +24,6 @@
 		"status.events": {
 			"view": "pages/status.events"
 		},
-		"status.nat": {
-			"view": "pages/status.nat"
-		},
 		"status.restart": {
 			"view": "pages/status.restart"
 		}
