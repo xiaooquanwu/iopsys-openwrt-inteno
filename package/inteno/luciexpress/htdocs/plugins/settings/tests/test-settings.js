@@ -24,7 +24,7 @@ describe("Settings", function(){
 	}); 
 	it("should be able to check for usb upgrade", function(done){
 		$rpc.luci2.system.upgrade_check({type: "usb"}).done(function(){
-			done(); 
+			done();  
 		}).fail(function(){
 			throw new Error("Could not check for online upgrade!"); 
 		}); 

@@ -57,7 +57,7 @@ $juci.module("status")
 							}
 						}
 					}
-				}
+				} 
 			}
 			reconstruct_floats(dslstats); 
 			

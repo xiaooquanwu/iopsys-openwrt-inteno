@@ -56,7 +56,7 @@ void dslstats_load(struct dsl_stats *self){
 						if(id < DSLSTATS_BEARER_COUNT){
 							bearer = &self->bearers[id];
 							DSLDEBUG("Switching bearer: %d\n", id); 
-						} 
+						}  
 					}
 				} 
 				// it is possible to add more stats like this though

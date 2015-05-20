@@ -166,6 +166,12 @@
 				"hostname":				{ dvalue: '', type: String },
 				"displayname":		{ dvalue: '', type: String },
 				"log_size":				{ dvalue: 200, type: Number }
+			},
+			"upgrade": {
+				"fw_check_url":		{ dvalue: "", type: String, required: false},
+				"fw_path_url":		{ dvalue: "", type: String, required: false},
+				"fw_find_ext":		{ dvalue: "", type: String, required: false},
+				"fw_down_path":		{ dvalue: "", type: String, required: false}
 			}
 		},
 		"network": {
@@ -187,14 +193,6 @@
 		//    "username":             { dvalue: "", type: String },
 		//    "password":             { dvalue: "", type: String }
 		//},
-		"unknown": {
-			"upgrade": {
-				"fw_check_url":		{ dvalue: "", type: String, required: false},
-				"fw_path_url":		{ dvalue: "", type: String, required: false},
-				"fw_find_ext":		{ dvalue: "", type: String, required: false},
-				"fw_down_path":		{ dvalue: "", type: String, required: false}
-			}
-		}
 	}; 
 	function UCI(){
 		

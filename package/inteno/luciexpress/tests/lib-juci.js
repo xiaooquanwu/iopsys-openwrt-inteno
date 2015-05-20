@@ -24,7 +24,7 @@ for(var i = 0; i < process.argv.length; i++){
 		case "--user": PARAMS.username = process.argv[++i]; break; 
 		case "--host": PARAMS.host = process.argv[++i]; break; 
 	}; 
-}
+} 
 
 if(!PARAMS.username || !PARAMS.password ){
 	console.error("Please specify --user <rpcuser> and --pass <rpcpassword> arguments!"); 

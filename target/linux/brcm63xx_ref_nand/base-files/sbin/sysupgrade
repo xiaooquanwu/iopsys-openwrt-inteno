@@ -75,7 +75,7 @@ find_image_on_usb() {
 		ARGV=""
 	fi
 }
-
+ 
 online_fw_check() {
 	local imgver curver imgurl
 	local verpath="/tmp/fw_online_version"

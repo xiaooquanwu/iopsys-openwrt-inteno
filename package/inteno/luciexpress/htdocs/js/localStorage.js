@@ -10,7 +10,7 @@
 	}
 	var fake_storage = {}; 
 	function JUCILocalStorage(){
-		this.getItem = function(item){
+		this.getItem = function(item){ 
 			if(supports_html5_storage()) return localStorage.getItem(item); 
 			else return fake_storage[item]; 
 		}; 

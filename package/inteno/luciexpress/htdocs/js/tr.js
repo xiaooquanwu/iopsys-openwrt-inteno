@@ -1,5 +1,5 @@
 //! Author: Martin K. Schröder <mkschreder.uk@gmail.com>
-
+ 
 // service for managing session data
 JUCI.app.factory('$tr', function(gettextCatalog) {
 	return function(str){

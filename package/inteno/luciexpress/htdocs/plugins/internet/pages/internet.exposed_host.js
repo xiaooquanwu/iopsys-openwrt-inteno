@@ -9,7 +9,7 @@ $juci.module("internet")
 				
 			}).always(function(){ next(); }); 
 		}, 
-		function(next){
+		function(next){ 
 			if($uci.firewall.dmzhost == undefined){
 				$uci.firewall.create({".type": "dmzhost", ".name": "dmzhost"}).done(function(){
 					next(); 

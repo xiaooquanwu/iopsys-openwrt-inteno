@@ -31,7 +31,7 @@
 				deferred.reject(); 
 			}); 
 			return deferred.promise(); 
-		}; 
+		};  
 		this.login = function(obj){
 			var self = this; 
 			var deferred  = $.Deferred(); 

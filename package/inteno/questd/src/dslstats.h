@@ -42,7 +42,7 @@ typedef struct dsl_bearer {
 
 	UpDown max_rate; 
 	UpDown rate; 
-	UpDown msgc; 
+	UpDown msgc;  
 	UpDown b,m,t,r,s,l,d; 
 	UpDown delay; 
 	UpDown inp; 

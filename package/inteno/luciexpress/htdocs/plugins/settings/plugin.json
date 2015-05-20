@@ -8,10 +8,7 @@
 		},
 		"settings.energy": {
 			"view": "pages/settings.energy"
-		},
-		"settings.network": {
-			"view": "pages/settings.network"
-		},
+		}, 
 		"settings.password": {
 			"view": "pages/settings.password"
 		},

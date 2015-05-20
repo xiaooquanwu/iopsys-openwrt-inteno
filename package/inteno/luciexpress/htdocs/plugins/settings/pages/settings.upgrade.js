@@ -116,6 +116,7 @@ $juci.module("settings")
 	console.log("SID: "+$scope.sessionID);  
 	
 	function upgradeStart(path){
+		alert("Will try to upgrade from "+path); 
 		$rpc.luci2.system.upgrade_start({"path": path}).done(function(){
 			alert("Upgrade process has started. The web gui will not be available until the process has finished and the box has restarted!"); 
 		}).fail(function(response){
@@ -132,21 +133,28 @@ $juci.module("settings")
 	
 	$scope.onCheckOnline = function(){
 		$rpc.luci2.system.upgrade_check({type: "online"}).done(function(response){
-			$scope.onlineUpgrade = response.stdout.replace("\n", ""); 
+			if(response.stdout) $scope.onlineUpgrade = response.stdout.replace("\n", ""); 
+			if(response.stderr) $scope.$emit("error", "Online upgrade check failed: "+response.stderr); 
+			$scope.$apply(); 
 		}); 
-	}
+	} 
 	$scope.onUpgradeOnline = function(){
 		upgradeStart($scope.onlineUpgrade); 
 	}
 	
 	$scope.onCheckUSB = function(){
 		$rpc.luci2.system.upgrade_check({type: "usb"}).done(function(response){
-			$scope.usbUpgrade = response.stdout.replace("\n", ""); 
+			if(response.stdout) $scope.usbUpgrade = response.stdout.replace("\n", ""); 
+			if(response.stderr) $scope.$emit("error", "USB upgrade check failed: "+response.stderr); 
+			$scope.$apply(); 
 		});
 	}
 	$scope.onUpgradeUSB = function(){
 		upgradeStart($scope.usbUpgrade); 
 	}
+	
+	$scope.onCheckUSB(); 
+	$scope.onCheckOnline(); 
 	
 	$scope.onUploadComplete = function(result){
 		console.log("Upload completed: "+JSON.stringify(result)); 
@@ -157,7 +165,7 @@ $juci.module("settings")
 			var obj = {}; 
 			try {
 				obj = JSON.parse(json); 
-			} catch(e){ alert("The server returned an error!");  }
+			} catch(e){ alert("The server returned an error ("+JSON.stringify(json)+")");  }
 			
 			$rpc.luci2.system.upgrade_test().done(function(result){
 				console.log(JSON.stringify(result)); 

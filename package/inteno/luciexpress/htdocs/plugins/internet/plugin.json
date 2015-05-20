@@ -1,11 +1,15 @@
 {
 	"scripts": [
 		"internet",
-		"widgets/uci.firewall.nat.rule.edit"
+		"widgets/uci.firewall.nat.rule.edit",
+		"widgets/uci.network.interface.edit" 
 	],
 	"pages": {
 		"internet/dns": {
 			"view": "pages/internet.dns"
+		},
+		"settings.network": {
+			"view": "pages/settings.network"
 		},
 		"internet/exposed_host": {
 			"view": "pages/internet.exposed_host"

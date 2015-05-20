@@ -32,4 +32,8 @@ describe("UCI.firewall", function(){
 		expect(ping_rule).not.to.be.empty(); 
 		if(ping_rule[0].hidden.value != 0) throw new Error("Allow-Ping firewall rule should be configured with hidden=0"); 
 	}); 
+	it("should have network config and settings", function(done){
+		expect($uci.network).to.be.ok(); 
+		expect($uci.network["@all"].to.not.be.empty()); 
+	}); 
 }); 

@@ -1,0 +1,35 @@
+<div>
+	<div class="panel panel-default">
+		<div class="panel-heading">
+			<div class="btn-group pull-right">
+				<span class="btn " ng-click="expanded = !expanded">
+					<i class="fa fa-caret-down fa-2x" ng-show="expanded"></i>
+					<i class="fa fa-caret-left fa-2x" ng-hide="expanded"></i>
+				</span>
+			</div>
+			<h3 class="panel-title" style="font-size: 1.5em; padding-top: 0.4em; font-weight: bold; font-family: 'vodafont';">
+				{{interface.hostname.value}} ({{interface.type.value}})
+			</h3>
+			<div style="clear: both;"></div>
+		</div>
+		<div class="panel-body " ng-show="expanded" >
+			<luci-config-lines>
+				<luci-config-line title="{{'Hostname'|translate}}">
+					<input class="form-control" ng-model="interface.hostname.value" ></input>
+				</luci-config-line>
+				<luci-config-line title="{{'IP Type'|translate}}">
+					<luci-select ng-model="interface.proto.value" ng-items="['static', 'dhcp']" placeholder="Pick type of IP"></luci-select>
+				</luci-config-line>
+				<luci-config-line title="{{'IP Address'|translate}}" ng-show="interface.proto.value == 'static'">
+					<input class="form-control" ng-model="interface.ipaddr.value" ></input>
+				</luci-config-line>
+				<luci-config-line title="{{'Netmask'|translate}}" ng-show="interface.proto.value == 'static'">
+					<input class="form-control" ng-model="interface.netmask.value" ></input>
+				</luci-config-line>
+			</luci-config-lines>
+		</div>
+		<div class="panel-footer" ng-show="expanded">
+			<luci-config-apply></luci-config-apply>
+		</div>
+	</div>
+</div>

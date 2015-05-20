@@ -28,7 +28,7 @@ $juci.module("wifi")
 		setTimeout(function(){
 			$scope.showProgress = 0; 
 			$scope.$apply(); 
-		}, 2000); 
+		}, 2000);
 	}
 	function wpsFail(){
 		$scope.pairState = 'fail'; 

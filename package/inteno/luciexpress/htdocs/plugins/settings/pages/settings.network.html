@@ -2,7 +2,7 @@
 	<div ng-controller="SettingsNetworkCtrl">
 		<luci-config-section>
 			<luci-config-heading>{{ 'Network Settings' | translate }}</luci-config-heading>
-			<p translate ng-hide="boardpanel">Missing uci config boardpanel.</p>
+			<p translate ng-hide="network">Missing uci config boardpanel.</p>
 		</luci-config-section>
 		<luci-config-section  ng-show="boardpanel">
 			<luci-config-info>{{ 'settings.energy.info' | translate }}</luci-config-info>
@@ -19,7 +19,7 @@
 				<luci-config-line title="{{'Power-LED Brightness'|translate}}" no-pull>
 					<luci-slider ng-model="boardpanel.settings.power_led_br.value" min="0" max="100"></luci-slider>
 					<!--<switch id="enabled" name="enabled" ng-model="boardpanel.settings.power_led_br.value" class="green"></switch>-->
-				</luci-config-line>
+				</luci-config-line> 
 			</luci-config-lines>
 			<luci-config-apply></luci-config-apply>
 		</luci-config-section>

@@ -4,7 +4,7 @@ $juci.module("status")
 		if(!result.table) {
 			$scope.$emit("error", gettext("Unable to retreive igmptable from device!")); 
 			return; 
-		}
+		} 
 		$scope.igmptable = result.igmptable; 
 	}); 
 }); 
