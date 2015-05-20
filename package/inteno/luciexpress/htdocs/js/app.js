@@ -101,7 +101,7 @@ JUCI.app.config(function ($stateProvider, $locationProvider, $compileProvider, $
 		console.log("ERROR: "+ev.name+": "+JSON.stringify(Object.keys(ev.currentScope))); 
 	}); 
 	// set current language
-	gettextCatalog.currentLanguage = "se"; 
+	gettextCatalog.currentLanguage = "en"; 
 	gettextCatalog.debug = true;
 	
 	var path = $location.path().replace(/\//g, "").replace(/\./g, "_");  
@@ -194,95 +194,3 @@ angular.element(document).ready(function() {
 	}); 
 });
 
-/*
-angular.module("luci")
-.factory("$hosts", function($rpc, $uci){
-	var hosts = {}; 
-	return {
-		insert: function(host){
-			var deferred = $.Deferred(); 
-			if(host.macaddr in hosts){
-				deferred.resolve(hosts[host.macaddr]); 
-			} else {
-				$uci.add("hosts", "host", host).done(function(id){
-					$uci.commit("hosts").done(function(){
-						console.log("Added new host "+host.macaddr+" to database: "+id); 
-						hosts[host.macaddr] = host; 
-						deferred.resolve(host); 
-					}).fail(function(){deferred.reject();}); 
-				}).fail(function(){
-					deferred.reject(); 
-				});
-			}
-			return deferred.promise(); 
-		}, 
-		select: function(rules){
-			var mac = rules.macaddr; 
-			var deferred = $.Deferred(); 
-			if(mac in hosts) deferred.resolve(hosts[mac]); 
-			else {
-				async.series([
-					function(next){
-						$uci.show("hosts").done(function(result){
-							Object.keys(result).map(function(k){
-								hosts[result[k].macaddr] = result[k]; 
-							}); 
-							if(mac in hosts) next(hosts[mac]); 
-							else next(); 
-						}).fail(function(){ next(); }); 
-					}, 
-					function(next){
-						$rpc.router.clients().done(function(clients){
-							async.eachSeries(Object.keys(clients), function(x, next){
-								var cl = clients[x]; 
-								if(!(cl.macaddr in hosts)){
-									console.log("Adding host "+cl.macaddr); 
-									
-									var host = {
-										hostname: cl.hostname, 
-										macaddr: cl.macaddr
-									}; 
-									$uci.add("hosts", "host", host).done(function(id){
-										$uci.commit("hosts").done(function(){
-											console.log("Added new host "+cl.macaddr+" to database - "+id); 
-											hosts[cl.macaddr] = host; 
-										}).always(function(){ next(); }); 
-									});
-								} else {
-									next(); 
-								}
-							}, function(){
-								next(); 
-							}); 
-						}).fail(function(){ next(); }); 
-					}
-				], function(){
-					console.log("HOSTS: "+JSON.stringify(hosts)); 
-					if(!(mac in hosts)) deferred.reject(); 
-					else deferred.resolve(hosts[mac]); 
-				}); 
-			}
-			return deferred.promise(); 
-		},
-		commit: function(){
-			var deferred = $.Deferred(); 
-			async.eachSeries(Object.keys(hosts), function(x, next){
-				var h = hosts[x]; 
-				if(!h || !h.commit) {
-					console.log("Could not commit host "+x); 
-					next(); 
-				} else {
-					h.commit().always(function(){next(); }); 
-				}
-			}, function(){
-				deferred.resolve(); 
-			}); 
-			return deferred.promise(); 
-		}
-	}
-}); 
-
-$(document).ready(function(){
-	          
-	$("#loading-indicator").hide(); 
-}); */
