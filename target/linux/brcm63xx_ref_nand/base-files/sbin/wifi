@@ -785,7 +785,7 @@ wdev_hwmode_settings() {
 
 wdev_channel_settings() {
 	local device=$1
-	local apsta doth channel scantimer acsifs dfsc
+	local apsta doth channel scantimer acsifs dfsc bandwidth chanspec
 
 	# if device is in apsta mode, no need for channel settings
 	# as it will operate at the channel selected by its master
@@ -799,6 +799,7 @@ wdev_channel_settings() {
 	config_get channel "$device" channel "auto"
 	config_get scantimer "$device" scantimer "15"
 	config_get dfsc "$device" dfsc "0"
+	config_get bandwidth "$device" bandwidth
 
 	case "$channel" in
 		auto)
@@ -829,7 +830,7 @@ wdev_channel_settings() {
 			fi
 			wlctl -i $device chanim_mode 2
 		;;
-		*)
+		*u|*l|*/80)
 			wlctl -i $device chanim_mode 0
 			wlctl -i $device chanspec $channel
 		;;
