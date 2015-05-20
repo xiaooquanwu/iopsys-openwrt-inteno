@@ -272,17 +272,6 @@
 				"wps_proc_status": { dvalue: 0, type: Number }
 			}
 		}, 
-		"network": {
-			"interface": {
-				"is_lan": 			{ dvalue: 1, type: Number }, 
-				"ifname":				{ dvalue: "", type: String }, 
-				"proto":				{ dvalue: "dhcp", type: String }, 
-				"ipaddr":				{ dvalue: "", type: String }, 
-				"netmask":			{ dvalue: "", type: String }, 
-				"peerdns": 			{ dvalue: false, type: String }, 
-				"dns": 					{ dvalue: [], type: Array }
-			}
-		}, 
 		//"ddns": {
 		//    "interface":            { dvalue: "", type: String },
 		//    "enabled":              { dvalue: 0, type: Number },

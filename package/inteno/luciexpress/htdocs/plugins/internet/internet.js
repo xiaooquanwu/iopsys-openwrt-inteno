@@ -21,5 +21,7 @@ UCI.network.$registerSectionType("interface", {
 	"bridge_instance": { dvalue: false, type: Boolean }, 
 	"vendorid":				{ dvalue: '', type: String }, 
 	"hostname":				{ dvalue: '', type: String }, 
-	"ipv6":						{ dvalue: false, type: Boolean }
+	"ipv6":						{ dvalue: false, type: Boolean },
+	"peerdns": 				{ dvalue: false, type: String }, 
+	"dns": 						{ dvalue: [], type: Array }
 }); 

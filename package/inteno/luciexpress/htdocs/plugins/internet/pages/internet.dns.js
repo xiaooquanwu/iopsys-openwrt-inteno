@@ -33,6 +33,7 @@ $juci.module("internet")
         //    });
 
         $scope.$watch("dns.primary", function(value){
+					if(!$uci.network.wan) return; 
             $log.debug("dns primary = " + value);
             $log.debug("$uci.network.wan.dns.value", $uci.network.wan.dns.value);
             if ($uci.network.wan.dns.value) {
@@ -43,6 +44,7 @@ $juci.module("internet")
         });
 
         $scope.$watch("dns.secondary", function(value){
+					if(!$uci.network.wan) return; 
             $log.debug("dns secondary = " + value);
             $log.debug("$uci.network.wan.dns.value", $uci.network.wan.dns.value);
             if ($uci.network.wan.dns.value) {
