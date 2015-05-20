@@ -115,12 +115,38 @@ $juci.module("settings")
 	$scope.usbFileName = "()"; 
 	console.log("SID: "+$scope.sessionID);  
 	
+	function upgradeStart(path){
+		$rpc.luci2.system.upgrade_start({"path": path}).done(function(){
+			alert("Upgrade process has started. The web gui will not be available until the process has finished and the box has restarted!"); 
+		}).fail(function(response){
+			alert("Upgrade process failed! "+JSON.stringify(result||"")); 
+		}); 
+	}
+	
 	$uci.sync("system").done(function(){
 		if($uci.system.upgrade && $uci.system.upgrade.fw_upload_path.value){
 			$scope.uploadFilename = $uci.system.upgrade.fw_upload_path.value; 
 			console.log("Using upload path from config: "+$scope.uploadFilename); 
 		}
 	}); 
+	
+	$scope.onCheckOnline = function(){
+		$rpc.luci2.system.upgrade_check({type: "online"}).done(function(response){
+			$scope.onlineUpgrade = response.stdout.replace("\n", ""); 
+		}); 
+	}
+	$scope.onUpgradeOnline = function(){
+		upgradeStart($scope.onlineUpgrade); 
+	}
+	
+	$scope.onCheckUSB = function(){
+		$rpc.luci2.system.upgrade_check({type: "usb"}).done(function(response){
+			$scope.usbUpgrade = response.stdout.replace("\n", ""); 
+		});
+	}
+	$scope.onUpgradeUSB = function(){
+		upgradeStart($scope.usbUpgrade); 
+	}
 	
 	$scope.onUploadComplete = function(result){
 		console.log("Upload completed: "+JSON.stringify(result)); 

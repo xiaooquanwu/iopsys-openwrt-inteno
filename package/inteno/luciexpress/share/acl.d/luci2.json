@@ -114,6 +114,7 @@
 					"sshkeys_get", 
 					"upgrade_test", 
 					"upgrade_clean", 
+					"upgrade_check", 
 					"upgrade_start"
 				], 
 				"asterisk": [
