@@ -1,19 +1,24 @@
 $juci.module("internet")
-    .controller("InternetDNSPageCtrl", function ($scope, $uci) {
+    .controller("InternetDNSPageCtrl", function ($scope, $uci, $log) {
 
         $scope.providers = ["dyndns.org"];
 
+        $scope.dns = {
+            primary: "",
+            secondary: ""
+        };
+
         $uci.sync("network")
             .done(function () {
-                console.log("network", $uci.network);
                 if ($uci.network && $uci.network.wan) {
+                    $log.info("wan", $uci.network.wan);
                     $scope.wan = $uci.network.wan;
                 } else {
-                    console.error("wan network not available on box");
+                    $log.error("wan network not available on box");
                     // TODO show error message
                 }
             }).fail(function () {
-                console.error("Could not sync network settings!");
+                $log.error("Could not sync network settings!");
             })
             .always(function () {
                 $scope.$apply();
@@ -27,13 +32,32 @@ $juci.module("internet")
         //        $scope.$apply();
         //    });
 
+        $scope.$watch("dns.primary", function(value){
+            $log.debug("dns primary = " + value);
+            $log.debug("$uci.network.wan.dns.value", $uci.network.wan.dns.value);
+            if ($uci.network.wan.dns.value) {
+                $uci.network.wan.dns.value = [value];
+            } else {
+                $uci.network.wan.dns.value = [value, ""];
+            }
+        });
+
+        $scope.$watch("dns.secondary", function(value){
+            $log.debug("dns secondary = " + value);
+            $log.debug("$uci.network.wan.dns.value", $uci.network.wan.dns.value);
+            if ($uci.network.wan.dns.value) {
+                $uci.network.wan.dns.value[1] = [value];
+            } else {
+                $uci.network.wan.dns.value = ["", value];
+            }
+        });
 
         $scope.onApply = function () {
             $scope.busy = 1;
             $uci.save().done(function () {
-                console.log("Settings saved!");
+                $log.info("Settings saved!");
             }).fail(function () {
-                console.error("Could not save internet settings!");
+                $log.error("Could not save internet settings!");
             }).always(function () {
                 $scope.$apply();
                 $scope.busy = 0;

@@ -15,11 +15,11 @@
 				<div ng-show="wan.peerdns.value == 1">
 					<br/>
 					<div class="col-md-12">
-						<luci-input-ip-address id="firstDNSAddress" ng-model="wan.dns.value[0]" label="Domain Name Server (DNS) Address" label-class="detail-strong-input" />
+						<luci-input-ip-address id="firstDNSAddress" ng-model="dns.primary" label="Domain Name Server (DNS) Address" label-class="detail-strong-input" />
 					</div>
 					<hr class="col-md-12"/>
 					<div class="col-md-12">
-						<luci-input-ip-address id="secondDNSAddress" ng-model="wan.dns.value[1]" label="Secondary DNS Address (optional)" label-class="detail-strong-input" />
+						<luci-input-ip-address id="secondDNSAddress" ng-model="dns.secondary" label="Secondary DNS Address (optional)" label-class="detail-strong-input" />
 					</div>
 				</div>
 			</luci-config-lines>
