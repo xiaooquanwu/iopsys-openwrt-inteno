@@ -44,6 +44,11 @@
 				scope.UBUS.$init().fail(function(){
 					console.error("UBUS failed to initialize!"); 
 				}).always(function(){ next(); }); 
+			},  
+			function(next){
+				$uci.$init().fail(function(){
+					console.error("UCI failed to initialize!"); 
+				}).always(function(){ next(); }); 
 			}, 
 			function(next){
 				$juci.config.$init().fail(function(){
@@ -139,12 +144,7 @@
 					console.log("Failed to verify session."); 
 					next(); 
 				}); 
-			}, 
-			function(next){
-				$uci.$init().fail(function(){
-					console.error("UCI failed to initialize!"); 
-				}).always(function(){ next(); }); 
-			}, 
+			},
 			function(next){
 				// TODO: this will be moved somewhere else. What we want to do is 
 				// pick both a theme and plugins based on the router model. 

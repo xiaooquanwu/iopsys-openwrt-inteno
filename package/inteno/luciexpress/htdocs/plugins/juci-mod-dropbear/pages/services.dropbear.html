@@ -3,7 +3,45 @@
 		<luci-config-section>
 			<luci-config-heading>{{ 'Dropbear' | translate }}</luci-config-heading>
 			<luci-config-info>{{ 'settings.dropbear.info' | translate }}</luci-config-info>
-			
+			<luci-config-line title="{{'Enabled'|translate}}">
+				<switch ng-model="dropbear.enable.value" class="green" ng-change="onApply()"></switch>
+			</luci-config-line>
+			<luci-config-line title="{{'Verbose logging'|translate}}">
+				<switch ng-model="dropbear.verbose.value" class="green" ng-change="onApply()"></switch>
+			</luci-config-line>
+			<luci-config-line title="{{'Banner File'|translate}}">
+				<input class="form-control" ng-model="dropbear.BannerFile.value" ng-blur="onApply()"></input>
+			</luci-config-line>
+			<luci-config-line title="{{'Password Authentication'|translate}}">
+				<switch ng-model="dropbear.PasswordAuth.value" ng-change="onApply()"></switch>
+			</luci-config-line>
+			<luci-config-line title="{{'Port'|translate}}">
+				<input class="form-control" ng-model="dropbear.Port.value" ng-blur="onApply()"></switch>
+			</luci-config-line>
+			<luci-config-line title="{{'Root Password Auth'|translate}}">
+				<switch ng-model="dropbear.RootPasswordAuth.value" ng-change="onApply()"></switch>
+			</luci-config-line>
+			<luci-config-line title="{{'Root Login'|translate}}">
+				<switch ng-model="dropbear.RootLogin.value" ng-change="onApply()"></switch>
+			</luci-config-line>
+			<luci-config-line title="{{'Gateway Ports'|translate}}">
+				<switch ng-model="dropbear.GatewayPorts.value" ng-change="onApply()"></switch>
+			</luci-config-line>
+			<luci-config-line title="{{'Interface'|translate}}">
+				<input class="form-control" ng-model="dropbear.Interface.value" ng-blur="onApply()"></switch>
+			</luci-config-line>
+			<luci-config-line title="{{'RSA Key File'|translate}}">
+				<input class="form-control" ng-model="dropbear.rsakeyfile.value" ng-blur="onApply()"></switch>
+			</luci-config-line>
+			<luci-config-line title="{{'DSS Key File'|translate}}">
+				<input class="form-control" ng-model="dropbear.dsskeyfile.value" ng-blur="onApply()"></switch>
+			</luci-config-line>
+			<luci-config-line title="{{'Connection Keep Alive'|translate}}">
+				<input class="form-control" ng-model="dropbear.SSHKeepAlive.value" ng-blur="onApply()"></switch>
+			</luci-config-line>
+			<luci-config-line title="{{'Idle Timeout'|translate}}">
+				<input class="form-control" ng-model="dropbear.IdleTimeout.value" ng-blur="onApply()"></switch>
+			</luci-config-line>
 		</luci-config-section>
 	</div>
 </luci-layout-with-sidebar>

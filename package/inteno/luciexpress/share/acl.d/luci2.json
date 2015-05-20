@@ -376,6 +376,7 @@
 					"switch_info",
 					"switch_status",
 					"device_list", 
+					"conntrack_table", 
 					"dslstats"
 				],
 				"luci2.network.bwmon": [

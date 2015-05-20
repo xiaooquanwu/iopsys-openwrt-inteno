@@ -24,7 +24,5 @@
 *#
 .emacs.desktop*
 TAGS*~
-npm-debug.log
-package/inteno/luciexpress/node_modules
-all.pot
-titles.pot
+bower_components
+node_modules

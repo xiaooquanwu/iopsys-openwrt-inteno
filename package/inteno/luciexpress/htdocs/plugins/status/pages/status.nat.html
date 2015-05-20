@@ -1,5 +1,36 @@
 <luci-layout-with-sidebar>
 	<div ng-controller="StatusNATPageCtrl">
-		Nat
+		<luci-config-section>
+			<luci-config-heading>{{ 'Nat table' | translate }}</luci-config-heading>
+			<luci-config-info>{{ 'status.nat.info' | translate }}</luci-config-info>
+			<table class="table" style="font-size: 12px">
+				<thead>
+					<!--<th>IPV6</th>-->
+					<th>Protocol</th>
+					<!--<th>Expires</th>-->
+					<th>Source</th>
+					<th>Dest.</th>
+					<th>Source Port</th>
+					<th>Dest. Port</th>
+					<th>RX Packets</th>
+					<th>TX Packets</th>
+					<th>RX Bytes</th>
+					<th>TX Bytes</th>
+				</thead>
+				<tr ng-repeat="con in connections">
+					<!--<td>{{con.ipv6}}</td>-->
+					<td>{{con.protocol}}</td>
+					<!--<td>{{con.expires}}</td>-->
+					<td>{{con.src}}</td>
+					<td>{{con.dest}}</td>
+					<td>{{con.sport}}</td>
+					<td>{{con.dport}}</td>
+					<td>{{con.rx_packets}}</td>
+					<td>{{con.rx_bytes}}</td>
+					<td>{{con.tx_packets}}</td>
+					<td>{{con.tx_bytes}}</td>
+				</tr>
+			</table>
+		</luci-config-section>
 	</div>
 </luci-layout-with-sidebar>
