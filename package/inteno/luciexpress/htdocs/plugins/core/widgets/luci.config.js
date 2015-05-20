@@ -34,7 +34,7 @@ $juci.module("core")
 .directive("luciConfigLines", function(){
 	var plugin_root = $juci.module("core").plugin_root; 
 	return {
-		template: '<div class="table" ><div ng-transclude></div></div>', 
+		template: '<div class="table" ><div ng-transclude></div><hr style="width: 100%; border-bottom: 1px solid #ccc; clear: both;"/></div>', 
 		replace: true, 
 		transclude: true
 	 };  
@@ -42,16 +42,18 @@ $juci.module("core")
 .directive("luciConfigLine", function(){
 	var plugin_root = $juci.module("core").plugin_root; 
 	return {
-		template: '<div class="row" style="margin-top: 20px; ">'+
-			'<div class="col-md-6">'+
+		template: '<div><div class="row" style="margin-top: 20px; ">'+
+			'<div class="col-xs-6">'+
 				'<label style="font-size: 1.2em">{{title}}</label>'+
+				'<p style="font-size: 12px">{{help}}</p>'+
 			'</div>'+
-			'<div class="col-md-6">'+
+			'<div class="col-xs-6">'+
 				'<div class="{{pullClass}}" ng-transclude></div>'+
-			'</div></div>', 
+			'</div></div></div>', 
 		replace: true, 
 		scope: {
-			title: "@"
+			title: "@", 
+			help: "@"
 		}, 
 		transclude: true, 
 		link: function (scope, element, attrs) {

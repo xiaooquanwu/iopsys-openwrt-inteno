@@ -39,6 +39,7 @@ $juci.module("core")
 		$languages.setLanguage(lang.short_code); 
 	}; 
 	$scope.config = $config; 
+	$scope.wanip = $tr(gettext("Not connected")); 
 	$rpc.network.interface.dump().done(function(result){
 		if(result && result.interface) {
 			result.interface.map(function(i){
@@ -47,6 +48,7 @@ $juci.module("core")
 				}
 			}); 
 		}
+		$scope.$apply(); 
 	}); 
 	$rpc.router.info().done(function(result){
 		if(result.system) $scope.firmware = result.system.firmware; 

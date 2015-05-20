@@ -34,6 +34,6 @@ describe("UCI.firewall", function(){
 	}); 
 	it("should have network config and settings", function(done){
 		expect($uci.network).to.be.ok(); 
-		expect($uci.network["@all"].to.not.be.empty()); 
+		expect($uci.network["@all"]).to.not.be.empty(); 
 	}); 
 }); 

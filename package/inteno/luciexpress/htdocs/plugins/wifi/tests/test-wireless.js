@@ -14,11 +14,12 @@ describe("Wireless", function(){
 	it("should be completed", function(){
 		expect(Object.keys(completed).filter(function(x){ return completed[x] == 0; })).to.be.empty(); 
 	}); 
-	it("should have wireless config", function(done){
-		$uci.sync("wireless").done(function(){
-			expect($uci.wireless).to.be.an(Object); 
-			done(); 
-		}); 
+	it("should have wireless config", function(){
+		expect($uci.wireless).to.be.an(Object); 
+	}); 
+	it("should have broadcom config", function(){
+		expect($uci.broadcom).to.be.an(Object); 
+		expect($uci.broadcom["@all"]).not.to.be.empty(); 
 	}); 
 	it("should have hosts config", function(){
 		expect($uci.hosts).to.be.ok(); 

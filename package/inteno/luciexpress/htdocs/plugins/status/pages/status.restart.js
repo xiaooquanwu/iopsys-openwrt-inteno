@@ -39,11 +39,13 @@ $juci.module("status")
 				if(!rpc){
 					rpc = true; 
 					$rpc.session.access().done(function(){
-						$scope.showConfirmation = 0; 
-						$scope.$apply(); 
-						window.location.reload(); 
-					}).fail(function(){
-						$scope.$apply(); 
+						// it will not succeed anymore because box is rebooting
+					}).fail(function(result){
+						if(result.code && result.code == -32002) { // access denied error. We will get it when it boots up again. 
+							$scope.showConfirmation = 0; 
+							$scope.$apply(); 
+							window.location.reload(); 
+						}
 					}).always(function(){
 						rpc = false; 
 					}); 

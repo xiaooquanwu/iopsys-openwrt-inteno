@@ -2,6 +2,7 @@ $juci.module("settings")
 .controller("SettingsPasswordCtrl", function($scope, $rpc, $tr, $session, gettext){
 	$scope.showPassword = 0; 
 	$scope.showModal = 0; 
+	$scope.username = $rpc.$session.data.username; 
 	$scope.modal = {
 		old_password: "", 
 		password: "", 

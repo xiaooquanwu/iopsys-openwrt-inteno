@@ -10,7 +10,10 @@
 					</luci-config-line>
 				</luci-config-lines>
 			</luci-config-section>
-			<luci-config-section ng-show="wireless.status.wps.value">
+			<luci-config-section ng-show="progress != 0">
+				<p translate>wifi.wps.paired.info</p>
+			</luci-config-section>
+			<luci-config-section ng-show="wireless.status.wps.value && progress == 0">
 				<luci-config-lines ng-repeat="interface in wireless['@wifi-iface']">
 					<luci-config-line title="{{'Enable WPS on '|translate}} {{interface.ssid.value}}">
 						<switch id="enabled" name="enabled" ng-model="interface.wps_pbc.value" class="green" ng-change="save()" ></switch>
@@ -49,19 +52,19 @@
 						<input type="text" class="form-control input-lg" ng-model="data.userPIN" />
 					</luci-config-line>
 					<luci-config-line title="{{'Pair (within 2 minutes)'|translate}}">
-						<button class="btn btn-lg btn-default" ng-click="onPairUserPIN()" translate>Pair</button>
+						<button ng-show="progress == 0" class="btn btn-lg btn-default" ng-click="onPairUserPIN()" translate>Pair</button>
 					</luci-config-line>
 				</luci-config-lines>
 			</luci-config-section>
 		</luci-config>
-		<modal title="{{'Attempting to Pair'|translate}}" ng-show="showProgress">
-			<div ng-show="pairState == 'progress'" >
+		<modal title="{{'Attempting to Pair'|translate}}" ng-show="progress != 0 && progress != 2">
+			<div ng-show="progress != 0" >
 				<i class="fa fa-spinner fa-spin fa-3x"/>
-				<p translate>wifi.wpspairmodal.progressinfo</p>
 				<p>{{timeRemaining}} <span translate>seconds remaining</span></p>
 			</div>
-			<p ng-show="pairState == 'success'" translate>wifi.wpspairmodal.successinfo</p>
-			<p ng-show="pairState == 'fail'" translate>wifi.wpspairmodal.failinfo</p>
+			<p ng-show="progress == 0" translate>wifi.wpspairmodal.progressinfo.0</p>
+			<p ng-show="progress == 1" translate>wifi.wpspairmodal.progressinfo.1</p>
+			<p ng-show="progress == 2" translate>wifi.wpspairmodal.progressinfo.2</p>
 		</modal>
 	</div>
 </luci-layout-with-sidebar>

@@ -174,6 +174,104 @@
 				"fw_down_path":		{ dvalue: "", type: String, required: false}
 			}
 		},
+		"broadcom": {
+			"broadcom": {
+				"init": { dvalue: '1', type: String }, 
+				"debug": { dvalue: '0', type: String }, 
+				"wl0_cfgno": { dvalue: '', type: String }, 
+				"wl0_reg_mode": { dvalue: 'h', type: String }, 
+				"wl_5g_radio": { dvalue: 'wl0', type: String }, 
+				"wl0_acs_chan_dwell_time": { dvalue: '70', type: String }, 
+				"wl0_acs_chan_flop_period": { dvalue: '70', type: String }, 
+				"wl0_acs_ci_scan_timeout": { dvalue: '300', type: String }, 
+				"wl0_acs_ci_scan_timer": { dvalue: '4', type: String }, 
+				"wl0_acs_cs_scan_timer": { dvalue: '7200', type: String }, 
+				"wl0_acs_scan_entry_expire": { dvalue: '3600', type: String }, 
+				"wl0_acs_tx_idle_cnt": { dvalue: '5', type: String }, 
+				"wl0_acs_lowband_least_rssi": { dvalue: '-75', type: String }, 
+				"wl0_acs_fcs_mode": { dvalue: '0', type: String }, 
+				"wl0_acs_dfs": { dvalue: '1', type: String }, 
+				"wl0_acs_dfsr_activity": { dvalue: '30 10240', type: String }, 
+				"wl0_acs_dfsr_deferred": { dvalue: '604800 5', type: String }, 
+				"wl0_acs_dfsr_immediate": { dvalue: '300 3', type: String }, 
+				"wl0_apsta": { dvalue: '0', type: String }, 
+				"wl0_mode": { dvalue: 'ap', type: String }, 
+				"wl0_ifname": { dvalue: 'wl0', type: String }, 
+				"wl0_ssid": { dvalue: '', type: String }, 
+				"wl0_radio": { dvalue: '1', type: String }, 
+				"wl0_infra": { dvalue: '1', type: String }, 
+				"wl0_auth": { dvalue: '0', type: String }, 
+				"wl0_preauth": { dvalue: '0', type: String }, 
+				"wl0_net_auth_type": { dvalue: '1', type: String }, 
+				"wl0_wep": { dvalue: 'disabled', type: String }, 
+				"wl0_wpa_gtk_rekey": { dvalue: '0', type: String }, 
+				"wl0_akm": { dvalue: 'psk psk2', type: String }, 
+				"wl0_crypto": { dvalue: 'tkip+aes', type: String }, 
+				"wl0_wpa_psk": { dvalue: '', type: String }, 
+				"wl0_auth_mode": { dvalue: 'psk', type: String }, 
+				"wl0_wps_mode": { dvalue: 'enabled', type: String }, 
+				"router_disable": { dvalue: '0', type: String }, 
+				"wps_modelnum": { dvalue: '', type: String }, 
+				"boardnum": { dvalue: '', type: String }, 
+				"wps_modelname": { dvalue: 'Broadcom', type: String }, 
+				"wps_mfstring": { dvalue: 'Broadcom', type: String }, 
+				"wps_device_name": { dvalue: 'Inteno', type: String }, 
+				"wps_version2": { dvalue: 'enabled', type: String }, 
+				"lan_wps_reg": { dvalue: 'enabled', type: String }, 
+				"lan_wps_oob": { dvalue: 'disabled', type: String }, 
+				"wps_button_gpio": { dvalue: '22', type: String }, 
+				"wps_oob_configured": { dvalue: '1', type: String }, 
+				"wps_config": { dvalue: 'DONE', type: String }, 
+				"wl0_vifs": { dvalue: 'wl0', type: String }, 
+				"wl0_network": { dvalue: 'lan', type: String }, 
+				"wl0_bss_enabled": { dvalue: '1', type: String }, 
+				"wl0_hwaddr": { dvalue: '', type: String }, 
+				"wl_main_ifnames": { dvalue: 'wl0 wl1', type: String }, 
+				"wl1_cfgno": { dvalue: '', type: String }, 
+				"wl_2g_radio": { dvalue: 'wl1', type: String }, 
+				"acs_ifnames": { dvalue: 'wl0 wl1', type: String }, 
+				"wl1_acs_chan_dwell_time": { dvalue: '70', type: String }, 
+				"wl1_acs_chan_flop_period": { dvalue: '70', type: String }, 
+				"wl1_acs_ci_scan_timeout": { dvalue: '300', type: String }, 
+				"wl1_acs_ci_scan_timer": { dvalue: '4', type: String }, 
+				"wl1_acs_cs_scan_timer": { dvalue: '7200', type: String }, 
+				"wl1_acs_scan_entry_expire": { dvalue: '3600', type: String }, 
+				"wl1_acs_tx_idle_cnt": { dvalue: '5', type: String }, 
+				"wl1_acs_lowband_least_rssi": { dvalue: '-75', type: String }, 
+				"wl1_acs_fcs_mode": { dvalue: '1', type: String }, 
+				"wl1_acs_dfs": { dvalue: '0', type: String }, 
+				"wl1_apsta": { dvalue: '0', type: String }, 
+				"wl1_mode": { dvalue: 'ap', type: String }, 
+				"wl1_ifname": { dvalue: 'wl1', type: String }, 
+				"wl1_ssid": { dvalue: '', type: String }, 
+				"wl1_radio": { dvalue: '1', type: String }, 
+				"wl1_infra": { dvalue: '1', type: String }, 
+				"wl1_auth": { dvalue: '0', type: String }, 
+				"wl1_preauth": { dvalue: '0', type: String }, 
+				"wl1_net_auth_type": { dvalue: '1', type: String }, 
+				"wl1_wep": { dvalue: 'disabled', type: String }, 
+				"wl1_wpa_gtk_rekey": { dvalue: '0', type: String }, 
+				"wl1_akm": { dvalue: 'psk psk2', type: String }, 
+				"wl1_crypto": { dvalue: 'tkip+aes', type: String }, 
+				"wl1_wpa_psk": { dvalue: '', type: String }, 
+				"wl1_auth_mode": { dvalue: 'psk', type: String }, 
+				"wl1_wps_mode": { dvalue: 'enabled', type: String }, 
+				"wl1_vifs": { dvalue: 'wl1', type: String }, 
+				"wl1_network": { dvalue: 'lan', type: String }, 
+				"wl1_bss_enabled": { dvalue: '1', type: String }, 
+				"wl1_hwaddr": { dvalue: '', type: String }, 
+				"wlmngr": { dvalue: 'done', type: String }, 
+				"lan_ifname": { dvalue: 'br-lan', type: String }, 
+				"lan_ifnames": { dvalue: '', type: String }, 
+				"wps_device_pin": { dvalue: '', type: String }, 
+				"wps_config_method": { dvalue: '0x2688', type: String }, 
+				"wps_aplockdown": { dvalue: '0', type: String }, 
+				"wps_button": { dvalue: '0', type: String }, 
+				"wps_sta_pin": { dvalue: '00000000', type: String }, 
+				"wl_unit": { dvalue: '0', type: String }, 
+				"wps_proc_status": { dvalue: 0, type: Number }
+			}
+		}, 
 		"network": {
 			"interface": {
 				"is_lan": 			{ dvalue: 1, type: Number }, 
@@ -419,7 +517,7 @@
 			$rpc.uci.revert({
 				config: self[".name"]//, 
 				//ubus_rpc_session: $rpc.$sid()
-			}).done(function(){
+			}).always(function(){ // we have to use always because we always want to sync regardless if reverts work or not ( they will not if the config is readonly! )
 				$rpc.uci.state({
 					config: self[".name"]
 				}).done(function(data){
@@ -444,8 +542,6 @@
 				}).fail(function(){
 					deferred.reject(); 
 				}); 
-			}).fail(function(){
-				deferred.reject("Could not revert config before sync!"); 
 			}); 
 			return deferred.promise(); 
 		}

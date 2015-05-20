@@ -4,6 +4,8 @@ $juci.module("wifi")
 	$scope.data = {
 		userPIN: ""
 	}
+	$scope.progress = 0; 
+	
 	$uci.sync(["wireless", "boardpanel"]).done(function(){
 		if($uci.boardpanel == undefined) $scope.$emit("error", "Boardpanel config is not present on this system!"); 
 		else $scope.boardpanel = $uci.boardpanel; 
@@ -19,48 +21,29 @@ $juci.module("wifi")
 	}).fail(function(err){
 		console.log("failed to sync config: "+err); 
 	}); 
+	
+	function retry(){
+		setTimeout(function(){
+			$uci.sync("broadcom").done(function(){
+				$scope.progress = $uci.broadcom.nvram.wps_proc_status.value;
+				$scope.$apply();	
+				retry(); 
+			}); 
+		}, 1000); 
+	} retry(); 
+	
 	$rpc.wps.showpin().done(function(data){
 		$scope.generatedPIN = data.pin; 
 	}); 
-	function wpsSuccess(){
-		$scope.pairState = 'success'; 
-		$scope.$apply(); 
-		setTimeout(function(){
-			$scope.showProgress = 0; 
-			$scope.$apply(); 
-		}, 2000);
-	}
-	function wpsFail(){
-		$scope.pairState = 'fail'; 
-		$scope.$apply(); 
-		setTimeout(function(){
-			$scope.showProgress = 0; 
-			$scope.$apply(); 
-		}, 2000); 
-	}
+	
 	$scope.save = function(){
 		$uci.save(); 
 	}
 	$scope.onPairPBC = function(){
-		$scope.showProgress = 1; 
-		$scope.pairState = 'progress';
-		$rpc.wps.pbc().done(function(){
-			wpsSuccess(); 
-		}).fail(function(){
-			wpsFail(); 
-		}); 
+		$rpc.wps.pbc();
 	}
 	$scope.onPairUserPIN = function(){
-		$scope.showProgress = 1; 
-		$scope.pairState = 'progress';
-		$rpc.wps.stapin({ pin: $scope.data.userPIN }).done(function(data){
-			wpsSuccess(); 
-		}).fail(function(){
-			wpsFail(); 
-		}).always(function(){
-			$scope.data.userPIN = ""; 
-			$scope.$apply(); 
-		});  
+		$rpc.wps.stapin({ pin: $scope.data.userPIN });
 	}
 	$scope.onGeneratePIN = function(){
 		$rpc.wps.genpin().done(function(data){
