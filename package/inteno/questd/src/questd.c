@@ -282,6 +282,7 @@ load_wireless()
 	int vif1 = 0;
 
 	memset(wireless, '\0', sizeof(wireless));
+	memset(radio, '\0', sizeof(radio));
 
 	if((uci_wireless = init_package("wireless"))) {
 		uci_foreach_element(&uci_wireless->sections, e) {
