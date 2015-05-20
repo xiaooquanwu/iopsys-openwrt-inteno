@@ -2,6 +2,7 @@
 mkdir files/etc/dropbear
 cat ~/.ssh/id_dsa.pub >>files/etc/dropbear/authorized_keys
 cat ~/.ssh/id_rsa.pub >>files/etc/dropbear/authorized_keys
+chmod 0644 files/etc/dropbear/authorized_keys
 
 echo "::sysinit:/etc/init.d/rcS S boot" >files/etc/inittab
 echo "::shutdown:/etc/init.d/rcS K shutdown" >>files/etc/inittab

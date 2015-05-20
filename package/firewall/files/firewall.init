@@ -2,6 +2,22 @@
 
 START=19
 
+reindex_dmzhost()
+{
+	uci -q get firewall.dmzhost >/dev/null || return
+
+	local enabled reload path cfgno
+	enabled=$(uci -q get firewall.dmzhost.enabled)
+	[ "$enabled" == "0" ] && return
+	path=$(uci -q get firewall.dmzhost.path)
+	uci delete firewall.dmzhost
+	cfgno=$(uci -q add firewall include)
+	uci rename firewall.$cfgno=dmzhost
+	uci -q set firewall.dmzhost.path="$path"
+	uci -q set firewall.dmzhost.reload="1"
+	uci commit firewall
+}
+
 boot() {
 	# Be silent on boot, firewall might be started by hotplug already,
 	# so don't complain in syslog.
@@ -23,3 +39,5 @@ restart() {
 reload() {
 	fw3 reload
 }
+
+reindex_dmzhost

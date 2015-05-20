@@ -102,7 +102,7 @@ menu "Target Images"
 	config TARGET_ROOTFS_UBIFS
 		bool "ubifs"
 		default y if USES_UBIFS
-		depends !TARGET_ROOTFS_INITRAMFS && USES_UBIFS
+		depends !TARGET_ROOTFS_INITRAMFS
 		help
 		  Build a ubifs root filesystem
 

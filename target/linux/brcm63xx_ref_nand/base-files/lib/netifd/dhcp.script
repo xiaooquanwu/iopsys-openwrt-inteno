@@ -143,12 +143,16 @@ EOF
     # [ -n "$hostname" ] &&	change_state network "$ifc" lease_hostname "$hostname"
     # [ -n "$timezone" ] && change_state network "$ifc" lease_timezone "$timezone"
 
-    # if we get vlanid and vlanpriority, configure for that.
+    # if we get vlanid and maybe vlanpriority, configure for that.
     if [ -n "$vlanid" -a -n "$vlanpriority" ]; then
 	logger -t dhcp_opt132 "vlanid: ${vlanid}, vlanpriority: ${vlanpriority}"
 	change_to_vlan ${vlanid} ${vlanpriority} ${INTERFACE}
+    elif [ -n "$vlanid" ]; then
+	logger -t dhcp_opt132 "vlanid: ${vlanid}"
+	change_to_vlan ${vlanid} 0 ${INTERFACE}
     else
-	logger -t dhcp_opt132 "no vlanid and vlan priority given"
+	##logger -t dhcp_opt132 "no vlanid and vlan priority given"
+	logger -t dhcp_opt132 "no vlanid given"
     fi
 }
 
