@@ -11,7 +11,7 @@
 			_timeouts[name] = i; 
 		}, 
 		repeat: function(name, t, fn){
-			var i = setTimeout(function _onTimeout(){
+			function _onTimeout(){
 				fn(function next(ret, err){
 					if(ret){
 						clearTimeout(i); 
@@ -21,7 +21,8 @@
 						setTimeout(_onTimeout, t); 
 					}
 				}); 
-			}, t); 
+			}
+			var i = setTimeout(_onTimeout, t); _onTimeout(); 
 			_timeouts[name] = i; 
 		}, 
 		$clearAll: function(){
