@@ -75,7 +75,7 @@ chrCmd(const char *pFmt, ...)
 
 	remove_newline(buffer);
 	if (strlen(buffer))
-		return strdup(buffer);
+		return (const char*)buffer;
 	else
 		return NULL;
 }

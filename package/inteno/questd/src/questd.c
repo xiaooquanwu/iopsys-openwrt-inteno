@@ -1618,6 +1618,46 @@ static struct ubus_object router_object = {
 /* END OF ROUTER OBJECT */
 
 /* WPS OBJECT */
+
+static int
+wps_status(struct ubus_context *ctx, struct ubus_object *obj,
+		  struct ubus_request_data *req, const char *method,
+		  struct blob_attr *msg)
+{
+	const char *status = "unknown";
+	int code = atoi(chrCmd("nvram get wps_proc_status"));
+
+	switch (code) {
+		case 0:
+			status = "init";
+			break;
+		case 1:
+			status = "processing";
+			break;
+		case 2:
+			status = "success";
+			break;
+		case 3:
+			status = "fail";
+			break;
+		case 4:
+			status = "timeout";
+			break;
+		case 7:
+			status = "msgdone";
+			break;
+		default:
+			break;
+	}
+
+	blob_buf_init(&bb, 0);
+	blobmsg_add_u32(&bb, "code", code);
+	blobmsg_add_string(&bb, "status", status);
+	ubus_send_reply(ctx, req, bb.head);
+
+	return 0;
+}
+
 static int
 wps_pbc(struct ubus_context *ctx, struct ubus_object *obj,
 		  struct ubus_request_data *req, const char *method,
@@ -1756,6 +1796,7 @@ wps_stop(struct ubus_context *ctx, struct ubus_object *obj,
 
 
 static struct ubus_method wps_object_methods[] = {
+	UBUS_METHOD_NOARG("status", wps_status),
 	UBUS_METHOD_NOARG("pbc", wps_pbc),
 	UBUS_METHOD_NOARG("genpin", wps_genpin),
 	UBUS_METHOD("checkpin", wps_checkpin, pin_policy),
