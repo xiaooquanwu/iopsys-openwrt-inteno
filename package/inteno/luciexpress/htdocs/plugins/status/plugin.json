@@ -6,6 +6,12 @@
 		"status.status": {
 			"view": "pages/status.status"
 		},
+		"status.status.system": {
+			"view": "pages/status.status.system"
+		},
+		"status.status.network": {
+			"view": "pages/status.status.network"
+		},
 		"status.status.dsl": {
 			"view": "pages/status.status.dsl"
 		},
