@@ -1143,7 +1143,8 @@ rpc_luci2_upgrade_clean(struct ubus_context *ctx, struct ubus_object *obj,
                         struct ubus_request_data *req, const char *method,
                         struct blob_attr *msg)
 {
-	const char *fwpath = "/tmp/firmware.bin";
+	char fwpath[255];
+	strcpy(fwpath, "/tmp/firmware.bin");
 
 	struct uci_package *p;
 	struct uci_element *e;
@@ -1170,7 +1171,7 @@ rpc_luci2_upgrade_clean(struct ubus_context *ctx, struct ubus_object *obj,
 
 		if (ptr.o && ptr.o->type == UCI_TYPE_STRING)
 		{
-			fwpath = strdup(ptr.o->v.string);
+			strncpy(fwpath, ptr.o->v.string, sizeof(fwpath));
 		}
 
 		uci_unload(cursor, p);
