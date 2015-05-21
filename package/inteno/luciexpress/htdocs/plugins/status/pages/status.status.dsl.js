@@ -30,6 +30,28 @@ JUCI.app
 		$rpc.router.dslstats().done(function(dslstats){
 			dslstats = dslstats.dslstats; 
 			
+			
+			// compute floating point values (because ubus blobs do not support floats yet)
+			function reconstruct_floats(obj) {
+				for (var property in obj) {
+					if (obj.hasOwnProperty(property)) {
+						if (typeof obj[property] == "object") {
+							reconstruct_floats(obj[property]);
+						} else {
+							var matches = property.match(/(.*)_x([\d]*)/); 
+							if(matches && matches.length == 3){
+								try {
+									obj[matches[1]] = parseFloat(String(obj[property])) / parseFloat(matches[2]); 
+								} catch(e) {
+									obj[matches[1]] = "Err"; 
+								}
+							}
+						}
+					}
+				} 
+			}
+			reconstruct_floats(dslstats); 
+			
 			$scope.online = dslstats.status && dslstats.status.length > 0; 
 			
 			// todo fields

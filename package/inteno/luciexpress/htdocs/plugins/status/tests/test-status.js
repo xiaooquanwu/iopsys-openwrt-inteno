@@ -20,4 +20,11 @@ describe("Status", function(){
 		expect($rpc.router).to.be.ok(); 
 		expect($rpc.router.info).to.be.ok(); 
 	}); 
+	it("should have accessible router.igmptable call", function(){
+		expect($rpc.router).to.be.ok(); 
+		expect($rpc.router.igmptable).to.be.ok(); 
+		$rpc.router.igmptable()
+			.done(function(){ done(); })
+			.fail(function(){ throw new Error("Was unable to call router.igmptable"); }); 
+	}); 
 }); 

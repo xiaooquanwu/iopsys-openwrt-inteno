@@ -31,11 +31,27 @@ JUCI.app
 					});  
 				}); 
 				sections = sections.sort(function(a, b) { return a.interface.up > b.interface.up; }); 
-				for(var c = 0; c < $scope.sections.length; c++){
-					Object.assign($scope.sections[c], sections[c]);
+				for(var c = 0; c < sections.length; c++){
+					var sec = sections[c]; 
+					if(sec.interface.up) sec.status = "ok"; 
+					else if(sec.interface.pending) sec.status = "progress"; 
+					else sec.status = "error"; 
+					Object.assign($scope.sections[c], sec);
 				} 
 				$scope.$apply(); 
 				next(); 
+			}, 
+			function(next){
+				$rpc.router.dslstats().done(function(result){
+					switch(result.dslstats.status){
+						case 'Idle': $scope.dsl_status = 'error'; break; 
+						case 'Showtime': $scope.dsl_status = 'ok'; break; 
+						default: $scope.dsl_status = 'progress'; break; 
+					}
+					$scope.dslinfo = result.dslstats; 
+					$scope.$apply(); 
+					next(); 
+				}); 
 			}
 		], function(){
 			resume(); 

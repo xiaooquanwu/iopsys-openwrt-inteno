@@ -14,13 +14,14 @@
 		"widgets/luci.navbar",
 		"widgets/luci.top_bar",
 		"widgets/luci.slider",
+		"widgets/luci.expandable", 
 		"widgets/luci.errors",
 		"widgets/core.modal",
 		"widgets/luci.input.port",
 		"widgets/luci.input.port.range",
 		"widgets/luci.input.timespan", 
 		"widgets/luci.input.radio",
-        "widgets/luci.input.ipaddress"
+		"widgets/luci.input.ipaddress"
 	], 
 	"pages": {
 		"overview": {
