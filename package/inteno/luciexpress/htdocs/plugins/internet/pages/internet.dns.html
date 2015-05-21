@@ -12,11 +12,11 @@
 						<luci-input-radio ng-model="wan.peerdns" label="'manually'" value="1" />
 					</div>
 				</luci-config-line>
-                <luci-config-detail-line title="{{'DNS address'|translate}}" ng-show="wan.peerdns.value == 1" ng-repeat="dns in wan.dns.value track by $index">
+                <luci-config-line indent title="{{'DNS address'|translate}}" ng-show="wan.peerdns.value == 1" ng-repeat="dns in wan.dns.value track by $index">
                     <div class="col-md-12" >
                         <luci-input-ip-address ng-model="wan.dns.value[$index]" />
                     </div>
-                </luci-config-detail-line>
+                </luci-config-line>
             </luci-config-lines>
 		</luci-config-section>
 		<luci-config-section>

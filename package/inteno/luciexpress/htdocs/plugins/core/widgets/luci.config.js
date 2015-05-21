@@ -43,8 +43,8 @@ $juci.module("core")
 	var plugin_root = $juci.module("core").plugin_root; 
 	return {
 		template: '<div><div class="row" style="margin-top: 20px; ">'+
-			'<div class="col-xs-6">'+
-				'<label style="font-size: 1.2em">{{title}}</label>'+
+			'<div class="{{labelClass}}">'+
+				'<label style="{{labelStyle}}">{{title}}</label>'+
 				'<p style="font-size: 12px">{{help}}</p>'+
 			'</div>'+
 			'<div class="col-xs-6">'+
@@ -57,32 +57,19 @@ $juci.module("core")
 		}, 
 		transclude: true, 
 		link: function (scope, element, attrs) {
-			if(!("noPull" in attrs)) scope.pullClass = "pull-right"; 
-		}
+			if(!("noPull" in attrs)) scope.pullClass = "pull-right";
+            if(!("indent" in attrs)) {
+                scope.labelClass = "col-xs-6";
+                scope.labelStyle = "font-size: 1.2em";
+            } else {
+                scope.labelClass = "col-xs-5 col-xs-offset-1";
+                scope.labelStyle = "font-size: 1em";
+
+            }
+
+        }
 	 };  
 })
-.directive("luciConfigDetailLine", function(){
-        var plugin_root = $juci.module("core").plugin_root;
-        return {
-            template: '<div><div class="row" style="margin-top: 10px;">'+
-            '<div class="col-xs-5 col-xs-offset-1" style="transform: translateY(30%)">'+
-            '<label style="font-size: 1em">{{title}}</label>'+
-            '<p style="font-size: 12px">{{help}}</p>'+
-            '</div>'+
-            '<div class="col-xs-6">'+
-            '<div class="{{pullClass}}" ng-transclude></div>'+
-            '</div></div></div>',
-            replace: true,
-            scope: {
-                title: "@",
-                help: "@"
-            },
-            transclude: true,
-            link: function (scope, element, attrs) {
-                if(!("noPull" in attrs)) scope.pullClass = "pull-right";
-            }
-        };
-    })
 .directive("luciConfigApply", function(){
 	var plugin_root = $juci.module("core").plugin_root; 
 	return {
