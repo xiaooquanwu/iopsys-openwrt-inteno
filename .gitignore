@@ -26,3 +26,7 @@
 TAGS*~
 bower_components
 node_modules
+npm-debug.log
+all.pot
+titles.pot
+ccache
