@@ -1,4 +1,6 @@
-$juci.module("settings")
+//! Author: Martin K. Schröder <mkschreder.uk@gmail.com>
+
+JUCI.app
 .controller("SettingsConfigurationCtrl", function($scope, $rpc, $session){
 	$scope.sessionID = $session.sid; 
 	$scope.resetPossible = 0; 

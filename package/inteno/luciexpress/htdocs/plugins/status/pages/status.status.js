@@ -1,4 +1,6 @@
-$juci.module("status")
+//! Author: Martin K. Schröder <mkschreder.uk@gmail.com>
+
+JUCI.app
 .controller("StatsOverviewCtrl", function ($scope, $session, $rootScope, $rpc, gettext, $tr) {
 	$scope.sysinfo = {}; 
 	$scope.info = {}; 
@@ -50,7 +52,7 @@ $juci.module("status")
 				[$tr(gettext("Kernel Version")), info.system.kernel],
 				[$tr(gettext("Local Time")), new Date(sys.localtime)],
 				[$tr(gettext("Uptime")), info.system.uptime],
-				[$tr(gettext("Load Average")), sys.load[0] + " " + sys.load[1] + " " + sys.load[2]]
+				//[$tr(gettext("Load Average")), sys.load[0] + " " + sys.load[1] + " " + sys.load[2]]
 			]; 
 			$scope.systemExtStatusTbl.rows = [
 				[$tr(gettext("Wifi")), (info.specs.wifi)?gettext("yes"):gettext("no")],

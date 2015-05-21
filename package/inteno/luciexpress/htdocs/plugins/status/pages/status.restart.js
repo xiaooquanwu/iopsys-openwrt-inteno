@@ -1,4 +1,6 @@
-$juci.module("status")
+//! Author: Martin K. Schröder <mkschreder.uk@gmail.com>
+
+JUCI.app
 .controller("StatusRestartPageCtrl", function($scope, $rpc){
 	$scope.onRestart = function(){
 		$scope.showConfirmation = 1; 

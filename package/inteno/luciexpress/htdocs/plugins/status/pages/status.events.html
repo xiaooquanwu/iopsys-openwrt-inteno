@@ -17,7 +17,23 @@
 					<luci-select ng-model="selectedShownType" ng-items="allEventTypes" placeholder="Select events to show"></luci-select>
 				</luci-config-line>
 			</luci-config-lines>
+		</luci-config-section>
+		<luci-config-section>
 			<luci-config-heading>{{'Log' | translate}}</luci-config-heading>
+			<table class="table">
+				<thead>
+					<th translate>Date</th>
+					<th translate>Type</th>
+					<th translate>Source</th>
+					<th translate>Message</th>
+				</thead>
+				<tr ng-repeat="line in logs track by $index">
+					<td nowrap>{{line[0]}}</td>
+					<td>{{line[1]}}</td>
+					<td>{{line[2]}}</td>
+					<td>{{line[3]}}</td>
+				</tr>
+			</table>
 		</luci-config-section>
 	</div>
 </luci-layout-with-sidebar>

@@ -1,4 +1,6 @@
-$juci.module("settings")
+//! Author: Martin K. Schröder <mkschreder.uk@gmail.com>
+
+JUCI.app
 .controller("SettingsUCIController", function($scope, $rpc){
 	var configs = {}; 
 	$scope.loading = 0; 

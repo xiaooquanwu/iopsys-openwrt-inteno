@@ -171,7 +171,7 @@
 				"fw_check_url":		{ dvalue: "", type: String, required: false},
 				"fw_path_url":		{ dvalue: "", type: String, required: false},
 				"fw_find_ext":		{ dvalue: "", type: String, required: false},
-				"fw_down_path":		{ dvalue: "", type: String, required: false}
+				"fw_upload_path":	{ dvalue: "", type: String, required: false}
 			}
 		},
 		"voice_client": {

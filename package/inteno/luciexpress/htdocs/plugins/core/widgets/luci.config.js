@@ -10,7 +10,7 @@ $juci.module("core")
 .directive("luciConfigSection", function(){
 	var plugin_root = $juci.module("core").plugin_root; 
 	return {
-		template: '<div class="luci-config-section" ng-transclude></div>', 
+		template: '<div><div class="luci-config-section" ng-transclude></div><hr style="width: 100%; border-bottom: 1px solid #ccc; clear: both;"/></div>', 
 		replace: true, 
 		transclude: true
 	 };  
@@ -34,7 +34,7 @@ $juci.module("core")
 .directive("luciConfigLines", function(){
 	var plugin_root = $juci.module("core").plugin_root; 
 	return {
-		template: '<div class="table" ><div ng-transclude></div><hr style="width: 100%; border-bottom: 1px solid #ccc; clear: both;"/></div>', 
+		template: '<div class="table" ><div ng-transclude></div></div>', 
 		replace: true, 
 		transclude: true
 	 };  

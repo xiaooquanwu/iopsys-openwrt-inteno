@@ -1,7 +1,25 @@
 <luci-layout-with-sidebar>
 	<div ng-controller="StatusNATPageCtrl">
 		<luci-config-section>
-			<luci-config-heading>{{ 'Nat table' | translate }}</luci-config-heading>
+			<luci-config-heading>{{ 'Connections for each Device' | translate }}</luci-config-heading>
+			<luci-config-info>{{ 'status.nat.connections.info' | translate }}</luci-config-info>
+			<table class="table" style="font-size: 12px;">
+				<thead >
+					<th>#</th>
+					<th>Hostname</th>
+					<th  style="text-align: center;">IP</th>
+					<th  style="text-align: center;">Nr. of Connections</th>
+				</thead>
+				<tr ng-repeat="cl in clients track by $index">
+					<td>{{$index}}</td>
+					<td>{{cl.hostname}}</td>
+					<td style="text-align: center;">{{cl.ipaddr}}</td>
+					<td style="text-align: center;">{{cl.active_cons||0}}</td>
+				</tr>
+			</table>
+		</luci-config-section>
+		<luci-config-section>
+			<luci-config-heading>{{ 'NAT Connection Table' | translate }}</luci-config-heading>
 			<luci-config-info>{{ 'status.nat.info' | translate }}</luci-config-info>
 			<table class="table" style="font-size: 12px">
 				<thead>

@@ -1,4 +1,6 @@
-$juci.module("status")
+//! Author: Martin K. Schröder <mkschreder.uk@gmail.com>
+
+JUCI.app
 .controller("StatusVoicePageCtrl", function($scope, $rpc){
 	$rpc.asterisk.status().done(function(data){
 		if(data && data.sip){

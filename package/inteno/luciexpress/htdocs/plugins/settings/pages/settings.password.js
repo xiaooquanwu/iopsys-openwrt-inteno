@@ -1,4 +1,6 @@
-$juci.module("settings")
+//! Author: Martin K. Schröder <mkschreder.uk@gmail.com>
+
+JUCI.app
 .controller("SettingsPasswordCtrl", function($scope, $rpc, $tr, $session, gettext){
 	$scope.showPassword = 0; 
 	$scope.showModal = 0; 

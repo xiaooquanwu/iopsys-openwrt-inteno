@@ -108,7 +108,7 @@
 	};
 })( jQuery);
 
-$juci.module("settings")
+JUCI.app
 .controller("SettingsUpgradeCtrl", function($scope, $uci, $rpc, $session){
 	$scope.sessionID = $session.sid;
 	$scope.uploadFilename = "/tmp/firmware.bin";

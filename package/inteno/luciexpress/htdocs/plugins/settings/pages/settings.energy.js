@@ -1,4 +1,6 @@
-$juci.module("settings")
+//! Author: Martin K. Schröder <mkschreder.uk@gmail.com>
+
+JUCI.app
 .controller("SettingsEnergyCtrl", function($scope, $uci){
 	$uci.sync(["boardpanel"]).done(function(){
 		if($uci.boardpanel)
