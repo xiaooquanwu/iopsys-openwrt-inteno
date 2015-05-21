@@ -10,6 +10,7 @@ DISABLE_HOOKS=
 
 exec >/dev/null 2>&1
 
+local RESTART="1"
 local _enWifi=0
 local _enWps=0
 local _vno=0
@@ -17,9 +18,32 @@ local _cno=0
 local staifs=""
 local wetifs=""
 
+local daymatch=0
+local timematch=0
+local current_day=$(date | awk '{print$1}' | tr '[A-Z]' '[a-z]')
+local current_time=$(date +%H%M)
+
+nvset() {
+	local opt=$(echo $1 | cut -d'=' -f1)
+	local val=$(echo $1 | cut -d'=' -f2)
+	opt=${opt/./_}
+	uci -q set broadcom.nvram."$opt=$val"
+}
+
+nvget() {
+	local optval="$1"
+	optval=${optval/wl0./wl0_}
+	optval=${optval/wl1./wl1_}
+	uci -q get broadcom.nvram."$optval"
+}
+
+nvcommit() {
+	uci commit broadcom
+}
+
 cleanup() {
-	local guestvif="$(nvram get wl_guestmgr_ifname)"
-	local guestcfg="$(nvram get wl_guestmgr_cfgno)"
+	local guestvif="$(nvget wl_guestmgr_ifname)"
+	local guestcfg="$(nvget wl_guestmgr_cfgno)"
 
 	# remove all QR code images
 	rm -f /www/luci-static/resources/icons/wqr_$1*
@@ -29,11 +53,11 @@ cleanup() {
 	[ -n "$1" ] && {
 		sed -i "s/$1.[1-255]//g" /etc/config/broadcom
 		sed -i "s/$1//g" /etc/config/broadcom
-		nvram set wl_guestmgr_ifname="$guestvif"
-		nvram set wl_guestmgr_cfgno="$guestcfg"
+		nvget wl_guestmgr_ifname="$guestvif"
+		nvget wl_guestmgr_cfgno="$guestcfg"
 	}
-	nvram set init=1
-	nvram set debug=0
+	nvset init=1
+	nvset debug=0
 }
 
 kill_related_daemons() {
@@ -45,8 +69,8 @@ kill_related_daemons() {
 
 run_acsd() {
 	local wldev cchn fchn
-	for wldev in $(nvram get acs_ifnames); do
-		[ $(nvram get wl_2g_radio) == "$wldev" ] && continue
+	for wldev in $(nvget acs_ifnames); do
+		[ $(nvget wl_2g_radio) == "$wldev" ] && continue
 		# if initially on a dfs channel switch to first available channel
 		cchn=$(wlctl -i $wldev status | grep "Primary" | awk '{print$NF}')
 		fchn=$(wlctl -i $wldev chanspecs | head -1 | awk '{print$1}')
@@ -56,13 +80,20 @@ run_acsd() {
 			wlctl -i $wldev up
 		fi
 	done
-	[ -n "$(nvram get acs_ifnames)" ] && acsd
-	for wldev in $(nvram get acs_ifnames); do
-		# finds appropriate channel candidates
-		acs_cli -i $wldev autochannel
-		# triggers an early channel switch
-		acs_cli -i $wldev autochannel
-	done
+	if [ -n "$(nvget acs_ifnames)" ]; then
+		if [ "$RESTART" == "1" ]; then
+			acsd &
+			return
+		else
+			acsd
+		fi
+		for wldev in $(nvget acs_ifnames); do
+			# finds appropriate channel candidates
+			acs_cli -i $wldev autochannel
+			# triggers an early channel switch
+			acs_cli -i $wldev autochannel
+		done
+	fi
 }
 
 start_related_daemons() {
@@ -92,7 +123,7 @@ map_networks() {
 			json_load "$(ifstatus $interface)"
 			json_get_var ifdev device
 			if [ -n "$ifdev" ]; then
-				nvram set lan"$_acnt"_ifname="$ifdev"
+				nvset lan"$_acnt"_ifname="$ifdev"
 				json_load "$(devstatus $ifdev)"
 				json_get_var devtype type
 				if [ "$devtype" == "Bridge" ]; then
@@ -103,9 +134,9 @@ map_networks() {
 						[ -z "$devs" ] && devs="$dev" || devs="$devs $dev"
 						_i=$((_i+1))
 					done
-					nvram set lan"$_acnt"_ifnames="$devs"
+					nvset lan"$_acnt"_ifnames="$devs"
 				else
-					nvram set lan"$_acnt"_ifnames="$ifdev"
+					nvset lan"$_acnt"_ifnames="$ifdev"
 				fi
 			fi
 		)
@@ -215,18 +246,18 @@ wif_encryption_settings() {
 	[ "$hidden" == "1" ] && qr_hidden=true
 
 	wlctl -i $iface auth 0
-	nvram set "$iface"_auth=0
-	nvram set "$iface"_preauth=0
-	nvram set "$iface"_net_auth_type=1
-	nvram set "$iface"_wep=disabled
+	nvset "$iface"_auth=0
+	nvset "$iface"_preauth=0
+	nvset "$iface"_net_auth_type=1
+	nvset "$iface"_wep=disabled
 	case "$enc" in
 		*wep*)
 			wsec_r=1
 			wsec=1
-			nvram set "$iface"_wep=enabled
+			nvset "$iface"_wep=enabled
 			config_get key "$vif" key
 			case "$enc" in
-				*shared*) wlctl -i $iface auth 1; nvram set "$iface"_auth=1;;
+				*shared*) wlctl -i $iface auth 1; nvset "$iface"_auth=1;;
 			esac
 			case "$key" in
 				[1234])
@@ -256,21 +287,21 @@ wif_encryption_settings() {
 			eap_r=1
 			config_get key "$vif" key
 			config_get gtk "$vif" gtk_rekey "0"
-			nvram set "$iface"_wpa_gtk_rekey=$gtk
+			nvset "$iface"_wpa_gtk_rekey=$gtk
 			# psk version + default cipher
 			case "$enc" in
-				*mixed*|*psk+psk2*) auth=132; wsec=6; nvram set "$iface"_akm='psk psk2'; nvram set "$iface"_crypto=tkip+aes;;
-				*psk2*) auth=128; wsec=4; nvram set "$iface"_akm=psk2; nvram set "$iface"_crypto=aes;;
-				*) auth=4; wsec=2; nvram set "$iface"_akm=psk; nvram set "$iface"_crypto=tkip;;
+				*mixed*|*psk+psk2*) auth=132; wsec=6; nvset "$iface"_akm='psk psk2'; nvset "$iface"_crypto=tkip+aes;;
+				*psk2*) auth=128; wsec=4; nvset "$iface"_akm=psk2; nvset "$iface"_crypto=aes;;
+				*) auth=4; wsec=2; nvset "$iface"_akm=psk; nvset "$iface"_crypto=tkip;;
 			esac
 			# cipher override
 			case "$cipher" in
-				*tkip+aes*|*tkip+ccmp*|*aes+tkip*|*ccmp+tkip*) wsec=6; nvram set "$iface"_crypto=tkip+aes;;
-				*aes*|*ccmp*) wsec=4; nvram set "$iface"_crypto=aes;;
-				*tkip*) wsec=2; nvram set "$iface"_crypto=tkip;;
+				*tkip+aes*|*tkip+ccmp*|*aes+tkip*|*ccmp+tkip*) wsec=6; nvset "$iface"_crypto=tkip+aes;;
+				*aes*|*ccmp*) wsec=4; nvset "$iface"_crypto=aes;;
+				*tkip*) wsec=2; nvset "$iface"_crypto=tkip;;
 			esac
-			nvram set "$iface"_wpa_psk="$key"
-			nvram set "$iface"_auth_mode="psk"
+			nvset "$iface"_wpa_psk="$key"
+			nvset "$iface"_auth_mode="psk"
 			qr_enc="WPA"
 			qr_key="$key"
 		;;
@@ -285,29 +316,29 @@ wif_encryption_settings() {
 			config_get rad_port "$vif" radius_port "1812"
 			config_get rad_sec "$vif" radius_secret
 			config_get net_reauth "$vif" key net_reauth "36000"
-			nvram set "$iface"_net_reauth="$net_reauth"
+			nvset "$iface"_net_reauth="$net_reauth"
 			# wpa version + default cipher
 			case "$enc" in
-				*mixed*|*wpa+wpa2*) auth=66; wsec=6; nvram set "$iface"_akm='wpa wpa2'; nvram set "$iface"_crypto=tkip+aes;;
-				*wpa2*) auth=64; wsec=4; nvram set "$iface"_akm=wpa2; nvram set "$iface"_crypto=aes;;
-				*) auth=2; wsec=2; nvram set "$iface"_akm=wpa; nvram set "$iface"_crypto=tkip;;
+				*mixed*|*wpa+wpa2*) auth=66; wsec=6; nvset "$iface"_akm='wpa wpa2'; nvset "$iface"_crypto=tkip+aes;;
+				*wpa2*) auth=64; wsec=4; nvset "$iface"_akm=wpa2; nvset "$iface"_crypto=aes;;
+				*) auth=2; wsec=2; nvset "$iface"_akm=wpa; nvset "$iface"_crypto=tkip;;
 			esac
 			# cipher override
 			case "$cipher" in
-				*tkip+aes*|*tkip+ccmp*|*aes+tkip*|*ccmp+tkip*) wsec=6; nvram set "$iface"_crypto=tkip+aes;;
-				*aes*|*ccmp*) wsec=4; nvram set "$iface"_crypto=aes;;
-				*tkip*) wsec=2; nvram set "$iface"_crypto=tkip;;
+				*tkip+aes*|*tkip+ccmp*|*aes+tkip*|*ccmp+tkip*) wsec=6; nvset "$iface"_crypto=tkip+aes;;
+				*aes*|*ccmp*) wsec=4; nvset "$iface"_crypto=aes;;
+				*tkip*) wsec=2; nvset "$iface"_crypto=tkip;;
 			esac
-			nvram set "$iface"_wpa_psk="$key"
-			nvram set "$iface"_auth_mode="radius"
-			nvram set "$iface"_radius_ipaddr="$rad_serv"
-			nvram set "$iface"_radius_port="$rad_port"
-			nvram set "$iface"_radius_key="$rad_sec"
+			nvset "$iface"_wpa_psk="$key"
+			nvset "$iface"_auth_mode="radius"
+			nvset "$iface"_radius_ipaddr="$rad_serv"
+			nvset "$iface"_radius_port="$rad_port"
+			nvset "$iface"_radius_key="$rad_sec"
 			qr_enc="WPA"
 			qr_key="$key"
 		;;
 	esac
-	[ "$mode" == "sta" ] && nvram set "$iface"_auth_mode="none"
+	[ "$mode" == "sta" ] && nvset "$iface"_auth_mode="none"
 	wlctl -i $iface wsec $wsec
 	wlctl -i $iface wpa_auth $auth
 	wlctl -i $iface wsec_restrict $wsec_r
@@ -339,11 +370,11 @@ wif_general_settings() {
 	[ "$mode" == "sta" ] && staifs="$staifs $iface"
 	[ "$mode" == "wet" ] && wetifs="$wetifs $iface"
 
-	nvram set "$iface"_mode="$mode"
-	nvram set "$iface"_ifname="$iface"
-	nvram set "$iface"_ssid="${ssid:-Inteno}"
-	nvram set "$iface"_radio=1
-	nvram set "$iface"_infra=1
+	nvset "$iface"_mode="$mode"
+	nvset "$iface"_ifname="$iface"
+	nvset "$iface"_ssid="${ssid:-Inteno}"
+	nvset "$iface"_radio=1
+	nvset "$iface"_infra=1
 }
 
 wif_apsta_settings() {
@@ -359,22 +390,22 @@ wif_apsta_settings() {
 	if [ "$apsta" == "1" ]; then
 		if [ "$mode" == "sta" ]; then
 			# tag sta interface
-			nvram set wl_apsta_sta_ifname="$iface"
-			nvram set wl_apsta_sta_cfg="$vif"
-			nvram set wl_apsta_sta_net="$network"
+			nvset wl_apsta_sta_ifname="$iface"
+			nvset wl_apsta_sta_cfg="$vif"
+			nvset wl_apsta_sta_net="$network"
 #		else
 #			# tag ap interface
-#			nvram set wl_apsta_ap_ifname="$iface"
-#			nvram set wl_apsta_ap_cfg="$vif"
-#			nvram set wl_apsta_ap_net="$network"
+#			nvset wl_apsta_ap_ifname="$iface"
+#			nvset wl_apsta_ap_cfg="$vif"
+#			nvset wl_apsta_ap_net="$network"
 		fi
 	fi
 
 	# tag autoconf interfaces
 	if [ "$mode" == "ap" -a "$autoconf" == "1" ]; then
-		nvram set wl_autoconf_ap_ifnames="$iface $(nvram get wl_autoconf_ap_ifnames)"
-		nvram set wl_autoconf_ap_cfgs="$vif $(nvram get wl_autoconf_ap_cfgs)"
-		nvram set wl_autoconf_ap_net="$network"
+		nvset wl_autoconf_ap_ifnames="$iface $(nvget wl_autoconf_ap_ifnames)"
+		nvset wl_autoconf_ap_cfgs="$vif $(nvget wl_autoconf_ap_cfgs)"
+		nvset wl_autoconf_ap_net="$network"
 	fi
 }
 
@@ -387,30 +418,30 @@ wif_wps_settings() {
 	config_get wps_mode "$vif" wps_pbc
 
 	if [ "$wps_mode" == "1" ]; then
-		nvram set "$iface"_wps_mode="enabled"
-		nvram set router_disable="0"
-		nvram set wps_modelnum="123456"
-		nvram set boardnum="1234"
-		nvram set wps_modelname="Broadcom"
-		nvram set wps_mfstring="Broadcom"
-		nvram set wps_device_name="$(uci -q get wireless.@wifi-iface[0].ssid)"
-		nvram set wps_version2="enabled"
+		nvset "$iface"_wps_mode="enabled"
+		nvset router_disable="0"
+		nvset wps_modelnum="123456"
+		nvset boardnum="1234"
+		nvset wps_modelname="Broadcom"
+		nvset wps_mfstring="Broadcom"
+		nvset wps_device_name="Inteno"
+		nvset wps_version2="enabled"
 		lno=$(netno $network)
-		nvram set lan"$lno"_wps_reg="enabled"
-		nvram set lan"$lno"_wps_oob="disabled"
-		nvram set wps_proc_status="0"
-		nvram set wps_button_gpio="$(db get -q hw.board.wpsButtonGpio)"
+		nvset lan"$lno"_wps_reg="enabled"
+		nvset lan"$lno"_wps_oob="disabled"
+		nvset wps_proc_status="0"
+		nvset wps_button_gpio="$(db get -q hw.board.wpsButtonGpio)"
 		if [ "$(uci -q get wireless.$device.apsta)" == "1" ]; then
-			nvram set "$device"_ure_mode="wre"
-			nvram set wps_pbc_apsta="enabled"
-			nvram set wps_pbc_method="2"
-			[ "$mode" == "sta" ] && nvram set wps_pbc_sta_ifname="$iface" || nvram set wps_pbc_ap_ifname="$iface"
+			nvset "$device"_ure_mode="wre"
+			nvset wps_pbc_apsta="enabled"
+			nvset wps_pbc_method="2"
+			[ "$mode" == "sta" ] && nvset wps_pbc_sta_ifname="$iface" || nvset wps_pbc_ap_ifname="$iface"
 		fi
-		nvram set wps_oob_configured="1"
-		nvram set wps_config="DONE"
+		nvset wps_oob_configured="1"
+		nvset wps_config="DONE"
 		_enWps=$((_enWps+1))
 	else
-		nvram set "$iface"_wps_mode="disabled"
+		nvset "$iface"_wps_mode="disabled"
 	fi
 }
 
@@ -453,25 +484,25 @@ wif_setup() {
 	config_get wmm "$device" wmm "1"
 
 	# set wireless VIFs in broadcom nvram
-	vifs=$(nvram get "$device"_vifs)
+	vifs=$(nvget "$device"_vifs)
 	[ -z "$vifs" ] && vifs="$iface" || vifs="$vifs $iface"
-	nvram set "$device"_vifs="$vifs"
+	nvset "$device"_vifs="$vifs"
 
 	# set VIF UCI state
-	uci_set_state wireless "$vif" up 1
+	# uci_set_state wireless "$vif" up 1
 	uci_set_state wireless "$vif" ifname "$iface"
 
 	# add ebtables rules for VIF
 	[ "$wmm" == "1" ] && add_ebtables_wme_rules $iface
 
 	# tag VIF network
-	nvram set "$iface"_network=$network
+	nvset "$iface"_network=$network
 
 	# check if VIF is disabled in config
 	if [ "$disabled" == "1" ]; then
-		nvram set "$iface"_bss_enabled=0
+		nvset "$iface"_bss_enabled=0
 	else
-		nvram set "$iface"_bss_enabled=1
+		nvset "$iface"_bss_enabled=1
 	fi
 }
 
@@ -488,7 +519,7 @@ setup_wifi_iface() {
 	else
 		# multiple SSIDs are used
 		iface="$device"."$_vno"
-		nvram set nas_alternate=1
+		nvset nas_alternate=1
 	fi
 
 	wif_general_settings $vif $iface
@@ -502,75 +533,64 @@ setup_wifi_iface() {
 	_vno=$((_vno+1))
 }
 
-wdev_wif_bringup() {
+mbss_macddr() {
 	local device=$1
-	local vifs=$(nvram get "$device"_vifs)
-	local vif
+	local idx=$2
+	local pether start rest
 
-	bring_wif_up() {
-		local iface=$1
-		local network=$(nvram get "$iface"_network)
-		local bss=$(nvram get "$iface"_bss_enabled)
-		local perethr curethr
+	pether=$(wlctl -i $device perm_etheraddr | awk '{print$2}')
 
-		# toggle wireless virtual interface
-		wlctl -i $iface bss down
-		wlctl -i $iface bss up
-
-		perethr=$(wlctl -i $iface perm_etheraddr | awk '{print$2}')
-		curethr=$(wlctl -i $iface cur_etheraddr | awk '{print$2}')
-		nvram set "$iface"_hwaddr="$curethr"
-		ifconfig $iface hw ether $curethr 2>/dev/null
-		ifconfig "$iface" up >/dev/null 2>&1 && {
-			[ -n "$network" ] && ubus call network.interface."$network" add_device "{ \"name\": \"$iface\" }" 2>/dev/null
-		}
-
-		# disable/enable wireless virtual interface
-		wlctl -i $iface bss down
-		[ $bss -eq 1 ] && wlctl -i $iface bss up
-	}
-
-	# toggle wireless radio
-	wlctl -i $device down
-	wlctl -i $device up
-
-	# bring virtual interfaces up
-	for vif in $vifs; do
-		bring_wif_up $vif
-	done
+	if [ $idx -eq 0 ]; then
+		echo "$pether"
+	else
+		start=$(echo $pether | cut -d':' -f1)
+		start=$(printf "%d\n" 0x$start)
+		start=$((start+2))
+		start=$(printf "%0.2x\n" "$start")
+		rest=$(echo $pether | cut -d':' -f2,3,4,5,6)
+		rest=${rest//:}
+		rest=$(printf "%d\n" 0x$rest)
+		rest=$((rest+$idx))
+		rest=$(printf "%0.10x\n" "$rest" | sed -e 's/../&:/g' -e 's/:$//')
+		echo "$start:$rest"
+	fi
 }
 
 create_vif() {
 	local vif="$1"
-	local device
-	local iface
-	local network
+	local device iface network mbssmac
 	config_get device "$vif" device
 	config_get network "$vif" network
 
 	[ "$2" == "$device" ] || continue
-	wlctl -i $device bss -C $_cno down
-	wlctl -i $device ssid -C $_cno "Inteno"
-	wlctl -i $device bss -C $_cno up
-	wlctl -i $device ssid -C $_cno ""
-	wlctl -i $device bss -C $_cno down
+
 	if [ $_cno -eq 0 ]; then
 		iface="$device"
 		# tag main interfaces
-		local mifs=$(nvram get wl_main_ifnames)
+		local mifs=$(nvget wl_main_ifnames)
 		[ -n "$mifs" ] && mifs="$mifs $iface" || mifs="$iface"
-		nvram set wl_main_ifnames="$mifs"
+		nvset wl_main_ifnames="$mifs"
 	else
 		iface="$device"."$_cno"
 	fi
 
-	# save uci config no for each virtual interface
-	nvram set "$iface"_cfgno="$vif"
+	mbssmac="$(mbss_macddr $device $_cno | tr '[a-z]' '[A-Z]')"
 
-	# tag guestMgr interface
-	[ "$network" == "guestMgr" ] && {
-		nvram set wl_guestmgr_ifname="$iface"
-		nvram set wl_guestmgr_cfgno="$vif"
+	wlctl -i $device bss -C $_cno down
+	wlctl -i $device ssid -C $_cno "Inteno"
+	ifconfig $iface down
+	ifconfig $iface hw ether $mbssmac
+
+	# save hwaddr for each virtual interface
+	nvset "$iface"_hwaddr="$mbssmac"
+
+	# save uci config no for each virtual interface
+	nvset "$iface"_cfgno="$vif"
+
+	# tag guest interface
+	[ "$network" == "guestMgr" -o "$network" == "guest" ] && {
+		nvset wl_guestmgr_ifname="$iface"
+		nvset wl_guestmgr_cfgno="$vif"
 	}
 
 	_cno=$((_cno+1))
@@ -579,6 +599,7 @@ create_vif() {
 wdev_assured_settings() {
 	local device=$1
 	wlctl -i $device leddc 0
+	wlctl -i $device wds none
 	wlctl -i $device msglevel 0
 	wlctl -i $device phy_watchdog 1
 	wlctl -i $device ap 1
@@ -624,25 +645,25 @@ wdev_radar_settings() {
 
 	case "$doth" in
 		1)
-			nvram set $device"_reg_mode"="h"
+			nvset $device"_reg_mode"="h"
 			wlctl -i $device radar 1
 			wlctl -i $device regulatory 0
 			wlctl -i $device spect 1
 		;;
 		2)
-			nvram set $device"_reg_mode"="strict_h"
+			nvset $device"_reg_mode"="strict_h"
 			wlctl -i $device radar 1
 			wlctl -i $device regulatory 0
 			wlctl -i $device spect 2
 		;;
 		3)
-			nvram set $device"_reg_mode"=""
+			nvset $device"_reg_mode"=""
 			wlctl -i $device radar 1
 			wlctl -i $device regulatory 1
 			wlctl -i $device spect 0
 		;;
 		*)
-			nvram set $device"_reg_mode"=""
+			nvset $device"_reg_mode"=""
 			wlctl -i $device radar 0
 			wlctl -i $device regulatory 0
 			wlctl -i $device spect 0
@@ -671,9 +692,9 @@ wdev_bwcap_settings() {
 	config_get obss_coex "$device" obss_coex "1"
 
 	if [ $band == "b" ]; then
-		nvram set wl_2g_radio="$device"
+		nvset wl_2g_radio="$device"
 	else
-		nvram set wl_5g_radio="$device"
+		nvset wl_5g_radio="$device"
 	fi
 
 	wlctl -i $device country $country
@@ -765,30 +786,30 @@ wdev_channel_settings() {
 
 	case "$channel" in
 		auto)
-			acsifs="$(nvram get acs_ifnames | sed 's/ *$//')"
+			acsifs="$(nvget acs_ifnames | sed 's/ *$//')"
 			if [ -n "$acsifs" ]; then
-				nvram set acs_ifnames="$acsifs $device"
+				nvset acs_ifnames="$acsifs $device"
 			else
-				nvram set acs_ifnames="$device"
+				nvset acs_ifnames="$device"
 			fi
-			nvram set "$device"_acs_chan_dwell_time="70"
-			nvram set "$device"_acs_chan_flop_period="70"
-			nvram set "$device"_acs_ci_scan_timeout="300"
-			nvram set "$device"_acs_ci_scan_timer="4"
-			nvram set "$device"_acs_cs_scan_timer=$((scantimer * 60))
-			nvram set "$device"_acs_excl_chans=""
-			nvram set "$device"_acs_scan_entry_expire="3600"
-			nvram set "$device"_acs_tx_idle_cnt="5"
-			nvram set "$device"_acs_lowband_least_rssi="-75"
+			nvset "$device"_acs_chan_dwell_time="70"
+			nvset "$device"_acs_chan_flop_period="70"
+			nvset "$device"_acs_ci_scan_timeout="300"
+			nvset "$device"_acs_ci_scan_timer="4"
+			nvset "$device"_acs_cs_scan_timer=$((scantimer * 60))
+			nvset "$device"_acs_excl_chans=""
+			nvset "$device"_acs_scan_entry_expire="3600"
+			nvset "$device"_acs_tx_idle_cnt="5"
+			nvset "$device"_acs_lowband_least_rssi="-75"
 			if [ "$doth" == "0" -o "$dfsc" == "0" ]; then
-				nvram set "$device"_acs_fcs_mode="1"
-				nvram set "$device"_acs_dfs="0"
+				nvset "$device"_acs_fcs_mode="1"
+				nvset "$device"_acs_dfs="0"
 			else
-				nvram set "$device"_acs_fcs_mode="0"
-				nvram set "$device"_acs_dfs="1"
-				nvram set "$device"_acs_dfsr_activity="30 10240"
-				nvram set "$device"_acs_dfsr_deferred="604800 5"
-				nvram set "$device"_acs_dfsr_immediate="300 3"
+				nvset "$device"_acs_fcs_mode="0"
+				nvset "$device"_acs_dfs="1"
+				nvset "$device"_acs_dfsr_activity="30 10240"
+				nvset "$device"_acs_dfsr_deferred="604800 5"
+				nvset "$device"_acs_dfsr_immediate="300 3"
 			fi
 			wlctl -i $device chanim_mode 2
 		;;
@@ -895,7 +916,24 @@ wdev_apsta_settings() {
 	config_get apsta "$device" apsta "0"
 
 	wlctl -i $device apsta $apsta
-	nvram set "$device"_apsta=$apsta
+	nvset "$device"_apsta=$apsta
+}
+
+wdev_wif_bringup() {
+	local device=$1
+	local vifs=$(nvram get "$device"_vifs)
+	local iface network bss
+
+	for iface in $vifs; do
+		network=$(nvram get "$iface"_network)
+		bss=$(nvram get "$iface"_bss_enabled)
+
+		ifconfig "$iface" up >/dev/null 2>&1 && {
+			[ -n "$network" ] && ubus call network.interface."$network" add_device "{ \"name\": \"$iface\" }" 2>/dev/null
+		}
+
+		wlctl -i $iface bss ${bss:-1}
+	done
 }
 
 setup_wifi_device() {
@@ -908,18 +946,22 @@ setup_wifi_device() {
 	# bring down wireless device
 	wlctl -i $device down
 
-	wdev_assured_settings $device
+	if [ "$RESTART" == "0" ]; then
+		wdev_assured_settings $device
+	fi
 
 	# create virtual wireless interfaces
-	wlctl -i $device up
 	config_foreach create_vif wifi-iface "$device"
-	wlctl -i $device down
 	_cno=0
 
 	[ "$radio" == "off" ] && continue || _enWifi=$((_enWifi+1))
 
-	wdev_static_settings $device
-	wdev_radar_settings $device
+	if [ "$RESTART" == "0" ]; then
+		wdev_static_settings $device
+		wdev_radar_settings $device
+		wdev_antenna_settings $device
+		wdev_wds_settings $device
+	fi
 	wdev_bwcap_settings $device
 	wdev_hwmode_settings $device
 	wdev_channel_settings $device
@@ -927,9 +969,7 @@ setup_wifi_device() {
 	wdev_rifs_settings $device
 	wdev_wme_settings $device
 	wdev_tweak_settings $device
-	wdev_antenna_settings $device
 	wdev_power_settings $device
-	wdev_wds_settings $device
 	wdev_assoc_settings $device
 	wdev_apsta_settings $device
 
@@ -937,6 +977,10 @@ setup_wifi_device() {
 	config_foreach setup_wifi_iface wifi-iface "$device"
 	_vno=0
 
+	# bring up wireless device
+	wlctl -i $device up
+
+	# bring up wireless virtual interfaces
 	wdev_wif_bringup $device
 }
 
@@ -997,8 +1041,8 @@ wifi_updown() {
 	# handle wireless led
 	ubus call led.wifi  set '{"state" : "off"}'
 	if [ "$action" == "disable" ]; then
-		[ -n "$(nvram get wl_2g_radio)" ] && ubus call led.wifi  set '{"state" : "ok"}'
-		[ -n "$(nvram get wl_5g_radio)" ] && ubus call led.wifi  set '{"state" : "eok"}'
+		[ -n "$(nvget wl_2g_radio)" ] && ubus call led.wifi  set '{"state" : "ok"}'
+		[ -n "$(nvget wl_5g_radio)" ] && ubus call led.wifi  set '{"state" : "eok"}'
 		return
 	fi
 
@@ -1006,20 +1050,21 @@ wifi_updown() {
 	configure_wep "init"
 	config_foreach setup_wifi_device wifi-device $wdev
 	configure_wep "set"
-	nvram set wlmngr=done
+	nvset wlmngr=done
 
 	# handle wireless led
 	ubus call led.eco set '{"state" : "off"}'
 	if [ $_enWifi -le 0 ]; then
-	    ubus call led.eco set '{"state" : "ok"}'
-	    return
+		ubus call led.eco set '{"state" : "ok"}'
+		return
 	else
-		[ -n "$(nvram get wl_2g_radio)" ] && ubus call led.wifi  set '{"state" : "ok"}'
-		[ -n "$(nvram get wl_5g_radio)" ] && ubus call led.wifi  set '{"state" : "eok"}'
+		[ -n "$(nvget wl_2g_radio)" ] && ubus call led.wifi  set '{"state" : "ok"}'
+		[ -n "$(nvget wl_5g_radio)" ] && ubus call led.wifi  set '{"state" : "eok"}'
 	fi
 
 	map_networks
 	run_hooks wifi-device $ENABLE_HOOKS # ANYFI
+	nvcommit
 	start_related_daemons
 	wireless_sta
 }
@@ -1043,6 +1088,7 @@ wifi_detect() {
 	BMAC=${BMAC// /}
 	local BSSID=$(printf "%X\n" $((0x$BMAC + 2)))
 	local BSSID4=${BSSID:6:4}
+	local BSSID6=${BSSID:4:6}
 	local WPAKEY=$(cat /proc/nvram/WpaKey)
 	WPAKEY="${WPAKEY:-1234567890}"
 	local SSID="$(uci -q get wireless.@wifi-iface[0].ssid)"
@@ -1052,7 +1098,7 @@ wifi_detect() {
 	local WPS="$(uci -q get wireless.@wifi-iface[0].wps_pbc)"
 	local NET="$(uci -q get wireless.@wifi-iface[0].network)"
 
-	local PSID="$(uci -q get wireless.preferred.sid)"
+	local PSID="$(uci -q get wireless.preferred.ssid)"
 	local PENC="$(uci -q get wireless.preferred.enc)"
 	local PKEY="$(uci -q get wireless.preferred.key)"
 	local PGTK="$(uci -q get wireless.preferred.gtk)"
@@ -1067,8 +1113,9 @@ wifi_detect() {
 	local PCNT="$(uci -q get wireless.preferred.country)"
 	local PTMR="$(uci -q get wireless.preferred.scntmr)"
 	local PEXT="$(uci -q get wireless.preferred.extrassid)"
+	local PGST="$(uci -q get wireless.preferred.guest)"
 
-	[ -n "$SSID" ] || SSID="${PSID:-Inteno}"-$BSSID4
+	[ -n "$SSID" ] || SSID="${PSID:-Inteno-$BSSID4}"
 	[ -n "$ENCR" ] || ENCR=$PENC
 	[ -n "$KEY" ] || KEY=$PKEY
 	[ -n "$GTK" ] || GTK=$PGTK
@@ -1152,7 +1199,7 @@ config wifi-iface
 	option device '$wl'
 	option network '${NET:-lan}'
 	option mode 'ap'
-	option ssid '${SSID:-Inteno-$BSSID4}'
+	option ssid '${SSID}'
 	option encryption '${ENCR:-mixed-psk}'
 	option cipher 'auto'
 	option key '${KEY:-$WPAKEY}'
@@ -1169,7 +1216,7 @@ config wifi-iface
 	option device '$wl'
 	option network '${NET:-lan}'
 	option mode 'ap'
-	option ssid '${SSID:-Inteno-$BSSID4}-$freq'
+	option ssid '${SSID}-$freq'
 	option encryption '${ENCR:-mixed-psk}'
 	option cipher 'auto'
 	option key '${KEY:-$WPAKEY}'
@@ -1178,6 +1225,22 @@ config wifi-iface
 	option wps_pbc '0'
 	option wmf_bss_enable '1'
 	option bss_max '16'
+
+EOF
+				fi
+				if [ "$PGST" == "1" ]; then
+					cat >> /etc/config/wireless <<EOF
+config wifi-iface
+	option device '$wl'
+	option network 'guest'
+	option mode 'ap'
+	option ssid '${SSID}-Guest'
+	option encryption 'none'
+	option macfilter '0'
+	option wps_pbc '0'
+	option wmf_bss_enable '1'
+	option bss_max '16'
+	option disabled '1'
 
 EOF
 				fi
@@ -1198,27 +1261,33 @@ EOF
 	done
 	uci -q delete wireless.preferred
 	uci commit wireless
+	sed -i "s/\$BSSID6/$BSSID6/g" /etc/config/wireless
+	sed -i "s/\$BSSID4/$BSSID4/g" /etc/config/wireless
+	sed -i "s/\$BSSID2/$BSSID2/g" /etc/config/wireless
+	sed -i "s/\$BSSID/$BSSID/g" /etc/config/wireless
+	touch /tmp/wireless/first
 }
 
 wifi_onoff() {
 	local status="$1"
+	[ "$status" == "on" ] && status="1" || status="0"
 	local dualwf="$(uci -q get wireless.wl1)"
-	local wl0sta="$(uci -q get wireless.wl0.radio)"
-	local wl1sta="$(uci -q get wireless.wl1.radio)"
+	local wl0sta="$(uci -q get wireless.wl0.disabled)"
+	local wl1sta="$(uci -q get wireless.wl1.disabled)"
 	[ -n "$dualwf" ] || wl1sta="$wl0sta"
-	[ -n "$wl0sta" ] || wl0sta="on"
-	[ -n "$wl1sta" ] || wl1sta="on"
+	[ -n "$wl0sta" ] || wl0sta="1"
+	[ -n "$wl1sta" ] || wl1sta="1"
 
 	if [ "$wl0sta" == "$wl1sta" -a "$status" == "$wl0sta" ]; then
 		return
 	fi
 
-	uci -q set wireless.wl0.radio="$status"
-	uci -q set wireless.wl1.radio="$status"
+	uci -q set wireless.wl0.disabled="$status"
+	uci -q set wireless.wl1.disabled="$status"
 	uci commit wireless
 
 	wifi_updown "disable"
-	[ "$status" == "on" ] && wifi_updown "enable"
+	[ "$status" == "1" ] && wifi_updown "enable"
 }
 
 wifi_toggle_iface() {
@@ -1226,21 +1295,125 @@ wifi_toggle_iface() {
 	local wif="$2"
 	local wdev="${wif:0:3}"
 	if [ "$1" == "disable" ]; then
-		nvram set "$wif"_bss_enabled=0
+		nvset "$wif"_bss_enabled=0
 		wlctl -i $wif bss down
 	else
-		nvram set "$wif"_bss_enabled=1
+		nvset "$wif"_bss_enabled=1
 		wlctl -i $wif bss up
 	fi
 }
 
+day_to_number() {
+	case $1 in
+		all)		echo 0-6 ;;
+		weekdays)	echo 1-5 ;;
+		weekend)	echo 0,6 ;;
+		sun*)		echo 0 ;;
+		mon*)		echo 1 ;;
+		tue*)		echo 2 ;;
+		wed*)		echo 3 ;;
+		thu*)		echo 4 ;;
+		fri*)		echo 5 ;;
+		sat*)		echo 6 ;;
+		*)		echo error ;;
+	esac
+}
+
+set_wifi_schedule() {
+	local cfg="$1"
+	local status="$2"
+	local days time start stop start_hour stop_hour start_min stop_min
+	local sta revsta day dayn dayns
+
+	config_get days $cfg days
+	config_get time $cfg time
+
+	if [ "$status" == "1" ]; then
+		sta="on"
+		revsta="off"
+	else
+		sta="off"
+		revsta="on"
+	fi
+
+	start=$(echo $time | awk -F '[ ,-]' '{print$1}')
+	stop=$(echo $time | awk -F '[ ,-]' '{print$2}')
+
+	start_hour=$(echo $start | awk -F ':' '{print$1}')
+	start_min=$(echo $start | awk -F ':' '{print$2}')
+
+	stop_hour=$(echo $stop | awk -F ':' '{print$1}')
+	stop_min=$(echo $stop | awk -F ':' '{print$2}')
+
+	daymatch=0
+	for day in $days; do
+		[ "${day:0:3}" == "$current_day" ] && daymatch=1
+		dayn=$(day_to_number $day)
+		[ -n "$dayns" ] && dayns="$dayns,$dayn" || dayns="$dayn"
+	done
+
+	if [ $daymatch -eq 1 -a $current_time -gt ${start/:/} -a $current_time -lt ${stop/:/} ]; then
+		timematch=1
+		uci -q set wireless.status.wlan="$status"
+		uci commit wireless
+	fi
+
+	echo "$start_min $start_hour * * $dayns wifi $sta # WiFi_Schedule" >> /etc/crontabs/root
+	echo "$stop_min $stop_hour * * $dayns wifi $revsta # WiFi_Schedule" >> /etc/crontabs/root
+
+	/etc/init.d/cron reload
+}
+
+wifi_schedule() {
+	local schedule sched_status revstatus
+
+	sed -i "/WiFi_Schedule/ d" /etc/crontabs/root
+
+	config_load wireless
+
+	config_get_bool schedule status schedule "0"
+
+	[ $schedule == "0" ] && return
+
+	config_get_bool sched_status status sched_status "0"
+
+	config_foreach set_wifi_schedule wifi-schedule $sched_status
+
+	if [ $timematch -eq 0 ]; then
+		[ $sched_status == "1" ] && revstatus="0" || revstatus="1"
+		uci -q set wireless.status.wlan="$revstatus"
+		uci commit wireless
+	fi
+}
+
+check_md5sum() {
+	local old_md5sum="$(nvget wlmd5sum)"
+	local new_md5sum="$(md5sum /etc/config/wireless | awk '{print$1}')"
+
+	if [ "$old_md5sum" == "$new_md5sum" ]; then
+		exit
+	else
+		nvset wlmd5sum=$new_md5sum
+	fi
+}
+
 case "$1" in
-	on|off) wifi_onoff "$1" ;;
+	on|off) wifi_onoff "$1"; exit ;;
+	detect) wifi_detect; exit ;;
+	*) wifi_schedule ;;
+esac
+
+if [ -f /tmp/wireless/first ]; then
+	RESTART="0"
+	nvset wlmd5sum=""
+	rm -f /tmp/wireless/first
+fi
+
+case "$1" in
 	disable|enable) wifi_toggle_iface "$1" "$2" ;;
-	detect) wifi_detect ;;
 	down) wifi_updown "disable" "$2" ;;
-	reload) wifi_reload "$2" ;;
-	reload_legacy) wifi_reload_legacy "$2" ;;
+	reload) check_md5sum; wifi_reload "$2" ;;
+	reload_legacy) check_md5sum; wifi_reload_legacy "$2" ;;
 	*) ubus call network reload; wifi_updown "enable" "$2";;
 esac
 
