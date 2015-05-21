@@ -34,3 +34,14 @@ UCI.dhcp.$registerSectionType("dhcp", {
 	"leasetime": 		{ dvalue: 60, type: Number },
 	"ignore": 			{ dvalue: false, type: Boolean }
 }); 
+
+UCI.$registerConfig("ddns");
+UCI.ddns.$registerSectionType("service", {
+    "enabled":              { dvalue: 0, type: Number },
+    "interface":            { dvalue: "", type: String },
+    "use_syslog":           { dvalue: 0, type: Number },
+    "service_name":         { dvalue: "", type: String },
+    "domain":               { dvalue: "", type: String },
+    "username":             { dvalue: "", type: String },
+    "password":             { dvalue: "", type: String }
+});

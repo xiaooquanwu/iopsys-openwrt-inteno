@@ -173,16 +173,8 @@
 				"fw_find_ext":		{ dvalue: "", type: String, required: false},
 				"fw_upload_path":	{ dvalue: "", type: String, required: false}
 			}
-		},
-		//"ddns": {
-		//    "interface":            { dvalue: "", type: String },
-		//    "enabled":              { dvalue: 0, type: Number },
-		//    "service_name":         { dvalue: "", type: String },
-		//    "domain":               { dvalue: "", type: String },
-		//    "username":             { dvalue: "", type: String },
-		//    "password":             { dvalue: "", type: String }
-		//},
-	}; 
+		}
+	};
 	function UCI(){
 		
 	}

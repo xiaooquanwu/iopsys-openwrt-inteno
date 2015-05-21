@@ -60,13 +60,11 @@ $juci.module("core")
 			if(!("noPull" in attrs)) scope.pullClass = "pull-right";
             if(!("indent" in attrs)) {
                 scope.labelClass = "col-xs-6";
-                scope.labelStyle = "font-size: 1.2em";
+                scope.labelStyle = "font-size:1.2em";
             } else {
                 scope.labelClass = "col-xs-5 col-xs-offset-1";
-                scope.labelStyle = "font-size: 1em";
-
+                scope.labelStyle = "font-size:1em;transform:translateY(30%);";
             }
-
         }
 	 };  
 })

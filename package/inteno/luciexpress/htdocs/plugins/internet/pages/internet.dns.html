@@ -24,66 +24,31 @@
 			<luci-config-info>{{ 'ddns.config.info' | translate }}</luci-config-info>
 			<luci-config-lines>
 				<luci-config-line title="{{'Dynamic DNS'|translate}}">
-					<switch ng-model="status.wlan.value" class="green" ng-change="onApply()"></switch>
+					<switch ng-model="ddns.enabled" class="green" ng-change="onApply()"></switch>
 				</luci-config-line>
-                <div>
-                    <br/>
-                    <div class="form-group" class="col-md-12" ng-class="{ 'field-error': model.error }" data-toggle="tooltip" data-placement="top" title="{{model.error}}">
-                        <div class="col-md-6 text-left">
-                            <label class="detail-strong-input">{{'Provider'|translate}}</label>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="col-sm-8 col-sm-offset-4 no-side-padding">
-                                <ui-select ng-model="selectedSection"
-                                           theme="bootstrap"
-                                           search-enabled="false"
-                                           on-select="onChangeProvider($item)">
-                                    <ui-select-match placeholder="{{'Select provider'|translate}}">{{$select.selected}}</ui-select-match>
-                                    <ui-select-choices repeat="provider in providers"
-                                                       refresh-delay="0">
-                                        <div>{{provider}}</div>
-                                    </ui-select-choices>
-                                </ui-select>
-                            </div>
-                        </div>
-                    </div>
-                    <hr class="col-md-12"/>
-                    <div class="form-group" class="col-md-12" ng-class="{ 'field-error': model.error }" data-toggle="tooltip" data-placement="top" title="{{model.error}}">
-                        <div class="col-md-6 text-left">
-                            <label class="detail-strong-input">{{'Domain name'|translate}}</label>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="col-sm-8 col-sm-offset-4 no-side-padding">
-                                <input type="text" class="form-control" ng-model="domain" placeholder="{{'Add domain name'|translate}}" />
-                            </div>
-                        </div>
-                    </div>
-                    <hr class="col-md-12"/>
-                    <div class="form-group" class="col-md-12" ng-class="{ 'field-error': model.error }" data-toggle="tooltip" data-placement="top" title="{{model.error}}">
-                        <div class="col-md-6 text-left">
-                            <label class="detail-strong-input">{{'Account'|translate}}</label>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="col-sm-8 col-sm-offset-4 no-side-padding">
-                                <input type="text" class="form-control" ng-model="account" placeholder="{{'Add account'|translate}}" />
-                            </div>
-                        </div>
-                    </div>
-                    <hr class="col-md-12"/>
-                    <div class="form-group" class="col-md-12" ng-class="{ 'field-error': model.error }" data-toggle="tooltip" data-placement="top" title="{{model.error}}">
-                        <div class="col-md-6 text-left">
-                            <label class="detail-strong-input">{{'Password'|translate}}</label>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="col-sm-8 col-sm-offset-4 no-side-padding">
-                                <input type="password" class="form-control" ng-model="password" placeholder="{{'Add password'|translate}}" />
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <luci-config-line indent title="{{'Provider'|translate}}">
+                    <ui-select ng-model="ddns.service_name"
+                               theme="bootstrap"
+                               search-enabled="false"
+                               on-select="onChangeProvider($item)">
+                        <ui-select-match placeholder="{{'Select provider'|translate}}">{{$select.selected}}</ui-select-match>
+                        <ui-select-choices repeat="provider in providers"
+                                           refresh-delay="0">
+                            <div>{{provider}}</div>
+                        </ui-select-choices>
+                    </ui-select>
+                </luci-config-line>
+                <luci-config-line indent title="{{'Domain name'|translate}}">
+                    <input type="text" class="form-control" ng-model="ddns.domain" placeholder="{{'Add domain name'|translate}}" />
+                </luci-config-line>
+                <luci-config-line indent title="{{'Username'|translate}}">
+                    <input type="text" class="form-control" ng-model="ddns.username" placeholder="{{'Add username'|translate}}" />
+                </luci-config-line>
+                <luci-config-line indent title="{{'Password'|translate}}">
+                    <input type="password" class="form-control" ng-model="ddns.password" placeholder="{{'Add password'|translate}}" />
+                </luci-config-line>
 			</luci-config-lines>
 		</luci-config-section>
-        <hr class="col-md-12"/>
         <luci-config-apply></luci-config-apply>
 	</div>
 </luci-layout-with-sidebar>
