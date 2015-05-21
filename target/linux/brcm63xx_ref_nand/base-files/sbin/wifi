@@ -493,7 +493,7 @@ wif_setup() {
 	nvset "$device"_vifs="$vifs"
 
 	# set VIF UCI state
-	#uci_set_state wireless "$vif" up 1
+	# uci_set_state wireless "$vif" up 1
 	uci_set_state wireless "$vif" ifname "$iface"
 
 	# add ebtables rules for VIF
@@ -537,58 +537,37 @@ setup_wifi_iface() {
 	_vno=$((_vno+1))
 }
 
-wdev_wif_bringup() {
+mbss_macddr() {
 	local device=$1
-	local vifs=$(nvget "$device"_vifs)
-	local vif
+	local idx=$2
+	local pether start rest
 
-	bring_wif_up() {
-		local iface=$1
-		local network=$(nvget "$iface"_network)
-		local bss=$(nvget "$iface"_bss_enabled)
-		local perethr curethr
+	pether=$(wlctl -i $device perm_etheraddr | awk '{print$2}')
 
-		# toggle wireless virtual interface
-		wlctl -i $iface bss down
-		wlctl -i $iface bss up
-
-		perethr=$(wlctl -i $iface perm_etheraddr | awk '{print$2}')
-		curethr=$(wlctl -i $iface cur_etheraddr | awk '{print$2}')
-		nvset "$iface"_hwaddr="$curethr"
-		ifconfig $iface hw ether $curethr 2>/dev/null
-		ifconfig "$iface" up >/dev/null 2>&1 && {
-			[ -n "$network" ] && ubus call network.interface."$network" add_device "{ \"name\": \"$iface\" }" 2>/dev/null
-		}
-
-		# disable/enable wireless virtual interface
-		wlctl -i $iface bss down
-		[ $bss -eq 1 ] && wlctl -i $iface bss up
-	}
-
-	# toggle wireless radio
-	wlctl -i $device down
-	wlctl -i $device up
-
-	# bring virtual interfaces up
-	for vif in $vifs; do
-		bring_wif_up $vif
-	done
+	if [ $idx -eq 0 ]; then
+		echo "$pether"
+	else
+		start=$(echo $pether | cut -d':' -f1)
+		start=$(printf "%d\n" 0x$start)
+		start=$((start+2))
+		start=$(printf "%0.2x\n" "$start")
+		rest=$(echo $pether | cut -d':' -f2,3,4,5,6)
+		rest=${rest//:}
+		rest=$(printf "%d\n" 0x$rest)
+		rest=$((rest+$idx))
+		rest=$(printf "%0.10x\n" "$rest" | sed -e 's/../&:/g' -e 's/:$//')
+		echo "$start:$rest"
+	fi
 }
 
 create_vif() {
 	local vif="$1"
-	local device
-	local iface
-	local network
+	local device iface network mbssmac
 	config_get device "$vif" device
 	config_get network "$vif" network
 
 	[ "$2" == "$device" ] || continue
-	wlctl -i $device bss -C $_cno down
-	wlctl -i $device ssid -C $_cno "Inteno"
-	wlctl -i $device bss -C $_cno up
-	wlctl -i $device ssid -C $_cno ""
-	wlctl -i $device bss -C $_cno down
+
 	if [ $_cno -eq 0 ]; then
 		iface="$device"
 		# tag main interfaces
@@ -599,7 +578,15 @@ create_vif() {
 		iface="$device"."$_cno"
 	fi
 
-	uci_set_state wireless "$vif" ifname "$iface"
+	mbssmac="$(mbss_macddr $device $_cno | tr '[a-z]' '[A-Z]')"
+
+	wlctl -i $device bss -C $_cno down
+	wlctl -i $device ssid -C $_cno "Inteno"
+	ifconfig $iface down
+	ifconfig $iface hw ether $mbssmac
+
+	# save hwaddr for each virtual interface
+	nvset "$iface"_hwaddr="$mbssmac"
 
 	# save uci config no for each virtual interface
 	nvset "$iface"_cfgno="$vif"
@@ -616,6 +603,7 @@ create_vif() {
 wdev_assured_settings() {
 	local device=$1
 	wlctl -i $device leddc 0
+	wlctl -i $device wds none
 	wlctl -i $device msglevel 0
 	wlctl -i $device phy_watchdog 1
 	wlctl -i $device ap 1
@@ -946,6 +934,23 @@ wdev_apsta_settings() {
 	nvset "$device"_apsta=$apsta
 }
 
+wdev_wif_bringup() {
+	local device=$1
+	local vifs=$(nvram get "$device"_vifs)
+	local iface network bss
+
+	for iface in $vifs; do
+		network=$(nvram get "$iface"_network)
+		bss=$(nvram get "$iface"_bss_enabled)
+
+		ifconfig "$iface" up >/dev/null 2>&1 && {
+			[ -n "$network" ] && ubus call network.interface."$network" add_device "{ \"name\": \"$iface\" }" 2>/dev/null
+		}
+
+		wlctl -i $iface bss ${bss:-1}
+	done
+}
+
 setup_wifi_device() {
 	local device="$1"
 	local disabled wlan
@@ -990,6 +995,10 @@ setup_wifi_device() {
 	config_foreach setup_wifi_iface wifi-iface "$device"
 	_vno=0
 
+	# bring up wireless device
+	wlctl -i $device up
+
+	# bring up wireless virtual interfaces
 	wdev_wif_bringup $device
 }
 
@@ -1103,12 +1112,14 @@ wifi_detect() {
 	local SSID="$(uci -q get wireless.@wifi-iface[0].ssid)"
 	local ENCR="$(uci -q get wireless.@wifi-iface[0].encryption)"
 	local KEY="$(uci -q get wireless.@wifi-iface[0].key)"
+	local GTK="$(uci -q get wireless.@wifi-iface[0].gtk_rekey)"
 	local WPS="$(uci -q get wireless.@wifi-iface[0].wps_pbc)"
 	local NET="$(uci -q get wireless.@wifi-iface[0].network)"
 
 	local PSID="$(uci -q get wireless.preferred.ssid)"
 	local PENC="$(uci -q get wireless.preferred.enc)"
 	local PKEY="$(uci -q get wireless.preferred.key)"
+	local PGTK="$(uci -q get wireless.preferred.gtk)"
 	local PWPS="$(uci -q get wireless.preferred.wpsb)"
 	local PHW5="$(uci -q get wireless.preferred.hw5g)"
 	local PHW2="$(uci -q get wireless.preferred.hw2g)"
@@ -1119,12 +1130,17 @@ wifi_detect() {
 	local PDFS="$(uci -q get wireless.preferred.dfsc)"
 	local PCNT="$(uci -q get wireless.preferred.country)"
 	local PTMR="$(uci -q get wireless.preferred.scntmr)"
+	local PEXT="$(uci -q get wireless.preferred.extrassid)"
 	local PGST="$(uci -q get wireless.preferred.guest)"
 
 	[ -n "$SSID" ] || SSID="${PSID:-Inteno-$BSSID4}"
 	[ -n "$ENCR" ] || ENCR=$PENC
 	[ -n "$KEY" ] || KEY=$PKEY
+	[ -n "$GTK" ] || GTK=$PGTK
 	[ -n "$WPS" ] || WPS=$PWPS
+
+	# zero PEXT tag if not dual wifi
+	wlctl -i wl1 ap >/dev/null 2>&1 || PEXT="0"
 
 	pcID() {
 		wlctl -i $1 revinfo | awk 'FNR == 2 {print}' | cut -d'x' -f2
@@ -1209,13 +1225,31 @@ config wifi-iface
 	option encryption '${ENCR:-mixed-psk}'
 	option cipher 'auto'
 	option key '${KEY:-$WPAKEY}'
-	option gtk_rekey '0'
+	option gtk_rekey '${GTK:-3600}'
 	option macfilter '0'
 	option wps_pbc '${WPS:-1}'
 	option wmf_bss_enable '1'
 	option bss_max '16'
 
 EOF
+				if [ "$PEXT" == "1" ]; then
+					cat >> /etc/config/wireless <<EOF
+config wifi-iface
+	option device '$wl'
+	option network '${NET:-lan}'
+	option mode 'ap'
+	option ssid '${SSID}-$freq'
+	option encryption '${ENCR:-mixed-psk}'
+	option cipher 'auto'
+	option key '${KEY:-$WPAKEY}'
+	option gtk_rekey '${GTK:-3600}'
+	option macfilter '0'
+	option wps_pbc '0'
+	option wmf_bss_enable '1'
+	option bss_max '16'
+
+EOF
+				fi
 				if [ "$PGST" == "1" ]; then
 					cat >> /etc/config/wireless <<EOF
 config wifi-iface
