@@ -5,10 +5,8 @@ $juci.module("core")
             templateUrl: plugin_root + "/widgets/luci.input.ipaddress.html",
             restrict: 'E',
             scope: {
-                id: "@",
                 label: "@",
-                ngModel: "=",
-                labelClass: "@"
+                ngModel: "="
             },
             require: "^ngModel",
             link: function (scope, element, attrs, ctrl) {

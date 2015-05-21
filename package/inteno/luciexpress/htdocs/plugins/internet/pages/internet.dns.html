@@ -6,20 +6,20 @@
 			<luci-config-lines>
 				<luci-config-line title="{{'DNS configuration'|translate}}">
 					<div class="col-md-6">
-                        <luci-input-radio id="autoDns" value="0" ng-model="wan.peerdns" label="'automatically'" label-class="detail-strong-input" inline="true" />
+                        <luci-input-radio ng-model="wan.peerdns" label="'automatically'" value="0" />
 					</div>
 					<div class="col-md-5 col-lg-offset-1">
-						<luci-input-radio id="manualDns" value="1" ng-model="wan.peerdns" label="'manually'" label-class="detail-strong-input" inline="true"/>
+						<luci-input-radio ng-model="wan.peerdns" label="'manually'"  value="1" />
 					</div>
 				</luci-config-line>
 				<div ng-show="wan.peerdns.value == 1">
 					<br/>
 					<div class="col-md-12">
-						<luci-input-ip-address id="firstDNSAddress" ng-model="dns.primary" label="Domain Name Server (DNS) Address" label-class="detail-strong-input" />
+						<luci-input-ip-address ng-model="dns.primary" label="Domain Name Server (DNS) Address" />
 					</div>
 					<hr class="col-md-12"/>
 					<div class="col-md-12">
-						<luci-input-ip-address id="secondDNSAddress" ng-model="dns.secondary" label="Secondary DNS Address (optional)" label-class="detail-strong-input" />
+						<luci-input-ip-address ng-model="dns.secondary" label="Secondary DNS Address (optional)" />
 					</div>
 				</div>
 			</luci-config-lines>

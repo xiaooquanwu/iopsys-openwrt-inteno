@@ -8,7 +8,6 @@ $juci.module("core")
             scope: {
                 id: "=",
                 label: "=",
-                labelClass: "=",
                 value: "=",
                 ngModel: "=",
                 inline: "="
