@@ -41,6 +41,7 @@ $juci.app
 	
 	$scope.onDeleteRule = function(rule){
 		rule.$delete().done(function(){
+			$uci.save(); 
 			$scope.$apply(); 
 		}); 
 	};
