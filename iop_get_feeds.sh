@@ -26,7 +26,6 @@
 ./scripts/feeds install ddns-scripts
 ./scripts/feeds install hd-idle
 ./scripts/feeds install ntpclient
-./scripts/feeds install collectd-mod-olsrd
 ./scripts/feeds install openvpn
 ./scripts/feeds install p910nd
 ./scripts/feeds install polipo
