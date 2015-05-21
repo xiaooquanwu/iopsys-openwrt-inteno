@@ -3,16 +3,15 @@ $juci.module("internet")
 
         $scope.providers = ["dyndns.org"];
 
-        $scope.dns = {
-            primary: "",
-            secondary: ""
-        };
-
         $uci.sync("network")
             .done(function () {
                 if ($uci.network && $uci.network.wan) {
                     $log.info("wan", $uci.network.wan);
                     $scope.wan = $uci.network.wan;
+                    $log.debug('$scope.wan.dns ', $scope.wan.dns);
+                    if ($scope.wan.dns && $scope.wan.dns.value.length == 0) {
+                        $scope.wan.dns.value = ["",""]; // by default there are 2 DNS addresses
+                    }
                 } else {
                     $log.error("wan network not available on box");
                     // TODO show error message
@@ -32,27 +31,11 @@ $juci.module("internet")
         //        $scope.$apply();
         //    });
 
-        $scope.$watch("dns.primary", function(value){
-					if(!$uci.network.wan) return; 
-            $log.debug("dns primary = " + value);
-            $log.debug("$uci.network.wan.dns.value", $uci.network.wan.dns.value);
-            if ($uci.network.wan.dns.value) {
-                $uci.network.wan.dns.value = [value];
-            } else {
-                $uci.network.wan.dns.value = [value, ""];
+        $scope.$watch("wan.dns.value", function(value){
+            if (value) {
+                $uci.network.wan.dns.value = value;
             }
-        });
-
-        $scope.$watch("dns.secondary", function(value){
-					if(!$uci.network.wan) return; 
-            $log.debug("dns secondary = " + value);
-            $log.debug("$uci.network.wan.dns.value", $uci.network.wan.dns.value);
-            if ($uci.network.wan.dns.value) {
-                $uci.network.wan.dns.value[1] = [value];
-            } else {
-                $uci.network.wan.dns.value = ["", value];
-            }
-        });
+        }, true);
 
         $scope.onApply = function () {
             $scope.busy = 1;

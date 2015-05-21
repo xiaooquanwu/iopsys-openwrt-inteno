@@ -61,6 +61,28 @@ $juci.module("core")
 		}
 	 };  
 })
+.directive("luciConfigDetailLine", function(){
+        var plugin_root = $juci.module("core").plugin_root;
+        return {
+            template: '<div><div class="row" style="margin-top: 10px;">'+
+            '<div class="col-xs-5 col-xs-offset-1" style="transform: translateY(30%)">'+
+            '<label style="font-size: 1em">{{title}}</label>'+
+            '<p style="font-size: 12px">{{help}}</p>'+
+            '</div>'+
+            '<div class="col-xs-6">'+
+            '<div class="{{pullClass}}" ng-transclude></div>'+
+            '</div></div></div>',
+            replace: true,
+            scope: {
+                title: "@",
+                help: "@"
+            },
+            transclude: true,
+            link: function (scope, element, attrs) {
+                if(!("noPull" in attrs)) scope.pullClass = "pull-right";
+            }
+        };
+    })
 .directive("luciConfigApply", function(){
 	var plugin_root = $juci.module("core").plugin_root; 
 	return {

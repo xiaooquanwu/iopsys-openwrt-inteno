@@ -9,23 +9,15 @@
                         <luci-input-radio ng-model="wan.peerdns" label="'automatically'" value="0" />
 					</div>
 					<div class="col-md-5 col-lg-offset-1">
-						<luci-input-radio ng-model="wan.peerdns" label="'manually'"  value="1" />
+						<luci-input-radio ng-model="wan.peerdns" label="'manually'" value="1" />
 					</div>
 				</luci-config-line>
-				<div ng-show="wan.peerdns.value == 1">
-					<br/>
-					<div class="col-md-12">
-						<luci-input-ip-address ng-model="dns.primary" label="Domain Name Server (DNS) Address" />
-					</div>
-					<hr class="col-md-12"/>
-					<div class="col-md-12">
-						<luci-input-ip-address ng-model="dns.secondary" label="Secondary DNS Address (optional)" />
-					</div>
-				</div>
-			</luci-config-lines>
-		</luci-config-section>
-		<luci-config-section>
-			<luci-config-heading>&nbsp;</luci-config-heading> <!-- used as spacer -->
+                <luci-config-detail-line title="{{'DNS address'|translate}}" ng-show="wan.peerdns.value == 1" ng-repeat="dns in wan.dns.value track by $index">
+                    <div class="col-md-12" >
+                        <luci-input-ip-address ng-model="wan.dns.value[$index]" />
+                    </div>
+                </luci-config-detail-line>
+            </luci-config-lines>
 		</luci-config-section>
 		<luci-config-section>
 			<luci-config-heading>{{ 'DDNS (Dynamic DNS)' | translate }}</luci-config-heading>
@@ -49,7 +41,7 @@
                                     <ui-select-match placeholder="{{'Select provider'|translate}}">{{$select.selected}}</ui-select-match>
                                     <ui-select-choices repeat="provider in providers"
                                                        refresh-delay="0">
-                                        <div >{{provider}}</div>
+                                        <div>{{provider}}</div>
                                     </ui-select-choices>
                                 </ui-select>
                             </div>
