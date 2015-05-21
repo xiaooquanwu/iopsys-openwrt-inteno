@@ -21,9 +21,13 @@
 					if(data.scripts){
 						async.eachSeries(data.scripts, function(script, next){
 							console.log("Loading "+theme_root + "/"+script); 
-							require([theme_root + "/"+script], function(module){
+							if(!JUCI_COMPILED){
+								require([theme_root + "/"+script], function(module){
+									next(); 
+								}); 
+							} else {
 								next(); 
-							}); 
+							}
 						}, function(){
 							deferred.resolve(data); 
 						}); 

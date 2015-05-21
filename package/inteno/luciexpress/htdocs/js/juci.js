@@ -17,7 +17,7 @@
 		var plugin = self.plugins[name]; 
 		var juci = self; 
 		return {
-			plugin_root: plugin.plugin_root, 
+			plugin_root: ((plugin||{}).plugin_root||"plugins/"+name+"/"), 
 			directive: function(name, fn){
 				return angular.module("luci").directive(name, fn);
 			}, 
@@ -64,7 +64,7 @@
 					$.getJSON(plugin_root + "/plugin.json")
 					.done(function(data){
 						console.log("found plugin "+id); 
-						$juci.module(id, plugin_root, data); 
+						$juci.module(id, plugin_root, {}); 
 						$juci.plugins[id] = data; 
 						if(data && data.scripts){
 							data.scripts.map(function(x){scripts.push(plugin_root + "/" + x); });
@@ -166,9 +166,13 @@
 				}); 
 			}, 
 			function(next){
-				require(scripts, function(module){
+				if(!JUCI_COMPILED){
+					require(scripts, function(module){
+						next(); 
+					}); 
+				} else {
 					next(); 
-				}); 
+				}
 			}, 
 			function(next){
 				// get the menu navigation

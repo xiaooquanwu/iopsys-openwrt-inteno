@@ -1,5 +1,8 @@
 //! Author: Martin K. Schröder <mkschreder.uk@gmail.com>
 
+// TODO: make this automatic
+var JUCI_COMPILED = 0; 
+
 $.jsonRPC.setup({
   endPoint: '/ubus',
   namespace: 'luci'
@@ -177,6 +180,43 @@ JUCI.app.config(function ($stateProvider, $locationProvider, $compileProvider, $
 		}
 }}]); 
 
+/*
+JUCI.app.factory('$templateCache', function($cacheFactory, $http, $injector) {
+  var cache = $cacheFactory('templates');
+  var allTplPromise;
+ 
+  return {
+    get: function(url) {
+      var fromCache = cache.get(url);
+ 
+      // already have required template in the cache
+      if (fromCache) {
+        return fromCache;
+      }
+ 
+      // first template request ever - get the all tpl file
+      if (!allTplPromise) {
+        allTplPromise = $http.get('__all.html').then(function(response) {
+          // compile the response, which will put stuff into the cache
+          $injector.get('$compile')(response.data);
+          return response;
+        });
+      }
+ 
+      // return the all-tpl promise to all template requests
+      return allTplPromise.then(function(response) {
+        return {
+          status: response.status,
+          data: cache.get(url)
+        };
+      });
+    },
+ 
+    put: function(key, value) {
+      cache.put(key, value);
+    }
+  };
+});*/
 // make autofocus directive work as expected
 JUCI.app.directive('autofocus', ['$timeout', function($timeout) {
   return {
