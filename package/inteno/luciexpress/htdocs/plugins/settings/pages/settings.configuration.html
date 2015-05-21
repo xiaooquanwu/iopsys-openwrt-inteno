@@ -11,14 +11,14 @@
 					<button class="btn btn-lg btn-default" ng-click="onRestoreConfig()">{{'Load'|translate}}</button>
 				</luci-config-line>
 			</luci-config-lines>
-			<div ng-show="resetPossible" >
-				<h3>{{'Factory Settings'|translate}}</h3>
-				<luci-config-lines >
-					<luci-config-line title="{{'Reset restores the factory default settings of your gateway'|translate}}">
-						<button class="btn btn-lg btn-default" ng-click="onReset()">{{'Reset'|translate}}</button>
-					</luci-config-line>
-				</luci-config-lines>
-			</div>
+		</luci-config-section>
+		<luci-config-section ng-show="resetPossible">
+			<h3>{{'Factory Settings'|translate}}</h3>
+			<luci-config-lines >
+				<luci-config-line title="{{'Reset restores the factory default settings of your gateway'|translate}}">
+					<button class="btn btn-lg btn-default" ng-click="onReset()">{{'Reset'|translate}}</button>
+				</luci-config-line>
+			</luci-config-lines>
 		</luci-config-section>
 		<modal title="{{'Save Configuration to Computer'|translate}}" ng-show="showModal" on-accept="onAcceptModal()" on-dismiss="onDismissModal()" dismiss-label="Cancel" accept-label="Continue">
 			<form name="backupForm" action="/cgi-bin/luci-backup" method="post" >

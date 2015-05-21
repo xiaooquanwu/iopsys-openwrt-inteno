@@ -109,11 +109,13 @@
 })( jQuery);
 
 JUCI.app
-.controller("SettingsUpgradeCtrl", function($scope, $uci, $rpc, $session){
+.controller("SettingsUpgradeCtrl", function($scope, $config, $uci, $rpc, $session){
 	$scope.sessionID = $session.sid;
 	$scope.uploadFilename = "/tmp/firmware.bin";
 	$scope.usbFileName = "()"; 
 	console.log("SID: "+$scope.sessionID);  
+	
+	$scope.config = $config; 
 	
 	function upgradeStart(path){
 		alert("Will try to upgrade from "+path); 

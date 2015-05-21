@@ -1,14 +1,10 @@
 <luci-layout-with-sidebar>
 	<div ng-controller="SettingsNetworkCtrl">
-		<luci-config-section>
-			<luci-config-heading>{{ 'Network Settings' | translate }}</luci-config-heading>
-			<luci-config-info>{{ 'settings.network.info' | translate }}</luci-config-info>
-			<p translate ng-hide="network">Missing uci config boardpanel.</p>
-		</luci-config-section>
-		<luci-config-section  ng-show="network">
-			<div ng-repeat="interface in interfaces">
-				<uci-network-interface-edit ng-model="interface"></uci-network-interface-edit>
-			</div>
-		</luci-config-section>
+		<luci-config-heading>{{ 'Network Settings' | translate }}</luci-config-heading>
+		<luci-config-info>{{ 'settings.network.info' | translate }}</luci-config-info>
+		<p translate ng-hide="network">Missing uci config boardpanel.</p>
+		<div ng-repeat="interface in interfaces">
+			<uci-network-interface-edit ng-model="interface"></uci-network-interface-edit>
+		</div>
 	</div>
 </luci-layout-with-sidebar>

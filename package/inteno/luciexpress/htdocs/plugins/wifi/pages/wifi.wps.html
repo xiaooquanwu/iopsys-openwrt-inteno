@@ -19,6 +19,8 @@
 						<switch id="enabled" name="enabled" ng-model="interface.wps_pbc.value" class="green" ng-change="save()" ></switch>
 					</luci-config-line>
 				</luci-config-lines>
+			</luci-config-section>
+			<luci-config-section>
 				<h2 translate>WPS-PBC: Push Button on Device</h2>
 				<p translate>wifi.wps.pbc.info</p>
 				<luci-config-lines>
@@ -32,6 +34,8 @@
 						<button class="btn btn-lg btn-default col-xs-12" ng-click="onPairPBC()" translate>Pair</button>
 					</luci-config-line>
 				</luci-config-lines>
+			</luci-config-section>
+			<luci-config-section>
 				<h2 translate>WPS-REG: Router provides PIN</h2>
 				<p translate>wifi.wps.pin.info</p>
 				<luci-config-lines>
@@ -45,6 +49,8 @@
 						<button class="btn btn-lg btn-default" ng-click="onGeneratePIN()" translate>Generate</button>
 					</luci-config-line>
 				</luci-config-lines>
+			</luci-config-section>
+			<luci-config-section>
 				<h2 translate>WPS-PIN: Another Device provides PIN</h2>
 				<p translate>wifi.wps.otherpin.info</p>
 				<luci-config-lines>

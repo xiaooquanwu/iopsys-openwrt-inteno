@@ -2,10 +2,10 @@
 	<div ng-controller="SettingsEnergyCtrl">
 		<luci-config-section>
 			<luci-config-heading>{{ 'Energy Settings' | translate }}</luci-config-heading>
-			<p translate ng-hide="boardpanel">Missing uci config boardpanel.</p>
-		</luci-config-section>
-		<luci-config-section  ng-show="boardpanel">
 			<luci-config-info>{{ 'settings.energy.info' | translate }}</luci-config-info>
+		</luci-config-section>
+		<p translate ng-hide="boardpanel">Missing uci config boardpanel.</p>
+		<luci-config-section  ng-show="boardpanel">
 			<luci-config-lines>
 				<luci-config-line title="{{'USB Port'|translate}}">
 					<switch id="enabled" name="enabled" ng-model="boardpanel.settings.usb_port.value" class="green"></switch>
@@ -21,7 +21,7 @@
 					<!--<switch id="enabled" name="enabled" ng-model="boardpanel.settings.power_led_br.value" class="green"></switch>-->
 				</luci-config-line>
 			</luci-config-lines>
-			<luci-config-apply></luci-config-apply>
 		</luci-config-section>
+		<luci-config-apply></luci-config-apply>
 	</div>
 </luci-layout-with-sidebar>

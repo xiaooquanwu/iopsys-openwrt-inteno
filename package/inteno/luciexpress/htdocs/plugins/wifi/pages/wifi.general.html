@@ -3,6 +3,8 @@
 		<luci-config-section>
 			<luci-config-heading>{{ 'General WiFi Settings' | translate }}</luci-config-heading>
 			<luci-config-info>{{ 'wifi.general.info' | translate }}</luci-config-info>
+		</luci-config-section>
+		<luci-config-section>
 			<luci-config-lines>
 				<luci-config-line title="{{'Wifi Network'|translate}}">
 					<switch ng-model="status.wlan.value" class="green" ng-change="onApply()"></switch>

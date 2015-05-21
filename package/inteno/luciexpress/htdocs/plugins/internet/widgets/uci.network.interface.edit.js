@@ -11,6 +11,7 @@ JUCI.app
 		require: "^ngModel"
 	 };  
 }).controller("uciNetworkInterfaceEdit", function($scope, $uci, $rpc, $log){
+	$scope.expanded = true; 
 	$scope.$watch("interface", function(interface){
 		
 	}); 

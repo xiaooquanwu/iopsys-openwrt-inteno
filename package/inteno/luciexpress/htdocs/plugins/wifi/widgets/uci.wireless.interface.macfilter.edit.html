@@ -1,12 +1,10 @@
 <div>
-	<luci-config-section>
-		<luci-config-lines>
-			<luci-config-line title="{{'MAC Filtering'|translate}}">
-				<switch ng-model="interface.macfilter.value" class="green" ng-change="onFilterEnable"></switch>
-			</luci-config-line>
-		</luci-config-lines>
-	</luci-config-section>
-	<luci-config-section ng-show="interface.macfilter.value">
+	<luci-config-lines>
+		<luci-config-line title="{{'MAC Filtering'|translate}}">
+			<switch ng-model="interface.macfilter.value" class="green" ng-change="onFilterEnable"></switch>
+		</luci-config-line>
+	</luci-config-lines>
+	<div ng-show="interface.macfilter.value">
 		<!--<div class="alert alert-danger">
 			<div ng-message="pattern" translate><span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>You must enter a valid MAC address!</div>
 		</div>-->
@@ -42,23 +40,18 @@
 				<button class="btn btn-default" ng-click="onAddClients()"><i class="fa fa-plus"></i></button>
 			</luci-config-line>
 		</luci-config-lines>
-	</luci-config-section>
+	</div>
 	<modal title="{{'Add clients to MAC filtering list'|translate}}" ng-show="showModal" on-accept="onAcceptModal()" on-dismiss="onDismissModal()" dismiss-label="{{'Cancel'|translate}}" accept-label="{{'Save'|translate}}">
-		<luci-config>
-			<luci-config-section>
-				
-				<div class="row" ng-repeat="cl in client_list">
-					<div class="col-xs-6">
-						<label>
-							<input type="checkbox" ng-model="cl.checked"/> {{cl.client.hostname}}
-						</label>
-					</div>
-					<div class="col-xs-6">
-						<label>{{cl.client.macaddr}}</label>
-					</div>
-				</div>
-			</luci-config-section>
-		</luci-config>
+		<div class="row" ng-repeat="cl in client_list">
+			<div class="col-xs-6">
+				<label>
+					<input type="checkbox" ng-model="cl.checked"/> {{cl.client.hostname}}
+				</label>
+			</div>
+			<div class="col-xs-6">
+				<label>{{cl.client.macaddr}}</label>
+			</div>
+		</div>
 	</modal>
 </div>
 
