@@ -145,6 +145,9 @@ JUCI.app.config(function ($stateProvider, $locationProvider, $compileProvider, $
 						$rootScope.errors.splice(0, $rootScope.errors.length); 
 						$uci.$revert(); 
 						document.title = $tr(k.replace(/\//g, ".")+".title")+" - "+$tr(gettext("application.name")); 
+					}, 
+					onExit: function($interval){
+						JUCI.interval.$clearAll(); 
 					}
 				}); 
 			}

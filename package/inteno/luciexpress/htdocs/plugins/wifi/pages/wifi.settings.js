@@ -1,4 +1,6 @@
-$juci.module("wifi")
+//! Author: Martin K. Schröder <mkschreder.uk@gmail.com>
+
+JUCI.app
 .controller("WifiSettingsPageCtrl", function($scope, $uci, gettext){
 	function load(){
 		$uci.sync("wireless").done(function(){

@@ -1,6 +1,16 @@
-$juci.module("wifi")
-.controller("WifiWPSPageCtrl", function($scope, $uci, $rpc){
-	console.log("WIFI PAGE CONTROLLER"); 
+//! Author: Martin K. Schröder <mkschreder.uk@gmail.com>
+
+JUCI.app
+.controller("WifiWPSPageCtrl", function($scope, $uci, $rpc, $interval, gettext){
+	var wps_status_strings = {
+		0: gettext("wps.status.init"),
+		1: gettext("wps.status.processing"),
+		2: gettext("wps.status.success"),
+		3: gettext("wps.status.fail"),
+		4: gettext("wps.status.timeout"),
+		7: gettext("wps.status.msgdone")
+	}; 
+	
 	$scope.data = {
 		userPIN: ""
 	}
@@ -22,15 +32,14 @@ $juci.module("wifi")
 		console.log("failed to sync config: "+err); 
 	}); 
 	
-	function retry(){
-		setTimeout(function(){
-			$uci.sync("broadcom").done(function(){
-				$scope.progress = $uci.broadcom.nvram.wps_proc_status.value;
-				$scope.$apply();	
-				retry(); 
-			}); 
-		}, 1000); 
-	} retry(); 
+	JUCI.interval.repeat("wifi.wps.retry", 1000, function(next){
+		$rpc.wps.status().done(function(result){
+			$scope.progress = result.code; 
+			$scope.text_status = wps_status_strings[result.code]||gettext("wps.status.unknown"); 
+			$scope.$apply();	
+			next();
+		}); 
+	}); 
 	
 	$rpc.wps.showpin().done(function(data){
 		$scope.generatedPIN = data.pin; 
@@ -53,4 +62,8 @@ $juci.module("wifi")
 			}); 
 		}); 
 	}
+	
+	$scope.onCancelWPS = function(){
+		$rpc.wps.stop(); 
+	} 
 }); 

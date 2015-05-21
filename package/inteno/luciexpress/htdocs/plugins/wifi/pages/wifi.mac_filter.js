@@ -1,4 +1,6 @@
-$juci.module("wifi")
+//! Author: Martin K. Schröder <mkschreder.uk@gmail.com>
+
+JUCI.app
 .controller("WifiMacFilterPageCtrl", function($scope, $uci, gettext){
 	window.uci = $uci; 
 	$scope.uci = $uci; 

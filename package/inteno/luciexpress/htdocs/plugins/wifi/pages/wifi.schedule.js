@@ -1,4 +1,6 @@
-$juci.module("wifi")
+//! Author: Martin K. Schröder <mkschreder.uk@gmail.com>
+
+JUCI.app
 .controller("WifiSchedulePageCtrl", function($scope, $uci, gettext){
 	$scope.statusItems = [
 		{ label: gettext("Enabled"), value: 1 },

@@ -1,4 +1,6 @@
-$juci.module("wifi")
+//! Author: Martin K. Schröder <mkschreder.uk@gmail.com>
+
+JUCI.app
 .controller("WifiGeneralPageCtrl", function($scope, $uci, $tr){
 	async.series([
 		function(next){

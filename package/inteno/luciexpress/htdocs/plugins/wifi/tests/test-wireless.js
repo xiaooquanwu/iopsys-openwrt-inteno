@@ -56,4 +56,7 @@ describe("Wireless", function(){
 	it("should have wps.pbc rpc call", function(){
 		expect($rpc.wps.pbc).to.be.a(Function); 
 	}); 
+	it("should have wps.status rpc call", function(){
+		expect($rpc.wps.status).to.be.a(Function); 
+	}); 
 }); 

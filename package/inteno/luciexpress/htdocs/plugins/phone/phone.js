@@ -99,7 +99,7 @@ UCI.voice_client.$registerSectionType("call_filter_rule_incoming", {
 	"extension": 				{ dvalue: "", type: String }
 }); 
 
-UCI.voice_client.$registerSectionType("dialplan": {
+UCI.voice_client.$registerSectionType("dialplan", {
 	"custom_outgoing_enabled":	{ dvalue: false, type: Boolean },
 	"custom_incoming_enabled":	{ dvalue: false, type: Boolean },
 	"custom_hangup_enabled":	{ dvalue: false, type: Boolean },
@@ -108,7 +108,7 @@ UCI.voice_client.$registerSectionType("dialplan": {
 	"test_echo_extension":		{ dvalue: "#123458", type: String},
 	"record_message_extension":	{ dvalue: "#999999", type: String}
 });
-UCI.voice_client.$registerSectionType("sip_advanced": {
+UCI.voice_client.$registerSectionType("sip_advanced", {
 	"rtpstart":	{ dvalue: 10000, type: Number },
 	"rtpend":	{ dvalue: 20000, type: Number },
 	"dtmfmode":	{ dvalue: "rfc2833", type: String},
@@ -128,7 +128,7 @@ UCI.voice_client.$registerSectionType("sip_advanced": {
 	"dnsmgr_refresh_interval":	{ dvalue: 300, type: Number },
 	"srvlookup":	{ dvalue: "yes", type: String}
 });
-UCI.voice_client.$registerSectionType("brcm_advanced": {
+UCI.voice_client.$registerSectionType("brcm_advanced", {
 	"country":	{ dvalue: "SWE", type: String},
 	"jbenable":	{ dvalue: "yes", type: String},
 	"jbforce":	{ dvalue: "no", type: String},
@@ -138,19 +138,19 @@ UCI.voice_client.$registerSectionType("brcm_advanced": {
 	"dialoutmsec":	{ dvalue: 4000, type: Number },
 	"cw_enable":	{ dvalue: "yes", type: String}
 });
-UCI.voice_client.$registerSectionType("features": {
+UCI.voice_client.$registerSectionType("features", {
 	"cbbs_enabled":		{ dvalue: true, type: Boolean },
 	"callforward_enabled":	{ dvalue: true, type: Boolean },
 	"redial_enabled":	{ dvalue: true, type: Boolean },
 	"callreturn_enabled":	{ dvalue: true, type: Boolean },
 	"advanced_register_settings":	{ dvalue: true, type: Boolean },
 }); 
-UCI.voice_client.$registerSectionType("log": {
+UCI.voice_client.$registerSectionType("log", {
 	"console":		{ dvalue: "notice,warning,error", type: String },
 	"messages":		{ dvalue: "error", type: String },
 	"syslog_facility":	{ dvalue: "local0", type: String }
 }); 
-UCI.voice_client.$registerSectionType("speed_dial": {
+UCI.voice_client.$registerSectionType("speed_dial", {
 	"tone":		{ dvalue: 1, type: Number },
 	"number":	{ dvalue: "", type: String }
 }); 
