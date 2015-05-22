@@ -1,4 +1,4 @@
-$juci.module("core")
+JUCI.app
 	.directive("luciInputPort", function () {
 		var plugin_root = $juci.module("core").plugin_root;
 		return {

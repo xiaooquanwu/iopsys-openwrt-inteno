@@ -110,7 +110,9 @@ function JUCIMock(){
 				console.log("$scope.apply"); 
 			}
 			scope.$watch = function(name, fn){
-				global.watch(this, name, fn); 
+				global.watch(this, name, function(){
+					fn(this[name]);
+				}); 
 			} 
 			var args = annotate(ctrl).map(function(x){
 				switch(x){
