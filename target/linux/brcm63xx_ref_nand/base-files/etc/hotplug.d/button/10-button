@@ -7,23 +7,6 @@ wpsbutton_action () {
         killall -USR2 wps_monitor
 }
 
-dectbutton_action () {
-
-    local parsed=$(ubus call led.dect status)
-    json_load "$parsed"
-    json_get_var ledstate state
-
-    [ "$ledstate" == "ok" ] && {
-	printf "\n\ndect: regmode\n\n" > /dev/console
-	/usr/bin/dect -r > /dev/null
-    } || {
-	printf "\n\ndect radio: on\n\n" > /dev/console
-	uci set dect.dect.radio=1
-	uci commit
-	/usr/bin/dect -c
-    }
-}
-
 case "$ACTION" in
         add|register)
         [ "resetbutton" == "$INTERFACE" ] && {
@@ -45,8 +28,20 @@ case "$ACTION" in
 	        printf "\n\nWPS button is pressed\n\n" > /dev/console
 		wpsbutton_action
         }
-        [ "dectbutton" == "$INTERFACE" ] && {
-		dectbutton_action
+        [ "dectshort" == "$INTERFACE" ] && {
+		/usr/bin/dect -b 1 | logger -t hotplug -p user.info
+        }
+        [ "dectlong" == "$INTERFACE" ] && {
+		case $(uci get dect.dect.radio) in
+			auto|off)
+				uci set dect.dect.radio=on
+				;;
+			on)
+				uci set dect.dect.radio=off
+				;;
+		esac
+		/usr/bin/dect -c | logger -t hotplug -p user.info
+		/usr/bin/dect -b 2 | logger -t hotplug -p user.info
         }
         [ "infobutton" == "$INTERFACE" ] && {
                 printf "\n\nINFO button is pressed\n\n" > /dev/console
@@ -71,7 +66,7 @@ case "$ACTION" in
 	[ "pairbutton" == "$INTERFACE" ] && {
 		printf "\n\nPair button pressed\n\n" > /dev/console
 		wpsbutton_action
-		dectbutton_action
+		/usr/bin/dect -b 1 | logger -t hotplug -p user.info
 	}
 	[ "cancelbutton" == "$INTERFACE" ] && {
 		printf "\n\nCancel button pressed - not implemented!\n\n" > /dev/console
