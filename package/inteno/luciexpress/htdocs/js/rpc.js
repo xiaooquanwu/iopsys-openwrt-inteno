@@ -2,9 +2,12 @@
 
 (function(scope){
 	var RPC_HOST = ""; //(($config.rpc.host)?$config.rpc.host:"")
-	var RPC_SESSION_ID = "00000000000000000000000000000000"; 
 	var RPC_DEFAULT_SESSION_ID = "00000000000000000000000000000000"; 
+	var RPC_SESSION_ID = scope.localStorage.getItem("sid")||RPC_DEFAULT_SESSION_ID; 
+	
 	var gettext = function(text){ return text; }; 
+	
+	// TODO: figure out a way to automatically fill out all rpc calls
 	var default_calls = [
 		"session.access", 
 		"session.login", 
@@ -70,6 +73,68 @@
 		});
 		return deferred.promise(); 
 	}
+	
+	/*
+	function RPCSession(){
+		var saved_sid = scope.localStorage.getItem("sid");
+		var default_sid = "00000000000000000000000000000000";  
+		if(saved_sid){
+			//$rpc.$sid(saved_sid); 
+		} 
+		
+		this.sid = (saved_sid)?saved_sid:default_sid; 
+		
+		this.data = {}; 
+		this.isLoggedIn = function(){
+			return this._loggedIn; 
+		}, 
+		this.$init = function() {
+			var self = this; 
+			var deferred = $.Deferred(); 
+			console.log("Checking session key with server: "+saved_sid); 
+			$rpc.$authenticate().done(function(){
+				self._loggedIn = true; 
+				deferred.resolve(); 
+			}).fail(function err(result){
+				self.sid = default_sid; 
+				scope.localStorage.setItem("sid", self.sid); 
+				deferred.reject(); 
+			}); 
+			return deferred.promise(); 
+		};  
+		this.login = function(obj){
+			var self = this; 
+			var deferred  = $.Deferred(); 
+			// TODO: remove $session completely and use $rpc.$session instead!
+			$rpc.$login({
+				"username": obj.username, 
+				"password": obj.password
+			}).done(function(result){
+				self.sid = result.ubus_rpc_session;
+				self.data = result.data; 
+				self._loggedIn = true; 
+				scope.localStorage.setItem("sid", self.sid); 
+				//if(result && result.acls && result.acls.ubus) setupUbusRPC(result.acls.ubus); 
+				deferred.resolve(self.sid); 
+			}).fail(function(result){
+				deferred.reject(result); 
+			}); 
+			return deferred.promise(); 
+		}; 
+		this.logout = function(){
+			var deferred = $.Deferred(); 
+			var self = this; 
+			$rpc.session.destroy().done(function(){
+				self.data = {}; 
+				self._loggedIn = false; 
+				deferred.resolve(); 
+			}).fail(function(){
+				deferred.reject(); 
+			}); 
+			return deferred.promise(); 
+		}
+	}*/
+	
 	var rpc = {
 		$sid: function(sid){
 			if(sid) RPC_SESSION_ID = sid; 
@@ -78,13 +143,14 @@
 		$authenticate: function(){
 			var self = this; 
 			var deferred  = $.Deferred(); 
-			
+					
 			self.session.access({
 				"keys": ""
 			}).done(function(result){
-                if(!("username" in (result.data||{}))) {
+        if(!("username" in (result.data||{}))) {
 					console.log("Session: Not authenticated!");
 					RPC_SESSION_ID = RPC_DEFAULT_SESSION_ID; // reset sid to 000..
+					scope.localStorage.setItem("sid", RPC_SESSION_ID); 
 					deferred.reject(); 
 				} else {
 					self.$session = result; 
@@ -108,11 +174,24 @@
 			}).done(function(result){
 				RPC_SESSION_ID = result.ubus_rpc_session;
 				self.$session = result; 
+				scope.localStorage.setItem("sid", RPC_SESSION_ID); 
 				//JUCI.localStorage.setItem("sid", self.sid); 
 				//if(result && result.acls && result.acls.ubus) setupUbusRPC(result.acls.ubus); 
 				deferred.resolve(self.sid); 
 			}).fail(function(result){
 				deferred.reject(result); 
+			}); 
+			return deferred.promise(); 
+		},
+		$logout: function(){
+			var deferred = $.Deferred(); 
+			var self = this; 
+			self.session.destroy().done(function(){
+				RPC_SESSION_ID = RPC_DEFAULT_SESSION_ID; // reset sid to 000..
+				scope.localStorage.setItem("sid", RPC_SESSION_ID); 
+				deferred.resolve(); 
+			}).fail(function(){
+				deferred.reject(); 
 			}); 
 			return deferred.promise(); 
 		},

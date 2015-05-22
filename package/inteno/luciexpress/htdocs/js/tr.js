@@ -8,7 +8,7 @@ JUCI.app.factory('$tr', function(gettextCatalog) {
 });
 
 JUCI.app.factory('$languages', function($config, gettextCatalog, $localStorage) {
-	gettextCatalog.currentLanguage = $localStorage.getItem("language") || "se"; 
+	gettextCatalog.currentLanguage = $localStorage.getItem("language") || "en"; 
 	return {
 		getLanguages: function(){
 			return $config.languages.filter(function(lang){

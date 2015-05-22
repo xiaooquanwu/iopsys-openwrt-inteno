@@ -7,7 +7,7 @@ $juci.module("core")
 		replace: true
 	 };  
 })
-.controller("luciTopBarController", function($scope, $config, $session, $uci, $rpc, $window, $localStorage, $state, gettext){
+.controller("luciTopBarController", function($scope, $config, $uci, $rpc, $window, $localStorage, $state, gettext){
 	$uci.sync("system").done(function(){
 		var system = $uci.system["@system"]; 
 		if(system && system.length && system[0].displayname.value){
@@ -30,7 +30,7 @@ $juci.module("core")
 	$scope.onChangeMode = function(item){
 		var selected = item.id; 
 		if(selected == "logout") {
-			$session.logout().always(function(){
+			$rpc.$logout().always(function(){
 				$window.location.href="/"; 
 			}); 
 		} else {

@@ -82,7 +82,7 @@ JUCI.app.config(function ($stateProvider, $locationProvider, $compileProvider, $
 				templateUrl: "html/init.html"
 			}
 		}, 
-		onEnter: function($state, $stateParams, $config, $session, $rpc, $navigation, $location, $rootScope, $http){
+		onEnter: function($state, $stateParams, $config, $rpc, $navigation, $location, $rootScope, $http){
 			if($juci._initialized) {
 				$juci.redirect($stateParams.redirect || "overview"); 
 				return;
@@ -94,7 +94,7 @@ JUCI.app.config(function ($stateProvider, $locationProvider, $compileProvider, $
 	
 	$urlRouterProvider.otherwise("404"); 
 })
-.run(function($rootScope, $state, $session, gettextCatalog, $tr, gettext, $rpc, $config, $location, $navigation){
+.run(function($rootScope, $state, gettextCatalog, $tr, gettext, $rpc, $config, $location, $navigation){
 	console.log("RUN"); 
 	
 	// TODO: maybe use some other way to gather errors than root scope? 
@@ -108,10 +108,6 @@ JUCI.app.config(function ($stateProvider, $locationProvider, $compileProvider, $
 	gettextCatalog.debug = true;
 	
 	var path = $location.path().replace(/\//g, "").replace(/\./g, "_");  
-	if(!$session.isLoggedIn()){
-		path = "login"; 
-	}
-	if(path == "") path = "overview"; 
 	
 	// Generate states for all loaded pages
 	Object.keys($juci.plugins).map(function(pname){
@@ -156,8 +152,11 @@ JUCI.app.config(function ($stateProvider, $locationProvider, $compileProvider, $
 			}
 		}); 
 	}); 
-	
-	$juci.redirect(path); 
+	$rpc.$authenticate().done(function(){
+		$juci.redirect(path||"overview"); 
+	}).fail(function(){
+		$juci.redirect("login"); 
+	});  
 })
 
 // TODO: figure out how to avoid forward declarations of things we intend to override. 

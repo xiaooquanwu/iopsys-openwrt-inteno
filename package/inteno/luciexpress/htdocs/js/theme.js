@@ -47,7 +47,7 @@
 			var deferred = $.Deferred(); 
 			this.loadTheme(theme_id).done(function(theme){
 				$juci.config.theme = theme_id; 
-				$juci.localStorage.setItem("theme", theme_id); 
+				localStorage.setItem("theme", theme_id); 
 				var theme_root = "themes/"+theme_id; 
 				$("head link[data-theme-css]").remove(); 
 				if(theme.styles){
@@ -65,7 +65,7 @@
 			return deferred.promise(); 
 		};  
 		this.getCurrentTheme = function(){
-			return $juci.localStorage.getItem("theme"); 
+			return localStorage.getItem("theme"); 
 		}, 
 		this.getAvailableThemes = function(){
 			return this.themes; 

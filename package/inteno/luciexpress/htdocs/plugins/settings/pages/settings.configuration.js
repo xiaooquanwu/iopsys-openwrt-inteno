@@ -1,8 +1,8 @@
 //! Author: Martin K. Schröder <mkschreder.uk@gmail.com>
 
 JUCI.app
-.controller("SettingsConfigurationCtrl", function($scope, $rpc, $session){
-	$scope.sessionID = $session.sid; 
+.controller("SettingsConfigurationCtrl", function($scope, $rpc){
+	$scope.sessionID = $rpc.$sid(); 
 	$scope.resetPossible = 0; 
 	$rpc.luci2.system.reset_test().done(function(result){
 		if(result && result.supported) {

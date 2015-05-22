@@ -109,11 +109,10 @@
 })( jQuery);
 
 JUCI.app
-.controller("SettingsUpgradeCtrl", function($scope, $config, $uci, $rpc, $session){
-	$scope.sessionID = $session.sid;
+.controller("SettingsUpgradeCtrl", function($scope, $config, $uci, $rpc){
+	$scope.sessionID = $rpc.$sid();
 	$scope.uploadFilename = "/tmp/firmware.bin";
 	$scope.usbFileName = "()"; 
-	console.log("SID: "+$scope.sessionID);  
 	
 	$scope.config = $config; 
 	

@@ -30,6 +30,6 @@ $juci.module("core")
 		controllerAs: "ctrl"
 	}; 
 })
-.controller("luciLayoutNakedController", function($scope, $session){
+.controller("luciLayoutNakedController", function($scope){
 	
 }); 

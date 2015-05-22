@@ -34,6 +34,6 @@ $juci.module("core")
 		controllerAs: "ctrl"
 	}; 
 })
-.controller("luciLayoutWithSidebarController", function($scope, $session){
+.controller("luciLayoutWithSidebarController", function($scope){
 	
 }); 

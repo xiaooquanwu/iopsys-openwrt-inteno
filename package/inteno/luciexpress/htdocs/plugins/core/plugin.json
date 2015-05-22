@@ -13,7 +13,7 @@
 		"widgets/luci.nav",
 		"widgets/luci.navbar",
 		"widgets/luci.top_bar",
-		"widgets/luci.slider",
+		"widgets/luci.brightness",
 		"widgets/luci.expandable", 
 		"widgets/luci.errors",
 		"widgets/core.modal",

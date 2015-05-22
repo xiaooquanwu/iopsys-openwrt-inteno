@@ -1,7 +1,7 @@
 //! Author: Martin K. Schröder <mkschreder.uk@gmail.com>
 
 JUCI.app
-.controller("SettingsPasswordCtrl", function($scope, $rpc, $tr, $session, gettext){
+.controller("SettingsPasswordCtrl", function($scope, $rpc, $tr, gettext){
 	$scope.showPassword = 0; 
 	$scope.showModal = 0; 
 	$scope.username = $rpc.$session.data.username; 

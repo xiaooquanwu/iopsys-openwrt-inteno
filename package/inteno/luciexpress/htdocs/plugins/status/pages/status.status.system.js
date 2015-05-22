@@ -1,7 +1,7 @@
 //! Author: Martin K. Schröder <mkschreder.uk@gmail.com>
 
 JUCI.app
-.controller("StatusSystemPage", function ($scope, $session, $rootScope, $rpc, gettext, $tr) {
+.controller("StatusSystemPage", function ($scope, $rootScope, $rpc, gettext, $tr) {
 	$scope.systemStatusTbl = {
 		rows: [["", ""]]
 	}; 

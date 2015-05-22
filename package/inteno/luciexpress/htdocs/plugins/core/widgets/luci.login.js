@@ -33,15 +33,14 @@ JUCI.app
 			controllerAs: "ctrl"
 		}; 
 	})
-	.controller("LoginControl", function($scope, $session, $state, 
-		$window, $rpc, $location, $localStorage, gettext){
+	.controller("LoginControl", function($scope, $state, 
+		$window, $rpc, $localStorage, gettext){
 		$scope.form = { 
 			"username": "", 
 			"password": "", 
 			"remember": 0, 
 			"host": "" 
 		}; 
-		$scope.loggedIn = $session.isLoggedIn(); 
 		$scope.errors = []; 
 		$scope.showHost = 0; 
 		if($rpc.local){
@@ -56,6 +55,7 @@ JUCI.app
 			}); 
 		}
 		$scope.doLogin = function(){
+			var deferred = $.Deferred(); 
 			$scope.errors = []; 
 			async.series([
 				function(next){
@@ -70,30 +70,37 @@ JUCI.app
 					}
 				}, 
 				function(next){
-					$session.login({
+					$rpc.$login({
 						"username": $scope.form.username, 
 						"password": $scope.form.password, 
 						"remember": $scope.form.remember
 					}).done(function success(res){
 						//$state.go("home", {}, {reload: true});
 						$window.location.href="/"; 
+						deferred.resolve(); 
 					}).fail(function fail(res){
 						$scope.errors.push(res); 
 						$scope.errors.push(gettext("Please enter correct username and password!"));
 						$scope.$apply(); 
+						deferred.reject(); 
 					}); 
 				}
 			]); 
+			return deferred.promise(); 
 		}
 		$scope.doLogout = function(){
-			$session.logout().done(function(){
+			var deferred = $.Deferred(); 
+			$rpc.$logout().done(function(){
 				console.log("Logged out!"); 
 				//$state.go("home", {}, {reload: true});
 				$window.location.href="/"; 
+				deferred.resolve(); 
 			}).fail(function(){
-				alert("Error logging out!");
+				console.error("Error logging out!");
+				deferred.reject(); 
 			});  
+			return deferred.promise(); 
 		}
-
+		
 	}); 
 		

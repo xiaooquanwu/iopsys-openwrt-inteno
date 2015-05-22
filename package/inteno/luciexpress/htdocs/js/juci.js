@@ -129,7 +129,7 @@
 				});
 			}, 
 			function(next){
-				$juci.session.$init().done(function(){
+				$rpc.$authenticate().done(function(){
 					// here we get router info part of the config. It will allow us to 
 					// pick the correct theme in the init script. TODO: perhaps do this somewhere else? 
 					$rpc.router.info().done(function(info){
@@ -154,8 +154,8 @@
 				}; 
 				var $config = $juci.config; 
 				
-				$config.mode = $juci.localStorage.getItem("mode") || "basic"; 
-				$config.theme = $juci.localStorage.getItem("theme") || themes[$config.system.hardware] || "inteno-red"; 
+				$config.mode = localStorage.getItem("mode") || "basic"; 
+				$config.theme = localStorage.getItem("theme") || themes[$config.system.hardware] || "inteno-red"; 
 				
 				$config.theme = "vodafone";
 				
@@ -228,6 +228,12 @@
 		});
 		app.factory('$uci', function(){
 			return scope.UCI; 
-		}); 
+		}); 		
+		/*app.factory('$session', function() {
+			return scope.UBUS.$session; 
+		});*/
+		app.factory('$localStorage', function() {
+			return scope.localStorage; 
+		});
 	}
 })(typeof exports === 'undefined'? this : exports); 

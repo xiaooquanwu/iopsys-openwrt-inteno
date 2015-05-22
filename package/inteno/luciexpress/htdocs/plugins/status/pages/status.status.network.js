@@ -1,7 +1,7 @@
 //! Author: Martin K. Schröder <mkschreder.uk@gmail.com>
 
 JUCI.app
-.controller("StatusNetworkPage", function ($scope, $session, $rootScope, $rpc, gettext, $tr) {
+.controller("StatusNetworkPage", function ($scope, $rootScope, $rpc, gettext, $tr) {
 	$scope.systemConnectionsTbl = {
 		rows: [["", ""]]
 	}; 
