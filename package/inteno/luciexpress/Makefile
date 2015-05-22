@@ -40,6 +40,8 @@ define Package/luciexpress/description
 endef
 
 define Package/luciexpress/install
+	npm install 
+	grunt compile
 	$(INSTALL_DIR) $(1)/www
 	$(CP) ./htdocs/* $(1)/www/
 	$(INSTALL_DIR) $(1)/usr/share/rpcd
