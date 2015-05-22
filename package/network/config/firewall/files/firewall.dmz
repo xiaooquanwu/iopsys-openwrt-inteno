@@ -3,7 +3,7 @@
 . /lib/functions.sh
 
 local PORTS=""
-local dmzhost exclude_ports rule_ports redirect_ports
+local enabled dmzhost exclude_ports rule_ports redirect_ports
 
 port_from_section() {
 	local dest_port start_port stop_port cnt
@@ -27,8 +27,10 @@ port_from_section() {
 
 config_load firewall
 
+config_get enabled dmz enabled "1"
 config_get dmzhost dmz host
 
+[ "$enabled" == "1" ] || exit
 [ -n "$dmzhost" ] || exit
 
 config_get exclude_ports dmz exclude_ports

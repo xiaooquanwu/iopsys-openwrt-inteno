@@ -4,21 +4,19 @@ START=19
 USE_PROCD=1
 QUIET=""
 
-reindex_dmz()
+reindex_dmzhost()
 {
-	uci -q get firewall.dmz >/dev/null || return
+	uci -q get firewall.dmzhost >/dev/null || return
 
-	local enabled reload path host cfgno
-	enabled=$(uci -q get firewall.dmz.enabled)
+	local enabled reload path cfgno
+	enabled=$(uci -q get firewall.dmzhost.enabled)
 	[ "$enabled" == "0" ] && return
-	path=$(uci -q get firewall.dmz.path)
-	host=$(uci -q get firewall.dmz.host)
-	uci delete firewall.dmz
+	path=$(uci -q get firewall.dmzhost.path)
+	uci delete firewall.dmzhost
 	cfgno=$(uci -q add firewall include)
-	uci rename firewall.$cfgno=dmz
-	uci -q set firewall.dmz.path="$path"
-	uci -q set firewall.dmz.host="$host"
-	uci -q set firewall.dmz.reload="1"
+	uci rename firewall.$cfgno=dmzhost
+	uci -q set firewall.dmzhost.path="$path"
+	uci -q set firewall.dmzhost.reload="1"
 	uci commit firewall
 }
 
@@ -78,4 +76,4 @@ boot() {
 	start
 }
 
-reindex_dmz
+reindex_dmzhost
