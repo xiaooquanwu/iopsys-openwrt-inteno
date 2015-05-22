@@ -16,14 +16,14 @@ export PLATFORM_INCLUDE:=platforms/iopsys/build.mk
 export DATE:=$(shell date +%Y-%m-%d-%H-%M-%S)
 export LOGIN:=$(shell whoami)
 BASE_PKG_VERSION:=3.3.0
-PKG_RELEASE:=RC1
+PKG_RELEASE:=RC3
 PKG_VERSION:=$(BASE_PKG_VERSION)-$(PKG_RELEASE)_$(DATE)_$(LOGIN)
 export PKG_VERSION
 
 ###########################--RELEASE--################################
 
 PKG_SOURCE_URL:=ssh://git@iopsys.inteno.se/ice-client.git
-PKG_SOURCE_VERSION:=e5a21fda268be06e61d2b57a56791a568d4fa8c7
+PKG_SOURCE_VERSION:=e4fe162bf4660c06029b93414cf871476fb3378e
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(BASE_PKG_VERSION)
 PKG_SOURCE:=$(PKG_NAME)-$(BASE_PKG_VERSION)-$(PKG_RELEASE).tar.gz
 
@@ -956,6 +956,61 @@ fi
 exit 0
 endef
 
+# gigaset
+define Package/ice-client-gigaset
+  $(call Package/ice-client/Default)
+  TITLE:=gigaset
+  DEPENDS+= 
+endef
+
+define Package/ice-client-gigaset/description
+gigaset module for ice-client
+endef
+
+define Package/ice-client-gigaset/prerm
+#!/bin/sh
+if [ -z "$${IPKG_INSTROOT}" ]; then
+	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
+	PROC_ID=$$(cat /tmp/ice.pid)
+	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
+	if [ -n "$$PROC_EXISTS" ]; then
+	  read -t 1 <>/tmp/cfout
+	  echo "system moduleRemove topic=gigaset" > /tmp/cfin
+	fi
+fi
+exit 0
+endef
+
+define Package/ice-client-gigaset/preinst
+#!/bin/sh
+if [ -z "$${IPKG_INSTROOT}" ]; then
+	if [ ! -f "/tmp/ice.pid" ] ; then exit 0 ; fi
+	PROC_ID=$$(cat /tmp/ice.pid)
+	PROC_EXISTS=$$(/usr/bin/pgrep -P $${PROC_ID})
+	if [ -n "$$PROC_EXISTS" ]; then
+	  read -t 1 <>/tmp/cfout
+	  echo "system moduleRemove topic=gigaset" > /tmp/cfin
+	fi
+fi
+exit 0
+endef
+
+define Package/ice-client-gigaset/install
+	$(INSTALL_DIR) $(1)/usr/lib
+	$(CP) $(PKG_BUILD_DIR)/core/lib/gigasetService.so.1.0.1 $(1)/usr/lib
+endef
+
+define Package/ice-client-gigaset/postinst
+#!/bin/sh
+if [ -z "$${IPKG_INSTROOT}" ]; then
+    read -t 1 <>/tmp/cfout
+	if [ -f /tmp/ice.pid  ]; then
+		echo "system moduleAdd file=gigasetService.so.1.0.1" package="ice-client-gigaset" > /tmp/cfin
+	fi
+fi
+exit 0
+endef
+
 # This line executes the necessary commands to compile our program.
 # The above define directives specify all the information needed, but this
 # line calls BuildPackage which in turn actually uses this information to
@@ -975,3 +1030,4 @@ $(eval $(call BuildPackage,ice-client-rework))
 $(eval $(call BuildPackage,ice-client-sip))
 $(eval $(call BuildPackage,ice-client-monitor))
 $(eval $(call BuildPackage,ice-client-torrent))
+$(eval $(call BuildPackage,ice-client-gigaset))
