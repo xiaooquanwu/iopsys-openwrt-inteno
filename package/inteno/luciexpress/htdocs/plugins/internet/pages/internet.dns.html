@@ -13,7 +13,7 @@
 					</div>
 				</luci-config-line>
                 <luci-config-line indent title="{{'DNS address'|translate}}" ng-show="wan.peerdns.value == 1" ng-repeat="dns in wan.dns.value track by $index">
-                    <div class="col-md-12" >
+                    <div class="col-md-12">
                         <luci-input-ip-address ng-model="wan.dns.value[$index]" />
                     </div>
                 </luci-config-line>
@@ -24,7 +24,7 @@
 			<luci-config-info>{{ 'ddns.config.info' | translate }}</luci-config-info>
 			<luci-config-lines>
 				<luci-config-line title="{{'Dynamic DNS'|translate}}">
-					<switch ng-model="ddns.enabled" class="green" ng-change="onApply()"></switch>
+					<switch ng-model="ddns.enabled.value" class="green" ng-change="onApply()"></switch>
 				</luci-config-line>
                 <luci-config-line indent title="{{'Provider'|translate}}">
                     <ui-select ng-model="ddns.service_name"
@@ -39,13 +39,13 @@
                     </ui-select>
                 </luci-config-line>
                 <luci-config-line indent title="{{'Domain name'|translate}}">
-                    <input type="text" class="form-control" ng-model="ddns.domain" placeholder="{{'Add domain name'|translate}}" />
+                    <input type="text" class="form-control" ng-model="ddns.domain.value" placeholder="{{'Add domain name'|translate}}" />
                 </luci-config-line>
                 <luci-config-line indent title="{{'Username'|translate}}">
-                    <input type="text" class="form-control" ng-model="ddns.username" placeholder="{{'Add username'|translate}}" />
+                    <input type="text" class="form-control" ng-model="ddns.username.value" placeholder="{{'Add username'|translate}}" />
                 </luci-config-line>
                 <luci-config-line indent title="{{'Password'|translate}}">
-                    <input type="password" class="form-control" ng-model="ddns.password" placeholder="{{'Add password'|translate}}" />
+                    <input type="password" class="form-control" ng-model="ddns.password.value" placeholder="{{'Add password'|translate}}" />
                 </luci-config-line>
 			</luci-config-lines>
 		</luci-config-section>
