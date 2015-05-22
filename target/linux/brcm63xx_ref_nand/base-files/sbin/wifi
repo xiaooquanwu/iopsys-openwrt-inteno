@@ -535,8 +535,9 @@ setup_wifi_iface() {
 
 mbss_macddr() {
 	local device=$1
-	local idx=$2
-	local pether start rest
+	local mbssno=$2
+	local idx=$3
+	local pether start mid dend fend hend xend dec
 
 	pether=$(wlctl -i $device perm_etheraddr | awk '{print$2}')
 
@@ -547,18 +548,23 @@ mbss_macddr() {
 		start=$(printf "%d\n" 0x$start)
 		start=$((start+2))
 		start=$(printf "%0.2x\n" "$start")
-		rest=$(echo $pether | cut -d':' -f2,3,4,5,6)
-		rest=${rest//:}
-		rest=$(printf "%d\n" 0x$rest)
-		rest=$((rest+$idx))
-		rest=$(printf "%0.10x\n" "$rest" | sed -e 's/../&:/g' -e 's/:$//')
-		echo "$start:$rest"
+		mid=$(echo $pether | cut -d':' -f2,3,4,5)
+		xend=$(echo $pether | cut -d':' -f6)
+		fend=$(printf "%d\n" 0x$xend)
+		dend=$((fend+$idx))
+		hend=$(printf "%0.2x\n" "$dend")
+		if [ "${hend:0:1}" != "${xend:0:1}" ]; then
+			dec=$((mbssno-$idx))
+			dend=$((fend-$dec))
+			hend=$(printf "%0.2x\n" "$dend")
+		fi
+		echo "$start:$mid:$hend"
 	fi
 }
 
 create_vif() {
 	local vif="$1"
-	local device iface network mbssmac
+	local device iface network mbssmac mbssnum
 	config_get device "$vif" device
 	config_get network "$vif" network
 
@@ -574,7 +580,8 @@ create_vif() {
 		iface="$device"."$_cno"
 	fi
 
-	mbssmac="$(mbss_macddr $device $_cno | tr '[a-z]' '[A-Z]')"
+	mbssnum=$(uci show wireless | grep "wifi-iface" | grep -c "device=$device")
+	mbssmac="$(mbss_macddr $device $mbssnum $_cno | tr '[a-z]' '[A-Z]')"
 
 	wlctl -i $device bss -C $_cno down
 	wlctl -i $device ssid -C $_cno "Inteno"
@@ -822,11 +829,15 @@ wdev_channel_settings() {
 
 wdev_rate_settings() {
 	local device=$1
-	local rateset rate
+	local hwmode rateset rate
+	config_get hwmode "$device" hwmode "auto"
 	config_get rateset "$device" rateset "default"
 	config_get rate "$device" rate "0"
 
-	wlctl -i $device rateset $rateset
+	case "$hwmode" in
+		*b) wlctl -i $device rateset default ;;
+		*) wlctl -i $device rateset 6b 24 54 ;;
+	esac
 	wlctl -i $device rate $rate
 }
 
@@ -962,16 +973,17 @@ setup_wifi_device() {
 		wdev_antenna_settings $device
 		wdev_wds_settings $device
 	fi
+
 	wdev_bwcap_settings $device
 	wdev_hwmode_settings $device
 	wdev_channel_settings $device
-	wdev_rate_settings $device
 	wdev_rifs_settings $device
 	wdev_wme_settings $device
 	wdev_tweak_settings $device
 	wdev_power_settings $device
 	wdev_assoc_settings $device
 	wdev_apsta_settings $device
+	wdev_rate_settings $device
 
 	# setup virtual wireless interfaces
 	config_foreach setup_wifi_iface wifi-iface "$device"
