@@ -13,7 +13,7 @@ config dnsmasq
 	option authoritative '1'
 	option readethers '1'
 	option leasefile '/tmp/dhcp.leases'
-	option resolvfile '/tmp/resolv.conf.default'
+	option resolvfile '/tmp/resolv.conf.auto'
 
 config dhcp 'lan'
 	option interface 'lan'
