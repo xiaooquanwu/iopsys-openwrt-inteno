@@ -17,8 +17,8 @@
 				<luci-config-line title="{{'Hostname'|translate}}">
 					<input class="form-control" ng-model="interface.hostname.value" ></input>
 				</luci-config-line>
-				<luci-config-line title="{{'IP Type'|translate}}">
-					<luci-select ng-model="interface.proto.value" ng-items="['static', 'dhcp']" placeholder="Pick type of IP"></luci-select>
+				<luci-config-line title="{{'DHCP'|translate}}">
+					<switch ng-model="dhcp.ignore.value" class="green" inverted></switch>
 				</luci-config-line>
 				<luci-config-line title="{{'IP Address'|translate}}" ng-show="interface.proto.value == 'static'">
 					<input class="form-control" ng-model="interface.ipaddr.value" ></input>

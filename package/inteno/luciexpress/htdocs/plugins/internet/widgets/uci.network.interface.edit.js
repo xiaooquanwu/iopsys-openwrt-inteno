@@ -13,6 +13,12 @@ JUCI.app
 }).controller("uciNetworkInterfaceEdit", function($scope, $uci, $rpc, $log){
 	$scope.expanded = true; 
 	$scope.$watch("interface", function(interface){
-		
+		$uci.sync("dhcp").done(function(){
+			if($uci.dhcp && interface[".name"] in $uci.dhcp){
+				//alert($scope.interface[".name"]); 
+				$scope.dhcp = $uci.dhcp[interface[".name"] ]; 
+				$scope.$apply(); 
+			}
+		}); 
 	}); 
 }); 

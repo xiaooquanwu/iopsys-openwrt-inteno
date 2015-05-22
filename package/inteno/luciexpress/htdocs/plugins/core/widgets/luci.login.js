@@ -93,7 +93,7 @@ JUCI.app
 			$rpc.$logout().done(function(){
 				console.log("Logged out!"); 
 				//$state.go("home", {}, {reload: true});
-				$window.location.href="/"; 
+				$juci.redirect("overview"); //$window.location.href="/"; 
 				deferred.resolve(); 
 			}).fail(function(){
 				console.error("Error logging out!");

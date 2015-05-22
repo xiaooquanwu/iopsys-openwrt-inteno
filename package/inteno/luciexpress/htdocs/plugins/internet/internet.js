@@ -25,3 +25,12 @@ UCI.network.$registerSectionType("interface", {
 	"peerdns": 				{ dvalue: false, type: String }, 
 	"dns": 						{ dvalue: [], type: Array }
 }); 
+
+UCI.$registerConfig("dhcp"); 
+UCI.dhcp.$registerSectionType("dhcp", {
+	"interface": 		{ dvalue: "", type: String }, 
+	"start": 				{ dvalue: 0, type: Number }, 
+	"limit": 				{ dvalue: 0, type: Number }, 
+	"leasetime": 		{ dvalue: 60, type: Number },
+	"ignore": 			{ dvalue: false, type: Boolean }
+}); 

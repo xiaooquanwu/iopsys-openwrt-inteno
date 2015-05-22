@@ -2,6 +2,7 @@ module.exports = function(grunt){
 	var glob = require("glob"); 
 	var async = require("async"); 
 	var fs = require("fs"); 
+	var uglifyjs = require("uglify-js"); 
 	
 	grunt.loadNpmTasks('grunt-angular-gettext'); 
 	grunt.initConfig({
@@ -91,7 +92,7 @@ module.exports = function(grunt){
 		spawn('mocha', files.concat(['--host', grunt.option("host"), "--user", grunt.option("user"), "--pass", grunt.option("pass")]), { customFds: [0,1,2] })
 		.on("exit", function(code){
 			if(code != 0 && !grunt.option("ignore-errors")) throw new Error("A test has failed. To run all tests without exiting, specify --ignore-errors option"); 
-			else next(); 
+			else done(); 
 		}); 
 		console.log(files); 
 	});
@@ -129,46 +130,53 @@ module.exports = function(grunt){
 			"htdocs/js/theme.js",
 			"htdocs/js/timeout.js"
 		]; 
-
+		var cssfiles = [
+			"htdocs/css/normalize.css",
+			"htdocs/lib/css/bootstrap.min.css",
+			"htdocs/lib/css/bootstrap-select.min.css",
+			"htdocs/lib/css/font-awesome.min.css",
+			"htdocs/lib/css/angular-ui.min.css",
+			"htdocs/lib/css/select.min.css",
+			"htdocs/lib/css/angular-ui-switch.min.css",
+			"htdocs/lib/css/awesome-bootstrap-checkbox.css",
+			"htdocs/css/nga.min.css",
+			"htdocs/css/app.css",
+			"htdocs/themes/vodafone/css/theme.css",
+			"htdocs/themes/vodafone/css/bootstrap.min.css"
+		]; 
+		
+		var pluginfiles = grunt.file.expand(["htdocs/plugins/**/plugin.json"]); 
 		var otherfiles = grunt.file.expand(["./htdocs/plugins/**/*.js", "./htdocs/themes/vodafone/**/*.js"]).filter(function(x){
 			return !x.match(/.*\/test-.*\.js/) && !x.match(/.*\.test\.js/); 
 		}); 
 		var htmlfiles = grunt.file.expand(["htdocs/**/*.html"]); 
-		
+		var css = cssfiles.map(function(file){ 
+			return String(fs.readFileSync(file)); 
+		}).join("\n"); 
 		var all = libfiles.concat(appfiles).concat(otherfiles); 
-		var templates = {}; 
+		var templates = {}; var plugins = {}; 
 		htmlfiles.map(function(name){
 			templates[name.replace("htdocs/", "")] = String(fs.readFileSync(name)); 
 		}); 
-		fs.writeFileSync("htdocs/__all.js", "var JUCI_COMPILED = 1; var JUCI_TEMPLATES = "+JSON.stringify(templates)+";"+all.map(function(name){ return fs.readFileSync(name); }).join("\n")); // REALLY? 
+		pluginfiles.map(function(name){
+			plugins[name.replace(/^htdocs\//, "")] = JSON.parse(String(fs.readFileSync(name))); 
+		}); 
+		fs.writeFileSync("htdocs/__all.css", css); 
+		// TODO: really do not do it in memory!
+		fs.writeFileSync("htdocs/__all.js", 
+			//uglifyjs.minify(
+				"var JUCI_COMPILED = 1; var JUCI_TEMPLATES = "+
+				JSON.stringify(templates)+";"+
+				"var JUCI_PLUGINS = "+JSON.stringify(plugins)+";"+
+				all.map(function(name){ 
+					return fs.readFileSync(name); 
+				})
+				.join(";\n")
+			//, {fromString: true }).code
+		); 
+		
 		//fs.writeFileSync("htdocs/__templates.js", JSON.stringify(templates)); 
 	}); 
 	grunt.registerTask('default', ['nggettext_extract', 'nggettext_compile', "extract_titles", "compile_pot"]);
 	
 }
-/*
-
-LIBFILES=(htdocs/lib/js/async.js htdocs/lib/js/js-schema.min.js htdocs/lib/js/require.js htdocs/lib/js/jquery.min.js htdocs/lib/js/angular.min.js htdocs/lib/js/angular-ui.min.js htdocs/lib/js/angular-ui-router.min.js htdocs/lib/js/angular-gettext.min.js htdocs/lib/js/bootstrap-select.min.js htdocs/lib/js/select.min.js htdocs/lib/js/angular-animate.min.js htdocs/lib/js/angular-ui-bootstrap-luci.min.js htdocs/lib/js/jquery-jsonrpc.js htdocs/lib/js/translations.js htdocs/lib/js/bootstrap.min.js htdocs/lib/js/angular-ui-switch.min.js htdocs/lib/js/angular-modal-service.min.js htdocs/lib/js/angular-checklist-model.js)
-PLUGINFILES=$(find htdocs/plugins -type f -name "*js" | grep -v "test-" | grep -v ".test.js" | grep -v ".notest.js")
-THEMEFILES=$(find htdocs/themes -type f -name "*js" | grep -v "test-" | grep -v ".test.js" | grep -v ".notest.js")
-COREFILES=(htdocs/js/rpc.js htdocs/js/uci.js htdocs/js/juci.js htdocs/js/app.js htdocs/js/localStorage.js htdocs/js/config.js htdocs/js/navigation.js htdocs/js/status.js htdocs/js/session.js htdocs/js/tr.js htdocs/js/theme.js htdocs/js/timeout.js)
-FILES=("${LIBFILES[@]}" "${COREFILES[@]}" "${PLUGINFILES[@]}" "${THEMEFILES[@]}"); 
-
-echo "var JUCI_COMPILED = 1;" > htdocs/__all.js
-for file in ${FILES[@]}; do
-	echo "FILE: $file"; 
-	echo ";" >> htdocs/__all.js; 
-	cat $file >> htdocs/__all.js; 
-done; 
-
-HTMLFILES=$(find htdocs -type f -name "*html"|grep -v "index.html" | grep -v "__all.html")
-
-echo "" > htdocs/__all.html
-for file in ${HTMLFILES[@]}; do
-	file=$(echo $file | sed 's/htdocs\///gi')
-	echo "HTML: $file"; 
-	echo "<script type='text/ng-template' id='/$file'>" >> htdocs/__all.html; 
-	cat htdocs/$file >> htdocs/__all.html; 
-	echo '</script>' >> htdocs/__all.html;
-done; 
-*/
