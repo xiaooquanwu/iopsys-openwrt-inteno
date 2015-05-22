@@ -1,7 +1,7 @@
 //! Author: Martin K. Schröder <mkschreder.uk@gmail.com>
 
 // TODO: make this automatic
-var JUCI_COMPILED = 0; 
+//var JUCI_COMPILED = 0; 
 
 $.jsonRPC.setup({
   endPoint: '/ubus',
@@ -41,7 +41,7 @@ Object.assign = Object.assign || function (target, source) {
 	return to;
 };
 
-JUCI.app.config(function ($stateProvider, $locationProvider, $compileProvider, $urlRouterProvider, $controllerProvider, $provide) {
+JUCI.app.config(function ($stateProvider, $locationProvider, $compileProvider, $urlRouterProvider, $controllerProvider, $templateCacheProvider, $provide) {
 	console.log("CONF"); 
 	//$locationProvider.otherwise({ redirectTo: "/" });
 	$locationProvider.hashPrefix('!');
@@ -91,11 +91,30 @@ JUCI.app.config(function ($stateProvider, $locationProvider, $compileProvider, $
 			}
 		},
 	}); 
-	
 	$urlRouterProvider.otherwise("404"); 
 })
-.run(function($rootScope, $state, gettextCatalog, $tr, gettext, $rpc, $config, $location, $navigation){
+.run(function($templateCache){
+	var _get = $templateCache.get; 
+	var _put = $templateCache.put; 
+	$templateCache.get = function(name){
+		name = name.replace(/\/\//g, "/").replace(/^\//, ""); 
+		//console.log("Get template '"+name+"'"); 
+		return _get.call($templateCache, name); 
+	}
+	$templateCache.put = function(name, value){
+		name = name.replace(/\/\//g, "/").replace(/^\//, ""); 
+		//console.log("Put template '"+name+"'"); 
+		return _put.call($templateCache, name, value); 
+	}
+})
+.run(function($rootScope, $state, gettextCatalog, $tr, gettext, $rpc, $config, $location, $navigation, $templateCache){
 	console.log("RUN"); 
+	
+	if(JUCI_TEMPLATES !== undefined){
+		Object.keys(JUCI_TEMPLATES).map(function(x){
+			$templateCache.put(x, JUCI_TEMPLATES[x]); 
+		}); 
+	}
 	
 	// TODO: maybe use some other way to gather errors than root scope? 
 	$rootScope.errors = []; 
