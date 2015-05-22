@@ -16,14 +16,14 @@ export PLATFORM_INCLUDE:=platforms/iopsys/build.mk
 export DATE:=$(shell date +%Y-%m-%d-%H-%M-%S)
 export LOGIN:=$(shell whoami)
 BASE_PKG_VERSION:=3.3.0
-PKG_RELEASE:=RC2
+PKG_RELEASE:=RC3
 PKG_VERSION:=$(BASE_PKG_VERSION)-$(PKG_RELEASE)_$(DATE)_$(LOGIN)
 export PKG_VERSION
 
 ###########################--RELEASE--################################
 
 PKG_SOURCE_URL:=ssh://git@iopsys.inteno.se/ice-client.git
-PKG_SOURCE_VERSION:=6aca84bb390b0854b6753bb0c33d0e10608d038d
+PKG_SOURCE_VERSION:=e4fe162bf4660c06029b93414cf871476fb3378e
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(BASE_PKG_VERSION)
 PKG_SOURCE:=$(PKG_NAME)-$(BASE_PKG_VERSION)-$(PKG_RELEASE).tar.gz
 
@@ -436,7 +436,7 @@ endef
 define Package/ice-client-logreader
   $(call Package/ice-client/Default)
   TITLE:=LogReader
-  DEPENDS+=
+  DEPENDS+= +collectd
 endef
 
 define Package/ice-client-logreader/description
