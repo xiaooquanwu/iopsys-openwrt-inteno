@@ -3,8 +3,11 @@
 		<luci-config-section>
 			<luci-config-heading>{{ 'Ringing Schedule' | translate }}</luci-config-heading>
 			<luci-config-info>{{ 'phone.schedule.info' | translate }}</luci-config-info>
+			<p>This page is not done yet. Waiting for voice API. </p>
 			<luci-config-lines>
-				<luci-config-line title="{{'Ringing Schedule'|translate}}"><switch id="enabled" name="enabled" ng-model="settings.scheduling.value" class="green"></switch></luci-config-line>
+				<luci-config-line title="{{'Ringing Schedule'|translate}}">
+					<switch id="enabled" name="enabled" ng-model="settings.scheduling.value" class="green"></switch>
+				</luci-config-line>
 			</luci-config-lines>
 			<luci-config-lines ng-show="settings.scheduling.value">
 				TODO

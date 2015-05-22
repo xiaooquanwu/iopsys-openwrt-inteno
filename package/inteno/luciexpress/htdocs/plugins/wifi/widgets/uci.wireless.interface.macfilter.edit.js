@@ -120,6 +120,7 @@ $juci.module("wifi")
 				if(x.checked) {
 					if($scope.maclist.filter(function(a) { return a.macaddr == x.client.macaddr; }).length == 0){
 						$scope.maclist.push({ hostname: x.client.hostname, macaddr: x.client.macaddr }); 
+						$scope.rebuildMacList(); 
 					} else {
 						console.log("MAC address "+x.client.macaddr+" is already in the list!"); 
 					}

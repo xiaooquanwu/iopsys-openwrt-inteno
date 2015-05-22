@@ -3,7 +3,7 @@ $juci.module("internet")
 	$scope.config = $config; 
 	$scope.wan = {}; 
 	
-	async.parallel([
+	async.series([
 		function(next){
 			$uci.sync("firewall").done(function(){
 				
@@ -11,7 +11,7 @@ $juci.module("internet")
 		}, 
 		function(next){ 
 			if($uci.firewall.dmz == undefined){
-				$uci.firewall.create({".type": "dmz", ".name": "dmz"}).done(function(){
+				$uci.firewall.create({".type": "dmz", ".name": "dmz"}).done(function(dmz){
 					next(); 
 				}).fail(function(){
 					throw new Error("Could not create required dmz section in config firewall!"); 

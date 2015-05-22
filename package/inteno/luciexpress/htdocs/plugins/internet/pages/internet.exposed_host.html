@@ -2,8 +2,7 @@
 	<div ng-controller="InternetExHostPageCtrl">
 		<luci-config>
 			<luci-config-heading>{{'Exposed Host'|translate}}</luci-config-heading>
-			<p translate>Exposed host function is not available (dmz section missing in firewall!)</p>
-			<luci-config-section ng-show="available">
+			<luci-config-section >
 				<luci-config-info>{{'internet.exposed_host.info'|translate}}</luci-config-info>
 				<luci-config-lines>
 					<luci-config-line title="{{'Exposed Host Function'|translate}}">

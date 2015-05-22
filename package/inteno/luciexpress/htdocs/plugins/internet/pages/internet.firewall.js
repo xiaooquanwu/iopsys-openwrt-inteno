@@ -7,7 +7,7 @@ $juci.module("internet")
 		$scope.$apply(); 
 	}); 
 	$scope.onFirewallToggle = function(){
-		if(!$scope.firewallSwitchState) {
+		if($scope.firewallSwitchState) {
 			$uci.firewall["@zone"].map(function(zone){
 				if(zone.name.value == "wan"){
 					zone.input.value = "ACCEPT"; 

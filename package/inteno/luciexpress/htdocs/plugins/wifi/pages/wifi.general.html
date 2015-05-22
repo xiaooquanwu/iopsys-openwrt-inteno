@@ -7,7 +7,7 @@
 		<luci-config-section>
 			<luci-config-lines>
 				<luci-config-line title="{{'Wifi Network'|translate}}">
-					<switch ng-model="status.wlan.value" class="green" ng-change="onApply()"></switch>
+					<switch ng-model="status.wlan.value" class="green" ng-change="onApply"></switch>
 				</luci-config-line>
 				<luci-config-line ng-show="boardpanel" title="{{'Enable WiFi On/Off button on EasyBox'|translate}}">
 					<switch ng-model="boardpanel.settings.wifibutton.value" class="green" ng-change="onApply"></switch>

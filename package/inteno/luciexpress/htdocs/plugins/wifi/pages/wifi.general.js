@@ -35,4 +35,8 @@ JUCI.app
 			next(); 
 		}
 	]); 
+	// for automatically saving switch state
+	$scope.onApply = function(){
+		$uci.save(); 
+	}
 }); 
