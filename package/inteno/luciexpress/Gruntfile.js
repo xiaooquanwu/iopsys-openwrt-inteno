@@ -84,7 +84,7 @@ module.exports = function(grunt){
 		}); 
 	}); 
 	grunt.registerTask("test", "Run all tests using mocha", function(){
-		var files = grunt.file.expand(["./tests/test-*.js", "./htdocs/**/test-*.js"]); 
+		var files = grunt.file.expand(["./tests/test-*.js", "./htdocs/**/test-*.js", "./htdocs/**/*.test.js"]); 
 		console.log("Will run tests: "+files); 
 		var done = this.async(); 
 		var spawn = require('child_process').spawn;

@@ -1,5 +1,5 @@
 #!javascript
-global.JUCI = require("../../../../tests/lib-juci"); 
+require("../../../../tests/lib-juci"); 
 require("../wifi"); 
 
 var completed = {
@@ -16,10 +16,6 @@ describe("Wireless", function(){
 	}); 
 	it("should have wireless config", function(){
 		expect($uci.wireless).to.be.an(Object); 
-	}); 
-	it("should have broadcom config", function(){
-		expect($uci.broadcom).to.be.an(Object); 
-		expect($uci.broadcom["@all"]).not.to.be.empty(); 
 	}); 
 	it("should have hosts config", function(){
 		expect($uci.hosts).to.be.ok(); 

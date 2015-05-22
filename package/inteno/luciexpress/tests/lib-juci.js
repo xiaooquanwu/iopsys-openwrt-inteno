@@ -59,7 +59,8 @@ function JUCIMock(){
 			console.log("JUCI.app.controller("+name+")"); 
 			_controllers[name] = fn; 
 			return self.app; 
-		}
+		}, 
+		config: function(){}
 	}
 	function LocalStorageMock(){
 		var _items = {}; 

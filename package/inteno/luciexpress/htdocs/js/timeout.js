@@ -13,21 +13,19 @@
 		repeat: function(name, t, fn){
 			function _onTimeout(){
 				fn(function next(ret, err){
-					if(ret){
-						clearTimeout(i); 
-						delete _timeouts[name]; 
-					} else {
-						// restart the timeout if it did not exit
-						setTimeout(_onTimeout, t); 
+					if(!ret) {
+						if(!_timeouts[name] || !_timeouts[name].cleared)
+							_timeouts[name] = setTimeout(_onTimeout, t); 
 					}
 				}); 
 			}
-			var i = setTimeout(_onTimeout, t); _onTimeout(); 
-			_timeouts[name] = i; 
+			//_timeouts[name] = setTimeout(_onTimeout, t); 
+			_onTimeout(); 
 		}, 
 		$clearAll: function(){
 			Object.keys(_timeouts).map(function(t){ 
-				clearTimeout(t); 
+				clearTimeout(_timeouts[t]); 
+				_timeouts[t].cleared = true; 
 			});
 		} 
 	}; 

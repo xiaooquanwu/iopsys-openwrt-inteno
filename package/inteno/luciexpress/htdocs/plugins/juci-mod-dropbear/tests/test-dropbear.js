@@ -1,4 +1,4 @@
-global.JUCI = require("../../../../tests/lib-juci"); 
+require("../../../../tests/lib-juci"); 
 require("../dropbear"); 
 
 describe("Dropbear", function(){
