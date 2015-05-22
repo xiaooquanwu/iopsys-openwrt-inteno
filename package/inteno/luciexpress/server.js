@@ -50,12 +50,23 @@ var rpc_calls = {
 	}*/
 }; 
 
+var _GRUNT_RECOMPILE = 1; 
+
 // RPC end point
 app.post('/ubus', function(req, res) {
   res.header('Content-Type', 'application/json');
   
   var data = req.body, err = null, rpcMethod;
-  
+  var spawn = require('child_process').spawn;
+		
+  // TODO: find a better way to do this and get rid of this ugly hack
+	if(_GRUNT_RECOMPILE){
+		_GRUNT_RECOMPILE = 0; setTimeout(function(){ _GRUNT_RECOMPILE = 1; }, 10000); 
+		spawn('grunt', ["compile"], { customFds: [0,1,2] })
+		.on("exit", function(code){
+			console.log("Recompiled gui, code: "+code); 
+		}); 
+	}
 	
 	if (!err && data.jsonrpc !== '2.0') {
 		onError({
