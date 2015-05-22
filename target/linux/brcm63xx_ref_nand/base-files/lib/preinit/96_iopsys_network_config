@@ -18,6 +18,13 @@ config interface 'lan'
 	option ipaddr '192.168.1.1'
 	option netmask '255.255.255.0'
 
+config interface 'guest'
+	option is_lan '1'
+	option type 'bridge'
+	option proto 'static'
+	option ipaddr '192.168.10.1'
+	option netmask '255.255.255.0'
+
 config interface 'wan'
 	option type 'anywan'
 	option proto 'dhcp'

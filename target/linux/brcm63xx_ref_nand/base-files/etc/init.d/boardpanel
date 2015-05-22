@@ -11,7 +11,7 @@ service_triggers()
 start_service() {
 	local status_led power_led power_led_br
 
-	config_load easybox
+	config_load boardpanel
 	config_get_bool status_led "settings" status_led
 	config_get_bool power_led "settings" power_led
 
