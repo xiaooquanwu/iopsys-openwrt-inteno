@@ -102,6 +102,7 @@ config rule
 	option hidden		1
 
 config dmz dmz
+	option enabled '1'
 	option exclude_ports '5060 7547'
 
 # include a file with users custom iptables rules
@@ -115,7 +116,7 @@ config include
 	option reload 1
 
 # include a file with rules for DMZ Host
-config include dmz
+config include dmzhost
 	option path /etc/firewall.dmz
 	option reload 1
 

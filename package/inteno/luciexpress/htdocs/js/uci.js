@@ -132,7 +132,7 @@
 				"family": 			{ dvalue: "", type: String }, 
 				"reload": 			{ dvalue: true, type: Boolean }
 			}, 
-			"dmzhost": {
+			"dmz": {
 				"enabled": 			{ dvalue: false, type: Boolean }, 
 				"host": 				{ dvalue: "", type: String } // TODO: change to ip address
 			}, 
