@@ -18,12 +18,6 @@ case $name in
     broadband|ethernet|wireless|tel*|voice|video|power)
 	logger -s "ledctrl: [$name] is not a valid led name"
 	;;
-#	broadband) db get hw.board.lednames | grep -iq broadband && name="dsl" || exit ;;
-#	ethernet) name="lan" ;;
-#	wireless) name="wifi" ;;
-#	tel*|voice) name="voice1" ;;
-#	video) name="tv" ;;
-#	power) name="status" ;;
 esac
 
 case $status in
@@ -32,9 +26,6 @@ case $status in
 	logger -s "ledctrl: status [$status] on [$name] not implemented anymore (off, ok, eok, notice, alert, error)"
 	
 	;;
-#	on) status="ok" ;;
-#	fail) status="error" ;;
-#	blink) status="notice" ;;
 esac
 
 ubus call led.$name set '{"state":"'$status'"}' &
