@@ -14,6 +14,13 @@ config zone
 	option forward		ACCEPT
 
 config zone
+	option name	     guest
+	option network	  'guest'
+	option input	    REJECT
+	option forward	  REJECT
+	option output	   ACCEPT
+
+config zone
 	option name		wan
 	list   network		'wan'
 	list   network		'wan6'
@@ -26,6 +33,25 @@ config zone
 config forwarding
 	option src		lan
 	option dest		wan
+
+config forwarding
+	option src guest
+	option dest wan
+
+config rule
+	option name 'Allow DNS Queries'
+	option src 'guest'
+	option dest_port '53'
+	option proto 'tcpudp'
+	option target 'ACCEPT'
+
+config rule
+	option name 'Allow DHCP request'
+	option src 'guest'
+	option src_port '67-68'
+	option dest_port '67-68'
+	option proto 'udp'
+	option target 'ACCEPT'
 
 # We need to accept udp packets on port 68,
 # see https://dev.openwrt.org/ticket/4108
@@ -102,7 +128,7 @@ config rule
 	option hidden		1
 
 config dmz dmz
-	option enabled '1'
+	option enabled '0'
 	option exclude_ports '5060 7547'
 
 # include a file with users custom iptables rules
