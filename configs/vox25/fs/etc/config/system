@@ -1,0 +1,20 @@
+
+config 'system'
+	option 'timezone' 'CET-1CEST,M3.5.0,M10.5.0/3'
+	option 'zonename' 'Europe/Stockholm'
+	option 'conloglevel' '7'
+	option 'cronloglevel' '8'
+	option 'hostname' 'Inteno'
+	option log_size 200
+
+config 'rdate'
+	option 'interface' 'wan'
+
+config 'timeserver' 'ntp'
+	option enable_server 1
+	list server     ntp1.sth.netnod.se
+	list server     ntp1.gbg.netnod.se
+
+config upgrade upgrade
+	option fw_upload_path '/rom/root/firmware.bin'
+
