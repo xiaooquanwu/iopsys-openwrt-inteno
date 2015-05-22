@@ -7,11 +7,11 @@
 				<luci-config-info>{{'internet.exposed_host.info'|translate}}</luci-config-info>
 				<luci-config-lines>
 					<luci-config-line title="{{'Exposed Host Function'|translate}}">
-						<switch id="enabled" name="enabled" ng-model="firewall.dmzhost.enabled.value" class="green"></switch>
+						<switch id="enabled" name="enabled" ng-model="firewall.dmz.enabled.value" class="green"></switch>
 					</luci-config-line>
 				</luci-config-lines>
 			</luci-config-section>
-			<luci-config-section ng-show="firewall.dmzhost.enabled.value">
+			<luci-config-section ng-show="firewall.dmz.enabled.value">
 				<div class="alert alert-danger">
 					<p translate><span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span> Warning: By using the exposed host function you bypass the firewall of your {{config.friendly_name}}. Please make sure that your computer is protected against attacks from Internet. The following ports will not be forwarded: {{ nonforwardedPorts || 'None'}}.</p>
 				</div>
@@ -21,7 +21,7 @@
 						<strong>{{wan.ip}}</strong>
 					</luci-config-line>
 					<luci-config-line title="{{'Local IP Address'|translate}}">
-						<input type="text" class="form-control" placeholder="{{'ip.address.label'|translate}}" ng-model="firewall.dmzhost.host.value"/>
+						<input type="text" class="form-control" placeholder="{{'ip.address.label'|translate}}" ng-model="firewall.dmz.host.value"/>
 					</luci-config-line>
 				</luci-config-lines>
 			<luci-config-apply></luci-config-apply>

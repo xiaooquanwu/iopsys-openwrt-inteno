@@ -476,7 +476,7 @@
 			var self = this; 
 			if(!(".type" in item)) throw new Error("Missing '.type' parameter!"); 
 			var type = section_types[self[".name"]][item[".type"]]; 
-			if(!type) throw Error("Trying to create section of unrecognized type!"); 
+			if(!type) throw Error("Trying to create section of unrecognized type ("+self[".name"]+"."+item[".type"]+")"); 
 			
 			// TODO: validate values!
 			var values = {}; 

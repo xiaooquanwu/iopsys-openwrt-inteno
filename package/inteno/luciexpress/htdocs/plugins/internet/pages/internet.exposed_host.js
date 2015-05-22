@@ -10,11 +10,11 @@ $juci.module("internet")
 			}).always(function(){ next(); }); 
 		}, 
 		function(next){ 
-			if($uci.firewall.dmzhost == undefined){
-				$uci.firewall.create({".type": "dmzhost", ".name": "dmzhost"}).done(function(){
+			if($uci.firewall.dmz == undefined){
+				$uci.firewall.create({".type": "dmz", ".name": "dmz"}).done(function(){
 					next(); 
 				}).fail(function(){
-					throw new Error("Could not create required dmzhost section in config firewall!"); 
+					throw new Error("Could not create required dmz section in config firewall!"); 
 				}); 
 			} else {
 				next(); 
