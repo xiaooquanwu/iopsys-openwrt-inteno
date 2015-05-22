@@ -15,6 +15,7 @@
     "jquery-deferred": "*",
     "najax": "*",
     "watchjs": "*",
+    "uglify-js": "*", 
     "array.prototype.find": "*"
   },
   "engines": {
