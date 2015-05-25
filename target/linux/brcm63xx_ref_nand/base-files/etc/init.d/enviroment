@@ -87,21 +87,21 @@ handle_configs()
 	done
 }
 
-handle_upload()
-{
-	local fwupdir=$(db -q get hw.board.fwUploadDir)
-	if [ -n "$fwupdir" ]; then
-		ln -s $fwupdir /tmp/uploads
+sw_upgrade_count() {
+	if cat /proc/cmdline |grep -q ubi:rootfs_0; then
+		brcm_fw_tool -s -1 update /dev/mtd0
+	elif cat /proc/cmdline |grep -q ubi:rootfs_1; then
+		brcm_fw_tool -s -1 update /dev/mtd1
 	else
-		mkdir -p /tmp/uploads
+		ls /cferam* | awk -F'.' '{print$NF}'
 	fi
 }
 
 start()
 {
+	sw_upgrade_count
 	handle_threads
 	handle_configs
-	handle_upload
 }
 
 restart()

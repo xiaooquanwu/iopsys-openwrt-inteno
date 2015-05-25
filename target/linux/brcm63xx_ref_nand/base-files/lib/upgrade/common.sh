@@ -180,9 +180,9 @@ rootfs_type() {
 
 get_image_sequence_number() {
 	if [ $2 -eq 1 ]; then
-		/sbin/brcm_fw_tool -s "$seqn" -w update $1
+		brcm_fw_tool -s -1 -w update $1
 	else
-		/sbin/brcm_fw_tool -s "$seqn" update $1
+		brcm_fw_tool -s -1 update $1
 	fi
 }
 
@@ -216,36 +216,82 @@ get_inteno_tag_val() {
 }
 
 check_crc() {
-	/sbin/brcm_fw_tool check $1
+	local from=$1
+	local file_sz calc csum
+
+	if is_inteno_image $from; then
+		case $(get_inteno_tag_val $from integrity) in
+		MD5SUM)
+			file_sz=$(ls -l $from |awk '{print $5}')
+			calc=$(head -c $(($file_sz-32)) $from |md5sum |awk '{print $1}')
+			csum=$(tail -c 32 $from)
+			[ "$calc" == "$csum" ] && echo "CRC_OK" || "CRC_BAD"
+			;;
+		*)
+			echo "UNKNOWN"
+			;;
+		esac
+	else
+		brcm_fw_tool check $from
+	fi
 }
 
 get_flash_type() {
-	/sbin/brcm_fw_tool -t check $1
+	if is_inteno_image $1; then
+		echo "NAND"
+	else
+		brcm_fw_tool -t check $1
+	fi
 }
 
 get_image_type() {
-	/sbin/brcm_fw_tool -i check $1
+	if is_inteno_image $1; then
+		echo "INTENO"
+	else
+		brcm_fw_tool -i check $1
+	fi
 }
 
 get_image_chip_id() {
-	/sbin/brcm_fw_tool -c check $1
+	if is_inteno_image $1; then
+		get_inteno_tag_val $1 chip
+	else
+		brcm_fw_tool -c check $1
+	fi
 }
 
 get_image_board_id() {
-	/sbin/brcm_fw_tool -r check $1
+	if is_inteno_image $1; then
+		get_inteno_tag_val $1 board
+	else
+		brcm_fw_tool -r check $1
+	fi
 }
 
 get_image_model_name() {
-	/sbin/brcm_fw_tool -m check $1
+	if is_inteno_image $1; then
+		get_inteno_tag_val $1 model
+	else
+		brcm_fw_tool -m check $1
+	fi
 }
 
 get_image_customer() {
-	/sbin/brcm_fw_tool -o check $1
+	if is_inteno_image $1; then
+		get_inteno_tag_val $1 customer
+	else
+		brcm_fw_tool -o check $1
+	fi
 }
 
 
 check_image_size() {
-	/sbin/brcm_fw_tool -y check $1
+	if is_inteno_image $1; then
+		# FIXME!
+		echo "SIZE_OK"
+	else
+		brcm_fw_tool -y check $1
+	fi
 }
 
 get_image() { # <source> [ <command> ]
@@ -312,7 +358,7 @@ make_nvram2_image() {
 
 	echo -ne "NVRAM\n\377\377\000\000\000\001\377\377\377\377" > $img
 	cat /dev/zero | tr '\000' '\377' | head -c $(( 2048 - 16 )) >> $img
-	
+
 	mtd_no=$(find_mtd_no "nvram")
 	dd if=/dev/mtd$mtd_no bs=1 count=1k skip=1408 \
 	   of=$img seek=16 conv=notrunc
@@ -400,7 +446,7 @@ create_springboard_preinit() {
 		echo "Write UBI image..."
 		imagewrite -s 83 -b 0 \
 			   -k $ubifs_ofs -l $ubifs_sz \
-			   --ubi -n 0 -S -20 --vol-name=rootfs_0 \
+			   --ubi -n 0 -S -6 --vol-name=rootfs_0 \
 			   /dev/mtd$mtd_no $from
 		echo "Write kernel..."
 		imagewrite -c -s 3 -b 40 -k $k_ofs -l $k_sz \
@@ -538,7 +584,7 @@ inteno_image_upgrade() {
 				v "Write UBI image..."
 				imagewrite -s 83 -b 0 \
 					   -k $ubifs_ofs -l $ubifs_sz \
-					   --ubi -n 0 -S -20 --vol-name=rootfs_0 \
+					   --ubi -n 0 -S -6 --vol-name=rootfs_0 \
 					   /dev/mtd$mtd_no $from
 
 				v "Write kernel..."
@@ -556,19 +602,15 @@ inteno_image_upgrade() {
 
 default_do_upgrade() {
 	sync
-	local from
-	local cfe_fs=0
-	local is_nand=0
-	local fwpath
+	local from mtd_no
+	local cfe_fs
+	local is_nand
 
-	fwpath=$(db -q get hw.board.fwUploadDir)
-	[ -n "$fwpath" ] && fwpath="$fwpath/firmware.bin" || fwpath="/tmp/uploads/firmware.bin"
-
-	[ $(cat /tmp/CFE_FS) -eq 1 ] && cfe_fs=1
-	[ $(cat /tmp/IS_NAND) -eq 1 ] && is_nand=1
+	cfe_fs=$(cat /tmp/CFE_FS)
+	is_nand=$(cat /tmp/IS_NAND)
 
 	case "$1" in
-		http://*|ftp://*) from="$fwpath";;
+		http://*|ftp://*) from=/tmp/firmware.img;;
 		*) from=$1;;
 	esac
 
@@ -585,8 +627,9 @@ default_do_upgrade() {
 	if [ $is_nand -eq 1 ]; then
 
 		v "Setting bootline parameter to boot from newly flashed image"
-		/sbin/brcm_fw_tool set -u 0
-		v "Current Software Upgrade Count: $(ls /cferam* | awk -F'.' '{print$NF}')"
+		brcm_fw_tool set -u 0
+		v "Current Software Upgrade Count: $(get_rootfs_sequence_number)"
+
 		if [ "$SAVE_CONFIG" -eq 1 -a -z "$USE_REFRESH" ]; then
 			v "Creating save config file marker"
 			touch /SAVE_CONFIG
@@ -597,18 +640,31 @@ default_do_upgrade() {
 			rm /SAVE_CONFIG
 			sync
 		fi
-		[ $cfe_fs -eq 1 ] && v "Writing CFE + File System ..." || v "Writing File System ..."
-        v "-> Kill JFFS2 garbage collector ..."
-        kill -KILL $(ps |grep jffs2_gcd_mtd |grep -v grep |awk '{print $1}') &> /dev/console
-        v "-> Display meminfo ..."
-        cat /proc/meminfo > /dev/console
-        v "-> Display procs ..."
-        ps > /dev/console
-		v "-> Disable printk interrupt ..."
-        echo 0 >/proc/sys/kernel/printk_with_interrupt_enabled
-		v "-> Will reboot the system after writing finishes ..."
-		/sbin/brcm_fw_tool -V -q write $from &> /dev/console
-		v "Upgrade syscall failed for some reason ..."
+
+		if [ $cfe_fs -eq 2 ]; then
+			inteno_image_upgrade $from
+		else
+			# Old/Brcm format image
+			if [ $cfe_fs -eq 1 ]; then
+				v "Writing CFE ..."
+				cfe_image_upgrade $from 0 131072
+			fi
+
+			v "Writing File System ..."
+			mtd_no=$(find_mtd_no "rootfs_update")
+			if [ $cfe_fs -eq 1 ]; then
+				update_sequence_number $from 0 131072
+				imagewrite -c -k 131072 /dev/mtd$mtd_no $from
+			else
+				update_sequence_number $from 0
+				imagewrite -c /dev/mtd$mtd_no $from
+			fi
+		fi
+
+		v "Upgrade completed!"
+		[ -n "$DELAY" ] && sleep "$DELAY"
+		v "Rebooting system ..."
+		reboot -f
 	else
 		if [ "$SAVE_CONFIG" -eq 1 -a -z "$USE_REFRESH" ]; then
 			v "Writing File System with Saved Config ..."
