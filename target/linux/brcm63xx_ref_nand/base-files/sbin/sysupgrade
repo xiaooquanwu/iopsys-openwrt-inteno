@@ -453,7 +453,7 @@ fi
 
 run_hooks "" $sysupgrade_pre_upgrade
 
-ubus call system upgrade
+ubus call system upgrade > /dev/null
 touch /tmp/sysupgrade
 
 if [ ! -f /tmp/failsafe ] ; then
