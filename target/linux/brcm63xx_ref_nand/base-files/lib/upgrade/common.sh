@@ -225,7 +225,7 @@ check_crc() {
 			file_sz=$(ls -l $from |awk '{print $5}')
 			calc=$(head -c $(($file_sz-32)) $from |md5sum |awk '{print $1}')
 			csum=$(tail -c 32 $from)
-			[ "$calc" == "$csum" ] && echo "CRC_OK" || "CRC_BAD"
+			[ "$calc" == "$csum" ] && echo "CRC_OK" || echo "CRC_BAD"
 			;;
 		*)
 			echo "UNKNOWN"
