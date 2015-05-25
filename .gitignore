@@ -30,3 +30,5 @@ npm-debug.log
 all.pot
 titles.pot
 ccache
+__all.js
+__all.css
