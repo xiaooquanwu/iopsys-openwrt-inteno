@@ -76,7 +76,9 @@ int pos;
 void display(void){
 
         printf("\r");
-        printf("%02x %02x %02x %02x \r",
+        printf("%02x %02x %02x %02x %02x %02x \r",
+               spi_data[0],
+               spi_data[1],
                spi_data[2],
                spi_data[3],
                spi_data[4],
@@ -93,7 +95,7 @@ void display(void){
 
 void inc(void){
 
-        int byte = 2 + pos/2;
+        int byte = pos/2;
         int nibble = pos%2;
 
         int val_hi = (spi_data[byte] >> 4 ) & 0xF;
@@ -113,7 +115,7 @@ void inc(void){
 }
 
 void dec(void){
-        int byte = 2 + pos/2;
+        int byte = pos/2;
         int nibble = pos%2;
 
         int val_hi = (spi_data[byte] >> 4 ) & 0xF;
@@ -137,7 +139,9 @@ int main(int argc, char *argv[])
         int ch;
 
         gpio_open_ioctl();
-        board_ioctl(BOARD_IOCTL_SPI_INIT, SPI_SLAVE_SELECT, 0, 0, 0, 391000);
+        /* arg 4 is the spi mode encoded in a string pointer */
+        /* mode is decribed i/bcm963xx/shared/opensource/include/bcm963xx/bcmSpiRes.h */
+        board_ioctl(BOARD_IOCTL_SPI_INIT, SPI_SLAVE_SELECT, 0, (char *)0, 0, 391000);
         set_conio_terminal_mode();
         fflush(stdout);
 
@@ -147,8 +151,8 @@ int main(int argc, char *argv[])
                 /* right */
                 if (ch == 4414235) {
                         pos++;
-                        if (pos > 7)
-                                pos = 7;
+                        if (pos > 11)
+                                pos = 11;
                 }
                 /* left */
                 if (ch == 4479771) {
