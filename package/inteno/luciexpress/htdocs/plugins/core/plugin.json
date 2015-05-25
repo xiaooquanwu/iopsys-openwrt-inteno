@@ -5,7 +5,7 @@
 		"widgets/luci.progress",
 		"widgets/luci.table",
 		"widgets/luci.config", 
-		"widgets/luci.dropdown", 
+		"widgets/luci.select", 
 		"widgets/luci.layout.naked",
 		"widgets/luci.layout.single_column",
 		"widgets/luci.layout.with_sidebar", 
