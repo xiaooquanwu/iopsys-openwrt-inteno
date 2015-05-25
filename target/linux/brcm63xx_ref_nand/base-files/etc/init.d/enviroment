@@ -87,10 +87,21 @@ handle_configs()
 	done
 }
 
+handle_upload()
+{
+	local fwupdir=$(db -q get hw.board.fwUploadDir)
+	if [ -n "$fwupdir" ]; then
+		ln -s $fwdir /tmp/uploads
+	else
+		mkdir -p /tmp/uploads
+	fi
+}
+
 start()
 {
 	handle_threads
 	handle_configs
+	handle_upload
 }
 
 restart()

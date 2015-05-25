@@ -561,8 +561,8 @@ default_do_upgrade() {
 	local is_nand=0
 	local fwpath
 
-	fwpath=$(uci -q get system.@upgrade[0].fw_upload_path)
-	[ -n "$fwpath" ] || fwpath="/tmp/firmware.bin"
+	fwpath=$(db -q get hw.board.fwUploadDir)
+	[ -n "$fwpath" ] && fwpath="$fwpath/firmware.bin" || fwpath="/tmp/uploads/firmware.bin"
 
 	[ $(cat /tmp/CFE_FS) -eq 1 ] && cfe_fs=1
 	[ $(cat /tmp/IS_NAND) -eq 1 ] && is_nand=1

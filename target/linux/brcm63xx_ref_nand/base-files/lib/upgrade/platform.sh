@@ -8,15 +8,15 @@ platform_check_image_size() {
 platform_check_image() {
 	local fwpath from
 
-	fwpath=$(uci -q get system.@upgrade[0].fw_upload_path)
-	[ -n "$fwpath" ] || fwpath="/tmp/firmware.bin"
+	fwpath=$(db -q get hw.board.fwUploadDir)
+	[ -n "$fwpath" ] && fwpath="$fwpath/firmware.bin" || fwpath="/tmp/uploads/firmware.bin"
 
 	[ "$ARGC" -gt 1 ] && return 1
 
 	echo "Image platform check started ..." > /dev/console
 
 	case "$1" in
-		http://*|ftp://*) get_image "$1" "cat" > /tmp/firmware.bin; from=$fwpath;;
+		http://*|ftp://*) get_image "$1" "cat" > /tmp/uploads/firmware.bin; from=$fwpath;;
 		*) from=$1;;
 	esac
 
