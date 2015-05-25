@@ -637,12 +637,20 @@ wdev_static_settings() {
 	wlctl -i $device mrate 0
 	wlctl -i $device bg_mrate 0
 	wlctl -i $device afterburner_override 0
-	wlctl -i $device ampdu 1
-	wlctl -i $device amsdu 0
-	wlctl -i $device rx_amsdu_in_ampdu 0
-	wlctl -i $device noise_metric 1
+	wlctl -i $device amsdu 1
+	wlctl -i $device rx_amsdu_in_ampdu 1
+	wlctl -i $device ampdu 255
+	wlctl -i $device ampdu_tx 255
+	wlctl -i $device ampdu_rx 255
+	wlctl -i $device ampdu_mpdu 32
 	wlctl -i $device rxchain_pwrsave_stas_assoc_check 1
 	wlctl -i $device radio_pwrsave_stas_assoc_check 1
+	wlctl -i $device noise_metric 1
+	wlctl -i $device mpc_dur 0
+	wlctl -i $device nar 0
+	wlctl -i $device probresp_sw 1
+	wlctl -i $device mimo_ps 0
+	wlctl -i $device phy_percal_delay 60
 }
 
 wdev_radar_settings() {
@@ -911,6 +919,7 @@ wdev_wds_settings() {
 	wlctl -i $device wds none
 	wlctl -i $device wdswsec 0
 	wlctl -i $device wdswsec_enable 0
+	wlctl -i $device wdstimeout 1
 }
 
 wdev_assoc_settings() {
