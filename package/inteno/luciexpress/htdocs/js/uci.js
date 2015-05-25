@@ -159,19 +159,50 @@
 		}, 
 		"system": {
 			"system": {
-				"timezone":				{ dvalue: '', type: String },
-				"zonename":				{ dvalue: '', type: String },
+				"timezone":		{ dvalue: '', type: String },
+				"zonename":		{ dvalue: '', type: String },
 				"conloglevel":		{ dvalue: 0, type: Number },
 				"cronloglevel":		{ dvalue: 0, type: Number },
-				"hostname":				{ dvalue: '', type: String },
+				"hostname":		{ dvalue: '', type: String },
 				"displayname":		{ dvalue: '', type: String },
-				"log_size":				{ dvalue: 200, type: Number }
+				"log_size":		{ dvalue: 200, type: Number }
 			},
 			"upgrade": {
 				"fw_check_url":		{ dvalue: "", type: String, required: false},
 				"fw_path_url":		{ dvalue: "", type: String, required: false},
 				"fw_find_ext":		{ dvalue: "", type: String, required: false},
 				"fw_upload_path":	{ dvalue: "", type: String, required: false}
+			}
+		},
+		"dhcp": {
+			"dnsmasq": {
+				"domainneeded":		{ dvalue: true, type: Boolean },
+				"boguspriv":		{ dvalue: true, type: Boolean },
+				"localise_queries":	{ dvalue: true, type: Boolean },
+				"rebind_protection":	{ dvalue: false, type: Boolean },
+				"local":		{ dvalue: "/lan/", type: String, required: true},
+				"domain":		{ dvalue: "lan", type: String, required: true},
+				"expandhosts":		{ dvalue: true, type: Boolean },
+				"authoritative":	{ dvalue: true, type: Boolean },
+				"readethers":		{ dvalue: true, type: Boolean },
+				"leasefile":		{ dvalue: "/tmp/dhcp.leases", type: String, required: true},
+				"resolvfile":		{ dvalue: "/tmp/resolv.conf.auto", type: String, required: true}
+			},
+			"dhcp": {
+				"interface":		{ dvalue: "lan", type: String, required: true},
+				"start":		{ dvalue: 100, type: Number },
+				"limit":		{ dvalue: 150, type: Number },
+				"leasetime":		{ dvalue: "12h", type: String, required: true},
+				"ignore":		{ dvalue: false, type: Boolean }
+			},
+			"domain": {
+				"name":		{ dvalue: "", type: String, required: true},
+				"ip":		{ dvalue: "", type: String, required: true}  // TODO: change to ip address
+			},
+			"host": {
+				"name":		{ dvalue: "", type: String, required: false},
+				"mac":		{ dvalue: "", type: String, required: true},
+				"ip":		{ dvalue: "", type: String, required: true}  // TODO: change to ip address
 			}
 		}
 	};
