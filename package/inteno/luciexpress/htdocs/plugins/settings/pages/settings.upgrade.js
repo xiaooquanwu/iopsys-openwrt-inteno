@@ -111,7 +111,7 @@
 JUCI.app
 .controller("SettingsUpgradeCtrl", function($scope, $config, $uci, $rpc, gettext){
 	$scope.sessionID = $rpc.$sid();
-	$scope.uploadFilename = "/tmp/uploads/firmware.bin";
+	$scope.uploadFilename = "/tmp/firmware.bin";
 	$scope.usbFileName = "()"; 
 	
 	$scope.config = $config; 

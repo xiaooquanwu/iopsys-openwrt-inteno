@@ -17,7 +17,6 @@ config board 'board'
 	option vdslWanPort 'ptm0'
 	option hasBrcmAvs '1'
 	option i2cGpioCustom 'bus0=0,14,9'
-	option fwUploadDir '/rom/root'
 
 config pci_slot 'pci'
         option 43a0 AC

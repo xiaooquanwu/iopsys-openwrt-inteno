@@ -1039,7 +1039,7 @@ rpc_luci2_upgrade_test(struct ubus_context *ctx, struct ubus_object *obj,
                        struct ubus_request_data *req, const char *method,
                        struct blob_attr *msg)
 {
-	const char *cmd[4] = { "sysupgrade", "--test", "/tmp/uploads/firmware.bin", NULL };
+	const char *cmd[4] = { "sysupgrade", "--test", "/tmp/firmware.bin", NULL };
 	return ops->exec(cmd, NULL, NULL, NULL, NULL, NULL, ctx, req);
 }
 
@@ -1049,7 +1049,7 @@ rpc_luci2_upgrade_start(struct ubus_context *ctx, struct ubus_object *obj,
                         struct blob_attr *msg)
 {
 	char fwpath[255]; 
-	strcpy(fwpath, "/tmp/uploads/firmware.bin");
+	strcpy(fwpath, "/tmp/firmware.bin");
 	
 	//const char *keep = "";
 
@@ -1074,7 +1074,7 @@ rpc_luci2_upgrade_clean(struct ubus_context *ctx, struct ubus_object *obj,
                         struct ubus_request_data *req, const char *method,
                         struct blob_attr *msg)
 {
-	if (unlink("/tmp/uploads/firmware.bin"))
+	if (unlink("/tmp/firmware.bin"))
 		return rpc_errno_status();
 
 	return 0;
