@@ -10,9 +10,23 @@ $juci.module("wifi")
 		replace: true, 
 		require: "^ngModel"
 	 };  
-}).controller("WifiDeviceEditController", function($scope){
-	$scope.allChannels = [ "auto", 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 ]; 
-	$scope.allModes = ["802.11gn", "802.11bg", "802.11bgn", "802.11n"]; 
-	$scope.allBandwidths = [ "20", "40", "2040", "80" ]; 
+}).controller("WifiDeviceEditController", function($scope, $rpc, gettext){
+	$scope.$watch("device", function(device){
+		if(!device) return; 
+		
+		$rpc.router.radios().done(function(result){
+			if(device[".name"] in result){
+				var settings = result[device[".name"]]; 
+				$scope.allChannels = [gettext("auto")].concat(settings.channels); 
+				$scope.allModes = settings.hwmodes; 
+				$scope.allBandwidths = settings.bwcaps; 
+			} else {
+				$scope.allChannels = [ "auto"  ]; 
+				$scope.allModes = ["802.11gn", "802.11bg", "802.11bgn", "802.11n"]; 
+				$scope.allBandwidths = [ "20", "40", "80" ]; 
+			}
+			$scope.$apply(); 
+		}); 
+	}); 
 	
 }); 

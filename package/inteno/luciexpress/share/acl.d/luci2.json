@@ -382,7 +382,8 @@
 				"luci2.network.bwmon": [
 					"devices",
 					"statistics"
-				]
+				], 
+				"router": [ "radios" ]
 			},
 			"uci": [
 				"network",

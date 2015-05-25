@@ -140,6 +140,9 @@
 			if(sid) RPC_SESSION_ID = sid; 
 			else return RPC_SESSION_ID; 
 		}, 
+		$isLoggedIn: function(){
+			return RPC_SESSION_ID !== RPC_DEFAULT_SESSION_ID; 
+		}, 
 		$authenticate: function(){
 			var self = this; 
 			var deferred  = $.Deferred(); 

@@ -173,11 +173,11 @@ JUCI.app.config(function ($stateProvider, $locationProvider, $compileProvider, $
 			}
 		}); 
 	}); 
-	$rpc.$authenticate().done(function(){
+	if($rpc.$isLoggedIn()){
 		$juci.redirect(path||"overview"); 
-	}).fail(function(){
+	} else {
 		$juci.redirect("login"); 
-	});  
+	};  
 })
 
 // TODO: figure out how to avoid forward declarations of things we intend to override. 

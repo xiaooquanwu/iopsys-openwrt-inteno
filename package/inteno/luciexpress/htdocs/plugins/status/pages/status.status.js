@@ -25,10 +25,12 @@ JUCI.app
 				]
 				.filter(function(x){ return x.value != "" })
 				.forEach(function(x, c){ 
-					sections.push({
-						"name": x.name, 
-						"interface": _interfaces.find(function(i){ return i.interface == x.value; })
-					});  
+					if(x.interface) {
+						sections.push({
+							"name": x.name, 
+							"interface": _interfaces.find(function(i){ return i.interface == x.value; })
+						});  
+					}
 				}); 
 				sections = sections.sort(function(a, b) { return a.interface.up > b.interface.up; }); 
 				for(var c = 0; c < sections.length; c++){
@@ -44,7 +46,7 @@ JUCI.app
 			function(next){
 				$rpc.router.dslstats().done(function(result){
 					switch(result.dslstats.status){
-						case 'Idle': $scope.dsl_status = 'error'; break; 
+						case 'Idle': $scope.dsl_status = 'disabled'; break; 
 						case 'Showtime': $scope.dsl_status = 'ok'; break; 
 						default: $scope.dsl_status = 'progress'; break; 
 					}
