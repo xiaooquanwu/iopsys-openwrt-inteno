@@ -610,7 +610,7 @@ default_do_upgrade() {
 	is_nand=$(cat /tmp/IS_NAND)
 
 	case "$1" in
-		http://*|ftp://*) from=/tmp/firmware.img;;
+		http://*|ftp://*) from=/tmp/firmware.bin;;
 		*) from=$1;;
 	esac
 

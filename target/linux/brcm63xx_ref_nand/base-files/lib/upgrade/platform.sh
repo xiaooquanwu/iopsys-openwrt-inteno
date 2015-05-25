@@ -13,7 +13,7 @@ platform_check_image() {
 	echo "Image platform check started ..." > /dev/console
 
 	case "$1" in
-		http://*|ftp://*) get_image "$1" "cat" > /tmp/firmware.img; from=/tmp/firmware.img;;
+		http://*|ftp://*) get_image "$1" "cat" > /tmp/firmware.bin; from=/tmp/firmware.bin;;
 		*) from=$1;;
 	esac
 
