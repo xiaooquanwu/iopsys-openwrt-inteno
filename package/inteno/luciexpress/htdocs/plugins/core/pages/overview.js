@@ -12,6 +12,23 @@ $juci.module("core")
 	$scope.dsl = {
 		
 	}; 
+	
+	$scope.onWPSToggle = function(){
+		$uci.wireless.status.wps.value = !$uci.wireless.status.wps.value; 
+		$scope.wifiWPSStatus = (($uci.wireless.status.wps.value)?gettext("on"):gettext("off")); 
+		$uci.save().done(function(){
+			refresh(); 
+		}); 
+	}
+	
+	$scope.onWIFISchedToggle = function(){
+		$uci.wireless.status.schedule.value = !$uci.wireless.status.schedule.value; 
+		$scope.wifiSchedStatus = (($uci.wireless.status.schedule.value)?gettext("on"):gettext("off")); 
+		$uci.save().done(function(){
+			refresh(); 
+		}); 
+	}
+	
 	function refresh() {
 		//var sections = result.values; 
 		//var cfgs = Object.keys(sections).filter(function(x) { return x.indexOf("cfg") == 0; }); 

@@ -33,13 +33,13 @@
 					<tr>
 						<td>
 							<div class="col-md-2"><i class="fa fa-calendar fa-2x"></i></div>
-							<div class="col-md-10"><strong>Schedule is {{wifiSchedStatus | translate}}</strong></div>
+							<div class="col-md-10"><strong>Schedule <a class="label label-primary pull-right" href="" ng-click="onWIFISchedToggle()">{{wifiSchedStatus | translate}}</a></strong></div>
 						</td>
 					</tr>
 					<tr>
 						<td>
 							<div class="col-md-2"><i class="fa fa-wifi fa-2x"></i></div>
-							<div class="col-md-10"><strong>WPS is {{wifiWPSStatus | translate}}</strong></div>
+							<div class="col-md-10"><strong>WPS <a class="label label-primary pull-right" href="" ng-click="onWPSToggle()">{{wifiWPSStatus | translate}}</a></strong></div>
 						</td>
 					</tr>
 					<tr ng-repeat="client in wireless.clients">
@@ -89,7 +89,7 @@
 						</td>
 					</tr>
 					<tr ng-repeat="sip in sipAccounts track by $index">
-						<td>
+						<td ng-show="sip.user.value">
 								<div class="col-md-2"><strong style="font-size: 1.2em">U{{$index}}</strong></div>
 								<div class="col-md-8"><strong>{{sip.user.value}}</strong></div>
 						</td>
