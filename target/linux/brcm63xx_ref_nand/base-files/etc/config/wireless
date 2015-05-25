@@ -1,5 +1,5 @@
 config wifi-settings preferred
-	option sid 'Inteno'
+	option ssid 'Inteno-$BSSID4'
 	option enc 'psk2'
 	option wpsb '1'
 	option ch5g 'auto'

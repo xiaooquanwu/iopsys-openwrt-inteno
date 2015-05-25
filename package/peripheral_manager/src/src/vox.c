@@ -121,7 +121,9 @@ void vox_init(struct server_ctx *s_ctx) {
 
 	/* if config entries for vox leds exist register the spi as used. */
 	if(register_spi) {
-		board_ioctl(BOARD_IOCTL_SPI_INIT, SPI_SLAVE_SELECT, 0, 0, 0, 391000);
+		/* arg 4 is the spi mode encoded in a string pointer */
+		/* mode is decribed i/bcm963xx/shared/opensource/include/bcm963xx/bcmSpiRes.h */
+		board_ioctl(BOARD_IOCTL_SPI_INIT, SPI_SLAVE_SELECT, 0, (char*)0, 0, 391000);
 		gpio_open_ioctl();
 	}
 }
