@@ -112,7 +112,7 @@ module.exports = function(grunt){
 			"htdocs/lib/js/angular-ui-bootstrap-luci.min.js",
 			"htdocs/lib/js/jquery-jsonrpc.js",
 			"htdocs/lib/js/translations.js",
-			//"htdocs/lib/js/bootstrap.min.js",
+			"htdocs/lib/js/bootstrap.min.js",
 			"htdocs/lib/js/angular-ui-switch.min.js",
 			"htdocs/lib/js/angular-modal-service.min.js",
 			"htdocs/lib/js/angular-checklist-model.js"

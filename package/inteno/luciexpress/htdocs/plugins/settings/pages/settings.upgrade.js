@@ -111,7 +111,7 @@
 JUCI.app
 .controller("SettingsUpgradeCtrl", function($scope, $config, $uci, $rpc, gettext){
 	$scope.sessionID = $rpc.$sid();
-	$scope.uploadFilename = "/tmp/firmware.bin";
+	$scope.uploadFilename = "/tmp/uploads/firmware.bin";
 	$scope.usbFileName = "()"; 
 	
 	$scope.config = $config; 
@@ -153,12 +153,12 @@ JUCI.app
 		}); 
 	}
 	
-	$uci.sync("system").done(function(){
+	/*$uci.sync("system").done(function(){
 		if($uci.system.upgrade && $uci.system.upgrade.fw_upload_path.value){
 			$scope.uploadFilename = $uci.system.upgrade.fw_upload_path.value; 
 			console.log("Using upload path from config: "+$scope.uploadFilename); 
 		}
-	}); 
+	});*/ 
 	
 	$scope.onCheckOnline = function(){
 		$rpc.luci2.system.upgrade_check({type: "online"}).done(function(response){
