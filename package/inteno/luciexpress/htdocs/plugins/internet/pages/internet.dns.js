@@ -4,10 +4,14 @@ JUCI.app
 	$log.info("uci", $uci);
 	$uci.sync(["network","ddns"]).done(function () {
 		if ($uci.network && $uci.network.wan) {
-			$scope.wan = $uci.network.wan;
-			if ($scope.wan.dns){
-				while($scope.wan.dns.value.length < 2) $scope.wan.dns.value.push("");
-			}
+			var wan = $uci.network.wan;
+			while(wan.dns.value.length < 2) wan.dns.value.push("");
+			$scope.dnsServers = wan.dns.value.map(function(x){ return { value: x }; }); 
+			$scope.onDNSBlur = function(){
+				wan.dns.value = $scope.dnsServers.map(function(x) { return x.value; }); 
+			}; 
+			$scope.wan = wan; 
+			$scope.$apply(); 
 		} else {
 			// TODO: this should be a dynamic name (wan will not always be called wan in the future)
 			$scope.$emit("Could not find WAN network on this device"); 

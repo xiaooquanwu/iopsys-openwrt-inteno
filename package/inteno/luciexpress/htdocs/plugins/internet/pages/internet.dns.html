@@ -13,8 +13,8 @@
 					</div>
 				</luci-config-line>
 				<luci-config-line title="{{'DNS Servers'|translate}} #{{$index}}" ng-show="wan.peerdns.value == 1" >
-					<div ng-repeat="dns in wan.dns.value track by $index" class="form-group">
-						<input type="text" class="form-control" ng-model="wan.dns.value[$index]" placeholder="{{'DNS Server'|translate}} #{{$index}}"/>
+					<div ng-repeat="dns in dnsServers track by $index" class="form-group">
+						<input type="text" class="form-control" ng-model="dns.value" ng-blur="onDNSBlur()" placeholder="{{'DNS Server'|translate}} #{{$index}}"/>
 					</div>
 				</luci-config-line>
 			</luci-config-lines>
