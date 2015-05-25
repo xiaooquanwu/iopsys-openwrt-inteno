@@ -714,40 +714,40 @@ int main(int argc, char** argv)
     }
     /*-------------------------------*/
 
-//    // Setup the about data
-//    AboutData aboutData("en");
+    // Setup the about data
+    AboutData aboutData("en");
 
-//    uint8_t appId[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
-//    status = aboutData.SetAppId(appId, 16);
-//    status = aboutData.SetDeviceName(strCmd("db get hw.board.hardware").c_str());
-//    status = aboutData.SetDeviceId(strCmd("db get hw.board.BaseMacAddr").c_str());
-//    status = aboutData.SetAppName("WiFi Manager");
-//    status = aboutData.SetManufacturer("Inteno");
-//    status = aboutData.SetModelNumber(strCmd("db get hw.board.routerModel | cut -d'-' -f 2").c_str());
-//    status = aboutData.SetDescription("Manage WiFi");
-//    status = aboutData.SetDateOfManufacture(strCmd("db get hw.board.iopVersion | awk -F'[-,_]' '{print$4}'").c_str());
-//    status = aboutData.SetSoftwareVersion(strCmd("db get hw.board.iopVersion | awk -F'[-,_]' '{print$3}'").c_str());
-//    status = aboutData.SetHardwareVersion(strCmd("db get hw.board.hardwareVersion").c_str());
-//    status = aboutData.SetSupportUrl("http://www.iopsys.eu");
-//    if (!aboutData.IsValid()) {
-//        printf("failed to setup about data.\n");
-//    }
+    uint8_t appId[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
+    status = aboutData.SetAppId(appId, 16);
+    status = aboutData.SetDeviceName(strCmd("db get hw.board.hardware").c_str());
+    status = aboutData.SetDeviceId(strCmd("db get hw.board.BaseMacAddr").c_str());
+    status = aboutData.SetAppName("WiFi Manager");
+    status = aboutData.SetManufacturer("Inteno");
+    status = aboutData.SetModelNumber(strCmd("db get hw.board.routerModel | cut -d'-' -f 2").c_str());
+    status = aboutData.SetDescription("Manage WiFi");
+    status = aboutData.SetDateOfManufacture(strCmd("db get hw.board.iopVersion | awk -F'[-,_]' '{print$4}'").c_str());
+    status = aboutData.SetSoftwareVersion(strCmd("db get hw.board.iopVersion | awk -F'[-,_]' '{print$3}'").c_str());
+    status = aboutData.SetHardwareVersion(strCmd("db get hw.board.hardwareVersion").c_str());
+    status = aboutData.SetSupportUrl("http://www.iopsys.eu");
+    if (!aboutData.IsValid()) {
+        printf("failed to setup about data.\n");
+    }
 
-//    AboutIcon icon;
-//    status = icon.SetUrl("wp-content/uploads/2014/09/iopsys_logo_CMYK_invert_circle.png", "http://www.iopsys.eu");
-//    if (ER_OK != status) {
-//        printf("Failed to setup the AboutIcon.\n");
-//    }
-//    AboutIconObj aboutIconObj(bus, icon);
+    AboutIcon icon;
+    status = icon.SetUrl("wp-content/uploads/2014/09/iopsys_logo_CMYK_invert_circle.png", "http://www.iopsys.eu");
+    if (ER_OK != status) {
+        printf("Failed to setup the AboutIcon.\n");
+    }
+    AboutIconObj aboutIconObj(bus, icon);
 
-//    // Announce about signal
-//    AboutObj aboutObj(bus, BusObject::ANNOUNCED);
-//    status = aboutObj.Announce(ASSIGNED_SESSION_PORT, aboutData);
-//    if (ER_OK == status) {
-//        printf("AboutObj Announce Succeeded.\n");
-//    } else {
-//        printf("AboutObj Announce failed (%s)\n", QCC_StatusText(status));
-//    }
+    // Announce about signal
+    AboutObj aboutObj(bus, BusObject::ANNOUNCED);
+    status = aboutObj.Announce(ASSIGNED_SESSION_PORT, aboutData);
+    if (ER_OK == status) {
+        printf("AboutObj Announce Succeeded.\n");
+    } else {
+        printf("AboutObj Announce failed (%s)\n", QCC_StatusText(status));
+    }
 
     ubus_listener();
 
