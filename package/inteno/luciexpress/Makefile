@@ -32,7 +32,7 @@ define Package/luciexpress
   SECTION:=luciexpress
   CATEGORY:=LuCiexpress
   TITLE:=LuCiExpress UI
-  DEPENDS:=+rpcd +rpcd-mod-iwinfo +uhttpd +uhttpd-mod-ubus +libubox +libubus
+  DEPENDS:=+rpcd +uhttpd +uhttpd-mod-ubus +libubox +libubus
 endef
 
 define Package/luciexpress/description

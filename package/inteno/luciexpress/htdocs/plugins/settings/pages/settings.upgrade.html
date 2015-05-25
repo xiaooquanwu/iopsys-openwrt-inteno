@@ -48,5 +48,13 @@
 				</luci-config-line>
 			</luci-config-lines>
 		</luci-config-section>
+		<modal title="Firmware Upgrade" ng-show="showUpgradeStatus">
+			<center>
+				<p style="text-align: center;" ng-show="!error">{{message}}</p>
+				<p class="alert alert-danger" style="text-align: center;" ng-show="error">{{error}}</p>
+				<br/><br/><i class="fa fa-spinner fa-spin fa-4x" ng-show="(progress == 'progress' || progress == 'uploading') && !error"></i>
+				<button class="btn btn-default btn-lg" ng-show="progress == 'completed' || error" ng-click="onDismissModal()" translate>Close</button>
+			</center>
+		</modal>
 	</div>
 </luci-layout-with-sidebar>

@@ -4,8 +4,8 @@
 		<div class="row">
 			<div class="col-lg-4 visible-lg" ng-show="dsl.mode != ''">
 				<div style="position: relative;">
-					<span style="position: absolute; left: 250px; top: 100px; white-space: nowrap; font-family: 'vodafont';">{{dsl.max_rate_down}} Mbit/s</span>
-					<span style="position: absolute; left: 250px; top: 130px; white-space: nowrap; font-family: 'vodafont';">{{dsl.max_rate_up}} Mbit/s</span>
+					<span ng-show="dsl.max_rate_down" style="position: absolute; left: 250px; top: 100px; white-space: nowrap; font-family: 'vodafont';">{{dsl.max_rate_down}} Mbit/s</span>
+					<span ng-show="dsl.max_rate_up" style="position: absolute; left: 250px; top: 130px; white-space: nowrap; font-family: 'vodafont';">{{dsl.max_rate_up}} Mbit/s</span>
 					<div style="position: absolute; width: 110px; height: 1px; background-color: #a9b300; left: 220px; top: 126px;"></div>
 					<div style="position: absolute; width: 60px; height: 30px; background-color: #a9b300; left: 164px; top: 112px; border-radius: 20px; color: white; padding: 3px 0px; text-align: center;">{{wan_type}}</div>
 				</div>

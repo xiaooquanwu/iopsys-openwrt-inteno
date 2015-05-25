@@ -109,7 +109,7 @@
 })( jQuery);
 
 JUCI.app
-.controller("SettingsUpgradeCtrl", function($scope, $config, $uci, $rpc){
+.controller("SettingsUpgradeCtrl", function($scope, $config, $uci, $rpc, gettext){
 	$scope.sessionID = $rpc.$sid();
 	$scope.uploadFilename = "/tmp/firmware.bin";
 	$scope.usbFileName = "()"; 
@@ -117,11 +117,39 @@ JUCI.app
 	$scope.config = $config; 
 	
 	function upgradeStart(path){
-		alert("Will try to upgrade from "+path); 
-		$rpc.luci2.system.upgrade_start({"path": path}).done(function(){
-			alert("Upgrade process has started. The web gui will not be available until the process has finished and the box has restarted!"); 
-		}).fail(function(response){
-			alert("Upgrade process failed! "+JSON.stringify(result||"")); 
+		$scope.error = ""; 
+		$scope.progress = 'progress'; 
+		$rpc.luci2.system.upgrade_test().done(function(result){
+			if(result.stderr){
+				$scope.error = "Upgrade test has failed: "+result.stderr; 
+				$scope.$apply(); 
+				return; 
+			}
+			$rpc.luci2.system.upgrade_start({"path": path}).done(function(result){
+				if(result && result.stderr) {
+					$scope.error = gettext("Upgrade process failed") + ": "+result.stderr; 
+				} else {
+					$scope.message = gettext("Upgrade process has started. The web gui will not be available until the process has finished and the box has restarted!");
+					JUCI.interval("upgrade", 1000, function(done){
+						$rpc.session.access().done(function(){
+							// it will not succeed anymore because box is rebooting
+						}).fail(function(result){
+							if(result.code && result.code == -32002) { // access denied error. We will get it when it boots up again. 
+								window.location.reload(); 
+							}
+						}).always(function(){
+							done(); 
+						}); 
+					}); 
+				}; 
+				$scope.$apply();  
+			}).fail(function(response){
+				$scope.error = gettext("Upgrade process failed") + "! "+JSON.stringify(result||"");
+				$scope.$apply();  
+			});
+		}).fail(function(result){
+			$scope.error = gettext("Upgrade test has failed") + ": "+result.stderr; 
+			$scope.$apply(); 
 		}); 
 	}
 	
@@ -161,22 +189,28 @@ JUCI.app
 		console.log("Upload completed: "+JSON.stringify(result)); 
 	}
 	$scope.onUploadUpgrade = function(){
+		$scope.showUpgradeStatus = 1; 
+		$scope.message = "Uploading..."; 
+		$scope.progress = 'uploading'; 
 		$("#postiframe").bind("load", function(){
 			var json = $(this).contents().text(); 
 			var obj = {}; 
 			try {
 				obj = JSON.parse(json); 
-			} catch(e){ alert("The server returned an error ("+JSON.stringify(json)+")");  }
+			} catch(e){
+				$scope.error = "The server returned an error ("+JSON.stringify(json)+")";
+				$scope.progress = 'completed'; 
+				$scope.$apply();
+				//return;   
+			}
 			
-			$rpc.luci2.system.upgrade_test().done(function(result){
-				console.log(JSON.stringify(result)); 
-				$rpc.luci2.system.upgrade_start().done(function(result){
-					console.log(JSON.stringify(result)); 
-				}); 
-			}); 
+			upgradeStart(); 
 			
 			$(this).unbind("load"); 
 		}); 
 		$("form[name='uploadForm']").submit();
+	}
+	$scope.onDismissModal = function(){
+		$scope.showUpgradeStatus = 0; 
 	}
 }); 

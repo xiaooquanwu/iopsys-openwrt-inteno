@@ -1,6 +1,7 @@
 {
 	"settings/dropbear": {
 		"title": "Dropbear",
-		"index": 20
+		"index": 20, 
+		"modes": ["dropbear"]
 	}
 }
