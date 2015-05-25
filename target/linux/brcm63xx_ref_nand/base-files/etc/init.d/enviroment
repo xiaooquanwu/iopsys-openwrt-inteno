@@ -91,7 +91,7 @@ handle_upload()
 {
 	local fwupdir=$(db -q get hw.board.fwUploadDir)
 	if [ -n "$fwupdir" ]; then
-		ln -s $fwdir /tmp/uploads
+		ln -s $fwupdir /tmp/uploads
 	else
 		mkdir -p /tmp/uploads
 	fi
