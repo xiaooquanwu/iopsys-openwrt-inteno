@@ -3,9 +3,9 @@ require("../../../../tests/lib-juci");
 var completed = {
 	"configuration": 1, 
 	"energy": 1, 
-	"network": 0, 
+	"network": 1, 
 	"password": 1, 
-	"upgrade": 0
+	"upgrade": 1
 }
 
 describe("Settings", function(){

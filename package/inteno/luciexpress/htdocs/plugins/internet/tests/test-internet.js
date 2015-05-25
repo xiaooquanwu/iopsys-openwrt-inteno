@@ -19,13 +19,13 @@ describe("UCI.firewall", function(){
 			done(); 
 		}); 
 	}); 
-	it("should have dmz section of type include", function(){
+	it("should have dmz section of type dmz", function(){
 		expect($uci.firewall.dmz).to.be.ok(); 
-		expect($uci.firewall.dmz[".type"]).to.be("include"); 
+		expect($uci.firewall.dmz[".type"]).to.be("dmz"); 
 	}); 
-	it("should have dmzhost section of type dmzhost", function(){
+	it("should have dmzhost section of type include", function(){
 		expect($uci.firewall).to.have.property("dmzhost"); 
-		expect($uci.firewall.dmzhost[".type"]).to.be("dmzhost"); 
+		expect($uci.firewall.dmzhost[".type"]).to.be("include"); 
 	}); 
 	it("should have Allow-Ping firewall rule set to visible (hidden=0)", function(done){
 		var ping_rule = $uci.firewall["@rule"].filter(function(x){ return x.name.value == "Allow-Ping"; }); 

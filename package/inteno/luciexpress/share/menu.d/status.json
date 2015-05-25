@@ -13,11 +13,6 @@
 				"acls": [ "status" ], 
 				"index": 9
 		}, 
-    "status/status/network": {
-				"title": "Network", 
-				"acls": [ "status" ], 
-				"index": 9
-		}, 
     "status/status/dsl": {
         "title": "DSL",
         "acls": [ "status" ],

@@ -7,7 +7,7 @@ var completed = {
 	"mac_filter": 1, 
 	"schedule": 1, 
 	"settings": 1, 
-	"wps": 0
+	"wps": 1
 }
 
 describe("Wireless", function(){

@@ -46,7 +46,7 @@ describe("UCI", function(){
 						Object.keys(values).filter(function(x){
 							return x.indexOf(".") != 0; // filter out hidden values
 						}).map(function(x){
-							expect(type).to.have.property(x); 
+							expect(Object.keys(type)).to.contain(x); 
 						}); 
 					}); 
 					next(); 

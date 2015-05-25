@@ -44,7 +44,8 @@
 				"router": [
 					"dslstats", 
 					"info", 
-					"clients"
+					"clients", 
+					"igmptable"
 				],
 				"system": [
 					"info",

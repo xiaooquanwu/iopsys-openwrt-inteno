@@ -62,6 +62,9 @@ function JUCIMock(){
 		}, 
 		config: function(){}
 	}
+	self.redirect = function(url){
+		console.log("JUCIMock redirect: "+url); 
+	}
 	function LocalStorageMock(){
 		var _items = {}; 
 		this.getItem = function(name){

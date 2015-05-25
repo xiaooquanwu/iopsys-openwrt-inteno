@@ -2,9 +2,9 @@ require("../../../../tests/lib-juci");
 
 var completed = {
 	"about": 1, 
-	"diagnostics": 0, 
-	"events": 0, 
-	"nat": 0, 
+	//"diagnostics": 0, 
+	"events": 1, 
+	"nat": 1, 
 	"restart": 1, 
 	"status.dsl": 1, 
 	"status.status": 1, 
@@ -25,6 +25,16 @@ describe("Status", function(){
 		expect($rpc.router.igmptable).to.be.ok(); 
 		$rpc.router.igmptable()
 			.done(function(){ done(); })
-			.fail(function(){ throw new Error("Was unable to call router.igmptable"); }); 
+			.fail(function(){ }); 
+	}); 
+	it("should have correct boardpanel.network settings", function(done){
+		$rpc.network.interface.dump().done(function(results){
+			expect(results.interface).to.be.ok(); 
+			var devs = results.interface.map(function(x){ return x.interface; }); 
+			expect(devs).to.contain($uci.boardpanel.network.internet.value); 
+			expect(devs).to.contain($uci.boardpanel.network.voice.value); 
+			expect(devs).to.contain($uci.boardpanel.network.iptv.value); 
+			done(); 
+		}); 
 	}); 
 }); 
