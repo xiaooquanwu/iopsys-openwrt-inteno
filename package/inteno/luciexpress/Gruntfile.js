@@ -163,19 +163,19 @@ module.exports = function(grunt){
 			plugins[name.replace(/^htdocs\//, "")] = JSON.parse(String(fs.readFileSync(name))); 
 		}); 
 		if(!fs.existsSync(OUTDIR)) fs.mkdirSync(OUTDIR); 
+		var javascript = "var JUCI_COMPILED = 1; var JUCI_TEMPLATES = "+
+			JSON.stringify(templates)+";"+
+			"var JUCI_PLUGINS = "+JSON.stringify(plugins)+";"+
+			all.map(function(name){ 
+				return fs.readFileSync(name); 
+			})
+			.join(";\n"); 
+			
 		fs.writeFileSync(OUTDIR+"__all.css", css); 
+		fs.writeFileSync("htdocs/__all.css", css); 
 		// TODO: really do not do it in memory!
-		fs.writeFileSync(OUTDIR+"__all.js", 
-			//uglifyjs.minify(
-				"var JUCI_COMPILED = 1; var JUCI_TEMPLATES = "+
-				JSON.stringify(templates)+";"+
-				"var JUCI_PLUGINS = "+JSON.stringify(plugins)+";"+
-				all.map(function(name){ 
-					return fs.readFileSync(name); 
-				})
-				.join(";\n")
-			//, {fromString: true }).code
-		); 
+		fs.writeFileSync(OUTDIR+"__all.js", javascript); 
+		fs.writeFileSync("htdocs/__all.js", javascript); 
 		
 		//fs.writeFileSync("htdocs/__templates.js", JSON.stringify(templates)); 
 	}); 
