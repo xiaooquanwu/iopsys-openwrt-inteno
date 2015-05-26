@@ -187,5 +187,4 @@ iopsys_upgrade_handling() {
 	# Never returns here, ubi_fixup.sh will respawn /etc/preinit
 }
 
-boot_hook_add preinit_essential iopsys_upgrade_handling
 
