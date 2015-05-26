@@ -148,6 +148,7 @@
     margin-top: -5px;
     width: 30px;
     height: 30px;
+    -moz-appearance: none;
 }
 .radio input[type="radio"]:focus + label::before {
     outline: none;
