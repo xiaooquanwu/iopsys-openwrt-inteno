@@ -13,9 +13,8 @@ exten => _X!,3,Hangup()
 ; Custom dialplan hook
 exten => _[+0-9a-zA-Z].,1,	|CUSTOM_INCOMING|
 
-; Store caller id, and write to call log
+; Store caller id
 exten => _[+0-9a-zA-Z].,n,	Set(DB(LASTCALLER/${CHANNEL(peername)})=${CALLERID(NUM)})
-exten => _[+0-9a-zA-Z].,n,	Set(result=${SHELL(/usr/lib/asterisk/log_call.sh Incoming ${CALLERID(NUM)} ${EXTEN})})
 
 ; Handle call - Goto(call_line,${EXTEN},1) or Macro(callhandler,${CHANNEL(peername)})
 exten => _[+0-9a-zA-Z].,n,	|INCOMING_HANDLER|

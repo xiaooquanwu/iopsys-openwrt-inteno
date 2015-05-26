@@ -1,0 +1,12 @@
+[general]
+enable=yes
+unanswered=yes
+batch=no
+safeshutdown=yes
+
+[csv]
+usegmtime=yes    ; log date/time in GMT.  Default is "no"
+loguniqueid=yes  ; log uniqueid.  Default is "no"
+loguserfield=yes ; log user field.  Default is "no"
+accountlogs=no   ; create separate log file for each account code. Default is "yes"
+maxrows=100

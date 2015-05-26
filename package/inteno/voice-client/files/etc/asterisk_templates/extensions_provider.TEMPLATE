@@ -19,10 +19,11 @@ exten => _X.,1,		Transfer(SIP/${EXTEN}@|PROVIDER|,,)
 
 [|PROVIDER|-outgoing]
 ; Context used for normal outgoing calls
-|SPEED_DIAL|exten => _[*#0-9].,1,	Set(DIAL_EXTEN=${EXTEN})
+|SPEED_DIAL|exten => _[*#0-9].,1,      Set(DIAL_EXTEN=${EXTEN})
+exten => _[*#0-9].,n,	Set(CALLERID(ANI)=|USERNAME|)
+exten => _[*#0-9].,n,	Set(CALLERID(number)=|USERNAME|)
 exten => _[*#0-9].,n,	|CUSTOM_OUTGOING|
 exten => _[*#0-9].,n,   |CALL_FILTER|
-exten => _[*#0-9].,n,	Set(result=${SHELL(/usr/lib/asterisk/log_call.sh Outgoing |USERNAME| ${DIAL_EXTEN})})
 exten => _[*#0-9].,n,	Set(DB(LASTCALL/|PROVIDER|)=${DIAL_EXTEN})
 exten => _[*#0-9].,n,	Set(CALLERID(name)=|DISPLAYNAME|)
 exten => _[*#0-9].,n,	Set(__TRANSFER_CONTEXT=|PROVIDER|-transfer)

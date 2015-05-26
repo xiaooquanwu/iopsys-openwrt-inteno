@@ -65,6 +65,7 @@ TMPL_QUEUES=$TEMPLATEDIR/queues.conf.TEMPLATE
 TMPL_QUEUE=$TEMPLATEDIR/queue.TEMPLATE
 
 TMPL_ASTERISK=$TEMPLATEDIR/asterisk.conf.TEMPLATE
+TMPL_CDR=$TEMPLATEDIR/cdr.conf.TEMPLATE
 TMPL_INDICATIONS=$TEMPLATEDIR/indications.conf.TEMPLATE
 TMPL_LOGGER=$TEMPLATEDIR/logger.conf.TEMPLATE
 TMPL_MANAGER=$TEMPLATEDIR/manager.conf.TEMPLATE
@@ -138,6 +139,7 @@ assemble_and_copy_config()
 
 	# Copy the template files which we don't edit.
 	cp $TMPL_ASTERISK		$WORKDIR/asterisk.conf
+	cp $TMPL_CDR			$WORKDIR/cdr.conf
 	cp $TMPL_INDICATIONS		$WORKDIR/indications.conf
 	cp $TMPL_MANAGER		$WORKDIR/manager.conf
 	cp $TMPL_MODULES		$WORKDIR/modules.conf
@@ -1063,6 +1065,12 @@ configure_sip_user()
 	# Add SIP User configuration to the temp file containing all SIP User configs.
 	cat $WORKDIR/sip_user.tmp >> $WORKDIR/sip_users.tmp
 	rm -f $WORKDIR/sip_user.tmp
+}
+
+configure_cdr()
+{
+	mkdir -p /var/log/asterisk/cdr-csv
+	touch /var/log/asterisk/cdr-csv/Master.csv
 }
 
 #
@@ -2017,6 +2025,11 @@ start_service() {
 	touch				$WORKDIR/features.tmp
 	touch				$WORKDIR/macros.tmp
 	touch 				$WORKDIR/queues.tmp
+
+	####################
+	# Call Detail Record 
+	####################
+	configure_cdr
 
 	###########################
 	# Call Filter configuration
