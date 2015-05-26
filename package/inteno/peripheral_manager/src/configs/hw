@@ -54,7 +54,8 @@ config button_map button_map
 	list buttonnames RESET
 	list buttonnames Wireless
 	list buttonnames WPS
-	list buttonnames DECT
+	list buttonnames DECTS
+	list buttonnames DECTL
 	list buttonnames TOUCH_NEAR
 	list buttonnames TOUCH_FAR
 	option minpress 100	# default minimum time a button nedes to be pressed. 
