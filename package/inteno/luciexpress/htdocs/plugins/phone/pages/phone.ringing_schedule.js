@@ -25,5 +25,59 @@ $juci.module("phone")
 	$uci.sync(["voice_client"]).done(function(){
 		// TODO add config for phone
 		//if($uci.voice_client && $uci.voice_client.settings) $scope.settings = $uci.voice_client.settings; 
+		$scope.schedules = $uci.voice_client["@schedule"]; 
+		$scope.allSipAccounts = $scope.phone_numbers.map(function(x){
+			return {
+				label: x.name.value, 
+				value: x[".name"]
+			}
+		});
 	}); 
+	
+	$scope.onAcceptSchedule = function(){
+		//$uci.save().done(function(){
+		var schedule = $scope.schedule; 
+		var errors = schedule.$getErrors(); 
+		
+		if(errors && errors.length){
+			$scope.errors = errors; 
+		} else {
+			$scope.errors = []; 
+			$scope.showScheduleDialog = 0; 
+		}
+	}
+	
+	$scope.onDismissSchedule = function(schedule){
+		if($scope.schedule[".new"]){
+			$scope.schedule.$delete().done(function(){
+				$scope.showScheduleDialog = 0; 
+				$scope.$apply(); 
+			}); 
+		} else {
+			$scope.showScheduleDialog = 0; 
+		}
+	}
+	
+	$scope.onAddSchedule = function(){
+		$uci.voice_client.create({".type": "schedule"}).done(function(item){
+			$scope.schedule = item; 
+			$scope.schedule[".new"] = true; 
+			$scope.showScheduleDialog = 1; 
+			$scope.$apply(); 
+			console.log("Added new schedule!"); 
+		}).fail(function(err){
+			console.log("Failed to create schedule!"); 
+		}); ; 
+	}
+	
+	$scope.onEditSchedule = function(sched){
+		console.log("Editing: "+sched[".name"]); 
+		$scope.schedule = sched; 
+		$scope.showScheduleDialog = 1; 
+	}
+	$scope.onDeleteSchedule = function(sched){
+		sched.$delete().always(function(){
+			$scope.$apply(); 
+		}); 
+	}
 }); 

@@ -154,3 +154,8 @@ UCI.voice_client.$registerSectionType("speed_dial", {
 	"tone":		{ dvalue: 1, type: Number },
 	"number":	{ dvalue: "", type: String }
 }); 
+UCI.voice_client.$registerSectionType("schedule", {
+	"days":		{ dvalue: [], type: Array, allow: ["mon", "tue", "wed", "thu", "fri", "sat", "sun"], validator: UCI.validators.WeekDayListValidator},
+	"time":		{ dvalue: "", type: String, validator: UCI.validators.TimespanValidator}, 
+	"number": { dvalue: "", type: String }
+}); 

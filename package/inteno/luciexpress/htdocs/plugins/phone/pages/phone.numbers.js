@@ -1,26 +1,16 @@
-/*
- * juci - javascript universal client interface
- *
- * Project Author: Martin K. Schröder <mkschreder.uk@gmail.com>
- * 
- * Copyright (C) 2012-2013 Inteno Broadband Technology AB. All rights reserved.
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * version 2 as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA
- */
+//! Author: Martin K. Schröder <mkschreder.uk@gmail.com>
  
-$juci.module("phone")
-.controller("PhoneNumbersPageCtrl", function($scope){
-	
+JUCI.app
+.controller("PhoneNumbersPageCtrl", function($scope, $uci){
+	$uci.sync("voice_client").done(function(){
+		$scope.phone_lines = $uci.voice_client["@brcm_line"]; 
+		$scope.phone_numbers = $uci.voice_client["@sip_service_provider"]; 
+		$scope.allSipAccounts = $scope.phone_numbers.map(function(x){
+			return {
+				label: x.name.value, 
+				value: x[".name"]
+			}
+		}); 
+		$scope.$apply(); 
+	}); 
 }); 

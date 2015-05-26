@@ -1,5 +1,5 @@
 <form name="ruleForm" class="form-horizontal" novalidate>
-	<div class="modal-body">
+	<!--<div class="modal-body">-->
 		<luci-config-lines>
 			<luci-config-line title="{{'Time Frame'|translate}}">
 				<luci-select ng-model="selectedTimeFrame" on-change="onChangeDays()" ng-items="allTimeFrames"></luci-select>
@@ -17,5 +17,5 @@
 				<luci-input-timespan ng-model="schedule.time" luci-timespan-validator="schedule.time.value"></luci-input-timespan>
 			</luci-config-line>
 		</luci-config-lines>
-	</div>
+	<!--</div>-->
 </form>
