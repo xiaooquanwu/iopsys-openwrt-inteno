@@ -197,3 +197,13 @@ h1, h2 {
     padding: 0;
 }
 
+.radio-info input[type="radio"] + label::after {
+    background-color: #a8b400;
+}
+.radio-info input[type="radio"]:checked + label::before {
+    border-color: #808080;
+}
+.radio-info input[type="radio"]:checked + label::after {
+    background-color: #a8b400;
+}
+
