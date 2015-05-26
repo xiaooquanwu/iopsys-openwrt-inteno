@@ -14,6 +14,7 @@ start_service() {
 	config_load boardpanel
 	config_get_bool status_led "settings" status_led
 	config_get_bool power_led "settings" power_led
+	config_get power_led_br "settings" power_led_br
 
 	if [ $status_led -eq 0 ]; then
 		ubus call leds set  '{"state" : "alloff"}'
@@ -26,5 +27,18 @@ start_service() {
 	else
 		ubus call led.power set '{"state": "notice"}'
 	fi
+
+	[ $power_led_br -ge 95 ] && ubus call led.power set '{"brightness":100}' && return
+	[ $power_led_br -ge 85 ] && ubus call led.power set '{"brightness":90}' && return
+	[ $power_led_br -ge 75 ] && ubus call led.power set '{"brightness":80}' && return
+	[ $power_led_br -ge 65 ] && ubus call led.power set '{"brightness":70}' && return
+	[ $power_led_br -ge 55 ] && ubus call led.power set '{"brightness":60}' && return
+	[ $power_led_br -ge 45 ] && ubus call led.power set '{"brightness":50}' && return
+	[ $power_led_br -ge 35 ] && ubus call led.power set '{"brightness":40}' && return
+	[ $power_led_br -ge 25 ] && ubus call led.power set '{"brightness":30}' && return
+	[ $power_led_br -ge 15 ] && ubus call led.power set '{"brightness":20}' && return
+	[ $power_led_br -ge 5 ]  && ubus call led.power set '{"brightness":10}' && return
+
+	ubus call led.power set '{"brightness":0}'
 }
 
