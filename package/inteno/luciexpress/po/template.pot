@@ -549,10 +549,6 @@ msgstr ""
 msgid "Noise"
 msgstr ""
 
-#: htdocs/plugins/core/widgets/luci.footer.js:46
-msgid "Not connected"
-msgstr ""
-
 #: htdocs/plugins/phone/pages/phone.number_blocking.html:4
 msgid "Number Blocking"
 msgstr ""

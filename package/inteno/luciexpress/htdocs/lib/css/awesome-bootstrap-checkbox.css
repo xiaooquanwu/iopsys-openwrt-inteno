@@ -145,6 +145,9 @@
 .radio input[type="radio"] {
     opacity: 0;
     z-index: 1;
+    margin-top: -5px;
+    width: 30px;
+    height: 30px;
 }
 .radio input[type="radio"]:focus + label::before {
     outline: none;
