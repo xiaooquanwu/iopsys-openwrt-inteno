@@ -130,7 +130,8 @@
 					"setpin",
 					"pbc",
 					"showpin",
-					"stapin"
+					"stapin", 
+					"status"
 				], 
 				"router": [
 					"networks"
@@ -161,7 +162,8 @@
 					"setpin",
 					"pbc",
 					"showpin",
-					"stapin"
+					"stapin", 
+					"status"
 				]
 			},
 			"uci": [

@@ -485,7 +485,6 @@
 		UCIConfig.prototype.$deleteSection = function(section){
 			var self = this; 
 			var deferred = $.Deferred(); 
-			console.log("Deleting section "+self[".name"]+"."+section[".name"]); 
 			
 			//self[".need_commit"] = true; 
 			$rpc.uci.delete({
@@ -493,6 +492,7 @@
 				"section": section[".name"]
 			}).done(function(){
 				_unlinkSection(self, section); 
+				console.log("Deleted section "+self[".name"]+"."+section[".name"]); 
 				self[".need_commit"] = true; 
 				deferred.resolve(); 
 			}).fail(function(){
