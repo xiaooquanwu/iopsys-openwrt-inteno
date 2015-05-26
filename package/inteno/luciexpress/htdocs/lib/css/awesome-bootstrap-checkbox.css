@@ -97,7 +97,8 @@
     color: #fff;
 }
 .radio {
-    padding-left: 20px;
+    padding-left:10px;
+    margin-right: 20px;
 }
 .radio label {
     display: inline-block;
@@ -146,7 +147,7 @@
     opacity: 0;
     z-index: 1;
     margin-top: -5px;
-    width: 30px;
+    width: calc(100% + 30px);
     height: 30px;
     -moz-appearance: none;
 }
