@@ -142,6 +142,8 @@ module.exports = function(grunt){
 			"htdocs/lib/css/awesome-bootstrap-checkbox.css",
 			"htdocs/css/nga.min.css",
 			"htdocs/css/app.css",
+            "htdocs/css/radio.css",
+            "htdocs/css/checkbox.css",
 			"htdocs/themes/vodafone/css/theme.css",
 			"htdocs/themes/vodafone/css/bootstrap.min.css"
 		]; 

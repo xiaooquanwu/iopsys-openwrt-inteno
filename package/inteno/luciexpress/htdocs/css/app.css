@@ -5,15 +5,15 @@
 	z-index: 0; 
 }
 
-input[type="checkbox"]:not(:checked) + label, [type="checkbox"]:checked + label {
-    cursor: pointer;
-    font-weight: normal;
-    line-height: 20px;
-    margin-bottom: 15px;
-    padding-left: 25px;
-    position: relative;
-    z-index: 2;
-}
+/*input[type="checkbox"]:not(:checked) + label, [type="checkbox"]:checked + label {*/
+    /*cursor: pointer;*/
+    /*font-weight: normal;*/
+    /*line-height: 20px;*/
+    /*margin-bottom: 15px;*/
+    /*padding-left: 25px;*/
+    /*position: relative;*/
+    /*z-index: 2;*/
+/*}*/
 
 .field-error {
 	border-left: 4px solid rgba(255, 0, 0, 0.6); 
