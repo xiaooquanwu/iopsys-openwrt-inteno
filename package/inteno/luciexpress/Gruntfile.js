@@ -97,6 +97,7 @@ module.exports = function(grunt){
 		console.log(files); 
 	});
 	grunt.registerTask("compile", "Compile all files into a single file", function(){
+		var OUTDIR = "bin/"; 
 		var libfiles = [
 			"htdocs/lib/js/async.js",
 			"htdocs/lib/js/js-schema.min.js",
@@ -161,9 +162,10 @@ module.exports = function(grunt){
 		pluginfiles.map(function(name){
 			plugins[name.replace(/^htdocs\//, "")] = JSON.parse(String(fs.readFileSync(name))); 
 		}); 
-		fs.writeFileSync("htdocs/__all.css", css); 
+		if(!fs.existsSync(OUTDIR)) fs.mkdirSync(OUTDIR); 
+		fs.writeFileSync(OUTDIR+"__all.css", css); 
 		// TODO: really do not do it in memory!
-		fs.writeFileSync("htdocs/__all.js", 
+		fs.writeFileSync(OUTDIR+"__all.js", 
 			//uglifyjs.minify(
 				"var JUCI_COMPILED = 1; var JUCI_TEMPLATES = "+
 				JSON.stringify(templates)+";"+

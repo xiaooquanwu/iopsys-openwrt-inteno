@@ -43,7 +43,12 @@ define Package/luciexpress/install
 	npm install 
 	grunt compile
 	$(INSTALL_DIR) $(1)/www
-	$(CP) ./htdocs/* $(1)/www/
+	$(CP) ./bin/* $(1)/www/
+	$(CP) ./htdocs/index.html $(1)/www/
+	$(CP) ./htdocs/config.json $(1)/www/
+	$(INSTALL_DIR) $(1)/www/themes/vodafone/
+	$(CP) ./htdocs/themes/vodafone/img $(1)/www/themes/vodafone/
+	$(CP) ./htdocs/themes/vodafone/fonts $(1)/www/themes/vodafone/
 	$(INSTALL_DIR) $(1)/usr/share/rpcd
 	$(CP) ./share/* $(1)/usr/share/rpcd/
 	./install_menus.sh $(1)

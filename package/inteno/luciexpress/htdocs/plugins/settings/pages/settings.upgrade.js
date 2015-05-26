@@ -119,12 +119,13 @@ JUCI.app
 	function upgradeStart(path){
 		$scope.error = ""; 
 		$scope.progress = 'progress'; 
-		$rpc.luci2.system.upgrade_test().done(function(result){
+		console.log("Trying to upgrade from "+path); 
+		/*$rpc.luci2.system.upgrade_test({"path": path}).done(function(result){
 			if(result.stderr){
 				$scope.error = "Upgrade test has failed: "+result.stderr; 
 				$scope.$apply(); 
 				return; 
-			}
+			}*/
 			$rpc.luci2.system.upgrade_start({"path": path}).done(function(result){
 				if(result && result.stderr) {
 					$scope.error = gettext("Upgrade process failed") + ": "+result.stderr; 
@@ -147,10 +148,10 @@ JUCI.app
 				$scope.error = gettext("Upgrade process failed") + "! "+JSON.stringify(result||"");
 				$scope.$apply();  
 			});
-		}).fail(function(result){
+		/*}).fail(function(result){
 			$scope.error = gettext("Upgrade test has failed") + ": "+result.stderr; 
 			$scope.$apply(); 
-		}); 
+		}); */
 	}
 	
 	/*$uci.sync("system").done(function(){
