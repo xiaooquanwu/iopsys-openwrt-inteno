@@ -205,7 +205,7 @@ JUCI.app
 				//return;   
 			}
 			
-			upgradeStart(); 
+			upgradeStart($scope.uploadFilename); 
 			
 			$(this).unbind("load"); 
 		}); 

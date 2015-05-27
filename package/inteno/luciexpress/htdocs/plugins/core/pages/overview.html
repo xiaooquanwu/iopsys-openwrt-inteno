@@ -33,13 +33,13 @@
 					<tr>
 						<td>
 							<div class="col-md-2"><i class="fa fa-calendar fa-2x"></i></div>
-							<div class="col-md-10"><strong>Schedule <a class="label label-primary pull-right" href="" ng-click="onWIFISchedToggle()">{{wifiSchedStatus | translate}}</a></strong></div>
+							<div class="col-md-10"><strong>Schedule <a class="label label-{{(wifi.status.schedule.value)?'success':'default'}} pull-right" href="" ng-click="onWIFISchedToggle()">{{wifiSchedStatus | translate}}</a></strong></div>
 						</td>
 					</tr>
 					<tr>
 						<td>
 							<div class="col-md-2"><i class="fa fa-wifi fa-2x"></i></div>
-							<div class="col-md-10"><strong>WPS <a class="label label-primary pull-right" href="" ng-click="onWPSToggle()">{{wifiWPSStatus | translate}}</a></strong></div>
+							<div class="col-md-10"><strong>WPS <a class="label label-{{(wifi.status.wps.value)?'success':'default'}} pull-right" href="" ng-click="onWPSToggle()">{{wifiWPSStatus | translate}}</a></strong></div>
 						</td>
 					</tr>
 					<tr ng-repeat="client in wireless.clients">

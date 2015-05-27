@@ -58,7 +58,6 @@ struct state
 	bool filedata;
 	int filemode;
 	int filefd;
-	int tempfd;
 };
 
 enum {
@@ -306,7 +305,7 @@ failure(int e, const char *message)
 
 	return -1;
 }
-
+/*
 static int
 filecopy(void)
 {
@@ -352,7 +351,7 @@ filecopy(void)
 
 	return 0;
 }
-
+*/
 static int
 header_field(multipart_parser *p, const char *data, size_t len)
 {
@@ -394,7 +393,6 @@ header_value(multipart_parser *p, const char *data, size_t len)
 static int
 data_begin_cb(multipart_parser *p)
 {
-	char tmpname[24] = "/tmp/luci-upload.XXXXXX";
 
 	if (st.parttype == PART_FILEDATA)
 	{
@@ -404,12 +402,12 @@ data_begin_cb(multipart_parser *p)
 		if (!st.filename)
 			return response(false, "File data without name");
 
-		st.tempfd = mkstemp(tmpname);
+		st.filefd = open(st.filename, O_CREAT | O_TRUNC | O_WRONLY, 0600);
 
-		if (st.tempfd < 0)
-			return response(false, "Failed to create temporary file");
+		if (st.filefd < 0)
+			return response(false, "Failed to create file");
 
-		unlink(tmpname);
+		//unlink(tmpname);
 	}
 
 	return 0;
@@ -433,9 +431,9 @@ data_cb(multipart_parser *p, const char *data, size_t len)
 		break;
 
 	case PART_FILEDATA:
-		if (write(st.tempfd, data, len) != len)
+		if (write(st.filefd, data, len) != len)
 		{
-			close(st.tempfd);
+			close(st.filefd);
 			return response(false, "I/O failure while writing temporary file");
 		}
 
@@ -464,30 +462,11 @@ data_end_cb(multipart_parser *p)
 	}
 	else if (st.parttype == PART_FILEDATA)
 	{
-		if (st.tempfd < 0)
+		if (st.filefd < 0)
 			return response(false, "Internal program failure");
 
-#if 0
-		/* prepare directory */
-		for (ptr = st.filename; *ptr; ptr++)
-		{
-			if (*ptr == '/')
-			{
-				*ptr = 0;
-
-				if (mkdir(st.filename, 0755))
-				{
-					unlink(st.tmpname);
-					return response(false, "Failed to create destination directory");
-				}
-
-				*ptr = '/';
-			}
-		}
-#endif
-
-		if (filecopy())
-			return -1;
+		//if (filecopy())
+		//	return -1;
 
 		return response(true, NULL);
 	}
@@ -529,7 +508,6 @@ init_parser(void)
 	strcpy(boundary, "--");
 	strcpy(boundary + 2, var);
 
-	st.tempfd = -1;
 	st.filefd = -1;
 	st.filemode = 0600;
 

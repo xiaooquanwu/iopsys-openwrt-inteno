@@ -1,3 +1,7 @@
+.radio-info input[type="radio"] {
+	cursor: pointer; 
+}
+
 .radio-info input[type="radio"] + label::after {
     background-color: #a8b400;
 }
