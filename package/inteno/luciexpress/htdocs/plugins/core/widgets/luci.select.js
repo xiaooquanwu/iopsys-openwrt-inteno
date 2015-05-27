@@ -73,12 +73,13 @@ $juci.module("core")
 					$('button.button-label', element).html(item.label);
 					break;
 			}
-			console.log("DROPDOWN: "+JSON.stringify(scope.selectedItem)+", "+item.value); 
+			//console.log("DROPDOWN: "+JSON.stringify(scope.selectedItem)+", "+item.value); 
 			var value = item; 
 			if("value" in item) 
 				value = item.value; 
 			if(value instanceof Array) { // make it work for lists without changing reference
 				if(!(scope.selectedItem instanceof Array)) scope.selectedItem = []; 
+				scope.selectedItem.splice(0, scope.selectedItem.length); 
 				value.map(function(x){ scope.selectedItem.push(x); }); 
 			} else if(value instanceof Object){ // make it work for objects without changing reference
 				Object.assign(scope.selectedItem, value);

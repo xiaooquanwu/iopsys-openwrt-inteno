@@ -118,7 +118,8 @@ JUCI.app
 	$scope.config = $config; 
 	
 	function upgradeStart(path){
-		$scope.error = ""; 
+		$scope.showUpgradeStatus = 1; 
+		$scope.error = null; 
 		$scope.message = gettext("Verifying firmware image")+"...";					
 		$scope.progress = 'progress'; 
 		setTimeout(function(){ $scope.$apply(); }, 0); 
@@ -128,6 +129,8 @@ JUCI.app
 		$rpc.luci2.system.upgrade_start({"path": path}).done(function(result){
 			// this will actually never succeed because server will be killed
 			console.error("upgrade_start returned success, which means that it actually probably failed but did not return an error"); 
+			$scope.error = (result.stdout||"") + (result.stderr||""); 
+			$scope.$apply(); 
 		}).fail(function(response){
 			$scope.message = gettext("Upgrade process has started. The web gui will not be available until the upgrade process has completed!");
 			$scope.$apply(); 

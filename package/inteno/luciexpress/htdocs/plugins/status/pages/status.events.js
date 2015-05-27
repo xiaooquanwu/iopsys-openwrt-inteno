@@ -2,12 +2,13 @@
 
 JUCI.app
 .controller("StatusEventsPageCtrl", function($scope, $rpc){
-	$scope.selectedShowType = "all"; 
-	$scope.selectedLogTypes = ["system", "network"]; 
+	var allLogTypes = ["error", "warning", "info"]; 
+	$scope.selectedShowType = allLogTypes; 
+	$scope.selectedLogTypes = ["system", "network", "other"]; 
 	
 	var groups = {
 		"system": [], 
-		"network": ["netifd", "brcmnetlink"], 
+		"network": ["netifd", "brcmnetlink", "dnsmasq-dhcp"], 
 	}; 
 	
 	JUCI.interval.repeat("syslog", 1000, function(done){
@@ -23,16 +24,23 @@ JUCI.app
 					return fields; 
 				})
 				.filter(function(x){ 
-					if(x == null) return false; 
+					// Epic ugliness
+					// TODO: fix up the log parsing code
+					if(x == null || x[2] == "kernel" || x[2] == "syslog") return false; 
+					x[2] = x[2].replace(/\[.*\]/gi, ""); 
 					var visible = false; 
-					var error = false, warning = false; 
+					var error = false, warning = false, info = false; 
 					if(x[1].indexOf("error") >= 0) error = true; 
 					if(x[1].indexOf("warn") >= 0) warning = true; 
-					if($scope.selectedShowType === "errwarn" && (!error && !warning)) return false; 
+					if(x[1].indexOf("notice") >= 0) info = true; 
+					if(error && $scope.selectedShowType.indexOf("error") == -1) return false; 
+					if(warning && $scope.selectedShowType.indexOf("warning") == -1) return false; 
+					if(info && $scope.selectedShowType.indexOf("info") == -1) return false; 
+					if(!error && !warning && !info && $scope.selectedLogTypes.indexOf("other") >= 0) visible = true; 
 					$scope.selectedLogTypes.map(function(t){
 						if(groups[t] && groups[t].indexOf(x[2]) >= 0) visible = true; 
 					}); 
-					return x != null && x[2] != "kernel" && x[2] != "syslog" && visible; 
+					return visible; 
 				}) // filter out all invalid matches 
 				.reverse() // sort by date in descending order
 				.map(function(x){ // convert date back to string and shorten it's format
@@ -57,15 +65,21 @@ JUCI.app
 		//{ label: "Firewall", value: "firewall" }
 	]; 
 	$scope.allEventTypes = [
-		{ label: "Only Errors & Warnings", value: "errwarn" }, 
-		{ label: "All Events", value: "all" }
+		{ label: "Only Errors & Warnings", value: ["error", "warning"] }, 
+		{ label: "All Events", value: ["error", "warning", "info"] }
 	];
+	$scope.lineClass = function(line){
+		if(line[1].indexOf("error") >= 0) return "label-danger"; 
+		if(line[1].indexOf("warn") >= 0) return "label-warning";  
+		if(line[1].indexOf("notice") >= 0) return "label-info"; 
+		return ""; 
+	}
 	
 	function onChange(){
 		console.log(JSON.stringify($scope.selectedLogTypes) + $scope.selectedShowType); 
 	}
-	$scope.onTypeChanged = function(value){
-		$scope.selectedShowType = value; 
-	}; 
+	$scope.onTypeChanged = function(){
+		onChange(); 
+	}
 	$scope.$watchCollection("selectedLogTypes", function(){ onChange(); }); 
 }); 
