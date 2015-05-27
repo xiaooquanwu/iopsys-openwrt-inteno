@@ -1,4 +1,4 @@
-config 'juci-settings' 'settings'
+config 'settings' 'settings'
 	option theme 'vodafone'
 	option lang 'en'
 	list themes 'vodaphone'

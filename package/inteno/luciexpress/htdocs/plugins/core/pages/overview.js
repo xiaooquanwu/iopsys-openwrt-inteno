@@ -69,7 +69,7 @@ $juci.module("core")
 				});; 
 			},
 			function(next){
-				var ifname = "wan"; // TODO: replace this with dynamic string after merge
+				var ifname = $config.wan_interface; // TODO: replace this with dynamic string after merge
 				$rpc.network.interface.dump().done(function(interfaces){
 					var conn = ""; 
 					if(interfaces && interfaces.interface){

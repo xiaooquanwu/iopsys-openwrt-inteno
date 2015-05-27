@@ -1,11 +1,14 @@
 $juci.module("internet")
-.controller("InternetFirewallPageCtrl", function($scope, $uci){
+.controller("InternetFirewallPageCtrl", function($scope, $uci, $config){
 	$scope.firewallSwitchState = 0; 
 	$uci.sync("firewall").done(function(){
 		$scope.firewall = $uci.firewall; 
-		$scope.firewallSwitchState = $uci.firewall["@rule"].filter(function(rule){ return rule.enabled.value == true; }).length > 0; 
+		$scope.firewallSwitchState = $uci.firewall["@zone"].filter(function(zone){ 
+			return zone.name.value == "wan" && zone.input.value == "ACCEPT" && zone.forward.value == "ACCEPT"; 
+		}).length > 0; 
 		$scope.$apply(); 
 	}); 
+	
 	$scope.onFirewallToggle = function(){
 		if($scope.firewallSwitchState) {
 			$uci.firewall["@zone"].map(function(zone){
@@ -23,4 +26,7 @@ $juci.module("internet")
 			}); 
 		}
 	}
+	
+	// just to update the rules based on switch value
+	$scope.onFirewallToggle(); 
 }); 

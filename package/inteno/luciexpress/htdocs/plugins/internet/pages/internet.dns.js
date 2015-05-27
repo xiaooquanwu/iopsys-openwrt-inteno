@@ -1,10 +1,8 @@
 JUCI.app
-.controller("InternetDNSPageCtrl", function ($scope, $uci, $log) {
-	$scope.providers = ["dyndns.org"];
-	$log.info("uci", $uci);
+.controller("InternetDNSPageCtrl", function ($scope, $uci, $log, $config) {
 	$uci.sync(["network","ddns"]).done(function () {
-		if ($uci.network && $uci.network.wan) {
-			var wan = $uci.network.wan;
+		if ($uci.network) {
+			var wan = $uci.network[$config.wan_interface];
 			while(wan.dns.value.length < 2) wan.dns.value.push("");
 			$scope.dnsServers = wan.dns.value.map(function(x){ return { value: x }; }); 
 			$scope.onDNSBlur = function(){

@@ -1,7 +1,7 @@
 //! Author: Martin K. Schröder <mkschreder.uk@gmail.com>
 
 JUCI.app
-.controller("StatsOverviewCtrl", function ($scope, $uci, $rpc, gettext) {
+.controller("StatsOverviewCtrl", function ($scope, $uci, $rpc, gettext, $config) {
 	//$scope.expanded = false; 
 	$scope.sections = [{}, {}, {}]; 
 	
@@ -19,9 +19,9 @@ JUCI.app
 			function(next){
 				var sections = []; 
 				[
-					{ name: gettext("Internet"), value: $uci.boardpanel.network.internet.value||"wan" }, 
-					{ name: gettext("Voice"), value: $uci.boardpanel.network.voice.value }, 
-					{ name: gettext("IPTV"), value: $uci.boardpanel.network.iptv.value }
+					{ name: gettext("Internet"), value: $config.wan_interface }, 
+					{ name: gettext("Voice"), value: $config.voice_interface }, 
+					{ name: gettext("IPTV"), value: $config.iptv_interface }
 				]
 				.filter(function(x){ return x.value != "" })
 				.forEach(function(x, c){ 

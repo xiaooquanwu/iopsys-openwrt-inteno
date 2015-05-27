@@ -22,7 +22,7 @@ $juci.module("internet")
 		}, 
 		function(next){
 			$rpc.network.interface.status({
-				"interface": "wan"
+				"interface": $config.wan_interface
 			}).done(function(wan){
 				if("ipv4-address" in wan)
 					$scope.wan.ip = wan["ipv4-address"][0].address; 
