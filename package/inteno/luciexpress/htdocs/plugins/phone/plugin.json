@@ -13,6 +13,9 @@
 		"phone/numbers": {
 			"view": "pages/phone.numbers"
 		}, 
+		"phone/lines": {
+			"view": "pages/phone.lines"
+		}, 
 		"phone/ringing_schedule": {
 			"view": "pages/phone.ringing_schedule"
 		}, 
