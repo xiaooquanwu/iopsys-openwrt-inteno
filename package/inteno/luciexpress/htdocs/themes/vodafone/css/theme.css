@@ -197,6 +197,27 @@ h1, h2 {
     padding: 0;
 }
 
+.checkbox-info input[type="checkbox"]:checked + label::before {
+    background-color: #a8b400;
+    border-color: #808080;
+}
+
+.checkbox-info input[type="checkbox"]:checked + label::after {
+    color: #fff;
+}
+
+.radio-info input[type="radio"] + label::after {
+    background-color: #a8b400;
+}
+
+.radio-info input[type="radio"]:checked + label::before {
+    border-color: #808080;
+}
+
+.radio-info input[type="radio"]:checked + label::after {
+    background-color: #a8b400;
+}
+
 .switch {
     background-color: #808080;
     border-color: #808080;
@@ -207,3 +228,6 @@ h1, h2 {
     border-color: #a8b400;
 }
 
+.wifi-enabled {
+    color: #a8b400;
+}

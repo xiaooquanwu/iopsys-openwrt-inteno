@@ -27,3 +27,11 @@
 .no-padding {
     padding: 0;
 }
+
+.wifi-enabled {
+    color: #64bd63;
+}
+
+.wifi-disabled {
+    color: #777;
+}

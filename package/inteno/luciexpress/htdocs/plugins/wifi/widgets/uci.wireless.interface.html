@@ -3,7 +3,7 @@
 		<div class="panel-heading">
 			<div class="btn-group pull-right">
 				<span class="btn">
-					<i style="color: {{(interface.disabled.value)?'#777':'#64bd63'}}" class="fa fa-wifi fa-2x"/>
+					<i ng-class="interface.disabled.value?'wifi-disabled':'wifi-enabled'" class="fa fa-wifi fa-2x"/>
 				</span>
 				<span class="btn " ng-click="expanded = !expanded">
 					<i class="fa fa-caret-down fa-2x" ng-show="expanded"></i>
@@ -32,7 +32,10 @@
 				</luci-config-line>
 				<luci-config-line title="{{'wifi-iface.key'|translate}}">
 					<input type="{{(!showPassword)?'password':'text'}}" class="form-control" placeholder="{{'wifi-iface.key'|translate}}" ng-model="interface.key.value"/>
-					<div style="float: right;margin-top: 10px; margin-bottom: 10px;"><strong style="font-size: 1.2em;">{{'Display Characters'|translate}}: <input type="checkbox" ng-model="showPassword" /></strong></div>
+                    <div class="checkbox checkbox-info">
+                        <input type="checkbox" ng-model="showPassword" />
+                        <label><strong>{{'Display Characters'|translate}}</strong></label>
+                    </div>
 				</luci-config-line>
 			</luci-config-lines>
 		</div>

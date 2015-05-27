@@ -44,11 +44,12 @@
 	<modal title="{{'Add clients to MAC filtering list'|translate}}" ng-show="showModal" on-accept="onAcceptModal()" on-dismiss="onDismissModal()" dismiss-label="{{'Cancel'|translate}}" accept-label="{{'Save'|translate}}">
 		<div class="row" ng-repeat="cl in client_list">
 			<div class="col-xs-6">
-				<label>
-					<input type="checkbox" ng-model="cl.checked"/> {{cl.client.hostname}}
-				</label>
+                <div class="checkbox checkbox-small checkbox-info">
+                    <input type="checkbox" ng-model="cl.checked"/>
+				    <label><strong>{{cl.client.hostname}}</strong></label>
+                </div>
 			</div>
-			<div class="col-xs-6">
+			<div class="col-xs-6" style="margin-top: 5px;">
 				<label>{{cl.client.macaddr}}</label>
 			</div>
 		</div>
