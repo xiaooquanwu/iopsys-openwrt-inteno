@@ -7,4 +7,7 @@ JUCI.app
 			$scope.boardpanel = $uci.boardpanel; 
 		$scope.$apply();
 	}); 
+	$scope.onSave = function(){
+		$uci.save(); 
+	}
 }); 

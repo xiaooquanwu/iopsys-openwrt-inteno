@@ -8,20 +8,19 @@
 		<luci-config-section  ng-show="boardpanel">
 			<luci-config-lines>
 				<luci-config-line title="{{'USB Port'|translate}}">
-					<switch id="enabled" name="enabled" ng-model="boardpanel.settings.usb_port.value" class="green"></switch>
+					<switch id="enabled" name="enabled" ng-model="boardpanel.settings.usb_port.value" class="green" ng-change="onSave()"></switch>
 				</luci-config-line>
 				<luci-config-line title="{{'Status-LED'|translate}}">
-					<switch id="enabled" name="enabled" ng-model="boardpanel.settings.status_led.value" class="green"></switch>
+					<switch id="enabled" name="enabled" ng-model="boardpanel.settings.status_led.value" class="green" ng-change="onSave()"></switch>
 				</luci-config-line>
 				<luci-config-line title="{{'Power-LED'|translate}}">
-					<switch id="enabled" name="enabled" ng-model="boardpanel.settings.power_led.value" class="green"></switch>
+					<switch id="enabled" name="enabled" ng-model="boardpanel.settings.power_led.value" class="green" ng-change="onSave()"></switch>
 				</luci-config-line>
 				<luci-config-line title="{{'Power-LED Brightness'|translate}}" no-pull>
-					<luci-brightness ng-model="boardpanel.settings.power_led_br.value" min="0" max="100"></luci-brightness>
+					<luci-brightness ng-model="boardpanel.settings.power_led_br.value" min="0" max="100" ng-change="onSave()"></luci-brightness>
 					<!--<switch id="enabled" name="enabled" ng-model="boardpanel.settings.power_led_br.value" class="green"></switch>-->
 				</luci-config-line>
 			</luci-config-lines>
 		</luci-config-section>
-		<luci-config-apply></luci-config-apply>
 	</div>
 </luci-layout-with-sidebar>

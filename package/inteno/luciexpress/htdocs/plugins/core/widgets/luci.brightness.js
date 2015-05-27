@@ -8,7 +8,8 @@ JUCI.app
 		scope: { 
 			model: "=ngModel", 
 			min: "@", 
-			max: "@"
+			max: "@", 
+			ngChange: "&"
 		}, 
 		templateUrl: plugin_root+"/widgets/luci.brightness.html", 
 		replace: true, 
@@ -25,6 +26,7 @@ JUCI.app
 	var total = (max - min); 
 	var step = total / 5; 
 	var base_color = "ff";  
+	var last_value = $scope.model; 
 	
 	function update(){
 		var bars = []; 
@@ -39,6 +41,12 @@ JUCI.app
 			//console.log("value: "+$scope.model+" "+bar.color); 
 			bars.push(bar); 
 		}
+		setTimeout(function(){
+			if($scope.model !== last_value && $scope.ngChange) {
+				last_value = $scope.model;
+				$scope.ngChange();  
+			}
+		}, 0); 
 		$scope.bars = bars; 
 	} update(); 
 	
