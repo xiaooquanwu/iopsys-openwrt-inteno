@@ -67,15 +67,18 @@ chrCmd(const char *pFmt, ...)
 
 	va_end(ap);
 
-	FILE *pipe;
-	char buffer[128];
-	if ((pipe = popen(cmd, "r")))
+	FILE *pipe = 0;
+	static char buffer[128] = {0};
+	if ((pipe = popen(cmd, "r"))){
 		fgets(buffer, sizeof(buffer), pipe);
-	pclose(pipe);
+		pclose(pipe);
 
-	remove_newline(buffer);
-	if (strlen(buffer))
-		return (const char*)buffer;
-	else
-		return NULL;
+		remove_newline(buffer);
+		if (strlen(buffer))
+			return (const char*)buffer;
+		else
+			return "";
+	} else {
+		return ""; 
+	}
 }

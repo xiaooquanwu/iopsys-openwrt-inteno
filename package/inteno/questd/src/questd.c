@@ -1883,7 +1883,7 @@ void *dump_router_info(void *arg)
 {
 	int lpcnt = 0;
 
-	jiffy_counts_t cur_jif, prev_jif;
+	jiffy_counts_t cur_jif = {0}, prev_jif = {0};
 	
 	
 	init_db_hw_config();
@@ -1921,7 +1921,8 @@ int main(int argc, char **argv)
 		fprintf(stderr, "Failed to connect to ubus\n");
 		return 1;
 	}
-        if ((pt = pthread_create(&(tid[0]), NULL, &dump_router_info, NULL) != 0)) {
+	
+	if ((pt = pthread_create(&(tid[0]), NULL, &dump_router_info, NULL) != 0)) {
 		fprintf(stderr, "Failed to create thread\n");
 		return 1;
 	}
