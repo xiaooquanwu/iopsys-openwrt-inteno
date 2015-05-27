@@ -6,8 +6,8 @@
  #if ENABLE_FEATURE_UDHCP_8021Q
 -	{ OPTION_U16  | OPTION_REQ                 , 0x84 }, /* DHCP_VLAN_ID       */
 -	{ OPTION_U8   | OPTION_REQ                 , 0x85 }, /* DHCP_VLAN_PRIORITY */
-+	{ OPTION_STRING  | OPTION_REQ                 , 0x84 }, /* DHCP_VLAN_ID       */
-+	{ OPTION_STRING  | OPTION_REQ                 , 0x85 }, /* DHCP_VLAN_PRIORITY */
++	{ OPTION_STRING                            , 0x84 }, /* DHCP_VLAN_ID       */
++	{ OPTION_STRING                            , 0x85 }, /* DHCP_VLAN_PRIORITY */
  #endif
  	{ OPTION_STATIC_ROUTES                    , 0xf9 }, /* DHCP_MS_STATIC_ROUTES */
  	{ OPTION_6RD | OPTION_REQ                 , 0xd4 }, /* DHCP_6RD (RFC)     */
