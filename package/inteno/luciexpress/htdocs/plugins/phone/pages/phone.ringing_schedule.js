@@ -24,14 +24,8 @@ $juci.module("phone")
 .controller("PhoneRingingScheduleCtrl", function($scope, $uci){
 	$uci.sync(["voice_client"]).done(function(){
 		// TODO add config for phone
-		//if($uci.voice_client && $uci.voice_client.settings) $scope.settings = $uci.voice_client.settings; 
+		if($uci.voice_client && $uci.voice_client.settings) $scope.settings = $uci.voice_client.settings; 
 		$scope.schedules = $uci.voice_client["@schedule"]; 
-		$scope.allSipAccounts = $scope.phone_numbers.map(function(x){
-			return {
-				label: x.name.value, 
-				value: x[".name"]
-			}
-		});
 	}); 
 	
 	$scope.onAcceptSchedule = function(){

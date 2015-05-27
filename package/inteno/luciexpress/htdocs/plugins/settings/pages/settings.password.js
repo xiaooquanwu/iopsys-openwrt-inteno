@@ -38,6 +38,9 @@ JUCI.app
 			$rpc.luci2.system.password_set({user: $rpc.$session.data.username, password: $scope.modal.password, curpass: $scope.modal.old_password}).done(function(data){
 				$scope.showModal = 0; 
 				$scope.$apply(); 
+				$rpc.$logout().done(function(){
+					window.location.reload(); 
+				}); 
 			}).fail(function(){
 				
 			}); 

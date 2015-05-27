@@ -31,8 +31,8 @@
 			<p>{{'settings.upgrade.online.info'|translate}}</p>
 			<luci-config-lines>
 				<luci-config-line title="{{onlineUpgrade}}">
-					<button ng-hide="onlineUpgrade" class="btn btn-lg btn-default" ng-click="onOnlineCheck()">{{'Check for Update'|translate}}</button>
-					<button ng-show="onlineUpgrade" class="btn btn-lg btn-default" ng-click="onUpgradeOnline()">{{'Upgrade'|translate}}</button>
+					<button ng-hide="onlineUpgradeAvailable" class="btn btn-lg btn-default" ng-click="onOnlineCheck()">{{'Check for Upgrade'|translate}}</button>
+					<button ng-show="onlineUpgradeAvailable" class="btn btn-lg btn-default" ng-click="onUpgradeOnline()">{{'Install Upgrade'|translate}}</button>
 				</luci-config-line>
 			</luci-config-lines>
 		</luci-config-section>
@@ -40,11 +40,11 @@
 			<h2>{{'USB Firmware Upgrade'|translate}}</h2>
 			<p>{{'settings.upgrade.usb.info'|translate}}</p>
 			<luci-config-lines>
-				<luci-config-line title="{{usbUpgrade}}" ng-show="usbUpgrade">
+				<luci-config-line title="{{usbUpgrade}}" ng-show="usbUpgradeAvailable">
 					<button class="btn btn-lg btn-default" ng-click="onUpgradeUSB()">{{'Install Upgrade'|translate}}</button>
 				</luci-config-line>
-				<luci-config-line title="{{usbUpgrade}}" ng-hide="usbUpgrade">
-					<button class="btn btn-lg btn-default" ng-click="onCheckUSB()">{{'Check for Update'|translate}}</button>
+				<luci-config-line title="{{usbUpgrade}}" ng-hide="usbUpgradeAvailable">
+					<button class="btn btn-lg btn-default" ng-click="onCheckUSB()">{{'Check for Upgrade'|translate}}</button>
 				</luci-config-line>
 			</luci-config-lines>
 		</luci-config-section>

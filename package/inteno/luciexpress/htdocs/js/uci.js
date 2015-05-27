@@ -383,7 +383,7 @@
 		}
 		
 		function _insertSection(self, item){
-			console.log("Adding local section: "+self[".name"]+"."+item[".name"]); 
+			//console.log("Adding local section: "+self[".name"]+"."+item[".name"]); 
 			var section = new UCI.Section(self); 
 			section.$update(item); 
 			var type = "@"+item[".type"]; 
@@ -401,7 +401,7 @@
 		function _unlinkSection(self, section){
 			// NOTE: can not use filter() because we must edit the list in place 
 			// in order to play well with controls that reference the list! 
-			console.log("Removing local section: "+self[".name"]+"."+section[".name"]+" of type "+section[".type"]); 
+			console.log("Unlinking local section: "+self[".name"]+"."+section[".name"]+" of type "+section[".type"]); 
 			var all = self["@all"]; 
 			for(var i = 0; i < all.length; i++){
 				if(all[i][".name"] === section[".name"]) {
@@ -446,6 +446,7 @@
 					
 					// now delete any section that no longer exists in our local cache
 					async.eachSeries(Object.keys(to_delete), function(x, next){
+						if(!to_delete[x]) { next(); return; }
 						var section = to_delete[x]; 
 						//console.log("Would delete section "+section[".name"]+" of type "+section[".type"]); 
 						_unlinkSection(self, section); 
@@ -694,7 +695,10 @@
 				var commit_list = []; 
 				Object.keys(self).map(function(k){
 					if(self[k].constructor == UCI.Config){
-						if(self[k][".need_commit"]) commit_list.push(self[k][".name"]); 
+						if(self[k][".need_commit"]) {
+							commit_list.push(self[k][".name"]); 
+							self[k][".need_commit"] = false; 
+						}
 					}
 				}); 
 				async.each(commit_list, function(config, next){
@@ -744,6 +748,7 @@
 						next("could not commit config: "+err); 
 					}); 
 				}, function(err){
+					console.log("Commit done!"); 
 					// this is to always make sure that we do this outside of this code flow
 					setTimeout(function(){
 						if(err) deferred.reject(err); 

@@ -9,7 +9,7 @@
 					<switch id="enabled" name="enabled" ng-model="settings.scheduling.value" class="green"></switch>
 				</luci-config-line>
 			</luci-config-lines>
-			<table class="table">
+			<table class="table" ng-show="settings.scheduling.value">
 				<thead>
 					<th translate>Day</th>
 					<th translate>Time</th>

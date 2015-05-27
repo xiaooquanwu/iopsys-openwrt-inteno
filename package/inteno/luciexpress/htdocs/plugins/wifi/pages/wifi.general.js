@@ -11,7 +11,8 @@ JUCI.app
 						".name": "status", 
 						disabled: false, 
 						button_enabled: false
-					}).done(function(){
+					}).done(function(section){
+						$scope.status = section; 
 						$uci.save().done(function(){
 							next();
 						}).fail(function(){

@@ -13,9 +13,9 @@
 			<luci-config-lines ng-show="filter.block_outgoing.value">
 				<hr/>
 				<luci-config-line title="Do not allow connections to these numbers">
-					<div class="row" ng-repeat="rule in outgoingRules">
+					<div class="row" ng-repeat="rule in outgoingRules track by rule['.name']">
 						<div class="form-group form-inline">
-							<input type="text" class="form-control" ng-model="rule.extension.value" ng-blur="onSave()"/>
+							<input type="text" class="form-control" ng-model="rule.extension.value" ng-blur="onSave()" placeholder="{{'Phone Extension'|translate}}"/>
 							<button class="btn btn-default" ng-click="onDeleteOutgoingRule(rule)"><i class="fa fa-trash"></i></button>
 						</div>
 					</div>
@@ -46,7 +46,7 @@
 				<luci-config-line title="Do not allow connections from these numbers">
 					<div class="row" ng-repeat="rule in incomingRules">
 						<div class="form-group form-inline">
-							<input type="text" class="form-control" ng-model="rule.extension.value"  ng-blur="onSave()"/>
+							<input type="text" class="form-control" ng-model="rule.extension.value"  ng-blur="onSave()" placeholder="{{'Phone Extension'|translate}}"/>
 							<button class="btn btn-default" ng-click="onDeleteIncomingRule(rule)"><i class="fa fa-trash"></i></button>
 						</div>
 					</div>
