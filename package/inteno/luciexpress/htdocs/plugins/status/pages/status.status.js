@@ -22,13 +22,11 @@ JUCI.app
 					{ name: gettext("Internet"), value: $config.wan_interface }, 
 					{ name: gettext("Voice"), value: $config.voice_interface }, 
 					{ name: gettext("IPTV"), value: $config.iptv_interface }
-				]
-				.filter(function(x){ return x.value != "" })
-				.forEach(function(x, c){ 
-					if(x.interface) {
+				].forEach(function(x, c){ 
+					if(x.value) {
 						sections.push({
 							"name": x.name, 
-							"interface": _interfaces.find(function(i){ return i.interface == x.value; })
+							"interface": _interfaces.find(function(i){ return i.interface === x.value; })
 						});  
 					}
 				}); 
