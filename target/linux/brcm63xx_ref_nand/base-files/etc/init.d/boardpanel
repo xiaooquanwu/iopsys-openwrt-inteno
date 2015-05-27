@@ -26,8 +26,7 @@ start_service() {
 		ubus call led.power set '{"state": "off"}'
 	else
 		ubus call led.power set '{"state": "notice"}'
+		ubus call led.power set "{\"brightness\":${power_led_br:-100}}"
 	fi
-
-	ubus call led.power set "{\"brightness\":${power_led_br:-100}}"
 }
 
