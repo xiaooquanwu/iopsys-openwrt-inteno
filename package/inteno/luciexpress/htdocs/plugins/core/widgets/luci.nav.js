@@ -34,46 +34,44 @@ $juci.module("core")
 	}; 
 })
 .controller("NavCtrl", function($scope, $navigation, $location, $state, $rootScope, $config){
-	var path = $location.path().replace(/^\/+|\/+$/g, ''); 
-	//console.log("NAV: "+path); 
-	var subtree = path.split("/")[0]; 
-	
-	$scope.tree = $navigation.tree(subtree); 
-	
+    $scope.showSubMenuItems = false;
+
 	$scope.hasChildren = function(menu){
-		return Object.keys(menu.children) > 0; 
-	}
-	$scope.isActive = function (viewLocation) { 
-		return viewLocation === $location.path();
+		return Object.keys(menu.children) > 0;
 	};
-	
-  $scope.itemVisible = function(item){
+	$scope.isItemActive = function (item) {
+        if ('/' + item.href === $location.path()) {
+            if(item.children_list && item.children_list.length > 0) {
+                $scope.showSubMenuItems = true;
+            } else {
+                $scope.showSubMenuItems = false;
+            }
+            return true;
+        } else if ($location.path().indexOf('/' + item.href) === 0) {
+            $scope.showSubMenuItems = true;
+        } else {
+            $scope.showSubMenuItems = false;
+        }
+        return false;
+	};
+
+    $scope.isSubItemActive = function (item) {
+        return '/' + item.href === $location.path();
+    };
+
+    $scope.itemVisible = function(item){
 		if(!item.modes.length) return true; 
 		else if(item.modes && item.modes.indexOf($config.mode) == -1) {
 			return false; 
 		} 
 		else return true; 
-	} 
-	
+	};
+
 	function activate(){
-		var path = $location.path().replace(/^\/+|\/+$/g, ''); 
-		var subtree = path.split("-")[0]; 
+		var path = $location.path().replace(/^\/+|\/+$/g, '');
+		var subtree = path.split("-")[0];
 		$scope.tree = $navigation.tree(subtree);
-		
-		setTimeout(function(){
-			$("nav ul a").removeClass("open"); 
-			$("nav ul a[href='#!"+path+"']").parent().addClass("open"); 
-		}, 0); 
-	}; 
-	$rootScope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams){
-    //activate(); 
-  });
-	activate(); 
+	}
+	activate();
 	
-	/*$scope.$on('$locationChangeSuccess', function () {
-		var path = $location.path().replace(/^\/+|\/+$/g, ''); 
-		var subtree = path.split(".")[0]; 
-		$scope.tree = $navigation.tree(subtree); 
-		$("nav ul a[href='#!"+path+"']").parent().addClass("open"); 
-	}); */
-}); 
+});

@@ -144,6 +144,7 @@ module.exports = function(grunt){
 			"htdocs/css/app.css",
             "htdocs/css/radio.css",
             "htdocs/css/checkbox.css",
+            "htdocs/css/menu.css",
 			"htdocs/themes/vodafone/css/theme.css",
 			"htdocs/themes/vodafone/css/bootstrap.min.css"
 		]; 

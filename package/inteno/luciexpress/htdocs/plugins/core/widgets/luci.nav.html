@@ -1,10 +1,10 @@
 <nav class="luci-nav" >
-	<ul class="nav nav-pills nav-stacked span2">
-		<li class="dropdown" ng-repeat="item in tree.children_list" ng-show="itemVisible(item)">
-			<a href="#!{{item.path}}" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">{{item.text | translate}}</a>
-			<ul class="nav nav-pills nav-stacked">
-				<li style="padding-left: 10px;" ng-repeat="item2 in item.children_list">
-					<a href="#!{{item2.path}}">{{item2.text | translate}}</a>
+	<ul class="left-menu">
+		<li ng-repeat="item in tree.children_list" ng-show="itemVisible(item)">
+			<a ng-class="[isItemActive(item)?'open':'', showSubMenuItems?'collapsed':'']" ng-href="#!{{item.href}}">{{item.text | translate}}</a>
+			<ul class="left-sub-menu" ng-show="showSubMenuItems">
+				<li ng-repeat="item2 in item.children_list">
+                    <a ng-class="isSubItemActive(item2)?'open':''" href="#!/{{item2.href}}">{{item2.text | translate}}</a>
 				</li>
 			</ul>
 		</li>
