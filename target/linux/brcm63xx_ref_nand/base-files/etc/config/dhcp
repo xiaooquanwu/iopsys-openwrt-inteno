@@ -15,6 +15,15 @@ config dnsmasq
 	option leasefile '/tmp/dhcp.leases'
 	option resolvfile '/tmp/resolv.conf.auto'
 
+config domain
+	list name 'www.routerlogin.net'
+	list name 'routerlogin.net'
+	list name 'www.routerlogin.com'
+	list name 'routerlogin.com'
+	list name 'www.login.lan'
+	list name 'login.lan'
+	list name 'login'
+
 config dhcp 'lan'
 	option interface 'lan'
 	option start '100'

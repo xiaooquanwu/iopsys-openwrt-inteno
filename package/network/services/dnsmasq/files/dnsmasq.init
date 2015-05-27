@@ -448,12 +448,14 @@ dhcp_option_add() {
 
 dhcp_domain_add() {
 	local cfg="$1"
-	local ip name names record
+	local ip name names record lanaddr
 
 	config_get names "$cfg" name "$2"
 	[ -n "$names" ] || return 0
 
 	config_get ip "$cfg" ip "$3"
+	[ -n "$ip" ] || network_get_ipaddr lanaddr "lan"
+	[ -n "$lanaddr" ] && ip=$lanaddr
 	[ -n "$ip" ] || return 0
 
 	for name in $names; do
