@@ -1,3 +1,6 @@
+.checkbox-info input[type="checkbox"] {
+    cursor: pointer; 
+}
 .checkbox-info input[type="checkbox"]:checked + label::before {
     background-color: #a8b400;
     border-color: #808080;

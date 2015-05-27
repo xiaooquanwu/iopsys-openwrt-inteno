@@ -67,7 +67,7 @@ UCI.voice_client.$registerSectionType("sip_service_provider",  {
 	"priority_g726":		{ dvalue: 0, type: Number },   
 	"enabled":					{ dvalue: true, type: Boolean },
 	"target":						{ dvalue: "direct", type: String },       
-	"call_lines":				{ dvalue: "BRCM/4", type: String },
+	"call_lines":				{ dvalue: [], type: Array },
 	"mailbox":					{ dvalue: "", type: String },     
 	"call_filter":			{ dvalue: "", type: String },     
 	"domain":						{ dvalue: "", type: String },      

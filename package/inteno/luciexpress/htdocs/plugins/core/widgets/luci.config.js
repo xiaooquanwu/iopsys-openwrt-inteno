@@ -89,5 +89,9 @@ $juci.module("core")
 			setTimeout(function(){$scope.$apply();}, 0); 
 		}); 
 	}
+	$scope.onCancel = function(){
+		// simple way to reset
+		window.location.reload(); 
+	}
 }); 
 

@@ -12,9 +12,11 @@
 						{{num.username.value}}
 					</luci-config-line>
 					<luci-config-line title="Incoming Phone Lines">
-						<div class="form-group col-md-6" ng-repeat="line in phone_lines">
-							<label>{{line.name.value}}</label>
-							<input type="checkbox"/>
+						<div class="form-group col-md-6 " ng-repeat="line in phone_lines track by $index">
+							<div class="checkbox checkbox-info">
+								<input type="checkbox" checklist-model="num.call_lines.value" checklist-value="line['.name']"/>
+								<label>{{line.name.value}}</label>
+							</div>
 						</div>
 					</luci-config-line>
 				</luci-config-lines>
