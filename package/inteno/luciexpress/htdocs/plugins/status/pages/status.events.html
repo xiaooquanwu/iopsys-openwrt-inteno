@@ -7,14 +7,15 @@
 				<luci-config-line title="Categories to Show">
 					<div class="row" ng-class="{'field-error': schedule.days.error}" >
 							<div class="col-xs-4" ng-repeat="type in allLogTypes">
-								<label >
-									<input type="checkbox" checklist-model="selectedLogTypes" checklist-value="type.value"> {{type.label}}
-								</label>
+								<div class="checkbox checkbox-info">
+									<input type="checkbox" checklist-model="selectedLogTypes" checklist-value="type.value"> 
+									<label>{{type.label}}</label>
+								</div>
 							</div>
 						</div>
 				</luci-config-line>
 				<luci-config-line title="Events to Show">
-					<luci-select ng-model="selectedShownType" ng-items="allEventTypes" placeholder="Select events to show"></luci-select>
+					<luci-select ng-model="selectedShowType" ng-items="allEventTypes" placeholder="Select events to show" on-change="onTypeChanged"></luci-select>
 				</luci-config-line>
 			</luci-config-lines>
 		</luci-config-section>

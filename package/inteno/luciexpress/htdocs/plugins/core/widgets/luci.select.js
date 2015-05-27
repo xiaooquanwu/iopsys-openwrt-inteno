@@ -73,7 +73,7 @@ $juci.module("core")
 					$('button.button-label', element).html(item.label);
 					break;
 			}
-			//console.log("DROPDOWN: "+JSON.stringify(scope.selectedItem)+", "+item.value); 
+			console.log("DROPDOWN: "+JSON.stringify(scope.selectedItem)+", "+item.value); 
 			var value = item; 
 			if("value" in item) 
 				value = item.value; 
@@ -85,7 +85,7 @@ $juci.module("core")
 			} else {
 				scope.selectedItem = value; // make it work for primitive types
 			}
-			scope.onChange(item);
+			scope.onChange(value);
 		};
 		//scope.selectVal(scope.selectedItem);
 	}
