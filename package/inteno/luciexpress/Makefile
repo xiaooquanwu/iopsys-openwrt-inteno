@@ -45,6 +45,7 @@ define Package/luciexpress/install
 	$(INSTALL_DIR) $(1)/www
 	$(CP) ./bin/* $(1)/www/
 	$(CP) ./htdocs/img $(1)/www/
+	$(CP) ./htdocs/fonts $(1)/www/
 	$(CP) ./htdocs/index.html $(1)/www/
 	$(CP) ./htdocs/config.json $(1)/www/
 	$(INSTALL_DIR) $(1)/www/themes/vodafone/
