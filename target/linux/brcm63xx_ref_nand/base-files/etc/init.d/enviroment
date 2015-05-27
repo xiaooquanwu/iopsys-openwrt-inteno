@@ -1,7 +1,7 @@
 #!/bin/sh /etc/rc.common
-# Copyright (C) 2006 OpenWrt.org
 
-START=11
+START=10
+USE_PROCD=1
 
 handle_threads()
 {
@@ -87,7 +87,7 @@ handle_configs()
 	done
 }
 
-sw_upgrade_count() {
+handle_upgrade_count() {
 	if cat /proc/cmdline |grep -q ubi:rootfs_0; then
 		brcm_fw_tool -s -1 update /dev/mtd0
 	elif cat /proc/cmdline |grep -q ubi:rootfs_1; then
@@ -97,15 +97,13 @@ sw_upgrade_count() {
 	fi
 }
 
-start()
-{
-	sw_upgrade_count
+start_service() {
+	handle_upgrade_count
 	handle_threads
 	handle_configs
 }
 
-restart()
-{
-	handle_configs
+reload_service() {
+        handle_configs
 }
 

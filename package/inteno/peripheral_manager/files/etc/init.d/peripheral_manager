@@ -1,16 +1,23 @@
 #!/bin/sh /etc/rc.common
-#
-# Copyright (C) 2009 OpenWrt.org
-#
 
 START=19
 
-start() {
-        /sbin/peripheral_manager
-        sleep 1
-        /bin/ubus call led.status set '{"state":"ok"}' &
+USE_PROCD=1
+NAME=peripheral_manager
+PROG=/sbin/peripheral_manager
+
+start_service() {
+	procd_open_instance
+	procd_set_param command "$PROG"
+	procd_close_instance
+}
+
+service_running() {
+	ubus -t 2 wait_for leds
+	ubus call led.status set '{"state":"ok"}'
 }
 
 stop() {
-        killall -9 peripheral_manager
+	service_stop /sbin/peripheral_manager
 }
+
