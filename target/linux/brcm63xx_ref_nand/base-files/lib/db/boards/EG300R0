@@ -81,7 +81,8 @@ config 9512_button 9512_touch_far
 ############### function buttons used on board.
 config button_map button_map	
 	list buttonnames RESET
-	list buttonnames DECT
+	list buttonnames DECTS
+	list buttonnames DECTL
 	list buttonnames WPS
 	list buttonnames Wireless
 	list buttonnames THOUCH_NEAR
@@ -94,10 +95,16 @@ config button_map RESET
        option minpress 5000
        option hotplug resetbutton
 
-config button_map DECT
+config button_map DECTS
        list button 9512_dect
-       option hotplug dectbutton
-       option minpress 1000
+       option hotplug dectshort
+       option minpress 400
+
+config button_map DECTL
+       list button 9512_dect
+       option hotplug dectlong
+       option minpress 8000
+       option longpress 8000
 
 config button_map WPS
        list button 9512_wps

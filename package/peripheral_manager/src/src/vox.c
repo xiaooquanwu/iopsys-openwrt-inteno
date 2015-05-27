@@ -15,8 +15,9 @@
 #define SPI_SLAVE_SELECT 1
 
 struct vox_data {
-	int            addr;
-	led_state_t    state;
+	int		addr;
+	led_state_t	state;
+	int		brightness;
 	struct led_drv led;
 };
 
@@ -29,6 +30,8 @@ static int vox_set_state(struct led_drv *drv, led_state_t state)
 
         if (p->state == state)
                     return state;
+
+	memset(spi_data, 0, 6);
 
         spi_data[0] = p->addr;
 
@@ -49,7 +52,7 @@ static int vox_set_state(struct led_drv *drv, led_state_t state)
 		spi_data[3] = 0x20;
 	}
 
-        DBG(1,"vox_set_state %x %x %x %x",spi_data[0],spi_data[1],spi_data[2],spi_data[3]);
+        DBG(2,"vox_set_state %x %x %x %x",spi_data[0],spi_data[1],spi_data[2],spi_data[3]);
 	board_ioctl(BOARD_IOCTL_SPI_WRITE, SPI_SLAVE_SELECT, 0, spi_data, 6, 0);
 
 	p->state = state;
@@ -60,6 +63,47 @@ static led_state_t vox_get_state(struct led_drv *drv)
 {
 	struct vox_data *p = (struct vox_data *)drv->priv;
 	return p->state;
+}
+
+/* input  brightness is in %. 0-100      */
+/* internal brightness is 5 steps. 0-4   */
+/*
+  step, level percent mapping.
+  0	0 -> 20
+  1	21 -> 40
+  2	41 -> 60
+  3	61 -> 80
+  4	81 -> 100
+
+*/
+
+static 	int vox_set_brightness(struct led_drv *drv, int level)
+{
+	struct vox_data *p = (struct vox_data *)drv->priv;
+	int new = (level * 5)/101;    /* really level/(101/5) */
+        char spi_data[6] = {0,0,0,0,0,0};
+
+	if (new == p->brightness)
+		return level;
+
+	p->brightness = new;
+
+	memset(spi_data, 0, 6);
+
+        spi_data[0] = p->addr;
+        spi_data[1] = 6;
+	spi_data[2] = p->brightness;
+
+        DBG(2,"vox_set_state %x %x %x %x",spi_data[0],spi_data[1],spi_data[2],spi_data[3]);
+	board_ioctl(BOARD_IOCTL_SPI_WRITE, SPI_SLAVE_SELECT, 0, spi_data, 6, 0);
+
+	return level;
+}
+
+static	int vox_get_brightness(struct led_drv *drv)
+{
+	struct vox_data *p = (struct vox_data *)drv->priv;
+	return p->brightness * (100/5);
 }
 
 static int vox_support(struct led_drv *drv, led_state_t state)
@@ -81,9 +125,11 @@ static int vox_support(struct led_drv *drv, led_state_t state)
 }
 
 static struct led_drv_func func = {
-	.set_state = vox_set_state,
-	.get_state = vox_get_state,
-	.support = vox_support,
+	.set_state       = vox_set_state,
+	.get_state       = vox_get_state,
+	.set_brightness = vox_set_brightness,
+	.get_brightness = vox_get_brightness,
+	.support         = vox_support,
 };
 
 void vox_init(struct server_ctx *s_ctx) {
@@ -115,6 +161,7 @@ void vox_init(struct server_ctx *s_ctx) {
 		data->led.func = &func;
 		data->led.priv = data;
                 data->state = NEED_INIT;
+		data->brightness = 4;
 		led_add(&data->led);
 		register_spi = 1;
 	}

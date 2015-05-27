@@ -71,11 +71,10 @@ struct function_action {
 struct function_led {
 	const char *name;		/* If name is set this led function is in use by the board.        */
 	led_action_t state;		/* state of the function led. contain what action is currently set */
+	int brightness;			/* Brightness of the led */
 	int press_indicator;		/* record if this is part of press indictor */
 	struct function_action actions[LED_ACTION_MAX];
 };
-
-
 
 struct function_led *leds;		/* Array of functions, LED_FUNCTIONS + super_functions */
 static int total_functions;		/* number of entries in leds array */
@@ -320,13 +319,37 @@ static int set_function_led(const char* fn_name, const char* action) {
 	return 0;
 }
 
+static int brightness_function_led(const char* fn_name, int brightness) {
+	int led_idx = get_index_for_function(fn_name);
+	struct led *led;
+
+	if(led_idx == -1) {
+		syslog(LOG_WARNING, "called over ubus with non valid led name [%s]", fn_name);
+		return -1;
+	}
+
+	leds[led_idx].brightness = brightness;
+
+	list_for_each_entry(led, &leds[led_idx].actions[ leds[led_idx].state ].led_list, list) {
+		if (led->drv){
+			if (led->drv->func->set_brightness){
+				led->drv->func->set_brightness(led->drv, brightness);
+			}
+		}
+	}
+
+	return 0;
+}
+
 enum {
 	LED_STATE,
+	LED_BRIGHTNESS,
 	__LED_MAX
 };
 
 static const struct blobmsg_policy led_policy[] = {
 	[LED_STATE] = { .name = "state", .type = BLOBMSG_TYPE_STRING },
+	[LED_BRIGHTNESS] = { .name = "brightness", .type = BLOBMSG_TYPE_INT32 },
 };
 
 static int led_set_method(struct ubus_context *ubus_ctx, struct ubus_object *obj,
@@ -335,20 +358,26 @@ static int led_set_method(struct ubus_context *ubus_ctx, struct ubus_object *obj
 {
 	struct blob_attr *tb[__LED_MAX];
 	char* state;
+	int *number;
+	char *fn_name = strchr(obj->name, '.') + 1;
 
 	blobmsg_parse(led_policy, ARRAY_SIZE(led_policy), tb, blob_data(msg), blob_len(msg));
 	if (tb[LED_STATE]) {
-		char *fn_name = strchr(obj->name, '.') + 1;
 		state = blobmsg_data(tb[LED_STATE]);
 		DBG(1,"set led [%s]->[%s]", fn_name, state);
-//		syslog(LOG_INFO, "Led %s method: %s state %s", fn_name, method, state);
 		if (set_function_led(fn_name, state) ){
 			return UBUS_STATUS_NO_DATA;
 		}
-	}else {
-		DBG(1,"(%s) not implemented",method);
-		return UBUS_STATUS_NO_DATA;
 	}
+
+	if (tb[LED_BRIGHTNESS]) {
+		number = blobmsg_data(tb[LED_BRIGHTNESS]);
+		DBG(1,"set brightness [%s]->[%d]", fn_name, *number);
+		if (brightness_function_led(fn_name, *number) ){
+			return UBUS_STATUS_NO_DATA;
+		}
+	}
+
 	return 0;
 }
 
@@ -362,6 +391,7 @@ static int led_status_method(struct ubus_context *ubus_ctx, struct ubus_object *
 
 	blob_buf_init (&bblob, 0);
 	blobmsg_add_string(&bblob, "state",fn_actions[leds[led_idx].state]);
+	blobmsg_add_u32(&bblob, "brightness",leds[led_idx].brightness);
 	ubus_send_reply(ubus_ctx, req, bblob.head);
 
 	return 0;
@@ -682,6 +712,7 @@ void led_init( struct server_ctx *s_ctx)
 
 				/* Found led with action, init structs */
 				leds[i].state = LED_OFF;
+				leds[i].brightness = 100;
 
 				leds[i].actions[j].name    = fn_actions[j];
 
@@ -744,7 +775,7 @@ void led_init( struct server_ctx *s_ctx)
 				DBG(1,"A:%s %s is a super function ",led_fn_name,super_action);
 
 				list_for_each_entry(node, &super_action_list, list) {
-					char *s;
+					const char *s;
 					struct function_led *function;
 					int action_ix;
 					struct super_list *sl = malloc(sizeof(struct super_list));
@@ -755,7 +786,7 @@ void led_init( struct server_ctx *s_ctx)
 					DBG(1,"add to super list  %s",node->val);
 
 					s = node->val;
-					while (s = get_function_action(s, &function, &action_ix)){
+					while ((s = get_function_action(s, &function, &action_ix))){
 						if (function) {
 							struct super_functions *sf = malloc(sizeof(struct super_functions));
 							memset(sf, 0, sizeof(struct super_functions));

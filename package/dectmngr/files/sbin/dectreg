@@ -1,5 +1,11 @@
 #!/bin/sh
 
+# This script is likely not used. Just exit with
+# an error and see if someone screems... If not,
+# we can delete this file.
+exit 1
+
+
 [ -f /var/dectisregistering ] || {
 	touch /var/dectisregistering 2>/dev/null
 	/usr/bin/dectmngr -r

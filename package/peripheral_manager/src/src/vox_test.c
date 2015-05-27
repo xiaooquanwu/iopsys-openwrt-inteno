@@ -163,11 +163,13 @@ int main(int argc, char *argv[])
                 /* up */
                 if (ch == 4283163) {
                         inc();
-                        board_ioctl(BOARD_IOCTL_SPI_WRITE, SPI_SLAVE_SELECT, 0, (char*)spi_data, 6, 0);
                 }
                 /* down */
                 if (ch == 4348699) {
                         dec();
+                }
+                /* enter */
+                if (ch == '\r') {
                         board_ioctl(BOARD_IOCTL_SPI_WRITE, SPI_SLAVE_SELECT, 0, (char*)spi_data, 6, 0);
                 }
                 display();
