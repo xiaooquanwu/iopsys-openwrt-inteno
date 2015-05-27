@@ -8,8 +8,11 @@
 				<luci-config-line title="{{'Ringing Schedule'|translate}}">
 					<switch id="enabled" name="enabled" ng-model="settings.enabled.value" class="green"></switch>
 				</luci-config-line>
+				<luci-config-line title="{{'During this time ringing is '|translate}}">
+					<switch id="enabled" name="enabled" ng-model="settings.status.value" class="green"></switch>
+				</luci-config-line>
 			</luci-config-lines>
-			<table class="table">
+			<table class="table" ng-show="settings.enabled.value">
 				<thead>
 					<th translate>Day</th>
 					<th translate>Time</th>
