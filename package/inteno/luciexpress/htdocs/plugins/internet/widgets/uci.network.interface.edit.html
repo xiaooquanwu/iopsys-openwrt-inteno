@@ -21,10 +21,10 @@
 					<switch ng-model="dhcp.ignore.value" class="green" inverted></switch>
 				</luci-config-line>
 				<luci-config-line title="{{'IP Address'|translate}}" ng-show="dhcp.ignore.value">
-					<input class="form-control" ng-model="interface.ipaddr.value" ></input>
+					<input class="form-control" ng-model="interface.ipaddr.value" placeholder="{{'Static IP Address'|translate}}"></input>
 				</luci-config-line>
 				<luci-config-line title="{{'Netmask'|translate}}" ng-show="dhcp.ignore.value">
-					<input class="form-control" ng-model="interface.netmask.value" ></input>
+					<input class="form-control" ng-model="interface.netmask.value" placeholder="{{'Network Mask'|translate}}"></input>
 				</luci-config-line>
 			</luci-config-lines>
 		</div>
