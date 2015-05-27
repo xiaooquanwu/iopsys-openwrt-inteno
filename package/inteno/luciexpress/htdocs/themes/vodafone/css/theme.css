@@ -197,4 +197,13 @@ h1, h2 {
     padding: 0;
 }
 
+.switch {
+    background-color: #808080;
+    border-color: #808080;
+}
+
+.switch.checked {
+    background: #a8b400;
+    border-color: #a8b400;
+}
 
