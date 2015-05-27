@@ -12,4 +12,7 @@ describe("Phone", function(){
 	it("should be completed", function(){
 		expect(Object.keys(completed).filter(function(x){ return completed[x] == 0; })).to.be.empty(); 
 	}); 
+	it("should have a ringing_status section in the config", function(){
+		expect($uci.voice_client.ringing_status).to.be.ok(); 
+	}); 
 }); 

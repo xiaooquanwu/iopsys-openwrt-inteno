@@ -22,10 +22,21 @@
  
 $juci.module("phone")
 .controller("PhoneRingingScheduleCtrl", function($scope, $uci){
+	$scope.allSipAccountsMap = {}; 
+	
 	$uci.sync(["voice_client"]).done(function(){
 		// TODO add config for phone
-		if($uci.voice_client && $uci.voice_client.settings) $scope.settings = $uci.voice_client.settings; 
-		$scope.schedules = $uci.voice_client["@schedule"]; 
+		$scope.settings = $uci.voice_client.RINGING_STATUS; 
+		$scope.schedules = $uci.voice_client["@ringing_schedule"]; 
+		$scope.allSipAccountsMap = {}; 
+		$scope.allSipAccounts = $uci.voice_client["@sip_service_provider"].map(function(x){
+			var i = {
+				label: x.name.value, 
+				value: x[".name"]
+			}; 
+			$scope.allSipAccountsMap[x[".name"]] = x; 
+			return i; 
+		}); 
 	}); 
 	
 	$scope.onAcceptSchedule = function(){
@@ -53,7 +64,7 @@ $juci.module("phone")
 	}
 	
 	$scope.onAddSchedule = function(){
-		$uci.voice_client.create({".type": "schedule"}).done(function(item){
+		$uci.voice_client.create({".type": "ringing_schedule"}).done(function(item){
 			$scope.schedule = item; 
 			$scope.schedule[".new"] = true; 
 			$scope.showScheduleDialog = 1; 

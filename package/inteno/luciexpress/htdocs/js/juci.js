@@ -42,7 +42,7 @@
 		async.series([
 			function(next){
 				scope.UBUS.$init().done(function(){
-					if(!scope.UBUS.router && !scope.UBUS.router.info){
+					if(!scope.UBUS.router || !scope.UBUS.router.info){
 						alert("Questd must have crashed or is not running. Restart it on the router!"); 
 					}
 				}).fail(function(){

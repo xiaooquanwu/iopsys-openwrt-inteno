@@ -154,8 +154,14 @@ UCI.voice_client.$registerSectionType("speed_dial", {
 	"tone":		{ dvalue: 1, type: Number },
 	"number":	{ dvalue: "", type: String }
 }); 
-UCI.voice_client.$registerSectionType("schedule", {
+
+UCI.voice_client.$registerSectionType("ringing_status", {
+	"enabled": { dvalue: false, type: Boolean }, 
+	"status": { dvalue: 0, type: Number }
+}); 
+
+UCI.voice_client.$registerSectionType("ringing_schedule", {
 	"days":		{ dvalue: [], type: Array, allow: ["mon", "tue", "wed", "thu", "fri", "sat", "sun"], validator: UCI.validators.WeekDayListValidator},
 	"time":		{ dvalue: "", type: String, validator: UCI.validators.TimespanValidator}, 
-	"number": { dvalue: "", type: String }
+	"sip_service_provider": { dvalue: "", type: String }
 }); 
