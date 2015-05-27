@@ -118,40 +118,31 @@ JUCI.app
 	
 	function upgradeStart(path){
 		$scope.error = ""; 
+		$scope.message = gettext("Verifying firmware image")+"...";					
 		$scope.progress = 'progress'; 
+		setTimeout(function(){ $scope.$apply(); }, 0); 
+		
 		console.log("Trying to upgrade from "+path); 
-		/*$rpc.luci2.system.upgrade_test({"path": path}).done(function(result){
-			if(result.stderr){
-				$scope.error = "Upgrade test has failed: "+result.stderr; 
-				$scope.$apply(); 
-				return; 
-			}*/
-			$rpc.luci2.system.upgrade_start({"path": path}).done(function(result){
-				if(result && result.stderr) {
-					$scope.error = gettext("Upgrade process failed") + ": "+result.stderr; 
-				} else {
-					$scope.message = gettext("Upgrade process has started. The web gui will not be available until the process has finished and the box has restarted!");
-					JUCI.interval("upgrade", 1000, function(done){
-						$rpc.session.access().done(function(){
-							// it will not succeed anymore because box is rebooting
-						}).fail(function(result){
-							if(result.code && result.code == -32002) { // access denied error. We will get it when it boots up again. 
-								window.location.reload(); 
-							}
-						}).always(function(){
-							done(); 
-						}); 
-					}); 
-				}; 
-				$scope.$apply();  
-			}).fail(function(response){
-				$scope.error = gettext("Upgrade process failed") + "! "+JSON.stringify(result||"");
-				$scope.$apply();  
-			});
-		/*}).fail(function(result){
-			$scope.error = gettext("Upgrade test has failed") + ": "+result.stderr; 
+
+		$rpc.luci2.system.upgrade_start({"path": path}).done(function(result){
+			// this will actually never succeed because server will be killed
+			console.error("upgrade_start returned success, which means that it actually probably failed but did not return an error"); 
+		}).fail(function(response){
+			$scope.message = gettext("Upgrade process has started. The web gui will not be available until the upgrade process has completed!");
 			$scope.$apply(); 
-		}); */
+			
+			JUCI.interval.repeat("upgrade", 1000, function(done){
+				$rpc.session.access().done(function(){
+					// it will not succeed anymore because box is rebooting
+				}).fail(function(result){
+					if(result.code && result.code == -32002) { // access denied error. We will get it when it boots up again. 
+						window.location.reload(); 
+					}
+				}).always(function(){
+					done(); 
+				}); 
+			}); 
+		});
 	}
 	
 	/*$uci.sync("system").done(function(){
@@ -200,7 +191,7 @@ JUCI.app
 				obj = JSON.parse(json); 
 			} catch(e){
 				$scope.error = "The server returned an error ("+JSON.stringify(json)+")";
-				$scope.progress = 'completed'; 
+				$scope.message = "Upload completed!"
 				$scope.$apply();
 				//return;   
 			}
