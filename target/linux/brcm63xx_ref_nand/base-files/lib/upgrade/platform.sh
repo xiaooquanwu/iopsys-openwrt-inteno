@@ -34,14 +34,14 @@ platform_check_image() {
 		echo "Old image not compatible after upgrade to UBIFS" > /dev/console
 		return 1
 	fi
-	echo $img_type > /tmp/CFE_FS
+	nvram set image_type=$img_type
 
 	case "$(get_flash_type "$from")" in
 		"NAND")
-			echo 1 > /tmp/IS_NAND
+			nvram set is_nand=1
 			;;
 		"NOR")
-			echo 0 > /tmp/IS_NAND
+			nvram set is_nand=0
 			;;
 		*)
 			echo "Unknown flash type" > /dev/console

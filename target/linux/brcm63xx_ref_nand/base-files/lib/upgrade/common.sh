@@ -603,18 +603,17 @@ inteno_image_upgrade() {
 default_do_upgrade() {
 	sync
 	local from mtd_no
-	local cfe_fs
-	local is_nand
+	local image_type is_nand
 
-	cfe_fs=$(cat /tmp/CFE_FS)
-	is_nand=$(cat /tmp/IS_NAND)
+	image_type=$(nvram get image_type)
+	is_nand=$(nvram get is_nand)
 
 	case "$1" in
 		http://*|ftp://*) from=/tmp/firmware.bin;;
 		*) from=$1;;
 	esac
 
-	if [ $cfe_fs -eq 1 ]; then
+	if [ $image_type -eq 1 ]; then
 		mtd_cfe="$(grep "\"CFE\"" /proc/mtd | awk -F: '{print $1}')"
 		if [ $is_nand -eq 0 ]; then
 			v "Writing CFE ..."
@@ -641,18 +640,18 @@ default_do_upgrade() {
 			sync
 		fi
 
-		if [ $cfe_fs -eq 2 ]; then
+		if [ $image_type -eq 2 ]; then
 			inteno_image_upgrade $from
 		else
 			# Old/Brcm format image
-			if [ $cfe_fs -eq 1 ]; then
+			if [ $image_type -eq 1 ]; then
 				v "Writing CFE ..."
 				cfe_image_upgrade $from 0 131072
 			fi
 
 			v "Writing File System ..."
 			mtd_no=$(find_mtd_no "rootfs_update")
-			if [ $cfe_fs -eq 1 ]; then
+			if [ $image_type -eq 1 ]; then
 				update_sequence_number $from 0 131072
 				imagewrite -c -k 131072 /dev/mtd$mtd_no $from
 			else
@@ -668,14 +667,14 @@ default_do_upgrade() {
 	else
 		if [ "$SAVE_CONFIG" -eq 1 -a -z "$USE_REFRESH" ]; then
 			v "Writing File System with Saved Config ..."
-			if [ $cfe_fs -eq 1 ]; then
+			if [ $image_type -eq 1 ]; then
 				mtd -j "$CONF_TAR" write $from -i 0x00010000 linux
 			else
 				mtd -j "$CONF_TAR" write $from linux
 			fi
 		else
 			v "Writing File System ..."
-			if [ $cfe_fs -eq 1 ]; then
+			if [ $image_type -eq 1 ]; then
 				mtd write $from -i 0x00010000 linux
 			else
 				mtd write $from linux
