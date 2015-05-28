@@ -8,25 +8,70 @@
 				</span>
 			</div>
 			<h3 class="panel-title" style="font-size: 1.5em; padding-top: 0.4em; font-weight: bold; font-family: 'vodafont';">
-				{{interface[".name"] | uppercase}}
+				{{interface[".name"] | uppercase}} {{'Network'|translate}}
 			</h3>
 			<div style="clear: both;"></div>
 		</div>
 		<div class="panel-body " ng-show="expanded" >
 			<luci-config-lines>
-				<!--<luci-config-line title="{{'Hostname'|translate}}">
-					<input class="form-control" ng-model="interface.hostname.value" ></input>
-				</luci-config-line>-->
-				<luci-config-line title="{{'DHCP'|translate}}">
-					<switch ng-model="dhcp.ignore.value" class="green" inverted></switch>
-				</luci-config-line>
-				<luci-config-line title="{{'IP Address'|translate}}" ng-show="dhcp.ignore.value">
+				<luci-config-line title="{{'IP Address'|translate}}">
 					<input class="form-control" ng-model="interface.ipaddr.value" placeholder="{{'Static IP Address'|translate}}"></input>
 				</luci-config-line>
-				<luci-config-line title="{{'Netmask'|translate}}" ng-show="dhcp.ignore.value">
-					<input class="form-control" ng-model="interface.netmask.value" placeholder="{{'Network Mask'|translate}}"></input>
+				<luci-config-line title="{{'IP Subnet Mask'|translate}}">
+					<strong>{{interface.netmask.value}}</strong>
+				</luci-config-line>
+				<luci-config-line title="{{'DHCP Server'|translate}}">
+					<switch ng-model="dhcp.ignore.value" class="green"></switch>
 				</luci-config-line>
 			</luci-config-lines>
+			<luci-config-lines ng-show="dhcp.ignore.value">
+				<hr/>
+				<luci-config-line title="{{'Address Pool Start IP'|translate}}">
+					<input class="form-control pull-right" style="width: 60px;" ng-model="dhcp.start.value" placeholder="1"></input>
+					<span style="font-size: 1.2em; margin-right: 10px; line-height: 2em;">{{interface.ipaddr.value.split(".").splice(0, 3).join(".")}}</span>
+				</luci-config-line>
+				<luci-config-line title="{{'Address Pool End IP'|translate}}">
+					<input class="form-control pull-right" style="width: 60px;" ng-model="dhcp.limit.value" placeholder="1"></input>
+					<span style="font-size: 1.2em; margin-right: 10px; line-height: 2em;">{{interface.ipaddr.value.split(".").splice(0, 3).join(".")}}</span>
+				</luci-config-line>
+				<luci-config-line title="{{'DHCP Lease Time'|translate}}">
+					<luci-select ng-model="dhcp.leasetime.value" ng-items="dhcpLeaseTimes" placeholder="{{'Lease Time'|translate}}"/>
+				</luci-config-line>
+			</luci-config-lines>
+			<div ng-show="dhcp.ignore.value">
+				<hr/>
+				<table class="table">
+					<thead>
+						<th translate>Device Name</th>
+						<th translate>MAC Address</th>
+						<th translate>IP Address</th>
+						<th width="1%"></th>
+					</thead>
+					<tr ng-repeat="host in staticDHCP">
+						<td>
+							<input type="text" class="form-control" ng-model="host.name.value"/>
+						</td>
+						<td>
+							<input type="text" class="form-control" ng-model="host.mac.value"/>
+						</td>
+						<td>
+							<input type="text" class="form-control" ng-model="host.ip.value"/>
+						</td>
+						<td>
+							<button class="btn btn-default" ng-click="onAddExistingHost()"><i class="fa fa-plus"></i></button>
+						</td>
+					</tr>
+					<tr>
+						<td colspan="3"></td>
+						<td >
+							<button class="btn btn-default" ng-click="onAddStaticDHCP()"><i class="fa fa-plus"></i></button>
+						</td>
+					</tr>
+				</table>
+				<div class="pull-right">
+					<luci-select ng-model="existingHost" ng-items="hosts" on-change="onAddExistingHost()" placeholder="{{'Add existing host'|translate}}"/>
+				</div>
+			</div>
 		</div>
 	</div>
 </div>

@@ -32,6 +32,7 @@ JUCI.app
 		$scope.showModal = 1; 
 	}
 	$scope.onAcceptModal = function(){
+		$scope.error = ""; 
 		if($scope.modal.password != $scope.modal.password2) alert($tr(gettext("Passwords do not match!"))); 
 		else {
 			// TODO: change to correct username
@@ -41,8 +42,9 @@ JUCI.app
 				$rpc.$logout().done(function(){
 					window.location.reload(); 
 				}); 
-			}).fail(function(){
-				
+			}).fail(function(response){
+				$scope.error = gettext("Was unable to set password. Please make sure you have entered correct current password!"); 
+				$scope.$apply(); 
 			}); 
 		}
 	}

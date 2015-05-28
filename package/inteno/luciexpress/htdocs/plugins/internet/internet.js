@@ -27,12 +27,34 @@ UCI.network.$registerSectionType("interface", {
 }); 
 
 UCI.$registerConfig("dhcp"); 
+UCI.dhcp.$registerSectionType("dnsmasq", {
+	"domainneeded":		{ dvalue: true, type: Boolean },
+	"boguspriv":		{ dvalue: true, type: Boolean },
+	"localise_queries":	{ dvalue: true, type: Boolean },
+	"rebind_protection":	{ dvalue: false, type: Boolean },
+	"local":		{ dvalue: "/lan/", type: String, required: true},
+	"domain":		{ dvalue: "lan", type: String, required: true},
+	"expandhosts":		{ dvalue: true, type: Boolean },
+	"authoritative":	{ dvalue: true, type: Boolean },
+	"readethers":		{ dvalue: true, type: Boolean },
+	"leasefile":		{ dvalue: "/tmp/dhcp.leases", type: String, required: true},
+	"resolvfile":		{ dvalue: "/tmp/resolv.conf.auto", type: String, required: true}
+});
 UCI.dhcp.$registerSectionType("dhcp", {
-	"interface": 		{ dvalue: "", type: String }, 
-	"start": 				{ dvalue: 0, type: Number }, 
-	"limit": 				{ dvalue: 0, type: Number }, 
-	"leasetime": 		{ dvalue: 60, type: Number },
-	"ignore": 			{ dvalue: false, type: Boolean }
+	"interface":		{ dvalue: "lan", type: String, required: true},
+	"start":		{ dvalue: 100, type: Number },
+	"limit":		{ dvalue: 150, type: Number },
+	"leasetime":		{ dvalue: "12h", type: String, required: true},
+	"ignore":		{ dvalue: false, type: Boolean }
+});
+UCI.dhcp.$registerSectionType("domain", {
+	"name":		{ dvalue: "", type: String, required: true},
+	"ip":		{ dvalue: "", type: String, required: true}  // TODO: change to ip address
+});
+UCI.dhcp.$registerSectionType("host", {
+	"name":		{ dvalue: "", type: String, required: false},
+	"mac":		{ dvalue: "", type: String, required: true},
+	"ip":		{ dvalue: "", type: String, required: true}  // TODO: change to ip address
 }); 
 
 UCI.$registerConfig("ddns");
@@ -45,3 +67,4 @@ UCI.ddns.$registerSectionType("service", {
     "username":             { dvalue: "", type: String },
     "password":             { dvalue: "", type: String }
 });
+			

@@ -10,15 +10,51 @@ JUCI.app
 		replace: true, 
 		require: "^ngModel"
 	 };  
-}).controller("uciNetworkInterfaceEdit", function($scope, $uci, $rpc, $log){
+}).controller("uciNetworkInterfaceEdit", function($scope, $uci, $rpc, $log, gettext){
 	$scope.expanded = true; 
+	$scope.existingHost = { }; 
+	
 	$scope.$watch("interface", function(interface){
-		$uci.sync("dhcp").done(function(){
-			if($uci.dhcp && interface[".name"] in $uci.dhcp){
-				//alert($scope.interface[".name"]); 
-				$scope.dhcp = $uci.dhcp[interface[".name"] ]; 
-				$scope.$apply(); 
-			}
+		$rpc.router.clients().done(function(clients){
+			$uci.sync("dhcp").done(function(){
+				if($uci.dhcp && interface[".name"] in $uci.dhcp){
+					//alert($scope.interface[".name"]); 
+					$scope.dhcp = $uci.dhcp[interface[".name"]]; 
+					$scope.staticDHCP = $uci.dhcp["@host"]; 
+					$scope.hosts = Object.keys(clients).map(function(k){
+						return {
+							label: clients[k].hostname, 
+							value: clients[k]
+						}; 
+					}); 
+					$scope.$apply(); 
+				}
+			}); 
 		}); 
 	}); 
+	$scope.dhcpLeaseTimes = [
+		{ label: "1 "+gettext("Hour"), value: "1h" }, 
+		{ label: "6 "+gettext("Hours"), value: "6h" }, 
+		{ label: "12 "+gettext("Hours"), value: "12h" }, 
+		{ label: "24 "+gettext("Hours"), value: "24h" }, 
+		{ label: gettext("Forever"), value: "24h" } // TODO: implement this on server side
+	];  
+	$scope.onAddStaticDHCP = function(){
+		$uci.dhcp.create({".type": "host"}).done(function(section){
+			console.log("Added static dhcp"); 
+			$scope.$apply(); 
+		}); 
+	}
+	$scope.onAddExistingHost = function(){
+		var item = $scope.existingHost; 
+		$uci.dhcp.create({
+			".type": "host", 
+			name: item.hostname, 
+			mac: item.macaddr, 
+			ip: item.ipaddr
+		}).done(function(section){
+			console.log("Added static dhcp: "+JSON.stringify(item)); 
+			$scope.$apply(); 
+		}); 
+	}
 }); 

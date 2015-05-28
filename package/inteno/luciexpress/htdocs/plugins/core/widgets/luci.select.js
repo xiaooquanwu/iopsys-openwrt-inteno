@@ -10,14 +10,16 @@ $juci.module("core")
 		prefix: "@", 
 		size: '=size'
 	},
-	link: function (scope, element, attrs) {
+	require: ["ngModel"], 
+	link: function (scope, element, attrs, ngModel) {
 		var html = '';
+	
 		switch (attrs.type) {
 			case "dropdown":
-				html += '<div class="dropdown dropdown-toggle"  data-toggle="dropdown" ><a class="dropdown-toggle" role="button" data-toggle="dropdown"  href="javascript:;">{{((selectedItem||{}).label || placeholder) | translate}}<b class="caret"></b></a>';
+				html += '<div class="dropdown dropdown-toggle" data-toggle="dropdown" ><a class="dropdown-toggle" role="button" data-toggle="dropdown"  href="javascript:;">{{((selectedItem||{}).label || placeholder) | translate}}<b class="caret"></b></a>';
 				break;
 			default:
-				html += '<div class="btn-group"><button class="btn btn-default button-label {{size_class}}">{{selectedText | translate}}</button><button class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>';
+				html += '<div class="btn-group" style="white-space: nowrap;"><button class="btn btn-default button-label {{size_class}}" style="display: inline-block; float:none;">{{selectedText | translate}}</button><button class="btn btn-default dropdown-toggle" style="display: inline-block; float:none;" data-toggle="dropdown"><span class="caret"></span></button>';
 				break;
 		}
 		html += '<ul class="dropdown-menu"><li ng-repeat="item in itemList"><a tabindex="-1" data-ng-click="selectVal(item)" href="">{{item.label}}</a></li></ul></div>';
@@ -54,7 +56,10 @@ $juci.module("core")
 		}); 
 		scope.$watch("selectedItem", function(value){
 			//console.log("Selected item: "+JSON.stringify(value)); 
-			if(value != undefined && (typeof value) == "object" && "value" in value) scope.selectedText = value.value; 
+			if(value != undefined && (typeof value) == "object") {
+				if("value" in value) scope.selectedText = value.value; 
+				else scope.selectedText = scope.placeholder; 
+			}
 			else if(value != undefined && scope.itemList != undefined) { 
 				scope.itemList.map(function(x){
 					if(x.value == value) scope.selectedText = x.label;
@@ -86,7 +91,11 @@ $juci.module("core")
 			} else {
 				scope.selectedItem = value; // make it work for primitive types
 			}
-			scope.onChange(value);
+			//ngModel.$setViewValue(scope.selectedItem); 
+			attrs.$set("ngModel", value); 
+			setTimeout(function(){ // defer the call till after $digest is finished
+				scope.onChange();
+			}, 0); 
 		};
 		//scope.selectVal(scope.selectedItem);
 	}
