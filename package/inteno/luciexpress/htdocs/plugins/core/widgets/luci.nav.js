@@ -34,32 +34,32 @@ $juci.module("core")
 	}; 
 })
 .controller("NavCtrl", function($scope, $navigation, $location, $state, $rootScope, $config){
-    $scope.showSubMenuItems = false;
+	$scope.showSubMenuItems = false;
 
 	$scope.hasChildren = function(menu){
 		return Object.keys(menu.children) > 0;
 	};
 	$scope.isItemActive = function (item) {
-        if ('/' + item.href === $location.path()) {
-            if(item.children_list && item.children_list.length > 0) {
-                $scope.showSubMenuItems = true;
-            } else {
-                $scope.showSubMenuItems = false;
-            }
-            return true;
-        } else if ($location.path().indexOf('/' + item.href) === 0) {
-            $scope.showSubMenuItems = true;
-        } else {
-            $scope.showSubMenuItems = false;
-        }
-        return false;
+		if ('/' + item.href === $location.path()) {
+			if(item.children_list && item.children_list.length > 0) {
+				$scope.showSubMenuItems = true;
+			} else {
+				$scope.showSubMenuItems = false;
+			}
+				return true;
+		} else if ($location.path().indexOf('/' + item.href) === 0) {
+			$scope.showSubMenuItems = true;
+		} else {
+			$scope.showSubMenuItems = false;
+		}
+		return false;
 	};
 
-    $scope.isSubItemActive = function (item) {
-        return '/' + item.href === $location.path();
-    };
+	$scope.isSubItemActive = function (item) {
+		return '/' + item.href === $location.path();
+	};
 
-    $scope.itemVisible = function(item){
+	$scope.itemVisible = function(item){
 		if(!item.modes.length) return true; 
 		else if(item.modes && item.modes.indexOf($config.mode) == -1) {
 			return false; 
