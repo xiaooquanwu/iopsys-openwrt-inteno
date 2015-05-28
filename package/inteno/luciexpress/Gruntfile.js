@@ -142,12 +142,11 @@ module.exports = function(grunt){
 			"htdocs/lib/css/awesome-bootstrap-checkbox.css",
 			"htdocs/css/nga.min.css",
 			"htdocs/css/app.css",
-            "htdocs/css/radio.css",
-            "htdocs/css/checkbox.css",
-            "htdocs/css/menu.css",
 			"htdocs/themes/vodafone/css/theme.css",
 			"htdocs/themes/vodafone/css/bootstrap.min.css"
 		]; 
+		
+		cssfiles = cssfiles.concat(grunt.file.expand(["htdocs/plugins/**/css/*.css"])); 
 		
 		var pluginfiles = grunt.file.expand(["htdocs/plugins/**/plugin.json"]); 
 		var otherfiles = grunt.file.expand(["./htdocs/plugins/**/*.js", "./htdocs/themes/vodafone/**/*.js"]).filter(function(x){

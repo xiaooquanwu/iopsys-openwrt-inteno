@@ -7,7 +7,7 @@ var request = require("request");
 var bodyParser = require('body-parser')
 
 var config = {
-	ubus_uri: "http://192.168.1.4/ubus" // <-- your router uri
+	ubus_uri: "http://192.168.1.1/ubus" // <-- your router uri
 }; 
 
 app.use( bodyParser.json() );       // to support JSON-encoded bodies
