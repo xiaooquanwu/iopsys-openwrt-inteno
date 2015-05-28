@@ -41,7 +41,7 @@ void print_usage(char *prg_name) {
 int main(int argc, char **argv)
 {
 	int ch;
-	int daemonize = 0;
+	int daemonize = 1;
 	pid_t pid, sid;
 	struct uci_context *uci_ctx = NULL;
 	static struct ubus_context *ubus_ctx = NULL;
