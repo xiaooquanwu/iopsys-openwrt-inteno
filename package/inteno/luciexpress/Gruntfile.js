@@ -41,7 +41,7 @@ module.exports = function(grunt){
 		var done = this.async(); 
 		if(opts.files){
 			async.eachSeries(Object.keys(opts.files), function(file, next){
-				var output = []; 
+				var output = [];
 				async.eachSeries(opts.files[file], function(pattern, next){
 					glob(pattern, null, function(err, files){
 						console.log(JSON.stringify(files)); 
@@ -142,12 +142,10 @@ module.exports = function(grunt){
 			"htdocs/lib/css/angular-ui-switch.min.css",
 			"htdocs/lib/css/awesome-bootstrap-checkbox.css",
 			"htdocs/css/nga.min.css",
-			"htdocs/css/app.css",
-			"htdocs/themes/vodafone/css/theme.css",
-			"htdocs/themes/vodafone/css/bootstrap.min.css"
-		]; 
+			"htdocs/css/app.css"
+		];
 		
-		cssfiles = cssfiles.concat(grunt.file.expand(["htdocs/plugins/**/css/*.css"])); 
+		cssfiles = cssfiles.concat(grunt.file.expand(["htdocs/plugins/**/css/*.css", "htdocs/themes/vodafone/css/*.css"]));
 		
 		var pluginfiles = grunt.file.expand(["htdocs/plugins/**/plugin.json"]); 
 		var otherfiles = grunt.file.expand(["./htdocs/plugins/**/*.js", "./htdocs/themes/vodafone/**/*.js"]).filter(function(x){
