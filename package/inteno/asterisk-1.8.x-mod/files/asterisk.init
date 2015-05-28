@@ -1,36 +1,24 @@
 #!/bin/sh /etc/rc.common
-# Copyright (C) 2008 OpenWrt.org
+
 START=98
 STOP=10
 
 USE_PROCD=1
+NAME=asterisk
+PROG=/usr/sbin/asterisk
+DEFAULT=/etc/default/asterisk
 
-DEST=
-DEFAULT=$DEST/etc/default/asterisk
-OPTIONS=""
-
-asterisk_start() {
+prepare_asterisk() {
 	[ -f $DEFAULT ] && . $DEFAULT
-	[ -d $DEST/var/run/asterisk ] || mkdir -p $DEST/var/run/asterisk
-	[ -d $DEST/var/log/asterisk ] || mkdir -p $DEST/var/log/asterisk
-	[ -d $DEST/var/spool/asterisk ] || mkdir -p $DEST/var/spool/asterisk
+	[ -d /var/run/asterisk ] || mkdir -p /var/run/asterisk
+	[ -d /var/log/asterisk ] || mkdir -p /var/log/asterisk
         [ -d /var/spool/asterisk ] || mkdir -p /var/spool/asterisk
 
         # does the board have a fxs relay?
-        local fxsRelayGpio=$(uci get -q /lib/db/config/hw.board.fxsRelayGpio)
+        local fxsRelayGpio=$(db -q get hw.board.fxsRelayGpio)
         if [ "$fxsRelayGpio" != "" ]; then
                 /sbin/brcm_fw_tool set -x $fxsRelayGpio -p 1
         fi
-
-	echo 'starting asterisk'
-	$DEST/usr/sbin/asterisk $OPTIONS
-}
-
-asterisk_reload() {
-	asterisk -rx "core reload"
-	asterisk -rx "dialplan reload"
-	asterisk -rx "brcm reload"
-	echo  "asterisk reloaded"
 }
 
 service_triggers() {
@@ -38,14 +26,19 @@ service_triggers() {
 }
 
 start_service() {
-	asterisk_start
+	prepare_asterisk
+	procd_open_instance
+	procd_set_param command "$PROG" -f
+	procd_close_instance
 }
 
 reload_service() {
-	asterisk_reload
+	asterisk -rx "core reload"
+	asterisk -rx "dialplan reload"
+	asterisk -rx "brcm reload"
 }
 
 stop_service() {
-        echo 'stopping asterisk'
+        service_stop /usr/sbin/asterisk
 }
 

@@ -1,0 +1,23 @@
+#!/bin/sh /etc/rc.common
+
+START=99
+
+USE_PROCD=1
+NAME=ice
+PROG=/bin/ice
+CONFIGFILE="/etc/cloudfriends/server.ini"
+
+start_service() {
+	procd_open_instance
+	procd_set_param command "$PROG" -c $CONFIGFILE
+	procd_close_instance
+}
+
+service_triggers() {
+        procd_add_reload_trigger ice
+}
+
+stop() {
+	service_stop /bin/ice
+}
+
