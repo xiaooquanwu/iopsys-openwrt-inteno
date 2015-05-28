@@ -5,6 +5,9 @@
 			<luci-config-info>{{ 'wifi.general.info' | translate }}</luci-config-info>
 		</luci-config-section>
 		<luci-config-section>
+			<div class="alert alert-warning" ng-show="status.schedule.value">
+				<p translate>You have wifi-scheduling enabled. This means that your wifi will be automatically turned on and off based on your schedule settings</p>
+			</div>
 			<luci-config-lines>
 				<luci-config-line title="{{'Wifi Network'|translate}}">
 					<switch ng-model="status.wlan.value" class="green" ng-change="onApply"></switch>
