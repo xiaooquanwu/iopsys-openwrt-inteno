@@ -40,6 +40,7 @@
 			</luci-config-lines>
 			<div ng-show="dhcp.ignore.value">
 				<hr/>
+				<h3 translate>Static DHCP</h3>
 				<table class="table">
 					<thead>
 						<th translate>Device Name</th>
@@ -57,20 +58,21 @@
 						<td>
 							<input type="text" class="form-control" ng-model="host.ip.value"/>
 						</td>
-						<td>
-							<button class="btn btn-default" ng-click="onAddExistingHost()"><i class="fa fa-plus"></i></button>
+						<td style="white-space: nowrap">
+							<!--<button class="btn btn-default" style="display: inline-block; float: none;" ng-click="onAddExistingHost()"><i class="fa fa-plus"></i></button>-->
+							<button class="btn btn-default" style="display: inline-block; float: none;" ng-click="onRemoveStaticDHCP(host)"><i class="fa fa-trash-o"></i></button>
 						</td>
 					</tr>
 					<tr>
-						<td colspan="3"></td>
-						<td >
+						<td colspan="2"></td>
+						<td style="text-align: right;">
+							<luci-select ng-model="existingHost" ng-items="hosts" on-change="onAddExistingHost()" placeholder="{{'Add existing host'|translate}}"/>
+						</td>
+						<td style="text-align: right;">
 							<button class="btn btn-default" ng-click="onAddStaticDHCP()"><i class="fa fa-plus"></i></button>
 						</td>
 					</tr>
 				</table>
-				<div class="pull-right">
-					<luci-select ng-model="existingHost" ng-items="hosts" on-change="onAddExistingHost()" placeholder="{{'Add existing host'|translate}}"/>
-				</div>
 			</div>
 		</div>
 	</div>

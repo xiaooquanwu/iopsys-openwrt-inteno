@@ -45,6 +45,12 @@ JUCI.app
 			$scope.$apply(); 
 		}); 
 	}
+	$scope.onRemoveStaticDHCP = function(host){
+		if(!host) return; 
+		host.$delete().done(function(){
+			$scope.$apply(); 
+		}); 
+	}
 	$scope.onAddExistingHost = function(){
 		var item = $scope.existingHost; 
 		$uci.dhcp.create({
