@@ -1128,6 +1128,8 @@ wifi_detect() {
 	local BSSID=$(printf "%X\n" $((0x$BMAC + 2)))
 	local BSSID4=${BSSID:6:4}
 	local BSSID6=${BSSID:4:6}
+	local DECIMAL=$(printf "%d\n" 0x${BSSID6/:/})
+	DECIMAL=$((DECIMAL+98))
 	local WPAKEY=$(cat /proc/nvram/WpaKey)
 	WPAKEY="${WPAKEY:-1234567890}"
 	local SSID="$(uci -q get wireless.@wifi-iface[0].ssid)"
@@ -1304,6 +1306,7 @@ EOF
 	done
 	uci -q delete wireless.preferred
 	uci commit wireless
+	sed -i "s/\$DECIMAL/$DECIMAL/g" /etc/config/wireless
 	sed -i "s/\$BSSID6/$BSSID6/g" /etc/config/wireless
 	sed -i "s/\$BSSID4/$BSSID4/g" /etc/config/wireless
 	sed -i "s/\$BSSID2/$BSSID2/g" /etc/config/wireless
