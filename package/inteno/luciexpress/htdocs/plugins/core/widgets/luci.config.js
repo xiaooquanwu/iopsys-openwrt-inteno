@@ -75,19 +75,30 @@ $juci.module("core")
 			'<button class="btn btn-lg btn-primary" ng-click="onApply()" ng-disabled="busy"><i class="fa fa-spinner" ng-show="busy"/>{{ "Apply"| translate }}</button><button class="btn btn-lg btn-default" ng-click="onCancel()">{{ "Cancel" | translate }}</button>'+
 			'</div><div style="clear: both;"></div></div>', 
 		replace: true, 
+		scope: {
+			onPreApply: "&"
+		}, 
 		controller: "luciConfigApplyController"
 	 }; 
 }).controller("luciConfigApplyController", function($scope, $uci){
 	$scope.onApply = function(){
+		if($scope.onPreApply) $scope.onPreApply(); 
 		$scope.busy = 1; 
-		$uci.save().done(function(){
-			console.log("Saved uci configuration!"); 
-		}).fail(function(){
-			console.error("Could not save uci configuration!"); 
-		}).always(function(){
+		try {
+			$uci.save().done(function(){
+				console.log("Saved uci configuration!"); 
+			}).fail(function(){
+				console.error("Could not save uci configuration!"); 
+			}).always(function(){
+				$scope.busy = 0; 
+				setTimeout(function(){$scope.$apply();}, 0); 
+			}); 
+		} catch(e){
 			$scope.busy = 0; 
 			setTimeout(function(){$scope.$apply();}, 0); 
-		}); 
+			$scope.$emit("error", e.message); 
+			console.error("Error while applying config: "+e.message); 
+		}
 	}
 	$scope.onCancel = function(){
 		// simple way to reset

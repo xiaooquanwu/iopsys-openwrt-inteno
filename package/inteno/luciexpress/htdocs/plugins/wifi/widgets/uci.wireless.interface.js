@@ -11,6 +11,11 @@ $juci.module("wifi")
 		require: "^ngModel"
 	 };  
 }).controller("WifiInterfaceController", function($scope, $uci, gettext){
+	$scope.errors = []; 
+	$scope.$on("error", function(ev, err){
+		ev.stopPropagation(); 
+		$scope.errors.push(err); 
+	}); 
 	$scope.$watch("interface", function(value){
 		try {
 			$scope.cryptoChoices = $scope.interface.encryption.schema.allow;
@@ -26,5 +31,8 @@ $juci.module("wifi")
 			x[".frequency"] = dev[".label"]; 
 		}); 
 		$scope.title = "wifi-iface.name="+$scope.interface[".name"]; 
-	}); 
+	});
+	$scope.onPreApply = function(){
+		$scope.errors.length = 0; 
+	}
 }); 

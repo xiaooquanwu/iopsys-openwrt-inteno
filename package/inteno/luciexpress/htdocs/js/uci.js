@@ -283,9 +283,13 @@
 			return deferred.promise(); 
 		}
 		
+		/*
 		UCISection.prototype.$save = function(){
 			var deferred = $.Deferred(); 
 			var self = this; 
+			
+			// try to validate the section using section wide validator
+			if(self[".validator"] instanceof Function) self[".validator"](self); 
 			
 			$rpc.uci.set({
 				config: self[".config"][".name"], 
@@ -297,7 +301,7 @@
 				deferred.reject(); 
 			}); 
 			return deferred.promise(); 
-		}
+		}*/
 		
 		UCISection.prototype.$delete = function(){
 			var self = this; 
@@ -326,6 +330,9 @@
 			if(!type) return {}; 
 			var self = this; 
 			var changed = {}; 
+			
+			if(type[".validator"] instanceof Function) type[".validator"](self); 
+			
 			Object.keys(type).map(function(k){
 				if(self[k] && self[k].dirty){ 
 					//console.log("Adding dirty field: "+k); 
@@ -443,12 +450,13 @@
 			}); 
 		}
 		
-		UCIConfig.prototype.$registerSectionType = function(name, descriptor){
+		UCIConfig.prototype.$registerSectionType = function(name, descriptor, validator){
 			var config = this[".name"]; 
 			var conf_type = section_types[config]; 
 			if(typeof conf_type === "undefined") conf_type = section_types[config] = {}; 
 			conf_type[name] = descriptor; 
 			this["@"+name] = []; 
+			if(validator !== undefined && validator instanceof Function) conf_type[name][".validator"] = validator; 
 			console.log("Registered new section type "+config+"."+name); 
 		}
 		

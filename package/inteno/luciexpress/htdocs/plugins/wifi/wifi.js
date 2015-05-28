@@ -67,6 +67,25 @@ JUCI.app
 		"macmode":		{ dvalue: 1, type: Number, allow: [ 0, 1, 2 ] },
 		"macfilter":	{ dvalue: false, type: Boolean },
 		"maclist":		{ dvalue: [], type: Array, match_each: /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/ }
+	}, function validator(section){
+		// validate ssid
+		if(section.ssid.value.length >= 32) 
+			throw new Error("SSID string can be at most 32 characters long!"); 
+		// validate keys
+		switch(section.encryption.value){
+			case "wep": {
+				if(!section.key.value || !section.key.value.match(/[a-f0-9A-F]{10,26}/)) 
+					throw new Error("WEP encryption key must be 10-26 hexadecimal characters!"); 
+			} break;
+			case "psk": 
+			case "psk2": 
+			case "mixed-psk": {
+				if(!section.key.value || !(section.key.value.length > 8 && section.key.value.length < 64))
+					throw new Error("WPA key must be 8-63 characters long!"); 
+			} break; 
+			default: 
+				break; 
+		}
 	}); 
 	
 	
