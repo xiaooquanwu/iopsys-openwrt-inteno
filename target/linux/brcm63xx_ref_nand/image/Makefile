@@ -101,8 +101,14 @@ define Image/Prepare
 	# strip out unneeded files (.w.x.y)
 	rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.3.8
 	rm -rf $(BUILD_DIR_ROOT)/usr/lib/libvorbisenc*
-endef
 
+    ifeq ($(CONFIG_TARGET_IBOARDID),"VOX25")
+		rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.4.11-rt19/extra/dect.ko
+		rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.4.11-rt19/extra/dectshim.ko
+		rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.4.11-rt19/extra/dhd.ko
+		rm -rf $(BUILD_DIR_ROOT)/etc/wlan/dhd
+    endif
+endef
 
 define Image/Build/Header
 	# Args: $1=header $2=cfe $3=kernel $4=ubifs
