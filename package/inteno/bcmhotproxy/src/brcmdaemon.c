@@ -71,7 +71,7 @@ int main(int argc, char *argv[]) {
 #if defined(DEBUG)
     int daemonize = 0;
 #else
-    int daemonize = 1;
+    int daemonize = 0;
 #endif
  
     // Setup signal handling before we start
