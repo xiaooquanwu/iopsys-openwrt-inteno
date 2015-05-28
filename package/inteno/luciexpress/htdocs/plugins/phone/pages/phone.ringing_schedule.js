@@ -25,8 +25,14 @@ $juci.module("phone")
 	$scope.allSipAccountsMap = {}; 
 	
 	$uci.sync(["voice_client"]).done(function(){
-		// TODO add config for phone
-		$scope.settings = $uci.voice_client.RINGING_STATUS; 
+		if(!$uci.voice_client.RINGING_STATUS){
+			$uci.voice_client.create({".type": "ringing_status", ".name": "RINGING_STATUS"}).done(function(section){
+				$scope.settings = $uci.voice_client.RINGING_STATUS; 
+				$scope.$apply(); 
+			}); 
+		} else {
+			$scope.settings = $uci.voice_client.RINGING_STATUS;
+		} 
 		$scope.schedules = $uci.voice_client["@ringing_schedule"]; 
 		$scope.allSipAccountsMap = {}; 
 		$scope.allSipAccounts = $uci.voice_client["@sip_service_provider"].map(function(x){

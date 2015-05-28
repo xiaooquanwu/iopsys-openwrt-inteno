@@ -13,15 +13,15 @@ $juci.module("internet")
 		if($scope.firewallSwitchState) {
 			$uci.firewall["@zone"].map(function(zone){
 				if(zone.name.value == "wan"){
-					zone.input.value = "ACCEPT"; 
-					zone.forward.value = "ACCEPT"; 
+					zone.input.value = "REJECT"; 
+					zone.forward.value = "REJECT"; 
 				}
 			}); 
 		} else {
 			$uci.firewall["@zone"].map(function(zone){
 				if(zone.name.value == "wan"){
-					zone.input.value = "REJECT"; 
-					zone.forward.value = "REJECT"; 
+					zone.input.value = "ACCEPT"; 
+					zone.forward.value = "ACCEPT"; 
 				}
 			}); 
 		}

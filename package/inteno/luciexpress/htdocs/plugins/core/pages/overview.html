@@ -85,12 +85,12 @@
 					<tr>
 						<td>
 							<div class="col-md-2"><i class="fa fa-calendar fa-2x"></i></div>
-							<div class="col-md-10"><strong><a href="#!/phone-ringing-schedule">Schedule</a> is <a class="label label-{{(wifi.status.wps.value)?'success':'default'}} pull-right" href="" ng-click="onWPSToggle()">{{wifiWPSStatus | translate}}</a></strong></div>
+							<div class="col-md-10"><strong><a href="#!/phone-ringing-schedule">Schedule</a> <a class="label label-{{(wifi.status.wps.value)?'success':'default'}} pull-right" href="" ng-click="onWPSToggle()">{{wifiWPSStatus | translate}}</a></strong></div>
 						</td>
 					</tr>
 					<tr ng-repeat="sip in sipAccounts track by $index">
 						<td ng-show="sip.user.value">
-								<div class="col-md-2"><strong style="font-size: 1.2em">U{{$index}}</strong></div>
+								<div class="col-md-2"><strong style="font-size: 1.2em">{{sip.name.value}}: </strong></div>
 								<div class="col-md-8"><strong>{{sip.user.value}}</strong></div>
 						</td>
 					</tr>

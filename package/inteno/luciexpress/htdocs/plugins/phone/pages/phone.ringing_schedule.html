@@ -8,7 +8,7 @@
 				<luci-config-line title="{{'Ringing Schedule'|translate}}">
 					<switch id="enabled" name="enabled" ng-model="settings.enabled.value" class="green"></switch>
 				</luci-config-line>
-				<luci-config-line title="{{'During this time ringing is '|translate}}">
+				<luci-config-line title="{{'During this time ringing is '|translate}}"  ng-show="settings.enabled.value">
 					<switch id="enabled" name="enabled" ng-model="settings.status.value" class="green"></switch>
 				</luci-config-line>
 			</luci-config-lines>
@@ -17,6 +17,7 @@
 					<th translate>Day</th>
 					<th translate>Time</th>
 					<th translate>Number</th>
+					<th translate>Status</th>
 					<!--<th translate>Status</th>-->
 					<th></th>
 					<th></th>
@@ -26,6 +27,7 @@
 							<td>{{ item.days.value.join(",") }}</td>
 							<td>{{ item.time.value }}</td>
 							<td>{{ allSipAccountsMap[item.sip_service_provider.value].name.value }}</td>
+							<td>{{ ((settings.status.value)?"Enabled":"Disabled") | translate}}</td>
 							<!--<td>{{ item.enabled.value }}</td>-->
 							<td style="width: 1%"><button class="btn btn-default" ng-click="onEditSchedule(item)"><i class="fa fa-pencil" style="{{editColor}}"></i></button></td>
 							<td style="width: 1%"><button class="btn btn-default" ng-click="onDeleteSchedule(item)"><i class="fa fa-trash-o"></i></button></td>

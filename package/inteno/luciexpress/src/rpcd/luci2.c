@@ -292,7 +292,7 @@ rpc_luci2_system_log(struct ubus_context *ctx, struct ubus_object *obj,
 
 		if (!(log = popen("logread", "r")))
 			goto fail;
-	}
+	} 
 
 	blob_buf_init(&buf, 0);
 
