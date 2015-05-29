@@ -21,10 +21,10 @@
 					<strong>{{interface.netmask.value}}</strong>
 				</luci-config-line>
 				<luci-config-line title="{{'DHCP Server'|translate}}">
-					<switch ng-model="dhcp.ignore.value" class="green"></switch>
+					<switch ng-model="dhcp.ignore.value" class="green" inverted></switch>
 				</luci-config-line>
 			</luci-config-lines>
-			<luci-config-lines ng-show="dhcp.ignore.value">
+			<luci-config-lines ng-hide="dhcp.ignore.value">
 				<hr/>
 				<luci-config-line title="{{'Address Pool Start IP'|translate}}">
 					<input class="form-control pull-right" style="width: 60px;" ng-model="dhcp.start.value" placeholder="1"></input>
@@ -38,7 +38,7 @@
 					<luci-select ng-model="dhcp.leasetime.value" ng-items="dhcpLeaseTimes" placeholder="{{'Lease Time'|translate}}"/>
 				</luci-config-line>
 			</luci-config-lines>
-			<div ng-show="dhcp.ignore.value">
+			<div ng-hide="dhcp.ignore.value">
 				<hr/>
 				<h3 translate>Static DHCP</h3>
 				<table class="table">

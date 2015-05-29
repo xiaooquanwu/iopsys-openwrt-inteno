@@ -7,8 +7,8 @@ JUCI.app
 	$scope.selectedLogTypes = ["system", "network", "other"]; 
 	
 	var groups = {
-		"system": [], 
-		"network": ["netifd", "brcmnetlink", "dnsmasq-dhcp"], 
+		"system": ["dropbear", "peripheral_manager"], 
+		"network": ["netifd", "brcmnetlink", "dnsmasq-dhcp", "dnsmasq"], 
 	}; 
 	
 	JUCI.interval.repeat("syslog", 1000, function(done){

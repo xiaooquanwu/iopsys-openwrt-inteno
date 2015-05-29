@@ -63,6 +63,7 @@ define Package/luciexpress/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/io/luciexpress-io $(1)/usr/libexec/
 	$(LN) /usr/libexec/luciexpress-io $(1)/www/cgi-bin/luci-upload
 	$(LN) /usr/libexec/luciexpress-io $(1)/www/cgi-bin/luci-backup
+	$(CP) luci_redirect.sh $(1)/www/cgi-bin/luci
 endef
 
 define Package/luciexpress/postinst

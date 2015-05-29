@@ -31,7 +31,8 @@
 			<p>{{'settings.upgrade.online.info'|translate}}</p>
 			<luci-config-lines>
 				<luci-config-line title="{{onlineUpgrade}}">
-					<button ng-hide="onlineUpgradeAvailable" class="btn btn-lg btn-default" ng-click="onOnlineCheck()">{{'Check for Upgrade'|translate}}</button>
+					<button ng-hide="onlineUpgradeAvailable" class="btn btn-lg btn-default" ng-click="onOnlineCheck()">
+						<i class="fa fa-spinner fa-spin" ng-show="onlineCheckInProgress"/>{{'Check for Upgrade'|translate}}</button>
 					<button ng-show="onlineUpgradeAvailable" class="btn btn-lg btn-default" ng-click="onUpgradeOnline()">{{'Install Upgrade'|translate}}</button>
 				</luci-config-line>
 			</luci-config-lines>
@@ -44,7 +45,7 @@
 					<button class="btn btn-lg btn-default" ng-click="onUpgradeUSB()">{{'Install Upgrade'|translate}}</button>
 				</luci-config-line>
 				<luci-config-line title="{{usbUpgrade}}" ng-hide="usbUpgradeAvailable">
-					<button class="btn btn-lg btn-default" ng-click="onCheckUSB()">{{'Check for Upgrade'|translate}}</button>
+					<button class="btn btn-lg btn-default" ng-click="onCheckUSB()"><i class="fa fa-spinner fa-spin" ng-show="usbCheckInProgress"/>{{'Check for Upgrade'|translate}}</button>
 				</luci-config-line>
 			</luci-config-lines>
 		</luci-config-section>

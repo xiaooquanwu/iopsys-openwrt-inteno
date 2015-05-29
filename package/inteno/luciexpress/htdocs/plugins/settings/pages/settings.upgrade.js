@@ -158,6 +158,7 @@ JUCI.app
 	
 	$scope.onCheckOnline = function(){
 		$scope.onlineUpgradeAvailable = false;
+		$scope.onlineCheckInProgress = 1; 
 		$rpc.luci2.system.upgrade_check({type: "online"}).done(function(response){
 			if(response.stdout) {
 				$scope.onlineUpgrade = response.stdout.replace("\n", ""); 
@@ -166,6 +167,7 @@ JUCI.app
 				$scope.onlineUpgrade = gettext("No upgrade has been found!"); 
 			}
 			if(response.stderr) $scope.$emit("error", "Online upgrade check failed: "+response.stderr); 
+			$scope.onlineCheckInProgress = 0; 
 			$scope.$apply(); 
 		}); 
 	} 
@@ -175,6 +177,7 @@ JUCI.app
 	
 	$scope.onCheckUSB = function(){
 		$scope.usbUpgradeAvailable = false;
+		$scope.usbCheckInProgress = 1; 
 		$rpc.luci2.system.upgrade_check({type: "usb"}).done(function(response){
 			if(response.stdout) {
 				$scope.usbUpgrade = response.stdout.replace("\n", ""); 
@@ -183,6 +186,7 @@ JUCI.app
 				$scope.usbUpgrade = gettext("No upgrade has been found!"); 
 			}
 			if(response.stderr) $scope.$emit("error", "USB upgrade check failed: "+response.stderr); 
+			$scope.usbCheckInProgress = 0; 
 			$scope.$apply(); 
 		});
 	}

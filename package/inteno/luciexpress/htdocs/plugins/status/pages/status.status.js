@@ -30,7 +30,7 @@ JUCI.app
 						});  
 					}
 				}); 
-				sections = sections.sort(function(a, b) { return a.interface.up > b.interface.up; }); 
+				sections = sections.filter(function(x){ return x.interface !== undefined; }).sort(function(a, b) { return a.interface.up > b.interface.up; }); 
 				for(var c = 0; c < sections.length; c++){
 					var sec = sections[c]; 
 					if(sec.interface.up) sec.status = "ok"; 

@@ -1,7 +1,7 @@
 //! Author: Martin K. Schröder <mkschreder.uk@gmail.com>
 
 JUCI.app
-.controller("SettingsConfigurationCtrl", function($scope, $rpc){
+.controller("SettingsConfigurationCtrl", function($scope, $rpc, gettext){
 	$scope.sessionID = $rpc.$sid(); 
 	$scope.resetPossible = 0; 
 	$rpc.luci2.system.reset_test().done(function(result){
@@ -11,9 +11,11 @@ JUCI.app
 		} 
 	}); 
 	$scope.onReset = function(){
-		$rpc.luci2.system.reset_start().done(function(result){
-			console.log("Performing reset: "+JSON.stringify(result)); 
-		}); 
+		if(confirm(gettext("This will reset your configuration to factory defaults. Do you want to continue?"))){
+			$rpc.luci2.system.reset_start().done(function(result){
+				console.log("Performing reset: "+JSON.stringify(result)); 
+			}); 
+		}
 	}
 	$scope.onSaveConfig = function(){
 		$scope.showModal = 1; 
