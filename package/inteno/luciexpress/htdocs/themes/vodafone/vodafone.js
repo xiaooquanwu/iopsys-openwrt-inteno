@@ -5,7 +5,7 @@ angular.module("luci").config(function($provide){
 		"luciLayoutSingleColumnDirective": "/widgets/luci.layout.single_column.html", 
 		"luciLayoutWithSidebarDirective": "/widgets/luci.layout.with_sidebar.html", 
 		"luciNavbarDirective": "/widgets/luci.navbar.html",
-		"luciTopBarDirective": "/widgets/luci.top_bar.html"
+		//"luciTopBarDirective": "/widgets/luci.top_bar.html"
 	}; 
 	var plugin_root = "/themes/vodafone/"; 
 	Object.keys(overrides).map(function(k){

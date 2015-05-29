@@ -19,24 +19,29 @@ $juci.module("core")
 		$scope.$apply(); 
 	}); 
 	$scope.guiModes = [
-		{id: "basic", label: gettext("Basic Mode")},
-		{id: "expert", label: gettext("Expert Mode")},
-		{id: "logout", label: gettext("Log out")}
+		{label: gettext("Basic Mode"), value: "basic"},
+		{label: gettext("Expert Mode"), value: "expert"},
+		{label: gettext("Log out"), value: "logout"}
 	]; 
 	Object.keys($scope.guiModes).map(function(k){
-		var m = $scope.guiModes[k]; 
-		if(m.id == $config.mode) $scope.selectedMode = m;
+		var m = $scope.guiModes[k];
+        if (!$config.mode) {
+            $config.mode = "basic"; // by default
+        }
+		if(m.value == $config.mode) $scope.selectedModeValue = m;
 	});  
-	$scope.onChangeMode = function(item){
-		var selected = item.id; 
-		if(selected == "logout") {
-			$rpc.$logout().always(function(){
-				$window.location.href="/"; 
-			}); 
+	$scope.onChangeMode = function(){
+		var selected = $scope.selectedModeValue;
+        console.log("selected value", selected);
+        if(selected == "logout") {
+            console.log("logging out");
+            $rpc.$logout().always(function(){
+				$window.location.href="/";
+			});
 		} else {
-			$localStorage.setItem("mode", selected); 
-			$config.mode = selected; 
-			$state.reload(); 
+			$localStorage.setItem("mode", selected);
+			$config.mode = selected;
+			$state.reload();
 		}
 	};
 }); 
