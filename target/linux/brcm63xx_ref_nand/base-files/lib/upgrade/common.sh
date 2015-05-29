@@ -415,7 +415,7 @@ create_springboard_preinit() {
 		echo "Write UBI image..."
 		imagewrite -s 83 -b 0 \
 			   -k $ubifs_ofs -l $ubifs_sz \
-			   --ubi -n 0 -S -6 --vol-name=rootfs_0 \
+			   --ubi -n 0 -S -20 --vol-name=rootfs_0 \
 			   /dev/mtd$mtd_no $from
 		echo "Write kernel..."
 		imagewrite -c -s 3 -b 40 -k $k_ofs -l $k_sz \
