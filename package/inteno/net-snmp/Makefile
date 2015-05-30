@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2006-2012 OpenWrt.org
+# Copyright (C) 2006-2014 OpenWrt.org
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,12 +8,14 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=net-snmp
-PKG_VERSION:=5.4.2.1
-PKG_RELEASE:=5
+PKG_VERSION:=5.4.4
+PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=@SF/net-snmp
-PKG_MD5SUM:=984932520143f0c8bf7b7ce1fc9e1da1
+PKG_MD5SUM:=95aa054f3c99a1ce242807d7eaf98619
+PKG_MAINTAINER:=Jo-Philipp Wich <jow@openwrt.org>
+PKG_LICENSE:=MIT BSD-3-Clause-Clear
 
 PKG_FIXUP = patch-libtool
 
@@ -38,7 +40,6 @@ define Package/libnetsnmp
 $(call Package/net-snmp/Default)
   SECTION:=libs
   CATEGORY:=Libraries
-  DEPENDS:=+libelf +libopenssl
   TITLE:=Open source SNMP implementation (libraries)
 endef
 
@@ -78,7 +79,6 @@ endef
 define Package/snmpd-static
 $(call Package/net-snmp/Default)
   TITLE:=Open source SNMP implementation (daemon)
-  DEPENDS:=+libelf
 endef
 
 define Package/snmpd-static/description
@@ -155,7 +155,7 @@ CONFIGURE_ARGS += \
 	--enable-mfd-rewrites \
 	--enable-shared \
 	--enable-static \
-	--with-endianness=little \
+	--with-endianness=$(if $(CONFIG_BIG_ENDIAN),big,little) \
 	--with-logfile=/var/log/snmpd.log \
 	--with-persistent-directory=/usr/lib/snmp/ \
 	--with-default-snmp-version=1 \
