@@ -157,3 +157,6 @@ config log 'LOG'
 	option syslog_facility 'local0'
 	option syslog ''
 
+config ringing_status 'RINGING_STATUS'
+	option status '0'
+	option enabled '1'

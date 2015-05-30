@@ -125,11 +125,20 @@ exten => s,1,			Set(linecfim=${DB(CFIM/${ARG1})})
 ; If we have CFIM set, go to CFIM call
 exten => s,n,			GotoIf(${linecfim}?call_cfim)
 
+; If ringing is disabled, skip calling line normally
+exten => s,n,			Set(shouldring=${SHELL(/usr/lib/asterisk/ringing_schedule.sh ${ARG1}):0:-1})
+exten => s,n,			GotoIf(${shouldring}?:ringing_disabled)
+
 ;Call line normally, by going to call_line context
 exten => s,n,			Goto(call_line,${MACRO_EXTEN},1)
 
 ;Call CFIM number
 exten => s,n(call_cfim),	Dial(SIP/${linecfim}@${ARG1},)
+exten => s,n,			Hangup()
+
+;Ringing disabled, give ringback for 60s and then hangup
+exten => s,n(ringing_disabled),	Ringing()
+exten => s,n,			Wait(60)
 exten => s,n,			Hangup()
 
 [macro-callhandler-noanswer]
