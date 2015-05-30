@@ -14,7 +14,6 @@
 
 #include <uci.h>
 
-
 #include <libubox/blobmsg.h>
 #include <libubox/uloop.h>
 #include <libubox/ustream.h>
@@ -37,6 +36,7 @@ typedef struct {
 	const char *device;
 	const char *ssid;
 	const char *network;
+	int noise;
 } Wireless;
 
 typedef struct {
@@ -75,6 +75,13 @@ typedef struct {
 	char wdev[8];
 	bool connected;
 } Client;
+
+typedef struct {
+	bool exists;
+	char macaddr[24];
+	char wdev[8];
+	int snr;
+} Sta;
 
 typedef struct {
 	bool exists;
@@ -122,7 +129,7 @@ typedef struct {
 	char name[64];
 	char *hardware;
 	char *model;
-	char *nvramver;
+	char *boardid;
 	char *firmware;
 	char *brcmver;
 	char *socmod;

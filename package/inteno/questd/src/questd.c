@@ -40,9 +40,10 @@ static const char *ubus_path;
 static Radio radio[MAX_RADIO];
 static Wireless wireless[MAX_VIF];
 static Network network[MAX_NETWORK];
-static Detail details[MAX_CLIENT];
+static Detail details[MAX_CLIENT], details6[MAX_CLIENT];
 static Client clients[MAX_CLIENT], clients_old[MAX_CLIENT], clients_new[MAX_CLIENT];
 static Client6 clients6[MAX_CLIENT];
+static Sta stas[MAX_CLIENT];
 static Router router;
 static Memory memory;
 static Key keys;
@@ -294,6 +295,8 @@ load_wireless()
 				ssid = uci_lookup_option_string(uci_ctx, s, "ssid");
 				if (device) {
 					wireless[wno].device = device;
+					usleep(10000);
+					wireless[wno].noise = atoi(chrCmd("wlctl -i %s noise", wireless[wno].device));
 					(network) ? (wireless[wno].network = network) : (wireless[wno].network = "");
 					(ssid) ? (wireless[wno].ssid = ssid) : (wireless[wno].ssid = "");
 					if (!strcmp(device, "wl0")) {
@@ -317,6 +320,7 @@ load_wireless()
 				if(!(radio[rno].band = uci_lookup_option_string(uci_ctx, s, "band")))
 					radio[rno].band = "b";
 				radio[rno].frequency = !strcmp(radio[rno].band, "a") ? 5 : 2;
+				usleep(10000);
 				radio[rno].pcid = chrCmd("wlctl -i %s revinfo | awk 'FNR == 2 {print}' | cut -d'x' -f2", radio[rno].name);
 				radio[rno].is_ac = false;
 				if (radio[rno].pcid && atoi(chrCmd("db -q get hw.%s.is_ac", radio[rno].pcid)) == 1)
@@ -344,6 +348,7 @@ load_wireless()
 				}
 
 				chn = 0;
+				usleep(10000);
 				token = strtok(chrCmd("wlctl -i %s channels", radio[rno].name), " ");
 				while (token != NULL)
 				{
@@ -402,55 +407,104 @@ handle_client(Client *clnt)
 	}
 }
 
+static void
+wireless_assoclist()
+{
+	FILE *assoclist;
+	char cmnd[64];
+	char line[64];
+	int i = 0;
+	int j = 0;
+	int rssi = 0;
+
+	for (i = 0; wireless[i].device; i++) {
+		usleep(10000);
+		sprintf(cmnd, "wlctl -i %s assoclist", wireless[i].vif);
+		if ((assoclist = popen(cmnd, "r"))) {
+			while(fgets(line, sizeof(line), assoclist) != NULL)
+			{
+				remove_newline(line);
+				if (sscanf(line, "assoclist %s", stas[j].macaddr) == 1) {
+					stas[j].exists = true;
+					strcpy(stas[j].wdev, wireless[i].vif);
+					usleep(10000);
+					rssi = atoi(chrCmd("wlctl -i %s rssi %s", wireless[i].vif, stas[j].macaddr));
+					stas[j].snr = rssi - wireless[i].noise;
+					j++;
+				}
+			}
+			pclose(assoclist);
+		}
+	}
+}
+
+/*static bool*/
+/*wireless_sta(Client *clnt, Detail *dtl)*/
+/*{*/
+/*	FILE *stainfo;*/
+/*	char cmnd[64];*/
+/*	char line[128];*/
+/*	int i = 0;*/
+/*	bool there = false;*/
+/*	char tab[16];*/
+/*	int tmp;*/
+/*	int noise;*/
+
+/*	for (i = 0; wireless[i].device; i++) {*/
+/*		sprintf(cmnd, "wlctl -i %s sta_info %s 2>/dev/null", wireless[i].vif, clnt->macaddr);*/
+/*		if ((stainfo = popen(cmnd, "r"))) {*/
+/*			while(fgets(line, sizeof(line), stainfo) != NULL)*/
+/*			{*/
+/*				remove_newline(line);*/
+/*				if(sscanf(line, "%sstate: AUTHENTICATED ASSOCIATED AUTHORIZED", tab)) {*/
+/*					there = true;*/
+/*					strncpy(clnt->wdev, wireless[i].vif, sizeof(clnt->wdev));*/
+/*				}*/
+/*				sscanf(line, "\t idle %d seconds", &(dtl->idle));*/
+/*				sscanf(line, "\t in network %d seconds", &(dtl->in_network));*/
+/*				sscanf(line, "\t tx total bytes: %ld\n", &(dtl->tx_bytes));*/
+/*				sscanf(line, "\t rx data bytes: %ld", &(dtl->rx_bytes));*/
+/*				sscanf(line, "\t rate of last tx pkt: %d kbps - %d kbps", &tmp, &(dtl->tx_rate));*/
+/*				sscanf(line, "\t rate of last rx pkt: %d kbps", &(dtl->rx_rate));*/
+/*			}*/
+/*			pclose(stainfo);*/
+/*		}*/
+/*		if (there) {*/
+/*			sprintf(cmnd, "wlctl -i %s noise", wireless[i].device);*/
+/*			if ((stainfo = popen(cmnd, "r"))) {*/
+/*				fgets(line, sizeof(line), stainfo);*/
+/*				remove_newline(line);*/
+/*				noise = atoi(line);*/
+/*				pclose(stainfo);*/
+/*			}*/
+/*			sprintf(cmnd, "wlctl -i %s rssi %s", wireless[i].vif, clnt->macaddr);*/
+/*			if ((stainfo = popen(cmnd, "r"))) {*/
+/*				fgets(line, sizeof(line), stainfo);*/
+/*				remove_newline(line);*/
+/*				dtl->snr = atoi(line) - noise;*/
+/*				pclose(stainfo);*/
+/*			}*/
+/*		}*/
+/*		if (there)*/
+/*			break;*/
+/*	}*/
+/*	return there;*/
+/*}*/
+
 static bool
 wireless_sta(Client *clnt, Detail *dtl)
 {
-	FILE *stainfo;
-	char cmnd[64];
-	char line[128];
-	int i = 0;
 	bool there = false;
-	char tab[16];
-	int tmp;
-	int noise;
+	int i = 0;
 
-	for (i = 0; wireless[i].device; i++) {
-		sprintf(cmnd, "wlctl -i %s sta_info %s 2>/dev/null", wireless[i].vif, clnt->macaddr);
-		if ((stainfo = popen(cmnd, "r"))) {
-			while(fgets(line, sizeof(line), stainfo) != NULL)
-			{
-				remove_newline(line);
-				if(sscanf(line, "%sstate: AUTHENTICATED ASSOCIATED AUTHORIZED", tab)) {
-					there = true;
-					strncpy(clnt->wdev, wireless[i].vif, sizeof(clnt->wdev));
-				}
-				sscanf(line, "\t idle %d seconds", &(dtl->idle));
-				sscanf(line, "\t in network %d seconds", &(dtl->in_network));
-				sscanf(line, "\t tx total bytes: %ld\n", &(dtl->tx_bytes));
-				sscanf(line, "\t rx data bytes: %ld", &(dtl->rx_bytes));
-				sscanf(line, "\t rate of last tx pkt: %d kbps - %d kbps", &tmp, &(dtl->tx_rate));
-				sscanf(line, "\t rate of last rx pkt: %d kbps", &(dtl->rx_rate));
-			}
-			pclose(stainfo);
-		}
-		if (there) {
-			sprintf(cmnd, "wlctl -i %s noise", wireless[i].device);
-			if ((stainfo = popen(cmnd, "r"))) {
-				fgets(line, sizeof(line), stainfo);
-				remove_newline(line);
-				noise = atoi(line);
-				pclose(stainfo);
-			}
-			sprintf(cmnd, "wlctl -i %s rssi %s", wireless[i].vif, clnt->macaddr);
-			if ((stainfo = popen(cmnd, "r"))) {
-				fgets(line, sizeof(line), stainfo);
-				remove_newline(line);
-				dtl->snr = atoi(line) - noise;
-				pclose(stainfo);
-			}
-		}
-		if (there)
+	while(stas[i].exists) {
+		if (!strcasecmp(stas[i].macaddr, clnt->macaddr)) {
+			there = true;
+			strncpy(clnt->wdev, stas[i].wdev, sizeof(clnt->wdev));
+			dtl->snr = stas[i].snr;
 			break;
+		}
+		i++;
 	}
 	return there;
 }
@@ -463,6 +517,7 @@ active_connections(char *ipaddr)
 	char line[8];
 	int connum = 0;
 
+	usleep(10000);
 	sprintf(cmnd, "grep %s /proc/net/ip_conntrack | wc -l", ipaddr);
 	if ((conn = popen(cmnd, "r"))) {
 		fgets(line, sizeof(line), conn);
@@ -475,7 +530,7 @@ active_connections(char *ipaddr)
 }
 
 static void
-populate_clients()
+ipv4_clients()
 {
 	FILE *leases, *arpt;
 	char line[256];
@@ -564,32 +619,8 @@ populate_clients()
 	memcpy(&clients_old, &clients_new, sizeof(clients));
 }
 
-static bool
-wireless_sta6(Client6 *clnt6)
-{
-	FILE *stainfo;
-	char cmnd[64];
-	char line[128];
-	int i = 0;
-	bool there = false;
-
-	for (i = 0; wireless[i].device; i++) {
-		sprintf(cmnd, "wlctl -i %s sta_info %s 2>/dev/null | grep ASSOCIATED", wireless[i].vif, clnt6->macaddr);
-		if ((stainfo = popen(cmnd, "r"))) {
-			if(fgets(line, sizeof(line), stainfo) != NULL) {
-				there = true;
-				strncpy(clnt6->wdev, wireless[i].vif, sizeof(clnt6->wdev));
-			}
-			pclose(stainfo);
-		}
-		if (there)
-			break;
-	}
-	return there;
-}
-
 static void
-populate_clients6()
+ipv6_clients()
 {
 	FILE *hosts6;
 	char line[512];
@@ -610,13 +641,21 @@ populate_clients6()
 				if(!(clients6[cno].connected = ndisc (clients6[cno].hostname, clients6[cno].device, 0x8, 1, toms)))
 					recalc_sleep_time(true, toms);
 				sprintf(clients6[cno].macaddr, get_macaddr());
-				if(clients6[cno].connected && wireless_sta6(&clients6[cno]))
+				if(clients6[cno].connected && wireless_sta(&clients6[cno], &details6[cno]));
 					clients6[cno].wireless = true;
 				cno++;
 			}
 		}
 		fclose(hosts6);
 	}
+}
+
+static void
+populate_clients()
+{
+	wireless_assoclist();
+	ipv4_clients();
+	ipv6_clients();
 }
 
 static void
@@ -717,7 +756,7 @@ router_dump_system_info(struct blob_buf *b, bool table)
 	blobmsg_add_string(b, "name", router.name);
 	blobmsg_add_string(b, "hardware", router.hardware);
 	blobmsg_add_string(b, "model", router.model);
-	blobmsg_add_string(b, "nvramver", router.nvramver); 
+	blobmsg_add_string(b, "boardid", router.boardid);
 	blobmsg_add_string(b, "firmware", router.firmware);
 	blobmsg_add_string(b, "brcmver", router.brcmver);
 	blobmsg_add_string(b, "socmod", router.socmod);
@@ -793,13 +832,13 @@ router_dump_clients(struct blob_buf *b)
 			blobmsg_add_u32(b, "active_cons", details[i].connum);
 		if(clients[i].wireless) {
 			blobmsg_add_string(b, "wdev", clients[i].wdev);
-			blobmsg_add_u32(b, "idle", details[i].idle);
-			blobmsg_add_u32(b, "in_network", details[i].in_network);
+			//blobmsg_add_u32(b, "idle", details[i].idle);
+			//blobmsg_add_u32(b, "in_network", details[i].in_network);
 			blobmsg_add_u32(b, "snr", details[i].snr);
-			blobmsg_add_u64(b, "tx_bytes", details[i].tx_bytes);
-			blobmsg_add_u64(b, "rx_bytes", details[i].rx_bytes);
-			blobmsg_add_u32(b, "tx_rate", details[i].tx_rate);
-			blobmsg_add_u32(b, "rx_rate", details[i].rx_rate);
+			//blobmsg_add_u64(b, "tx_bytes", details[i].tx_bytes);
+			//blobmsg_add_u64(b, "rx_bytes", details[i].rx_bytes);
+			//blobmsg_add_u32(b, "tx_rate", details[i].tx_rate);
+			//blobmsg_add_u32(b, "rx_rate", details[i].rx_rate);
 		}
 		blobmsg_close_table(b, t);
 		num++;
@@ -1897,7 +1936,6 @@ void *dump_router_info(void *arg)
 		dump_sysinfo(&router, &memory);
 		dump_cpuinfo(&router, &prev_jif, &cur_jif);
 		populate_clients();
-		populate_clients6();
 		get_jif_val(&prev_jif);
 		usleep(sleep_time);
 		recalc_sleep_time(false, 0);
