@@ -31,7 +31,8 @@ config interface 'wan'
 EOF
 	fi
 
-	local net_ifname=$(uci get -q network.wan.ifname)
+	local net_ifname="X"
+	uci get -q network.wan >/dev/null && net_ifname=$(uci get -q network.wan.ifname)
 	if [ "$net_ifname" == "" ]; then
 		echo "Setting default network config"
 
@@ -40,11 +41,10 @@ EOF
 		local wanAdslPort=$(uci get -q /lib/db/config/hw.board.adslWanPort)
 		local wanVdslPort=$(uci get -q /lib/db/config/hw.board.vdslWanPort)
 
-		[ "$wanEthernetPort" != "" ] && wanEthernetPort_dot=$wanEthernetPort.1
-		[ "$wanAdslPort" != "" ] && wanAdslPort_dot=$wanAdslPort.1
-		[ "$wanVdslPort" != "" ] && wanVdslPort_dot=$wanVdslPort.1
-
-		local wanports="$wanEthernetPort_dot $wanAdslPort_dot $wanVdslPort_dot"
+		local wanports=""
+		[ "$wanEthernetPort" != "" ] && wanports="$wanEthernetPort.1"
+		[ "$wanAdslPort" != "" ] && wanports="$wanports $wanAdslPort.1"
+		[ "$wanVdslPort" != "" ] && wanports="$wanports $wanVdslPort.1"
 
 		echo "Setting $lanports as lanports"
 		uci get -q network.lan.ifname || uci set network.lan.ifname="$lanports"
