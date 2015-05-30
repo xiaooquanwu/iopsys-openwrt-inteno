@@ -512,18 +512,23 @@ wireless_sta(Client *clnt, Detail *dtl)
 static int
 active_connections(char *ipaddr)
 {
-	FILE *conn;
-	char cmnd[64];
-	char line[8];
+	FILE *f;
+	int i;
+	char *p, line[512];
 	int connum = 0;
 
-	usleep(10000);
-	sprintf(cmnd, "grep %s /proc/net/ip_conntrack | wc -l", ipaddr);
-	if ((conn = popen(cmnd, "r"))) {
-		fgets(line, sizeof(line), conn);
-		remove_newline(line);
-		connum = atoi(line);
-		pclose(conn);
+	if ((f = fopen("/proc/net/nf_conntrack", "r")) != NULL)
+	{
+		while (fgets(line, sizeof(line) - 1, f))
+		{
+			for (i = 0, p = strtok(line, " "); p; i++, p = strtok(NULL, " "))
+			{
+				if (i == 6 && !strcmp(p+4, ipaddr))
+					connum++;
+			}
+		}
+
+		fclose(f);
 	}
 
 	return connum;
@@ -561,8 +566,9 @@ ipv4_clients()
 				else if(!(clients[cno].connected = arping(clients[cno].ipaddr, clients[cno].device, toms)))
 					recalc_sleep_time(true, toms);
 
-				if (clients[cno].connected)
-					details[cno].connum = active_connections(clients[cno].ipaddr);
+				/*if (clients[cno].connected)
+					details[cno].connum = active_connections(clients[cno].ipaddr);*/
+
 				cno++;
 			}
 		}
@@ -602,8 +608,8 @@ ipv4_clients()
 						else if(!(clients[cno].connected = arping(clients[cno].ipaddr, clients[cno].device, toms)))
 							recalc_sleep_time(true, toms);
 
-						if (clients[cno].connected)
-							details[cno].connum = active_connections(clients[cno].ipaddr);
+						/*if (clients[cno].connected)
+							details[cno].connum = active_connections(clients[cno].ipaddr);*/
 						cno++;
 					}
 				}
@@ -643,6 +649,7 @@ ipv6_clients()
 				sprintf(clients6[cno].macaddr, get_macaddr());
 				if(clients6[cno].connected && wireless_sta(&clients6[cno], &details6[cno]));
 					clients6[cno].wireless = true;
+
 				cno++;
 			}
 		}
@@ -829,7 +836,7 @@ router_dump_clients(struct blob_buf *b)
 		blobmsg_add_u8(b, "connected", clients[i].connected);
 		blobmsg_add_u8(b, "wireless", clients[i].wireless);
 		if(clients[i].connected)
-			blobmsg_add_u32(b, "active_cons", details[i].connum);
+			blobmsg_add_u32(b, "active_cons", active_connections(clients[i].ipaddr));
 		if(clients[i].wireless) {
 			blobmsg_add_string(b, "wdev", clients[i].wdev);
 			//blobmsg_add_u32(b, "idle", details[i].idle);
