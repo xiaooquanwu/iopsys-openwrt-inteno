@@ -2,8 +2,8 @@ include $(TOPDIR)/rules.mk
 
 PKG_BRANCH:=svn-0.11
 PKG_NAME:=luci
-PKG_VERSION:=inteno-1.0.184
-PKG_SOURCE_VERSION:=14399345669610748197eb2f0111aaabe22696d9
+PKG_VERSION:=inteno-1.0.185
+PKG_SOURCE_VERSION:=aac7558c2b4fe98eaa09fc28b330e0cf2b57a07a
 
 PKG_SOURCE_PROTO:=git
 ifeq ($(CONFIG_PACKAGE_bcmkernel),y)
@@ -441,6 +441,7 @@ endef
 LUCI_VOICE_DIR=$(PKG_BUILD_DIR)/applications/luci-voice
 define Package/luci-app-voice/install
 	$(CP) -a $(LUCI_VOICE_DIR)/ipkg/* $(1)/CONTROL/ 2>/dev/null || true
+
 	$(INSTALL_DIR) $(1)/etc/config
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/etc/config/voice_client $(1)/etc/config/
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/etc/config/voice_codecs $(1)/etc/config/
@@ -462,13 +463,11 @@ define Package/luci-app-voice/install
 
 	$(INSTALL_DIR) $(1)/usr/lib/asterisk
 	$(INSTALL_BIN) $(LUCI_VOICE_DIR)/dist/usr/lib/asterisk/cbbs.sh $(1)/usr/lib/asterisk/
-	$(INSTALL_BIN) $(LUCI_VOICE_DIR)/dist/usr/lib/asterisk/log_call.sh $(1)/usr/lib/asterisk/
+	$(INSTALL_BIN) $(LUCI_VOICE_DIR)/dist/usr/lib/asterisk/ringing_schedule.sh $(1)/usr/lib/asterisk/
 
 	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/model/cbi/voice
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/advanced.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/brcm.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
-	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/call_filters.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
-	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/call_filter_details.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/country.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/dialplan.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/log.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
@@ -477,6 +476,10 @@ define Package/luci-app-voice/install
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/status.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/voice.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/common.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/speed_dial.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/ringing_schedule.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/ringing_schedule_common.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/ringing_schedule_details.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
 
 	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/view/voice
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/view/voice/rtblsection.htm $(1)/usr/lib/lua/luci/view/voice/
@@ -484,9 +487,9 @@ define Package/luci-app-voice/install
 
 	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/controller/voice
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/controller/voice/brcm.lua $(1)/usr/lib/lua/luci/controller/voice/
-	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/controller/voice/call_filters.lua $(1)/usr/lib/lua/luci/controller/voice/
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/controller/voice/core.lua $(1)/usr/lib/lua/luci/controller/voice/
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/controller/voice/dialplan.lua $(1)/usr/lib/lua/luci/controller/voice/
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/controller/voice/speed_dial.lua $(1)/usr/lib/lua/luci/controller/voice/
 endef
 
 ifneq ($(CONFIG_PACKAGE_luci-app-voice),)
@@ -505,7 +508,7 @@ define voice_module
     MAINTAINER:=Inteno
     SUBMENU:=3. Applications
     TITLE:=$(if $(2),$(2),LuCI voice $(1) module)
-    DEPENDS:=luci-app-voice $(3)
+    DEPENDS:=luci-app-voice +asterisk18-mod-res-srtp +asterisk18-mod-cdr $(3)
   endef
 
   LUCI_BUILD_PACKAGES+=luci-app-voice-$(1)
@@ -522,12 +525,16 @@ endef
 $(eval $(call voice_module,pbx,Voice PBX,\
 	+asterisk18-mod-app-queue \
 	+asterisk18-mod-voicemail \
+	+asterisk18-mod-app-meetme \
+	+asterisk18-mod-app-read \
 	+asterisk18-mod-app-record \
 	+asterisk18-mod-res-musiconhold))
 define Package/luci-app-voice-pbx/install
 	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/model/cbi/voice
 	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/controller/voice
 	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/view/voice
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/call_filters.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/call_filter_details.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/conference.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/conference_details.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/ivr.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
@@ -542,6 +549,8 @@ define Package/luci-app-voice-pbx/install
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/opening_hours.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/opening_hours_profile.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/model/cbi/voice/moh.lua $(1)/usr/lib/lua/luci/model/cbi/voice/
+
+	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/controller/voice/call_filters.lua $(1)/usr/lib/lua/luci/controller/voice/
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/controller/voice/conference.lua $(1)/usr/lib/lua/luci/controller/voice/
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/controller/voice/ivr.lua $(1)/usr/lib/lua/luci/controller/voice/
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/controller/voice/queues.lua $(1)/usr/lib/lua/luci/controller/voice/
@@ -550,6 +559,7 @@ define Package/luci-app-voice-pbx/install
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/controller/voice/opening_hours.lua $(1)/usr/lib/lua/luci/controller/voice/
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/controller/voice/sounds.lua $(1)/usr/lib/lua/luci/controller/voice/
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/controller/voice/moh.lua $(1)/usr/lib/lua/luci/controller/voice/
+
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/view/voice/moh.htm $(1)/usr/lib/lua/luci/view/voice/
 	$(INSTALL_DATA) $(LUCI_VOICE_DIR)/dist/usr/lib/lua/luci/view/voice/sounds.htm $(1)/usr/lib/lua/luci/view/voice/
 endef
@@ -573,10 +583,10 @@ $(eval $(call application,mcpd,LuCI Support for IGMP Proxy,\
 	+PACKAGE_luci-app-mcpd:mcpd))
 
 $(eval $(call application,sfp,LuCI Support for SFP status,\
-        +PACKAGE_luci-app-sfp:sfp))
+	+PACKAGE_luci-app-sfp:sfp))
 
 $(eval $(call application,catv,LuCI Support for CATV Module,\
-        +PACKAGE_luci-app-catv:catv))
+	+PACKAGE_luci-app-catv:catv))
 
 $(eval $(call application,mount,LuCI Support for Mount Management,\
 	+PACKAGE_luci-app-mount))

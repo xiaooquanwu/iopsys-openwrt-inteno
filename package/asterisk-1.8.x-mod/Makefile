@@ -10,7 +10,7 @@ include $(TOPDIR)/rules.mk
 PKG_NAME:=asterisk18-mod
 PKG_VERSION:=1.8.10.1
 
-PKG_SOURCE_VERSION:=bc1eb011f023093447246a34df5253454713c12a
+PKG_SOURCE_VERSION:=e6a06b24a4e3d5ff786a4ad55a7c90de1defb49e
 PKG_SOURCE_PROTO:=git
 ifeq ($(CONFIG_PACKAGE_bcmkernel),y)
 PKG_SOURCE_URL:=git@ihgsp.inteno.se:asterisk-aa
@@ -123,7 +123,7 @@ endef
 define Package/asterisk18-mod-cdr
 $(call Package/asterisk18-mod/Default)
   TITLE:=CDR support
-  DEPENDS:= asterisk18-mod @BROKEN
+  DEPENDS:= asterisk18-mod
 endef
 
 define Package/asterisk18-mod-cdr/description
