@@ -1,9 +1,0 @@
-#!/bin/sh
-uci -q batch <<-EOF >/dev/null
-        delete ucitrack.@ntp[-1]
-        add ucitrack ntp
-        set ucitrack.@ntp[-1].init=sysntpd
-	del_list ucitrack.@system[0].affects=ntp
-	add_list ucitrack.@system[0].affects=ntp
-        commit ucitrack
-EOF

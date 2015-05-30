@@ -77,3 +77,59 @@ do_sysctl() {
 		sysctl -n -e -w "$1=$2" >/dev/null || \
 		sysctl -n -e "$1"
 }
+
+find_network() {
+        local config="$1"
+        local iface="$2"
+        ifname=$(uci get network."$config".ifname)
+        if [ "$ifname" != "${ifname/"$iface"/}" ]; then
+                echo "$config"
+        fi
+}
+
+get_network_of() {
+	config_load network
+	config_foreach find_network interface $1
+}
+
+test_default_route() {
+	local defroute="$(ip r | grep default | awk '{print$3}')"
+	local def6route="$(ip -f inet6 r | grep default | awk '{print$3}')"
+	local ping6dev="$(ip -f inet6 r | grep default | awk '{print$5}')"
+
+	if [ -n "$defroute" ]; then
+		ping -q -w 1 -c 1 $defroute >/dev/null 2>&1 && return 0
+	elif [ -n "$def6route" ] && [ -n "$ping6dev" ]; then
+		ndisc6 -1 $def6route $ping6dev >/dev/null 2>&1 && return 0
+	fi
+	return 1
+}
+
+interfacename() {
+	local PORT_ORDER=$(db get hw.board.ethernetPortOrder)
+	local PORT_NAMES=$(db get hw.board.ethernetPortNames)
+	local cnt=1
+	local idx=0
+
+	# get index of interface name
+	for i in $PORT_ORDER; do
+	    if [ "$i" == "$1" ]; then
+		idx=$cnt
+	    fi
+	    cnt=$((cnt+1))
+	done
+
+	# get port name from index
+	cnt=1
+	for i in $PORT_NAMES; do
+	    if [ "$cnt" == "$idx" ]; then
+		echo $i
+	    fi
+	    cnt=$((cnt+1))
+	done
+
+	# for wifi use default
+	case "$1" in
+	    *wl*) echo "WLAN" ;;
+	esac
+}
