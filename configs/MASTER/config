@@ -3343,7 +3343,9 @@ CONFIG_PACKAGE_multiwan=y
 CONFIG_PACKAGE_odhcp6c=y
 CONFIG_PACKAGE_odhcp6c_ext_prefix_class=0
 CONFIG_PACKAGE_odhcp6c_ext_cer_id=0
-# CONFIG_PACKAGE_odhcpd is not set
+CONFIG_PACKAGE_odhcpd=y
+CONFIG_PACKAGE_odhcpd_ext_prefix_class=0
+CONFIG_PACKAGE_odhcpd_ext_cer_id=0
 # CONFIG_PACKAGE_oping is not set
 CONFIG_PACKAGE_ppp=y
 CONFIG_PACKAGE_ppp-mod-pppoa=y
@@ -3380,12 +3382,6 @@ CONFIG_WPA_MSG_MIN_PRIORITY=3
 # CONFIG_PACKAGE_wprobe-export is not set
 # CONFIG_PACKAGE_wprobe-util is not set
 # CONFIG_PACKAGE_wshaper is not set
-
-#
-# IPv6
-#
-CONFIG_PACKAGE_6relayd=y
-CONFIG_PACKAGE_ipv6-support=y
 
 #
 # Development
