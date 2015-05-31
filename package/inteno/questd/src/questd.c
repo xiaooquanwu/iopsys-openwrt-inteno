@@ -424,6 +424,7 @@ wireless_assoclist()
 			while(fgets(line, sizeof(line), assoclist) != NULL)
 			{
 				remove_newline(line);
+				stas[j].exists = false;
 				if (sscanf(line, "assoclist %s", stas[j].macaddr) == 1) {
 					stas[j].exists = true;
 					strcpy(stas[j].wdev, wireless[i].vif);
