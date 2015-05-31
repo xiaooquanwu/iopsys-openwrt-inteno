@@ -835,8 +835,8 @@ router_dump_clients(struct blob_buf *b)
 		blobmsg_add_u8(b, "dhcp", clients[i].dhcp);
 		blobmsg_add_u8(b, "connected", clients[i].connected);
 		blobmsg_add_u8(b, "wireless", clients[i].wireless);
-		if(clients[i].connected)
-			blobmsg_add_u32(b, "active_cons", active_connections(clients[i].ipaddr));
+		/*if(clients[i].connected)
+			blobmsg_add_u32(b, "active_cons", active_connections(clients[i].ipaddr));*/
 		if(clients[i].wireless) {
 			blobmsg_add_string(b, "wdev", clients[i].wdev);
 			//blobmsg_add_u32(b, "idle", details[i].idle);
