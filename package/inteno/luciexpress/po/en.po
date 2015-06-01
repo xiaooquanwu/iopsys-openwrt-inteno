@@ -47,6 +47,8 @@ msgstr ""
 msgid "General"
 msgstr ""
 
+#: htdocs/plugins/core/pages/overview.html:37
+#: htdocs/plugins/core/pages/overview.html:98
 #: htdocs/plugins/wifi/pages/wifi.schedule.html:4
 msgid "Schedule"
 msgstr ""
@@ -224,6 +226,22 @@ msgstr "English"
 msgid "language.se"
 msgstr "Svenska"
 
+msgid "wifi.enc.none"
+msgstr "None"
+
+msgid "wifi.enc.wep"
+msgstr "WEP"
+
+msgid "wifi.enc.psk"
+msgstr "Passkey"
+
+msgid "wifi.enc.psk2"
+msgstr "Passkey 2"
+
+#, fuzzy
+msgid "wifi.enc.mixed-psk"
+msgstr "Mixed passkey"
+
 #: htdocs/plugins/wifi/pages/wifi.mac_filter.js:15
 #: htdocs/plugins/wifi/pages/wifi.settings.js:11
 #: htdocs/plugins/wifi/widgets/uci.wireless.interface.js:26
@@ -243,10 +261,6 @@ msgid ""
 "your {{config.friendly_name}}. Please make sure that your computer is "
 "protected against attacks from Internet. The following ports will not be "
 "forwarded: {{ nonforwardedPorts || 'None'}}."
-msgstr ""
-
-#: htdocs/plugins/core/widgets/luci.input.radio.html:3
-msgid "<strong>{{label}}</strong>"
 msgstr ""
 
 #: htdocs/plugins/internet/pages/status.nat.html:6
@@ -306,6 +320,13 @@ msgstr ""
 "This section shows a list of tools which can be used to check the status of "
 "your network connection."
 
+#: htdocs/plugins/internet/pages/internet.dns.html:9
+#, fuzzy
+msgid "Automatic"
+msgstr ""
+"This section shows a list of tools which can be used to check the status of "
+"your network connection."
+
 #: htdocs/plugins/settings/pages/settings.configuration.html:32
 msgid "Backup file password"
 msgstr ""
@@ -316,11 +337,6 @@ msgstr ""
 
 #: htdocs/plugins/juci-mod-dropbear/pages/services.dropbear.html:12
 msgid "Banner File"
-msgstr ""
-
-#: htdocs/plugins/core/widgets/luci.top_bar.html:13
-#: htdocs/themes/vodafone/widgets/luci.top_bar.html:13
-msgid "Basic"
 msgstr ""
 
 #: htdocs/plugins/core/widgets/luci.top_bar.js:22
@@ -352,10 +368,15 @@ msgstr ""
 msgid "Change Password"
 msgstr ""
 
-#: htdocs/plugins/settings/pages/settings.upgrade.html:34
-#: htdocs/plugins/settings/pages/settings.upgrade.html:47
+#: htdocs/plugins/settings/pages/settings.upgrade.html:35
+#: htdocs/plugins/settings/pages/settings.upgrade.html:48
 msgid "Check for Upgrade"
 msgstr ""
+
+#: htdocs/plugins/internet/pages/internet.dns.html:32
+#, fuzzy
+msgid "Choose DNS Provider"
+msgstr "Choose Mode"
 
 #: htdocs/plugins/internet/pages/internet.exposed_host.html:16
 msgid ""
@@ -376,7 +397,7 @@ msgstr ""
 msgid "Client IP"
 msgstr ""
 
-#: htdocs/plugins/settings/pages/settings.upgrade.html:56
+#: htdocs/plugins/settings/pages/settings.upgrade.html:57
 msgid "Close"
 msgstr ""
 
@@ -693,8 +714,8 @@ msgstr ""
 msgid "Individual Days"
 msgstr ""
 
-#: htdocs/plugins/settings/pages/settings.upgrade.html:35
-#: htdocs/plugins/settings/pages/settings.upgrade.html:44
+#: htdocs/plugins/settings/pages/settings.upgrade.html:36
+#: htdocs/plugins/settings/pages/settings.upgrade.html:45
 msgid "Install Upgrade"
 msgstr ""
 
@@ -775,6 +796,10 @@ msgstr ""
 msgid "MAC-Address"
 msgstr ""
 
+#: htdocs/plugins/internet/pages/internet.dns.html:12
+msgid "Manual"
+msgstr ""
+
 #: htdocs/plugins/settings/pages/settings.upgrade.html:13
 msgid "Manual Firmware Upgrade"
 msgstr ""
@@ -827,8 +852,8 @@ msgstr ""
 msgid "No active stations"
 msgstr ""
 
-#: htdocs/plugins/settings/pages/settings.upgrade.js:166
-#: htdocs/plugins/settings/pages/settings.upgrade.js:183
+#: htdocs/plugins/settings/pages/settings.upgrade.js:167
+#: htdocs/plugins/settings/pages/settings.upgrade.js:186
 msgid "No upgrade has been found!"
 msgstr ""
 
@@ -1113,9 +1138,8 @@ msgid "Start upgrade"
 msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.voice.html:32
-#, fuzzy
 msgid "State"
-msgstr "Status"
+msgstr ""
 
 #: htdocs/plugins/internet/widgets/uci.network.interface.edit.html:43
 msgid "Static DHCP"
@@ -1153,6 +1177,12 @@ msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.system.js:41
 msgid "Temporary Usage (/tmp)"
+msgstr ""
+
+#: htdocs/plugins/settings/pages/settings.configuration.js:14
+msgid ""
+"This will reset your configuration to factory defaults. Do you want to "
+"continue?"
 msgstr ""
 
 #: htdocs/plugins/wifi/widgets/uci.wireless.schedule.edit.js:38
@@ -1203,7 +1233,7 @@ msgstr ""
 msgid "Type"
 msgstr ""
 
-#: htdocs/plugins/settings/pages/settings.upgrade.html:40
+#: htdocs/plugins/settings/pages/settings.upgrade.html:41
 msgid "USB Firmware Upgrade"
 msgstr ""
 
@@ -1494,7 +1524,7 @@ msgstr ""
 "firmware is found, it will be automatically installed on your EasyBox "
 "(Internet connection required)."
 
-#: htdocs/plugins/settings/pages/settings.upgrade.html:41
+#: htdocs/plugins/settings/pages/settings.upgrade.html:42
 msgid "settings.upgrade.usb.info"
 msgstr ""
 "It is possible to update the firmware from a file saved on a USB storage "
@@ -1599,12 +1629,8 @@ msgstr ""
 "GHz."
 
 #: htdocs/plugins/wifi/pages/wifi.wps.html:14
-#, fuzzy
 msgid "wifi.wps.in.progress"
-msgstr ""
-"Using WPS it is possible to easily connect wireless devices with EasyBox on "
-"an encrypted channel. Below, you can choose and configure different "
-"connection methods."
+msgstr "Your EasyBox is now attempting to pair with other devices."
 
 #: htdocs/plugins/wifi/pages/wifi.wps.html:55
 msgid "wifi.wps.otherpin.info"
@@ -1785,9 +1811,8 @@ msgstr "Device"
 msgid "wifi-iface.up"
 msgstr ""
 
-#, fuzzy
 msgid "wifi-iface.disabled"
-msgstr "Enable"
+msgstr "Disabled"
 
 msgid "wifi-iface.macmode"
 msgstr ""
@@ -1804,6 +1829,18 @@ msgstr "Allow"
 msgid "interface.macmode.deny"
 msgstr "Deny"
 
+#~ msgid "none"
+#~ msgstr "None"
+
+#~ msgid "wep"
+#~ msgstr "WEP"
+
+#~ msgid "psk"
+#~ msgstr "PSK"
+
+#~ msgid "psk2"
+#~ msgstr "Passkey 2"
+
 #~ msgid "phone.call_log.title"
 #~ msgstr " Call Log"
 
@@ -1812,9 +1849,6 @@ msgstr "Deny"
 
 #~ msgid "Choose Channel"
 #~ msgstr "Choose Channel"
-
-#~ msgid "Choose Mode"
-#~ msgstr "Choose Mode"
 
 #~ msgid "Choose Protection"
 #~ msgstr "Choose Protection"

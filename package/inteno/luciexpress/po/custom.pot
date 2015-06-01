@@ -125,3 +125,17 @@ msgstr ""
 msgid "language.se"
 msgstr ""
 
+msgid "wifi.enc.none"
+msgstr ""
+
+msgid "wifi.enc.wep"
+msgstr ""
+
+msgid "wifi.enc.psk"
+msgstr ""
+
+msgid "wifi.enc.psk2"
+msgstr ""
+
+msgid "wifi.enc.mixed-psk"
+msgstr ""
