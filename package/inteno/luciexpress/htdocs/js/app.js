@@ -125,6 +125,8 @@ JUCI.app.config(function ($stateProvider, $locationProvider, $compileProvider, $
 						}
 					},
 					// Perfect! This loads our controllers on demand! :) 
+					// Leave this code here because it serves as a valuable example
+					// of how this can be done. 
 					/*resolve: {
 						deps : function ($q, $rootScope) {
 							var deferred = $q.defer();
@@ -139,7 +141,14 @@ JUCI.app.config(function ($stateProvider, $locationProvider, $compileProvider, $
 					},*/
 					onEnter: function($uci, $rootScope){
 						$rootScope.errors.splice(0, $rootScope.errors.length); 
-						$uci.$revert(); 
+						
+						// this will touch the session so that it does not expire
+						$rpc.$authenticate().done(function(){
+							$uci.$revert(); 
+						}).fail(function(){
+							$juci.redirect("login");
+						});
+						
 						document.title = $tr(k.replace(/\//g, ".")+".title")+" - "+$tr(gettext("application.name")); 
 					}, 
 					onExit: function($interval){

@@ -158,7 +158,7 @@
 				} else {
 					self.$session = result; 
 					if(!("data" in self.$session)) self.$session.data = {}; 
-					console.log("Session: Loggedin! "); 
+					//console.log("Session: Loggedin! "); 
 					deferred.resolve(result); 
 				}  
 			}).fail(function err(result){
