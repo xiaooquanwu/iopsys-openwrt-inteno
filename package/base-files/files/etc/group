@@ -1,7 +1,11 @@
 root:x:0:
 daemon:x:1:
 adm:x:4:
+tty::5:
+disk::6:
 mail:x:8:
+kmem::9:
+uucp::14:
 audio:x:29:
 www-data:x:33:
 ftp:x:55:

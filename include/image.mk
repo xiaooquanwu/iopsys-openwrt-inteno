@@ -78,7 +78,7 @@ else
     define Image/mkfs/jffs2/sub
 		# FIXME: removing this line will cause strange behaviour in the foreach loop below
 		touch $(KDIR)/nocomprlist
-		$(STAGING_DIR_HOST)/bin/mkfs.jffs2 $(JFFS2OPTS) -e $(patsubst %k,%KiB,$(1)) -o $(KDIR)/root.jffs2-$(1) -b -p -n -N $(KDIR)/nocomprlist -S $(KDIR)/sortlist -d $(TARGET_DIR) -v 2>&1 1>/dev/null | awk '/^.+$$$$/'
+		$(STAGING_DIR_HOST)/bin/mkfs.jffs2 $(JFFS2OPTS) --devtable=$(INCLUDE_DIR)/device_table.txt -e $(patsubst %k,%KiB,$(1)) -o $(KDIR)/root.jffs2-$(1) -b -p -n -N $(KDIR)/nocomprlist -d $(TARGET_DIR) -v 2>&1 1>/dev/null | awk '/^.+$$$$/'
 #		$(call add_jffs2_mark,$(KDIR)/root.jffs2-$(1))
 		$(call Image/Build,jffs2-$(1))
     endef
@@ -98,7 +98,7 @@ else
   ifneq ($(CONFIG_TARGET_ROOTFS_UBIFS),)
     define Image/mkfs/ubifs
 		$(CP) ./ubinize.cfg $(KDIR)
-		$(STAGING_DIR_HOST)/bin/mkfs.ubifs $(UBIFS_OPTS) -o $(KDIR)/root.ubifs -d $(TARGET_DIR)
+		$(STAGING_DIR_HOST)/bin/mkfs.ubifs $(UBIFS_OPTS) --devtable=$(INCLUDE_DIR)/device_table.txt -o $(KDIR)/root.ubifs -d $(TARGET_DIR)
 		(cd $(KDIR); \
 		$(STAGING_DIR_HOST)/bin/ubinize $(UBINIZE_OPTS) -o $(KDIR)/root.ubi ubinize.cfg)
 		$(call Image/Build,ubi)

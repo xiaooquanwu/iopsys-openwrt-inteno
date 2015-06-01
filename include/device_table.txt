@@ -1,0 +1,179 @@
+# This is a sample device table file for use with mkfs.jffs2.  You can
+# do all sorts of interesting things with a device table file.  For
+# example, if you want to adjust the permissions on a particular file
+# you can just add an entry like:
+#   /sbin/foobar	f	2755	0	0	-	-	-	-	-
+# and (assuming the file /sbin/foobar exists) it will be made setuid
+# root (regardless of what its permissions are on the host filesystem.
+# 
+# Device table entries take the form of:
+# <name>		<type>	<mode>	<uid>	<gid>	<major>	<minor>	<start>	<inc>	<count>
+# where name is the file name,  type can be one of: 
+#	f	A regular file
+#	d	Directory
+#	c	Character special device file
+#	b	Block special device file
+#	p	Fifo (named pipe)
+# uid is the user id for the target file, gid is the group id for the
+# target file.  The rest of the entried apply only to device special
+# file.
+
+# When building a target filesystem, it is desirable to not have to
+# become root and then run 'mknod' a thousand times.  Using a device 
+# table you can create device nodes and directories "on the fly".
+# Furthermore, you can use a single table entry to create a many device
+# minors.  For example, if I wanted to create /lib/dev/hda and /lib/dev/hda[0-15]
+# I could just use the following two table entries:
+#   /lib/dev/hda	b	640	0	0	3	0	0	0	-
+#   /lib/dev/hda	b	640	0	0	3	1	1	1	15
+#
+# Have fun
+# -Erik Andersen <andersen@codepoet.org>
+#
+
+#Create character devices
+#<name>		<type>	<mode>	<uid>	<gid>	<major>	<minor>	<start>	<inc>	<count>
+/lib		d	755	0	0	-	-	-	-	-
+/lib/dev	d	755	0	0	-	-	-	-	-
+/lib/dev/ram	b	640	0	9	1	0	0	1	4
+/lib/dev/ram	b	640	0	9	1	1	0	0	-
+/lib/dev/mem	c	640	0	9	1	1	0	0	-
+/lib/dev/kmem	c	640	0	9	1	2	0	0	-
+/lib/dev/null	c	666	0	0	1	3	0	0	-
+/lib/dev/port	c	640	0	9	1	4	0	0	-
+/lib/dev/zero	c	666	0	0	1	5	0	0	-
+/lib/dev/full	c	666	0	0	1	7	0	0	-
+/lib/dev/random	c	666	0	0	1	8	0	0	-
+/lib/dev/urandom	c	666	0	0	1	9	0	0	-
+/lib/dev/kmsg	c	644	0	0	1	11	0	0	-
+/lib/dev/ttyp	c	620	0	0	3	0	0	1	16
+/lib/dev/tty	c	620	0	5	4	0	0	1	2
+/lib/dev/ttyS	c	660	0	14	4	64	0	1	2
+/lib/dev/tty	c	666	0	5	5	0	0	0	-
+/lib/dev/console	c	600	0	0	5	1	0	0	-
+/lib/dev/ptmx	c	666	0	5	5	2	0	0	-
+#/lib/dev/loop	b	640	0	0	7	0	0	1	2
+#/lib/dev/psaux	c	640	0	0	10	1	0	0	-
+/lib/dev/network_latency c	600	0	0	10	60	0	0	-
+/lib/dev/network_throughput c 600	0	0	10	61	0	0	-
+/lib/dev/cpu_dma_latency c	600	0	0	10	62	0	0	-
+/lib/dev/watchdog	c	644	0	0	10	130	0	0	-
+#/lib/dev/rtc	c	640	0	0	10	135	0	0	-
+/lib/dev/hwrng	c	666	0	0	10	183	0	0	-
+/lib/dev/hwrandom	c	666	0	0	10	183	0	0	-
+/lib/dev/fuse	c	666	0	0	10	229	0	0	-
+#/var/fuse	c	666	0	0	10	229	0	0	-
+#/tmp/fuse	c	666	0	0	10	229	0	0	-
+/lib/dev/pts	d	755	0	0	-	-	-	-	-
+#/lib/dev/pts/0	c	620	0	5	136	0	0	0	-
+#/lib/dev/pts/0	c	620	0	5	136	1	0	0	-
+/lib/dev/shm	d	755	0	0	-	-	-	-	-
+/lib/dev/bus	d	755	0	0	-	-	-	-	-
+/lib/dev/bus/usb	d	755	0	0	-	-	-	-	-
+/lib/dev/net	d	755	0	0	-	-	-	-	-
+/lib/dev/net/tun	c	600	0	0	10	200	0	0	-
+
+# Create FIFO devices
+/lib/dev/initctl	p	600	0	0	-	-	-	-	-
+
+# Adjust permissions on some normal files
+/etc/passwd	f	644	0	0	-	-	-	-	-
+/etc/shadow	f	600	0	0	-	-	-	-	-
+#/bin/tinylogin	f	4755	0	0	-	-	-	-	-
+
+# SCSI Devices
+/lib/dev/sda	b	640	0	6	8	0	0	0	-
+/lib/dev/sda	b	640	0	6	8	1	1	1	15
+/lib/dev/sdb	b	640	0	6	8	16	0	0	-
+/lib/dev/sdb	b	640	0	6	8	17	1	1	15
+/lib/dev/sdc	b	640	0	6	8	32	0	0	-
+/lib/dev/sdc	b	640	0	6	8	33	1	1	15
+/lib/dev/sdd	b	640	0	6	8	48	0	0	-
+/lib/dev/sdd	b	640	0	6	8	49	1	1	15
+/lib/dev/sde	b	640	0	6	8	64	0	0	-
+/lib/dev/sde	b	640	0	6	8	65	1	1	15
+/lib/dev/sdf	b	640	0	6	8	80	0	0	-
+/lib/dev/sdf	b	640	0	6	8	81	1	1	15
+/lib/dev/sdg	b	640	0	6	8	96	0	0	-
+/lib/dev/sdg	b	640	0	6	8	97	1	1	15
+/lib/dev/sdh	b	640	0	6	8	112	0	0	-
+/lib/dev/sdh	b	640	0	6	8	113	1	1	15
+#/lib/dev/sg	c	640	0	6	21	0	0	1	15
+#/lib/dev/scd	b	640	0	6	11	0	0	1	15
+#/lib/dev/st	c	640	0	6	9	0	0	1	8
+#/lib/dev/nst	c	640	0	6	9	128	0	1	8
+#/lib/dev/st	c	640	0	6	9	32	1	1	4
+#/lib/dev/st	c	640	0	6	9	64	1	1	4
+#/lib/dev/st	c	640	0	6	9	96	1	1	4
+
+# i2c/MTD/UBI Devices
+/lib/dev/i2c-0	c	600	0	0	89	0	0	0	-
+/lib/dev/mtd	c	600	0	0	90	0	0	2	7
+/lib/dev/mtd0ro	c	600	0	0	90	1	0	0	-
+/lib/dev/mtd1ro	c	600	0	0	90	3	0	0	-
+/lib/dev/mtd2ro	c	600	0	0	90	5	0	0	-
+/lib/dev/mtd3ro	c	600	0	0	90	7	0	0	-
+/lib/dev/mtd4ro	c	600	0	0	90	9	0	0	-
+/lib/dev/mtd5ro	c	600	0	0	90	11	0	0	-
+/lib/dev/mtd6ro	c	600	0	0	90	13	0	0	-
+/lib/dev/mtdblock	b	600	0	0	31	0	0	1	7
+/lib/dev/ubi	c	600	0	0	254	0	0	1	1
+/lib/dev/ubi_ctrl	c	600	0	0	10	63	0	0	-
+
+# Misc Devices
+/lib/dev/ppp	c	600	0	0	108	0	0	0	-
+/lib/dev/ptm	c	600	0	0	128	1	0	0	-
+/lib/dev/printer0	c	600	0	0	180	0	0	0	-
+/lib/dev/capi20	c	600	0	0	68	0	0	0	-
+/lib/dev/isdn	c	600	0	0	45	0	0	0	-
+/lib/dev/isdnctrl	c	600	0	0	45	64	0	0	-
+/lib/dev/isdnctrl0	c	600	0	0	45	64	0	0	-
+/lib/dev/ippp	c	600	0	0	45	128	0	1	2
+/lib/dev/isdninfo	c	600	0	0	45	255	0	0	-
+/lib/dev/linux-uk-proxy c	600	0	0	125	0	0	0	-
+/lib/dev/linux-user-bde c	600	0	0	126	0	0	0	-
+
+# Broadcom specific Devices
+/lib/dev/dect	c	600	0	0	197	0	0	0	-
+/lib/dev/dectdbg	c	600	0	0	197	1	0	0	-
+/lib/dev/dectshim	c	600	0	0	198	0	0	0	-
+/lib/dev/bcmatm	c	600	0	0	205	0	0	1	1
+/lib/dev/brcmboard	c	600	0	0	206	0	0	0	-
+/lib/dev/bcmvdsl	c	600	0	0	207	0	0	1	1
+/lib/dev/bcmadsl	c	600	0	0	208	0	0	1	2
+/lib/dev/bcmendpoint c	600	0	0	209	0	0	1	1
+/lib/dev/bcmaal20	c	600	0	0	210	0	0	0	-
+/lib/dev/bcmles	c	600	0	0	211	0	0	1	1
+/lib/dev/bcm	c	600	0	0	212	0	0	0	-
+/lib/dev/bounce	c	600	0	0	213	0	0	0	-
+/lib/dev/pcmshim	c	600	0	0	217	0	0	0	-
+/lib/dev/pcmshim	c	600	0	0	217	0	0	1	1
+/lib/dev/pmon	c	600	0	0	214	0	0	0	-
+/lib/dev/ac97	c	600	0	0	222	0	0	0	-
+/lib/dev/slac	c	600	0	0	223	0	0	0	-
+/lib/dev/bcmprof	c	600	0	0	224	0	0	0	-
+/lib/dev/si3215	c	600	0	0	225	0	0	0	-
+/lib/dev/bcmatmb	c	600	0	0	226	0	0	1	1
+/lib/dev/p8021ag	c	600	0	0	227	0	0	1	1
+/lib/dev/bcmxtmcfg	c	600	0	0	228	0	0	1	1
+/lib/dev/pktcmf	c	600	0	0	232	0	0	0	-
+/lib/dev/spu	c	600	0	0	233	0	0	0	-
+/lib/dev/bcmmoca0	c	600	0	0	234	0	0	0	-
+/lib/dev/bcmmoca10	c	600	0	0	234	1	0	0	-
+/lib/dev/bcm_user_ploam c	600	0	0	235	0	0	0	-
+/lib/dev/bcm_omci	c	600	0	0	236	0	0	0	-
+/lib/dev/bcm_ploam	c	600	0	0	237	0	0	0	-
+/lib/dev/bcmvlan	c	600	0	0	238	0	0	0	-
+/lib/dev/laser_dev	c	600	0	0	239	0	0	0	-
+/lib/dev/pwrmngt	c	600	0	0	240	0	0	0	-
+/lib/dev/bcmfap	c	600	0	0	241	0	0	0	-
+/lib/dev/fcache	c	600	0	0	242	0	0	0	-
+/lib/dev/ingqos	c	600	0	0	243	0	0	0	-
+/lib/dev/bpm	c	600	0	0	244	0	0	0	-
+/lib/dev/bcmarl	c	600	0	0	245	0	0	0	-
+/lib/dev/chipinfo	c	600	0	0	246	0	0	0	-
+/lib/dev/bcmepon	c	600	0	0	247	0	0	0	-
+/lib/dev/bcm_user_tod c	600	0	0	248	0	0	0	-
+/lib/dev/gmac	c	600	0	0	249	0	0	0	-
+/lib/dev/tms	c	600	0	0	250	0	0	0	-
+/lib/dev/ext_bonding c	600	0	0	255	0	0	0	-
