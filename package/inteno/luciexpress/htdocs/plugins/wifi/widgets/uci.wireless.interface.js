@@ -10,7 +10,7 @@ $juci.module("wifi")
 		replace: true, 
 		require: "^ngModel"
 	 };  
-}).controller("WifiInterfaceController", function($scope, $uci, gettext){
+}).controller("WifiInterfaceController", function($scope, $uci, $tr, gettext){
 	$scope.errors = []; 
 	$scope.$on("error", function(ev, err){
 		ev.stopPropagation(); 
@@ -18,7 +18,9 @@ $juci.module("wifi")
 	}); 
 	$scope.$watch("interface", function(value){
 		try {
-			$scope.cryptoChoices = $scope.interface.encryption.schema.allow;
+			$scope.cryptoChoices = $scope.interface.encryption.schema.allow.map(function(x){
+				return { label: $tr("wifi.enc."+x), value: x };
+			}); 
 		} catch(e) {} 
 		$scope.devices = $uci.wireless["@wifi-device"].map(function(x){
 			// TODO: this should be a uci "displayname" or something
