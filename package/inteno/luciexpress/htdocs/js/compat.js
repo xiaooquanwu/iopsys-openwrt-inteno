@@ -2,8 +2,8 @@
 
 // Browser compatibility code
 
-if(!Object.prototype.assign){
-	Object.prototype.assign = function (target, source) {
+if(!Object.assign){
+	Object.assign = function (target, source) {
 		function ToObject(val) {
 			if (val == null) {
 				throw new TypeError('Object.assign cannot be called with null or undefined');
