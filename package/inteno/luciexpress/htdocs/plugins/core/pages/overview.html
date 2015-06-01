@@ -103,9 +103,9 @@
 						</td>
 					</tr>
 					<tr ng-repeat="sip in sipAccounts track by $index">
-						<td ng-show="sip.user.value">
-								<div class="col-xs-2"><strong style="font-size: 1.2em">{{sip[".name"].value|uppercase}}: </strong></div>
-								<div class="col-xs-8"><strong>{{sip.user.value}}</strong></div>
+						<td >
+							<div class="col-xs-2"><strong>S{{$index|uppercase}}: </strong></div>
+							<div class="col-xs-8"><strong>{{sip.user.value||'Unknown'}}</strong></div>
 						</td>
 					</tr>
 				</table>

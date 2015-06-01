@@ -44,6 +44,7 @@ $juci.module("core")
 		$scope.sipAccounts = []; 
 		$scope.wifiSchedStatus = gettext("off"); 
 		$scope.wifiWPSStatus = gettext("off"); 
+		$scope.phoneSchedStatus = gettext("off"); 
 		async.series([
 			function(next){
 				$uci.sync(["wireless", "boardpanel", "voice_client"]).done(function(){
