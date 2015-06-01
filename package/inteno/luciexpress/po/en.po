@@ -218,7 +218,7 @@ msgid "application.name"
 msgstr "juci"
 
 msgid "encryption.none"
-msgstr "None"
+msgstr "Off"
 
 msgid "language.en"
 msgstr "English"
@@ -227,20 +227,34 @@ msgid "language.se"
 msgstr "Svenska"
 
 msgid "wifi.enc.none"
-msgstr "None"
+msgstr "Off"
 
 msgid "wifi.enc.wep"
 msgstr "WEP"
 
 msgid "wifi.enc.psk"
-msgstr "Passkey"
+msgstr "WPA"
 
 msgid "wifi.enc.psk2"
-msgstr "Passkey 2"
+msgstr "WPA2"
 
-#, fuzzy
 msgid "wifi.enc.mixed-psk"
-msgstr "Mixed passkey"
+msgstr "WPA + WPA2"
+
+msgid "11b"
+msgstr "802.11b"
+
+msgid "11g"
+msgstr "802.11g"
+
+msgid "11bg"
+msgstr "802.11b/g"
+
+msgid "11n"
+msgstr "802.11b/n"
+
+msgid "11a"
+msgstr "802.11n/ac"
 
 #: htdocs/plugins/wifi/pages/wifi.mac_filter.js:15
 #: htdocs/plugins/wifi/pages/wifi.settings.js:11
@@ -269,9 +283,8 @@ msgid "Active Connections"
 msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.network.html:10
-#, fuzzy
 msgid "Active Stations"
-msgstr "Status"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.dsl.js:89
 msgid "Actual Data Rate"
@@ -314,18 +327,12 @@ msgid "Attempting to Pair"
 msgstr ""
 
 #: htdocs/plugins/status/pages/status.diagnostics.html:7
-#, fuzzy
 msgid "Automated Diagnostics"
 msgstr ""
-"This section shows a list of tools which can be used to check the status of "
-"your network connection."
 
 #: htdocs/plugins/internet/pages/internet.dns.html:9
-#, fuzzy
 msgid "Automatic"
 msgstr ""
-"This section shows a list of tools which can be used to check the status of "
-"your network connection."
 
 #: htdocs/plugins/settings/pages/settings.configuration.html:32
 msgid "Backup file password"
@@ -374,9 +381,8 @@ msgid "Check for Upgrade"
 msgstr ""
 
 #: htdocs/plugins/internet/pages/internet.dns.html:32
-#, fuzzy
 msgid "Choose DNS Provider"
-msgstr "Choose Mode"
+msgstr ""
 
 #: htdocs/plugins/internet/pages/internet.exposed_host.html:16
 msgid ""
@@ -410,9 +416,8 @@ msgid "Connection Keep Alive"
 msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.tv.html:6
-#, fuzzy
 msgid "Connection Status"
-msgstr "Status"
+msgstr ""
 
 #: htdocs/plugins/internet/pages/status.nat.html:4
 #: htdocs/plugins/status/pages/status.status.network.html:4
@@ -420,9 +425,8 @@ msgid "Connections"
 msgstr ""
 
 #: htdocs/plugins/internet/pages/status.nat.html:12
-#, fuzzy
 msgid "Connections for each Device"
-msgstr "Choose Device"
+msgstr ""
 
 #: htdocs/plugins/settings/pages/settings.upgrade.html:7
 msgid "Current Firmware Version"
@@ -469,9 +473,8 @@ msgid "DSL Status"
 msgstr "DSL Status"
 
 #: htdocs/plugins/status/pages/status.status.dsl.js:69
-#, fuzzy
 msgid "DSL Status Information"
-msgstr "DSL Status"
+msgstr ""
 
 #: htdocs/plugins/juci-mod-dropbear/pages/services.dropbear.html:36
 msgid "DSS Key File"
@@ -492,14 +495,12 @@ msgid "Days"
 msgstr ""
 
 #: htdocs/plugins/internet/widgets/uci.firewall.nat.rule.edit.html:3
-#, fuzzy
 msgid "Device"
-msgstr "Choose Device"
+msgstr ""
 
 #: htdocs/plugins/internet/widgets/uci.network.interface.edit.html:46
-#, fuzzy
 msgid "Device Name"
-msgstr "Choose Device"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.diagnostics.html:11
 msgid "Diagnose"
@@ -617,14 +618,12 @@ msgid "FEC Corrections"
 msgstr ""
 
 #: htdocs/plugins/settings/pages/settings.configuration.html:16
-#, fuzzy
 msgid "Factory Settings"
-msgstr "Settings"
+msgstr ""
 
 #: htdocs/plugins/internet/pages/internet.firewall.html:3
-#, fuzzy
 msgid "Firewall settings"
-msgstr "Settings"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.system.js:27
 msgid "Firmware Version"
@@ -720,9 +719,8 @@ msgid "Install Upgrade"
 msgstr ""
 
 #: htdocs/plugins/juci-mod-dropbear/pages/services.dropbear.html:30
-#, fuzzy
 msgid "Interface"
-msgstr "Internet"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.system.js:28
 msgid "Kernel Version"
@@ -742,9 +740,8 @@ msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.dsl.js:72
 #: htdocs/plugins/status/pages/status.status.html:25
-#, fuzzy
 msgid "Line Status"
-msgstr "Status"
+msgstr ""
 
 #: htdocs/plugins/settings/pages/settings.configuration.html:11
 msgid "Load"
@@ -825,9 +822,8 @@ msgid "Monday"
 msgstr ""
 
 #: htdocs/plugins/internet/pages/status.nat.html:30
-#, fuzzy
 msgid "NAT Connection Table"
-msgstr "Status"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.voice.html:31
 #: htdocs/plugins/status/pages/status.status.voice.html:9
@@ -835,9 +831,8 @@ msgid "Name"
 msgstr ""
 
 #: htdocs/plugins/internet/pages/settings.network.html:3
-#, fuzzy
 msgid "Network Settings"
-msgstr "Settings"
+msgstr ""
 
 #: htdocs/plugins/settings/pages/settings.configuration.html:33
 msgid "New Password"
@@ -910,16 +905,14 @@ msgid "Phone Extension"
 msgstr ""
 
 #: htdocs/plugins/phone/pages/phone.lines.html:4
-#, fuzzy
 msgid "Phone Lines"
-msgstr "Phone"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.voice.html:10
 msgid "Phone Number"
 msgstr ""
 
 #: htdocs/plugins/phone/pages/phone.numbers.html:4
-#, fuzzy
 msgid "Phone Numbers"
 msgstr "Phone Numbers"
 
@@ -932,9 +925,8 @@ msgid "Pick firmware file to upload"
 msgstr ""
 
 #: htdocs/plugins/phone/pages/phone.call_log.html:8
-#, fuzzy
 msgid "Pick phone"
-msgstr "Phone"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.diagnostics.html:21
 msgid "Ping"
@@ -1150,9 +1142,8 @@ msgid "Static IP Address"
 msgstr ""
 
 #: htdocs/plugins/settings/pages/settings.energy.html:13
-#, fuzzy
 msgid "Status-LED"
-msgstr "Status"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.system.html:10
 msgid "Storage"
@@ -1167,9 +1158,8 @@ msgid "Swap"
 msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.system.html:4
-#, fuzzy
 msgid "System Status"
-msgstr "DSL Status"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.network.js:15
 msgid "TX Rate"
@@ -1283,24 +1273,20 @@ msgid "Verifying firmware image"
 msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.tv.html:7
-#, fuzzy
 msgid "Vodafone TV Channels"
-msgstr "Choose Channel"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.tv.html:4
-#, fuzzy
 msgid "Vodafone TV Status"
-msgstr "Status"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.voice.html:26
-#, fuzzy
 msgid "Voice Lines"
-msgstr "Status"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.voice.html:4
-#, fuzzy
 msgid "Voice Status"
-msgstr "Status"
+msgstr ""
 
 #: htdocs/plugins/status/pages/status.status.tv.html:13
 msgid "WAN Port"
@@ -1372,7 +1358,7 @@ msgstr ""
 
 #: htdocs/plugins/wifi/widgets/uci.wireless.device.edit.js:20
 msgid "auto"
-msgstr ""
+msgstr "Auto"
 
 #: htdocs/plugins/internet/pages/internet.dns.html:24
 msgid "ddns.config.info"
@@ -1416,7 +1402,7 @@ msgstr "Error, start port is greater than end port."
 
 #: htdocs/plugins/core/widgets/luci.input.timespan.html:2
 msgid "from"
-msgstr ""
+msgstr "From"
 
 #: htdocs/plugins/internet/pages/internet.exposed_host.html:5
 msgid "internet.exposed_host.info"
@@ -1436,14 +1422,14 @@ msgstr "IP address"
 #: htdocs/plugins/core/pages/overview.js:48
 #: htdocs/plugins/core/pages/overview.js:49
 msgid "off"
-msgstr ""
+msgstr "Off"
 
 #: htdocs/plugins/core/pages/overview.js:18
 #: htdocs/plugins/core/pages/overview.js:26
 #: htdocs/plugins/core/pages/overview.js:48
 #: htdocs/plugins/core/pages/overview.js:49
 msgid "on"
-msgstr ""
+msgstr "On"
 
 #: htdocs/plugins/phone/pages/phone.call_log.html:5
 msgid "phone.call_log.info"
@@ -1482,10 +1468,8 @@ msgstr ""
 "always save your last changed settings to a computer."
 
 #: htdocs/plugins/juci-mod-dropbear/pages/services.dropbear.html:5
-#, fuzzy
 msgid "settings.dropbear.info"
-msgstr ""
-"Set a new Easybox password to restrict management access to the router."
+msgstr "Configure SSH access to the router."
 
 #: htdocs/plugins/settings/pages/settings.energy.html:5
 msgid "settings.energy.info"
@@ -1599,7 +1583,7 @@ msgstr "Status of your voice lines."
 
 #: htdocs/plugins/core/widgets/luci.input.timespan.html:4
 msgid "to"
-msgstr ""
+msgstr "To"
 
 #: htdocs/plugins/wifi/widgets/uci.wireless.interface.html:24
 msgid "wifi-iface.closed"
@@ -1662,7 +1646,7 @@ msgstr "Status"
 
 #: htdocs/plugins/wifi/pages/wifi.wps.js:11
 msgid "wps.status.msgdone"
-msgstr ""
+msgstr "Pairing done"
 
 #: htdocs/plugins/wifi/pages/wifi.wps.js:7
 msgid "wps.status.processing"
@@ -1679,7 +1663,7 @@ msgstr "WPS pairing timeout."
 
 #: htdocs/plugins/wifi/pages/wifi.wps.js:38
 msgid "wps.status.unknown"
-msgstr ""
+msgstr "WPS Unknown"
 
 #: htdocs/plugins/wifi/pages/wifi.wps.html:72
 msgid "{{text_status}}"
@@ -1731,9 +1715,8 @@ msgstr "Status"
 msgid "status.status.title"
 msgstr "Status"
 
-#, fuzzy
 msgid "status.status.system.title"
-msgstr "Vodafone TV"
+msgstr ""
 
 msgid "status.status.dsl.title"
 msgstr "DSL Status"

@@ -115,27 +115,30 @@ msgstr ""
 
 msgid "application.name"
 msgstr ""
-
 msgid "encryption.none"
 msgstr ""
-
 msgid "language.en"
 msgstr ""
-
 msgid "language.se"
 msgstr ""
-
 msgid "wifi.enc.none"
 msgstr ""
-
 msgid "wifi.enc.wep"
 msgstr ""
-
 msgid "wifi.enc.psk"
 msgstr ""
-
 msgid "wifi.enc.psk2"
 msgstr ""
-
 msgid "wifi.enc.mixed-psk"
+msgstr ""
+
+msgid "11b"
+msgstr ""
+msgid "11g"
+msgstr ""
+msgid "11bg"
+msgstr ""
+msgid "11n"
+msgstr ""
+msgid "11a"
 msgstr ""
