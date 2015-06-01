@@ -20,10 +20,16 @@ $juci.module("core")
 			refresh(); 
 		}); 
 	}
-	
-	$scope.onWIFISchedToggle = function(){
-		$uci.wireless.status.schedule.value = !$uci.wireless.status.schedule.value; 
-		$scope.wifiSchedStatus = (($uci.wireless.status.schedule.value)?gettext("on"):gettext("off")); 
+	$scope.onPhoneToggle = function(){
+		$uci.wireless.status.wps.value = !$uci.wireless.status.wps.value; 
+		$scope.wifiWPSStatus = (($uci.wireless.status.wps.value)?gettext("on"):gettext("off")); 
+		$uci.save().done(function(){
+			refresh(); 
+		}); 
+	}
+	$scope.onPhoneToggle = function(){
+		$uci.voice_client.RINGING_STATUS.enabled.value = !$uci.voice_client.RINGING_STATUS.enabled.value; 
+		$scope.phoneSchedStatus = (($uci.voice_client.RINGING_STATUS.enabled.value)?gettext("on"):gettext("off")); 
 		$uci.save().done(function(){
 			refresh(); 
 		}); 
@@ -47,6 +53,7 @@ $juci.module("core")
 					if($uci.wireless && $uci.wireless.status) {
 						$scope.wifiSchedStatus = (($uci.wireless.status.schedule.value)?gettext("on"):gettext("off")); 
 						$scope.wifiWPSStatus = (($uci.wireless.status.wps.value)?gettext("on"):gettext("off")); 
+						$scope.phoneSchedStatus = (($uci.voice_client.RINGING_STATUS.enabled.value)?gettext("on"):gettext("off")); 
 					}
 					if($uci.voice_client && $uci.voice_client["@sip_service_provider"]){
 						$scope.sipAccounts = $uci.voice_client["@sip_service_provider"]; 

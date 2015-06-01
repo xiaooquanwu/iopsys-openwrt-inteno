@@ -98,7 +98,7 @@
 								<a class="overview-list-item-text" href="#!/phone-ringing-schedule"><strong>{{'Schedule'|translate}}</strong></a>
 							</div>
 							<div class="col-xs-2">
-								<a class="label label-{{(wifi.status.wps.value)?'success':'default'}} pull-right overview-list-item-label" href="" ng-click="onWPSToggle()"><strong>{{wifiWPSStatus | translate}}</strong></a>
+								<a class="label label-{{(voice_client.RINGING_STATUS.enabled.value)?'success':'default'}} pull-right overview-list-item-label" href="" ng-click="onPhoneToggle()"><strong>{{phoneSchedStatus | translate}}</strong></a>
 							</div>
 						</td>
 					</tr>
