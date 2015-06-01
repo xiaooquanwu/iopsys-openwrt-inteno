@@ -2,6 +2,15 @@
 
 // Browser compatibility code
 
+/*
+if (!Date.prototype.toLocaleFormat) {
+	(function() {
+		Date.prototype.toLocaleFormat = function(formatString) {
+			return this.format(formatString);
+		};
+	}());
+}*/
+
 if(!Object.assign){
 	Object.assign = function (target, source) {
 		function ToObject(val) {

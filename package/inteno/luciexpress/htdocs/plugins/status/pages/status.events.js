@@ -44,7 +44,9 @@ JUCI.app
 				}) // filter out all invalid matches 
 				.reverse() // sort by date in descending order
 				.map(function(x){ // convert date back to string and shorten it's format
-					x[0] = x[0].toLocaleFormat("%d-%b-%Y %H:%M:%S"); 
+					var d = x[0]; 
+					x[0] = d.getFullYear()+"-"+("00"+(d.getMonth()+1)).slice(-2)+"-"+d.getDate()+" "+d.getHours()+":"+d.getMinutes()+":"+d.getSeconds();
+					//x[0] = x[0].toLocaleFormat("%d-%b-%Y %H:%M:%S"); 
 					return x; 
 				}); 
 				$scope.$apply(); 

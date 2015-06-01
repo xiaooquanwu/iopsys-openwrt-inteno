@@ -4,7 +4,7 @@ $juci.module("internet")
 	$uci.sync("firewall").done(function(){
 		$scope.firewall = $uci.firewall; 
 		$scope.firewallSwitchState = $uci.firewall["@zone"].filter(function(zone){ 
-			return zone.name.value == "wan" && zone.input.value == "ACCEPT" && zone.forward.value == "ACCEPT"; 
+			return zone.name.value == "wan" && zone.input.value == "REJECT" && zone.forward.value == "REJECT"; 
 		}).length > 0; 
 		$scope.$apply(); 
 	}); 
