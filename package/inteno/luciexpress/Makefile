@@ -41,6 +41,7 @@ endef
 
 define Package/luciexpress/install
 	npm install 
+	grunt nggettext_compile
 	grunt compile
 	$(INSTALL_DIR) $(1)/www
 	$(CP) ./bin/* $(1)/www/

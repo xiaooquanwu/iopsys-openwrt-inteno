@@ -29,7 +29,8 @@ module.exports = function(grunt){
 			options: {
 				files: {
 					'po/titles.pot': [
-						"share/menu.d/*.json"
+						"share/menu.d/*.json", 
+						"htdocs/plugins/**/menu.json"
 					]
 				}
 			}
