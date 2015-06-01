@@ -119,6 +119,7 @@ module.exports = function(grunt){
 			"htdocs/lib/js/angular-checklist-model.js"
 		]; 
 		var appfiles = [
+			"htdocs/js/compat.js", 
 			"htdocs/js/rpc.js",
 			"htdocs/js/uci.js",
 			"htdocs/js/juci.js",
