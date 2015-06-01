@@ -18,7 +18,8 @@ $juci.app.directive("uciFirewallNatRuleEdit", function($compile, $parse){
 	}); 
 	$scope.protocolChoices = [
 		{ label: "UDP", value: "udp"}, 
-		{ label: "TCP", value: "tcp"}
+		{ label: "TCP", value: "tcp"}, 
+		{ label: "TCP + UDP", value: "tcpudp" }
 	]; 
 	$scope.patterns = {
 		ipaddress: /^(?!0)(?!.*\.$)((1?\d?\d|25[0-5]|2[0-4]\d)(\.|$)){4}$/,

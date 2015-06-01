@@ -25,7 +25,12 @@ $juci.app
 		$scope.showModal = 0;
 	};
 	$scope.onAddRule = function(){
-		$uci.firewall.create({".type": "redirect"}).done(function(section){
+		$uci.firewall.create({
+			".type": "redirect", 
+			"src": "wan", 
+			"dest": "lan", 
+			"target": "DNAT"
+		}).done(function(section){
 			$scope.rule = section; 
 			$scope.rule[".new"] = true; 
 			$scope.rule[".edit"] = true; 

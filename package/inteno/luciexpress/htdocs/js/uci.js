@@ -120,11 +120,14 @@
 				"mtu_fix": 			{ dvalue: true, type: Boolean }
 			}, 
 			"redirect": {
+				"name":					{ dvalue: "", type: String }, 
+				"src":					{ dvalue: "", type: String }, 
+				"dest":					{ dvalue: "", type: String }, 
 				"src_ip":				{ dvalue: "", type: String },
 				"src_dport":		{ dvalue: 0, type: String, validator: PortValidator },
 				"proto":				{ dvalue: "", type: String }, 
 				"dest_ip":			{ dvalue: "", type: String }, 
-				"dest_port":		{ dvalue: 0, type: String, validator: PortValidator }
+				"dest_port":		{ dvalue: 0, type: String, validator: PortValidator }, 
 			}, 
 			"include": {
 				"path": 				{ dvalue: "", type: String }, 
