@@ -1,5 +1,9 @@
 JUCI.app
 .controller("InternetDNSPageCtrl", function ($scope, $uci, $log, $config) {
+	// hardcoded dns providers that we currently support (TODO: make dynamic list)
+	$scope.allServices = [
+		{ label: "noip.com", value: "noip.com" }
+	]; 
 	$uci.sync(["network","ddns"]).done(function () {
 		if ($uci.network) {
 			var wan = $uci.network[$config.wan_interface];
@@ -15,9 +19,9 @@ JUCI.app
 			$scope.$emit("Could not find WAN network on this device"); 
 		}
 		if ($uci.ddns && $uci.ddns["@service"]) {
-			$scope.allServices = $uci.ddns["@service"].map(function(x){
+			/*$scope.allServices = $uci.ddns["@service"].map(function(x){
 				return { label: x.service_name.value, value: x.service_name.value };
-			});  
+			}); */ 
 			$scope.ddns = $uci.ddns["@service"][0];
 			$scope.$apply(); 
 		} else {

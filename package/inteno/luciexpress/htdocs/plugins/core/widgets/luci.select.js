@@ -19,7 +19,7 @@ $juci.module("core")
 				html += '<div class="dropdown dropdown-toggle" data-toggle="dropdown" ><a class="dropdown-toggle" role="button" data-toggle="dropdown"  href="javascript:;">{{((selectedItem||{}).label || placeholder) | translate}}<b class="caret"></b></a>';
 				break;
 			default:
-				html += '<div class="btn-group" style="white-space: nowrap;"><button class="btn btn-default button-label {{size_class}}" style="display: inline-block; float:none;">{{selectedText | translate}}</button><button class="btn btn-default dropdown-toggle" style="display: inline-block; float:none;" data-toggle="dropdown"><span class="caret"></span></button>';
+				html += '<div class="btn-group" style="white-space: nowrap;"><button class="btn btn-default button-label {{size_class}}" style="display: inline-block; float:none; ">{{selectedText | translate}}</button><button class="btn btn-default dropdown-toggle" style="display: inline-block; float:none;" data-toggle="dropdown"><span class="caret"></span></button>';
 				break;
 		}
 		html += '<ul class="dropdown-menu"><li ng-repeat="item in itemList"><a tabindex="-1" data-ng-click="selectVal(item)" href="">{{item.label}}</a></li></ul></div>';
