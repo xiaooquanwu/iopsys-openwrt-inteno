@@ -20,37 +20,37 @@
 					</luci-config-line>
 				</luci-config-lines>
 			</luci-config-section>
-			<luci-config-section>
+			<luci-config-section ng-show="wireless.status.wps.value">
 				<h2 translate>WPS-PBC: Push Button on Device</h2>
 				<p translate>wifi.wps.pbc.info</p>
 				<luci-config-lines>
-					<luci-config-line  ng-show="boardpanel"  title="{{'Enable WPS button on router'|translate}}">
+					<luci-config-line title="{{'Enable WPS button on router'|translate}}">
 						<switch id="enabled" name="enabled" ng-model="boardpanel.settings.wpsbutton.value" class="green" ng-change="save()" ></switch>
 					</luci-config-line>
-					<luci-config-line  ng-show="boardpanel"  title="{{'Pressing WiFi on/off button on your router for long time activates pairing '|translate}}">
+					<luci-config-line ng-show="boardpanel.settings.wpsbutton.value" title="{{'Pressing WiFi on/off button on your router for long time activates pairing '|translate}}" >
 						<switch id="enabled" name="enabled" ng-model="boardpanel.settings.wifibutton.value" class="green" ng-change="save()" ></switch>
 					</luci-config-line>
-					<luci-config-line title="{{'Pair (within 2 minutes)'|translate}}">
+					<luci-config-line title="{{'Pair (within 2 minutes)'|translate}}" ng-show="boardpanel.settings.wpsbutton.value">
 						<button class="btn btn-lg btn-default col-xs-12" ng-click="onPairPBC()" translate>Pair</button>
 					</luci-config-line>
 				</luci-config-lines>
 			</luci-config-section>
-			<luci-config-section>
+			<luci-config-section ng-show="wireless.status.wps.value">
 				<h2 translate>WPS-REG: Router provides PIN</h2>
 				<p translate>wifi.wps.pin.info</p>
 				<luci-config-lines>
 					<luci-config-line ng-show="boardpanel" title="{{'WPS Using Generated PIN'|translate}}">
 						<switch id="enabled" name="enabled" ng-model="boardpanel.settings.wpsdevicepin.value" ng-change="save()" class="green"></switch>
 					</luci-config-line>
-					<luci-config-line title="{{'Generated PIN'|translate}}">
+					<luci-config-line title="{{'Generated PIN'|translate}}" ng-show="boardpanel.settings.wpsdevicepin.value">
 						<input type="text" class="form-control input-lg"  ng-model="generatedPIN" />
 					</luci-config-line>
-					<luci-config-line title="{{'Generate New PIN'|translate}}">
+					<luci-config-line title="{{'Generate New PIN'|translate}}" ng-show="boardpanel.settings.wpsdevicepin.value">
 						<button class="btn btn-lg btn-default" ng-click="onGeneratePIN()" translate>Generate</button>
 					</luci-config-line>
 				</luci-config-lines>
 			</luci-config-section>
-			<luci-config-section>
+			<luci-config-section ng-show="wireless.status.wps.value">
 				<h2 translate>WPS-PIN: Another Device provides PIN</h2>
 				<p translate>wifi.wps.otherpin.info</p>
 				<luci-config-lines>
