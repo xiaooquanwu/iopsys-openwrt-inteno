@@ -16,7 +16,10 @@ $juci.app.directive("uciFirewallNatRuleEdit", function($compile, $parse){
 			$scope.portIsRange = (rule.src_dport.value.indexOf("-") != -1) || (rule.dest_port.value.indexOf("-") != -1); 
 		}
 	}); 
-	$scope.protocolChoices = ["udp", "tcp"]; 
+	$scope.protocolChoices = [
+		{ label: "UDP", value: "udp"}, 
+		{ label: "TCP", value: "tcp"}
+	]; 
 	$scope.patterns = {
 		ipaddress: /^(?!0)(?!.*\.$)((1?\d?\d|25[0-5]|2[0-4]\d)(\.|$)){4}$/,
 		port: /^\d{1,5}$/

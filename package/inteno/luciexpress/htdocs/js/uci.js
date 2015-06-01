@@ -122,7 +122,7 @@
 			"redirect": {
 				"src_ip":				{ dvalue: "", type: String },
 				"src_dport":		{ dvalue: 0, type: String, validator: PortValidator },
-				"proto":				{ dvalue: "tcp", type: String }, 
+				"proto":				{ dvalue: "", type: String }, 
 				"dest_ip":			{ dvalue: "", type: String }, 
 				"dest_port":		{ dvalue: 0, type: String, validator: PortValidator }
 			}, 

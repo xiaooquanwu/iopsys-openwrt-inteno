@@ -6,10 +6,10 @@
 			<luci-config-lines>
 				<luci-config-line title="{{'DNS configuration'|translate}}">
 					<div class="col-md-6">
-						<luci-input-radio ng-model="wan.peerdns" label="'automatically'" value="0" />
+						<luci-input-radio ng-model="wan.peerdns" label="{{'Automatic' | translate}}" value="0" />
 					</div>
 					<div class="col-md-5 col-lg-offset-1">
-						<luci-input-radio ng-model="wan.peerdns" label="'manually'" value="1" />
+						<luci-input-radio ng-model="wan.peerdns" label="{{'Manual' | translate}}" value="1" />
 					</div>
 				</luci-config-line>
 				<luci-config-line title="{{'DNS Servers'|translate}} #{{$index}}" ng-show="wan.peerdns.value == 1" >
@@ -29,7 +29,7 @@
 			</luci-config-lines>
 			<luci-config-lines ng-show="ddns.enabled.value">
 				<luci-config-line title="{{'Provider'|translate}}">
-					<luci-select ng-model="ddns" ng-items="allServices"></luci-select>
+					<luci-select ng-model="ddns" ng-items="allServices" placeholder="{{'Choose DNS Provider'|translate}}></luci-select>
 				</luci-config-line>
 				<luci-config-line title="{{'Domain name'|translate}}">
 						<input type="text" class="form-control" ng-model="ddns.domain.value" placeholder="{{'Add domain name'|translate}}" />

@@ -20,7 +20,7 @@
 				</luci-config-line>
 			</luci-config-lines>
 		</luci-expandable>
-		<luci-expandable title="DSL" status="dsl_status" ng-show="dsl_status != 'disabled'">
+		<luci-expandable title="DSL" status="dsl_status" ng-show="dsl_status == 'ok' || dsl_status == 'progress'">
 			<luci-config-lines >
 				<luci-config-line title="{{'Line Status'|translate}}">
 					<strong>{{dslinfo.status}}</strong>
