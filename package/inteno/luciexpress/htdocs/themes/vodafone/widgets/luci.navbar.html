@@ -1,4 +1,4 @@
-<div class="navbar navbar-default" ng-controller="NavigationCtrl">
+<div class="navbar navbar-default navbar-vodafone" ng-controller="NavigationCtrl">
 	<div class="navbar-header">
 		<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
 			<span class="sr-only" translate>Toggle navigation</span>
@@ -13,7 +13,7 @@
 	</div>
 	<div id="navbar" class="navbar-collapse collapse">
 		<ul class="nav navbar-nav" auto-active>
-			<li class="dropdown" ng-repeat="item in tree.children_list track by $index" style="width: 16.666666667%">
+			<li class="dropdown" ng-repeat="item in tree.children_list track by $index" >
 				<a href="#!{{item.path}}" role="button" style="width: 100%; text-align: center;">{{item.text | translate}} </a>
 			</li>
 		</ul>
