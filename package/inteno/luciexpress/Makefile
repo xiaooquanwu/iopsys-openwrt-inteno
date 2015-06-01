@@ -2,7 +2,7 @@ include $(TOPDIR)/rules.mk
 
 
 PKG_NAME:=luciexpress
-PKG_VERSION:=master
+PKG_VERSION:=15.6.1
 PKG_MAINTAINER:=Martin K. Schröder <martin.schroder@inteno.se>
 
 #PKG_SOURCE_URL:=https://github.com/mkschreder/luci-express.git
@@ -12,7 +12,7 @@ PKG_MAINTAINER:=Martin K. Schröder <martin.schroder@inteno.se>
 #PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
 #PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
 
-PKG_RELEASE:=3
+#PKG_RELEASE!=date +%s
 
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/cmake.mk
@@ -24,6 +24,8 @@ include $(INCLUDE_DIR)/cmake.mk
 #endef
 
 define Build/Prepare
+	npm install 
+	grunt nggettext_compile
 	$(INSTALL_DIR) $(PKG_BUILD_DIR)
 	$(CP) ./src/* $(PKG_BUILD_DIR)/
 endef
@@ -40,8 +42,6 @@ define Package/luciexpress/description
 endef
 
 define Package/luciexpress/install
-	npm install 
-	grunt nggettext_compile
 	grunt compile
 	$(INSTALL_DIR) $(1)/www
 	$(CP) ./bin/* $(1)/www/

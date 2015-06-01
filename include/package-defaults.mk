@@ -23,6 +23,8 @@ define Package/Default
   EXTRA_DEPENDS:=
   MAINTAINER:=OpenWrt Developers Team <openwrt-devel@openwrt.org>
   SOURCE:=$(patsubst $(TOPDIR)/%,%,$(CURDIR))
+  #uncomment this line to make automatic package upgrades work
+  #PKG_RELEASE!=date +%s
   ifneq ($(PKG_VERSION),)
     ifneq ($(PKG_RELEASE),)
       VERSION:=$(PKG_VERSION)-$(PKG_RELEASE)
