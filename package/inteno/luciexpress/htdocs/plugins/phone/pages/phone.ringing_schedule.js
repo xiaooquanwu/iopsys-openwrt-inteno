@@ -21,8 +21,12 @@
  */
  
 $juci.module("phone")
-.controller("PhoneRingingScheduleCtrl", function($scope, $uci){
+.controller("PhoneRingingScheduleCtrl", function($scope, $uci, gettext){
 	$scope.allSipAccountsMap = {}; 
+	$scope.enabledDisabledItems = [
+		{ label: gettext("Enabled"), value: true }, 
+		{ label: gettext("Disabled"), value: false }
+	]; 
 	
 	$uci.sync(["voice_client"]).done(function(){
 		if(!$uci.voice_client.RINGING_STATUS){

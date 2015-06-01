@@ -29,7 +29,7 @@
 			</luci-config-lines>
 			<luci-config-lines ng-show="ddns.enabled.value">
 				<luci-config-line title="{{'Provider'|translate}}">
-					<luci-select ng-model="ddns" ng-items="allServices" placeholder="{{'Choose DNS Provider'|translate}}></luci-select>
+					<luci-select ng-model="ddns.service_name.value" ng-items="allServices" placeholder="{{'Choose DNS Provider'|translate}}"></luci-select>
 				</luci-config-line>
 				<luci-config-line title="{{'Domain name'|translate}}">
 						<input type="text" class="form-control" ng-model="ddns.domain.value" placeholder="{{'Add domain name'|translate}}" />

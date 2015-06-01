@@ -16,7 +16,7 @@ JUCI.app
 		}
 		if ($uci.ddns && $uci.ddns["@service"]) {
 			$scope.allServices = $uci.ddns["@service"].map(function(x){
-				return { label: x.service_name.value, value: x };
+				return { label: x.service_name.value, value: x.service_name.value };
 			});  
 			$scope.ddns = $uci.ddns["@service"][0];
 			$scope.$apply(); 

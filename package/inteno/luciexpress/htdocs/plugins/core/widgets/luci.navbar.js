@@ -26,14 +26,14 @@ $juci.module("core")
 	var plugin_root = $juci.module("core").plugin_root; 
 	function activate(){
 		var path = $location.path().replace(/^\/+|\/+$/g, ''); 
-		var subtree = path.split(".")[0]; 
+		var subtree = path.split("-")[0]; 
 		
 		setTimeout(function(){
 			$("ul.nav li a").parent().removeClass("open"); 
 			$("ul.nav li a[href='#!"+subtree+"']").addClass("open"); 
 			$("ul.nav li a[href='#!"+subtree+"']").parent().addClass("open"); 
 		}, 0); 
-	}; 
+	}; activate(); 
 	$rootScope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams){
 		activate(); 
 	});

@@ -2528,6 +2528,13 @@ rpc_luci2_opkg_list_installed(struct ubus_context *ctx, struct ubus_object *obj,
 	return opkg_exec_list("list-installed", msg, ctx, req);
 }
 
+rpc_luci2_opkg_list_upgradable(struct ubus_context *ctx, struct ubus_object *obj,
+                              struct ubus_request_data *req, const char *method,
+                              struct blob_attr *msg)
+{
+	return opkg_exec_list("list-upgradable", msg, ctx, req);
+}
+
 static int
 rpc_luci2_opkg_find(struct ubus_context *ctx, struct ubus_object *obj,
                     struct ubus_request_data *req, const char *method,
@@ -2934,6 +2941,8 @@ rpc_luci2_api_init(const struct rpc_daemon_ops *o, struct ubus_context *ctx)
 		UBUS_METHOD("list",                  rpc_luci2_opkg_list,
 		                                     rpc_opkg_match_policy),
 		UBUS_METHOD("list_installed",        rpc_luci2_opkg_list_installed,
+		                                     rpc_opkg_match_policy),
+		UBUS_METHOD("list_upgradable",        rpc_luci2_opkg_list_upgradable,
 		                                     rpc_opkg_match_policy),
 		UBUS_METHOD("find",                  rpc_luci2_opkg_find,
 		                                     rpc_opkg_match_policy),
