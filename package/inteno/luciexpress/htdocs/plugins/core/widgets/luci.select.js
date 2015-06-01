@@ -19,7 +19,7 @@ $juci.module("core")
 				html += '<div class="dropdown dropdown-toggle" data-toggle="dropdown" ><a class="dropdown-toggle" role="button" data-toggle="dropdown"  href="javascript:;">{{((selectedItem||{}).label || placeholder) | translate}}<b class="caret"></b></a>';
 				break;
 			default:
-				html += '<div class="btn-group" style="white-space: nowrap;"><button class="btn btn-default button-label {{size_class}}" style="display: inline-block; float:none;">{{selectedText}}</button><button class="btn btn-default dropdown-toggle" style="display: inline-block; float:none;" data-toggle="dropdown"><span class="caret"></span></button>';
+				html += '<div class="btn-group" style="white-space: nowrap;"><button class="btn btn-default button-label {{size_class}}" style="display: inline-block; float:none;">{{selectedText | translate}}</button><button class="btn btn-default dropdown-toggle" style="display: inline-block; float:none;" data-toggle="dropdown"><span class="caret"></span></button>';
 				break;
 		}
 		html += '<ul class="dropdown-menu"><li ng-repeat="item in itemList"><a tabindex="-1" data-ng-click="selectVal(item)" href="">{{item.label}}</a></li></ul></div>';
@@ -38,17 +38,17 @@ $juci.module("core")
 				scope.itemList = value.map(function(x){
 					//console.log(JSON.stringify(x)+" "+JSON.stringify(scope.selectedItem));
 					if(typeof x == "object" && "value" in x){
-						if(scope.selectedItem != undefined && scope.selectedItem.value == x.value)
+						/*if(scope.selectedItem != undefined && scope.selectedItem.value == x.value)
 							scope.selectedText = scope.selectedItem.label || scope.placeholder;
 						else if(scope.selectedItem == x.value){
 							scope.selectedText = x.label || scope.placeholder; 
-						}
+						}*/
 						//console.log(JSON.stringify(x)+" "+JSON.stringify(scope.selectedItem));
 						return { label: x.label, value: x.value }; 
 					} else {
-                        if(scope.selectedItem == x){
+						/*if(scope.selectedItem == x){
 							scope.selectedText = scope.selectedItem || scope.placeholder; 
-						}
+						}*/
 						return { label: x, value: x }; 
 					}
 				}); 
@@ -57,7 +57,7 @@ $juci.module("core")
 		scope.$watch("selectedItem", function(value){
 			//console.log("Selected item: "+JSON.stringify(value));
 			if(value != undefined && (typeof value) == "object") {
-				if("value" in value) scope.selectedText = value.value; 
+				if("value" in value) scope.selectedText = value.label; 
 				else scope.selectedText = scope.placeholder; 
 			}
 			else if(value != undefined && scope.itemList != undefined) { 
@@ -65,7 +65,7 @@ $juci.module("core")
 					if(x.value == value) scope.selectedText = x.label;
 				}); 
 			} 
-			else scope.selectedText = value || scope.placeholder; 
+			//else scope.selectedText = value || scope.placeholder; 
 		}); 
 		
 		scope.selectVal = function (item) {

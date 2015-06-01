@@ -1,23 +1,14 @@
 <div class="top-bar">
-    <div class="container">
-        <div class="row">
-            <div class="col-xs-1"></div>
-            <div class="col-xs-10">
-                <div class="outer-select">
-                    <ui-select ng-model="selectedMode"
-                               theme="bootstrap"
-                               search-enabled="false"
-                               on-select="onChangeMode($item, $model)"
-                               class="inner-select" >
-                        <ui-select-match placeholder="{{'Basic'|translate}}">{{$select.selected.label}}</ui-select-match>
-                        <ui-select-choices repeat="mode in guiModes" refresh-delay="0">
-                            <div>{{mode.label}}</div>
-                        </ui-select-choices>
-                    </ui-select>
-                </div>
-                <div class="box-model">{{ model }}</div>
-            </div>
-            <div class="col-xs-1"></div>
-        </div>
-    </div>
+	<div class="container">
+		<div class="row">
+			<div class="col-xs-1"></div>
+			<div class="col-xs-10">
+				<div class="outer-select">
+					<luci-select ng-model="selectedModeValue" ng-items="guiModes" on-change="onChangeMode()"></luci-select>
+				</div>
+				<div class="box-model">{{ model }}</div>
+			</div>
+			<div class="col-xs-1"></div>
+		</div>
+	</div>
 </div>
