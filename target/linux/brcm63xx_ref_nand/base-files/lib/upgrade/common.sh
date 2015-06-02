@@ -631,8 +631,10 @@ default_do_upgrade() {
 		fi
 
 		v "Upgrade completed!"
+		rm -f $from
 		[ -n "$DELAY" ] && sleep "$DELAY"
 		v "Rebooting system ..."
+		sync
 		reboot -f
 	else
 		if [ "$SAVE_CONFIG" -eq 1 -a -z "$USE_REFRESH" ]; then
