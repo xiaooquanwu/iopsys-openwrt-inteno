@@ -28,6 +28,7 @@ config wifi-chip '435f'
 
 config wifi-chip '43a2'
 	option bands 'a'
+	option is_ac 1
 
 ###############################################################################
 #
