@@ -321,6 +321,8 @@ load_wireless()
 					radio[rno].band = "b";
 				radio[rno].frequency = !strcmp(radio[rno].band, "a") ? 5 : 2;
 				usleep(10000);
+				runCmd("wlctl -i %s band %s", radio[rno].name, radio[rno].band);
+				usleep(10000);
 				radio[rno].pcid = chrCmd("wlctl -i %s revinfo | awk 'FNR == 2 {print}' | cut -d'x' -f2", radio[rno].name);
 				radio[rno].is_ac = false;
 				if (radio[rno].pcid && atoi(chrCmd("db -q get hw.%s.is_ac", radio[rno].pcid)) == 1)

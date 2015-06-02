@@ -1477,6 +1477,6 @@ case "$1" in
 	down) wifi_updown "disable" "$2" ;;
 	reload) check_md5sum; wifi_reload "$2" ;;
 	reload_legacy) check_md5sum; wifi_reload_legacy "$2" ;;
-	*) ubus call network reload; wifi_updown "enable" "$2"; ubus call router reload;;
+	*) ubus call network reload; wifi_updown "enable" "$2";;
 esac
 
