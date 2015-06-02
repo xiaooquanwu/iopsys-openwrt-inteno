@@ -553,7 +553,7 @@ inteno_image_upgrade() {
 				v "Write UBI image..."
 				imagewrite -s 83 -b 0 \
 					   -k $ubifs_ofs -l $ubifs_sz \
-					   --ubi -n 0 -S -6 --vol-name=rootfs_0 \
+					   --ubi -n 0 -S -20 --vol-name=rootfs_0 \
 					   /dev/mtd$mtd_no $from
 
 				v "Write kernel..."
