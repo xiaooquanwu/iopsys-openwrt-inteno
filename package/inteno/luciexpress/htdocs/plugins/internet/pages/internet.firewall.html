@@ -5,10 +5,10 @@
 		<luci-config-section>
 			<luci-config-lines>
 				<luci-config-line title="{{'Enable firewall'|translate}}">
-					<switch id="enabled" name="enabled" ng-model="firewallSwitchState" ng-change="onFirewallToggle" class="green"></switch>
+					<switch ng-model="firewallSwitchState" ng-change="onFirewallToggle()" class="green"></switch>
 				</luci-config-line>
 				<luci-config-line title="{{rule.name.value | translate}}" ng-repeat="rule in firewall['@rule']"  ng-hide="rule.hidden.value">
-					<switch id="enabled" name="enabled" ng-model="rule.enabled.value"  class="green"></switch>
+					<switch ng-model="rule.enabled.value"  class="green"></switch>
 				</luci-config-line>
 			</luci-config-lines>
 		</luci-config-section>

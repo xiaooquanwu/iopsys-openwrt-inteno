@@ -10,6 +10,7 @@ $juci.module("internet")
 	}); 
 	
 	$scope.onFirewallToggle = function(){
+		$scope.firewallSwitchState = !$scope.firewallSwitchState; 
 		if($scope.firewallSwitchState) {
 			$uci.firewall["@zone"].map(function(zone){
 				if(zone.name.value == "wan"){
