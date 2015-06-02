@@ -3208,6 +3208,7 @@ CONFIG_PACKAGE_asterisk18-mod-app-transfer=y
 # CONFIG_PACKAGE_asterisk18-mod-app-verbose is not set
 # CONFIG_PACKAGE_asterisk18-mod-app-waituntil is not set
 # CONFIG_PACKAGE_asterisk18-mod-app-while is not set
+CONFIG_PACKAGE_asterisk18-mod-cdr=y
 # CONFIG_PACKAGE_asterisk18-mod-chan-agent is not set
 CONFIG_PACKAGE_asterisk18-mod-chan-brcm=y
 # CONFIG_PACKAGE_asterisk18-mod-chan-gtalk is not set
