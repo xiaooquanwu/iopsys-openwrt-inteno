@@ -362,7 +362,7 @@ wif_general_settings() {
 	config_get_bool isolate "$vif" isolate "0"
 	config_get_bool vlan_mode "$vif" vlan_mode "0"
 
-	wlctl -i $iface ssid "$ssid"
+	#wlctl -i $iface ssid "$ssid"
 	wlctl -i $iface bss_maxassoc "$bss_max"
 	wlctl -i $iface ap_isolate "$isolate"
 	wlctl -i $iface vlan_mode "$vlan_mode"
@@ -962,12 +962,19 @@ wdev_wif_bringup() {
 	for iface in $vifs; do
 		network=$(nvram get "$iface"_network)
 		bss=$(nvram get "$iface"_bss_enabled)
+		ssid="$(nvram get "$iface"_ssid)"
 
 		ifconfig "$iface" up >/dev/null 2>&1 && {
 			[ -n "$network" ] && ubus call network.interface."$network" add_device "{ \"name\": \"$iface\" }" 2>/dev/null
 		}
 
-		wlctl -i $iface bss ${bss:-1}
+		if [ $bss -eq 1 ]; then
+			wlctl -i $iface ssid "$ssid"
+			wlctl -i $iface bss up
+		else
+			wlctl -i $iface ssid ""
+			wlctl -i $iface bss down
+		fi
 	done
 }
 
@@ -1357,11 +1364,14 @@ wifi_toggle_iface() {
 	[ -z "$2" ] && return
 	local wif="$2"
 	local wdev="${wif:0:3}"
+	local ssid="$(nvget "$wif"_ssid)"
 	if [ "$1" == "disable" ]; then
 		nvset "$wif"_bss_enabled=0
+		wlctl -i $wif ssid ""
 		wlctl -i $wif bss down
 	else
 		nvset "$wif"_bss_enabled=1
+		wlctl -i $wif ssid "$ssid"
 		wlctl -i $wif bss up
 	fi
 }
