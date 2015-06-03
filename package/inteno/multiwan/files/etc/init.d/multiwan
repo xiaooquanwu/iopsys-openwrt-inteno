@@ -1,0 +1,25 @@
+#!/bin/sh /etc/rc.common
+START=99
+EXTRA_COMMANDS="single"
+USE_PROCD=1
+
+start_service () {
+   /usr/bin/multiwan agent &
+}
+
+stop_service () {
+  sh /usr/bin/multiwan stop
+}
+
+reload_service () {
+  /usr/bin/multiwan restart &
+}
+
+single () {
+  /usr/bin/multiwan single &
+}
+
+service_triggers() {
+        procd_add_reload_trigger multiwan
+}
+
