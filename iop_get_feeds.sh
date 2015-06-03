@@ -14,7 +14,6 @@
 ./scripts/feeds install libpng
 ./scripts/feeds install liblzo
 ./scripts/feeds install miniupnpd
-./scripts/feeds install minidlna
 ./scripts/feeds install smap
 ./scripts/feeds install smap-to-devinfo
 ./scripts/feeds install hd-idle
