@@ -1,14 +1,15 @@
 #!/bin/sh /etc/rc.common
-# Copyright (C) 2008 OpenWrt.org
+
 START=97
 STOP=10
+USE_PROCD=1
 
 DEST=
 DEFAULT=
 OPTIONS=""
 
 
-start() {
+start_service() {
 	# avoid fp timing problem
 	echo 1 > /proc/sys/kernel/printk_with_interrupt_enabled
 	
@@ -29,18 +30,23 @@ start() {
 	dectmngr > /tmp/dectmngr 2>&1 &
 }
 
-stop() {
+stop_service() {
         killall -9 dectproxy
 	killall -9 dectmngr
 }
 
-restart() {
+restart_service() {
 	echo "restarting dect"
 	killall dectmngr
 	dectmngr > /tmp/dectmngr 2>&1 &
 }
 
-reload() {
+reload_sercie() {
 	# reload config
 	dect -c
 }
+
+service_triggers() {
+        procd_add_reload_trigger dect
+}
+
