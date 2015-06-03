@@ -72,7 +72,7 @@ minidlna_create_config() {
 	return 0
 }
 
-start() {
+start_service() {
 	local enabled
 	local db_dir
 	local log_dir
@@ -92,7 +92,7 @@ start() {
 	service_start /usr/bin/minidlna -f "$MINIDLNA_CONFIG_FILE"
 }
 
-stop() {
+stop_service() {
 	service_stop /usr/bin/minidlna
 }
 

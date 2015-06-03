@@ -70,6 +70,9 @@ start_service() {
 	local upnp_lease_file clean_ruleset_threshold clean_ruleset_interval
         local ipv6_listening_ip
 
+	config_get_bool enabled config 'enabled' '0'
+	[ $enabled -gt 0 ] || return 1
+
 	config_get extiface config external_iface
 	config_get extzone config external_zone
 	config_get intiface config internal_iface
