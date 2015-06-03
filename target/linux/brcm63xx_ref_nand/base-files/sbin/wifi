@@ -10,7 +10,6 @@ DISABLE_HOOKS=
 
 exec >/dev/null 2>&1
 
-local RESTART="1"
 local _enWifi=0
 local _enWps=0
 local _vno=0
@@ -80,20 +79,13 @@ run_acsd() {
 			wlctl -i $wldev up
 		fi
 	done
-	if [ -n "$(nvget acs_ifnames)" ]; then
-		if [ "$RESTART" == "1" ]; then
-			acsd &
-			return
-		else
-			acsd
-		fi
-		for wldev in $(nvget acs_ifnames); do
-			# finds appropriate channel candidates
-			acs_cli -i $wldev autochannel
-			# triggers an early channel switch
-			acs_cli -i $wldev autochannel
-		done
-	fi
+	[ -n "$(nvram get acs_ifnames)" ] && acsd
+	for wldev in $(nvram get acs_ifnames); do
+		# finds appropriate channel candidates
+		acs_cli -i $wldev autochannel
+		# triggers an early channel switch
+		acs_cli -i $wldev autochannel
+	done
 }
 
 start_related_daemons() {
@@ -362,7 +354,7 @@ wif_general_settings() {
 	config_get_bool isolate "$vif" isolate "0"
 	config_get_bool vlan_mode "$vif" vlan_mode "0"
 
-	#wlctl -i $iface ssid "$ssid"
+	wlctl -i $iface ssid "$ssid"
 	wlctl -i $iface bss_maxassoc "$bss_max"
 	wlctl -i $iface ap_isolate "$isolate"
 	wlctl -i $iface vlan_mode "$vlan_mode"
@@ -641,20 +633,12 @@ wdev_static_settings() {
 	wlctl -i $device mrate 0
 	wlctl -i $device bg_mrate 0
 	wlctl -i $device afterburner_override 0
-	wlctl -i $device amsdu 1
-	wlctl -i $device rx_amsdu_in_ampdu 1
-	wlctl -i $device ampdu 255
-	wlctl -i $device ampdu_tx 255
-	wlctl -i $device ampdu_rx 255
-	wlctl -i $device ampdu_mpdu 32
+	wlctl -i $device ampdu 1
+	wlctl -i $device amsdu 0
+	wlctl -i $device rx_amsdu_in_ampdu 0
+	wlctl -i $device noise_metric 1
 	wlctl -i $device rxchain_pwrsave_stas_assoc_check 1
 	wlctl -i $device radio_pwrsave_stas_assoc_check 1
-	wlctl -i $device noise_metric 1
-	wlctl -i $device mpc_dur 0
-	wlctl -i $device nar 0
-	wlctl -i $device probresp_sw 1
-	wlctl -i $device mimo_ps 0
-	wlctl -i $device phy_percal_delay 60
 }
 
 wdev_radar_settings() {
@@ -852,15 +836,11 @@ wdev_channel_settings() {
 
 wdev_rate_settings() {
 	local device=$1
-	local hwmode rateset rate
-	config_get hwmode "$device" hwmode "auto"
+	local rateset rate
 	config_get rateset "$device" rateset "default"
 	config_get rate "$device" rate "0"
 
-	case "$hwmode" in
-		*b) wlctl -i $device rateset default ;;
-		*) wlctl -i $device rateset 6b 24 54 ;;
-	esac
+	wlctl -i $device rateset $rateset
 	wlctl -i $device rate $rate
 }
 
@@ -934,7 +914,6 @@ wdev_wds_settings() {
 	wlctl -i $device wds none
 	wlctl -i $device wdswsec 0
 	wlctl -i $device wdswsec_enable 0
-	wlctl -i $device wdstimeout 1
 }
 
 wdev_assoc_settings() {
@@ -989,9 +968,7 @@ setup_wifi_device() {
 	# bring down wireless device
 	wlctl -i $device down
 
-	if [ "$RESTART" == "0" ]; then
 		wdev_assured_settings $device
-	fi
 
 	# create virtual wireless interfaces
 	wlctl -i $device up
@@ -1001,23 +978,20 @@ setup_wifi_device() {
 
 	[ $wlan -eq 0 -o $disabled -eq 1 ] && continue || _enWifi=$((_enWifi+1))
 
-	if [ "$RESTART" == "0" ]; then
-		wdev_static_settings $device
-		wdev_radar_settings $device
-		wdev_antenna_settings $device
-		wdev_wds_settings $device
-	fi
-
+	wdev_static_settings $device
+	wdev_radar_settings $device
 	wdev_bwcap_settings $device
 	wdev_hwmode_settings $device
 	wdev_channel_settings $device
+	wdev_rate_settings $device
 	wdev_rifs_settings $device
 	wdev_wme_settings $device
 	wdev_tweak_settings $device
+	wdev_antenna_settings $device
 	wdev_power_settings $device
+	wdev_wds_settings $device
 	wdev_assoc_settings $device
 	wdev_apsta_settings $device
-	wdev_rate_settings $device
 
 	# setup virtual wireless interfaces
 	config_foreach setup_wifi_iface wifi-iface "$device"
@@ -1478,7 +1452,6 @@ case "$1" in
 esac
 
 if [ -f /tmp/wireless/first ]; then
-	RESTART="0"
 	nvset wlmd5sum=""
 	rm -f /tmp/wireless/first
 fi
