@@ -3,6 +3,7 @@
 # Copyright (C) 2007 OpenWrt.org
 START=98
 STOP=15
+USE_PROCD=1
 
 . /lib/functions.sh
 
@@ -11,7 +12,7 @@ include /lib/network
 CRONPATH="/etc/crontabs/root"
 RANGE=60
 
-boot() {
+init_iup() {
 	local interval
 	local starttime
 	local nummber
@@ -30,8 +31,8 @@ boot() {
 	if [ $interval == "weekly" ]; then
 		interval="0"
 	elif [ $interval == "hourly" ]; then
-	  interval='*'
-	  starttime='*'
+		interval='*'
+		starttime='*'
 	else
 		interval='*'
 	fi
@@ -46,15 +47,19 @@ boot() {
 		/etc/init.d/cron restart
 	fi
 }                 
-start() {
-	boot
+start_service() {
+	init_iup
+
 	test_default_route
 	if [ "$?" -eq 0 ]; then
 		/sbin/iup &
 	fi
 }
 
-restart() {
-	boot
-	/sbin/iup &
+stop_service() {
+	killall -9 /sbin/iup
+}
+
+service_triggers() {
+        procd_add_reload_trigger provisioning
 }
