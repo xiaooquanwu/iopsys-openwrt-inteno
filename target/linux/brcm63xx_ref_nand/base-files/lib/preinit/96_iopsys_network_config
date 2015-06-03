@@ -69,6 +69,7 @@ EOF
 			wanEthernetPort_dot=$wanEthernetPort.1
 		fi
 
+		uci set layer2_interface_ethernet.Wan.name="WAN"
 		uci set layer2_interface_ethernet.Wan.baseifname="$wanEthernetPort"
 		uci set layer2_interface_ethernet.Wan.ifname="$wanEthernetPort_dot"
 		uci commit layer2_interface_ethernet
