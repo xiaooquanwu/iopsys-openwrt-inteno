@@ -1374,6 +1374,7 @@ wifi_toggle_iface() {
 		wlctl -i $wif ssid "$ssid"
 		wlctl -i $wif bss up
 	fi
+	nvcommit
 }
 
 day_to_number() {
