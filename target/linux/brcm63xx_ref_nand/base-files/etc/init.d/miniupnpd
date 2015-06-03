@@ -2,14 +2,10 @@
 # Copyright (C) 2006-2011 OpenWrt.org
 
 START=95
+USE_PROCD=1
 
 SERVICE_USE_PID=1
 
-cwmp_upnpcache() {
-	[ -f /usr/sbin/freecwmp ] && {
-		ps -w | grep freecwmp | grep UPnP >/dev/null || freecwmp get cache InternetGatewayDevice.UPnP. &
-	}
-}
 upnpd_get_port_range() {
 	local _var="$1"; shift
 	local _val
@@ -66,16 +62,16 @@ boot() {
 	return
 }
 
-start() {
+start_service() {
 	config_load "upnpd"
-	local enabled extiface intiface upload download logging secure enabled natpmp
+	local extiface intiface upload download logging secure enabled natpmp
 	local extip port usesysuptime conffile serial_number model_number
 	local uuid notify_interval presentation_url enable_upnp
 	local upnp_lease_file clean_ruleset_threshold clean_ruleset_interval
+        local ipv6_listening_ip
 
-	config_get_bool enabled config 'enabled' '0'
-	[ $enabled -gt 0 ] || return 1
 	config_get extiface config external_iface
+	config_get extzone config external_zone
 	config_get intiface config internal_iface
 	config_get extip config external_ip
 	config_get port config port 5000
@@ -91,13 +87,26 @@ start() {
 	config_get upnp_lease_file config upnp_lease_file
 	config_get clean_ruleset_threshold config clean_ruleset_threshold
 	config_get clean_ruleset_interval config clean_ruleset_interval
+	config_get ipv6_listening_ip config ipv6_listening_ip
 
 	local args
 
 	. /lib/functions/network.sh
 
 	local ifname
-	network_get_device ifname ${extiface:-wan}
+
+        # manual external interface overrides everything
+        if [ -z "$extiface" ] ; then
+            # manual external zone (if dynamically find interfaces
+            # belonging to it) overrides network_find_wan*
+            if [ -n "$extzone" ] ; then
+                ifname=$(fw3 -q zone $extzone | head -1)
+            fi
+            [ -n "$extiface" ] || network_find_wan extiface
+            [ -n "$extiface" ] || network_find_wan6 extiface
+        fi
+
+	[ -n "$ifname" ] || network_get_device ifname ${extiface}
 
 	if [ -n "$conffile" ]; then
 		args="-f $conffile"
@@ -126,6 +135,7 @@ start() {
 		upnpd_write_bool enable_natpmp 1
 		upnpd_write_bool enable_upnp 1
 		upnpd_write_bool secure_mode 1
+		upnpd_write_bool pcp_allow_thirdparty 0
 		upnpd_write_bool system_uptime 1
 
 		[ -n "$upnp_lease_file" ] && \
@@ -147,6 +157,9 @@ start() {
 
 		[ -n "${clean_ruleset_interval}" ] && \
 			echo "clean_ruleset_interval=${clean_ruleset_interval}" >>$tmpconf
+
+		[ -n "${ipv6_listening_ip}" ] && \
+			echo "ipv6_listening_ip=${ipv6_listening_ip}" >>$tmpconf
 
 		[ -z "$uuid" ] && {
 			uuid="$(cat /proc/sys/kernel/random/uuid)"
@@ -181,13 +194,20 @@ start() {
 	else
 		logger -t "upnp daemon" "external interface not found, not starting"
 	fi
-
-	cwmp_upnpcache
 }
 
-stop() {
+stop_service() {
 	service_stop /usr/sbin/miniupnpd
 
 	iptables -t nat -F MINIUPNPD 2>/dev/null
 	iptables -t filter -F MINIUPNPD 2>/dev/null
+
+        [ -x /usr/sbin/ip6tables ] && {
+	    ip6tables -t filter -F MINIUPNPD 2>/dev/null
+        }
 }
+
+service_triggers() {
+        procd_add_reload_trigger upnpd firewall
+}
+
