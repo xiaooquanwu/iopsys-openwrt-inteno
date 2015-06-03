@@ -4,6 +4,7 @@
 include /lib/network
 
 START=21
+USE_PROCD=1
 
 removeethernet() {
 	config_get ifname $1 ifname
@@ -47,16 +48,21 @@ boot() {
 	ifconfig $baseifname up
 }
 
-start() {
+start_service() {
 	local baseifname
 	echo "Setting up Ethernet WAN"
 	config_load layer2_interface_ethernet
 	config_foreach addethernet ethernet_interface
 }
 
-stop() {
+stop_service() {
 	local ifname
 	config_load layer2_interface_ethernet
 	config_foreach removeethernet ethernet_interface
 }
+
+service_triggers() {
+        procd_add_reload_trigger layer2_interface_ethernet
+}
+
 

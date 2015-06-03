@@ -2,7 +2,9 @@
 
 . /lib/functions.sh
 include /lib/network
+
 START=21
+USE_PROCD=1
 
 checkptm() {
 	local retur
@@ -67,7 +69,7 @@ remove_netdevices() {
 	unset IFS
 }
 
-start() {
+start_service() {
 	local vdslstatus
 	echo "Starting VDSL"
 	config_load layer2_interface
@@ -80,14 +82,14 @@ start() {
 	fi
 }
 
-stop() {
+stop_service() {
 	echo "Stopping VDSL"
-	#xtmctl stop
+	xtmctl stop
 	remove_netdevices
 }
 
-restart() {
-	stop
-	start
+service_triggers() {
+        procd_add_reload_trigger layer2_interface_vdsl
 }
+
 

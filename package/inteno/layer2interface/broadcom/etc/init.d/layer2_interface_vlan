@@ -4,6 +4,7 @@
 include /lib/network
 
 START=21
+USE_PROCD=1
 
 vlan_inf_conf() {
 	local baseifname
@@ -22,7 +23,7 @@ boot() {
 	echo "VLAN does not run at boot"
 }
 
-start() {
+start_service() {
 	local vdslstatus
 	echo "Starting VLAN"
 
@@ -30,13 +31,12 @@ start() {
 	config_foreach vlan_inf_conf vlan_interface
 }
 
-stop() {
+stop_service() {
 	echo "Stopping VLAN"
 	removeall_vlandevices
 }
 
-restart() {
-	stop
-	start
+service_triggers() {
+        procd_add_reload_trigger layer2_interface_vlan
 }
 

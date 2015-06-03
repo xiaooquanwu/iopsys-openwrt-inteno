@@ -2,7 +2,9 @@
 
 . /lib/functions.sh
 include /lib/network
+
 START=21
+USE_PROCD=1
 
 checkpvc() {
 	local retur
@@ -126,13 +128,7 @@ remove_netdevices() {
 	done
 }
 
-boot() {
-	#xdslctl start
-	echo "Boot ADSL"
-	start
-}
-
-start() {
+start_service() {
 	local adslstatus
 	echo "Starting ADSL"
 	config_load layer2_interface
@@ -144,15 +140,15 @@ start() {
 	fi
 }
 
-stop() {
+stop_service() {
 	echo "Stopping ADSL"
 
-	#xtmctl stop
+	xtmctl stop
 	remove_netdevices	
 }
 
-restart() {
-	stop
-	start
+service_triggers() {
+        procd_add_reload_trigger layer2_interface_adsl
 }
+
 

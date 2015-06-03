@@ -5,14 +5,9 @@
 include /lib/network
 
 START=21
-boot() {
-	vlanctl --if-suffix .
-	add_ebtables_default_arp
-	start
-}
+USE_PROCD=1
 
-
-start() {
+start_service() {
 	local AnnexM
 	local GDmt
 	local Glite 
@@ -94,7 +89,16 @@ start() {
 
 stop() {
 	echo "Stopping DSL"
-	##command kills the board
-	#xdslctl stop
+	xdslctl stop
+}
+
+boot() {
+	vlanctl --if-suffix .
+	add_ebtables_default_arp
+	start
+}
+
+service_triggers() {
+        procd_add_reload_trigger layer2_interface
 }
 
