@@ -4,6 +4,23 @@ START=19
 USE_PROCD=1
 QUIET=""
 
+. /lib/functions.sh
+
+rematch_duidip6()
+{
+	duid_to_ip6() {
+		local duid ip6
+		config_get duid "$1" duid
+		if [ -n "$duid" ]; then
+			ip6=$( grep "$duid" /tmp/hosts/odhcpd | head -1 | awk '{print$NF}')
+			[ -n "$ip6" ] && uci set firewall."$1".dest_ip="$ip6"
+		fi
+	}
+	config_load firewall
+	config_foreach duid_to_ip6 rule
+	uci commit firewall
+}
+
 reindex_dmzhost()
 {
 	uci -q get firewall.dmzhost >/dev/null || return
@@ -76,4 +93,5 @@ boot() {
 	start
 }
 
+rematch_duidip6
 reindex_dmzhost
