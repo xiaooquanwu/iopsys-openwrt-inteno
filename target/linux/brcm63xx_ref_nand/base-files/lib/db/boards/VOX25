@@ -168,6 +168,7 @@ config led_map led_map
        list dimming		wifi
        list dimming		wps
        list dimming		voice1
+       list dimming 		wifi_wps
 
 config led_map led_mobile
 	
