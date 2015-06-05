@@ -41,6 +41,10 @@ reload_service() {
 	asterisk -rx "brcm reload"
 }
 
+restart() {
+	reload
+}
+
 stop_service() {
         service_stop /usr/sbin/asterisk
 }
