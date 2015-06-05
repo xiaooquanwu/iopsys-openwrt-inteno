@@ -24,8 +24,8 @@ include $(INCLUDE_DIR)/cmake.mk
 #endef
 
 define Build/Prepare
-	npm install 
-	grunt nggettext_compile
+	#npm install 
+	#grunt nggettext_compile
 	$(INSTALL_DIR) $(PKG_BUILD_DIR)
 	$(CP) ./src/* $(PKG_BUILD_DIR)/
 endef
@@ -42,16 +42,16 @@ define Package/luciexpress/description
 endef
 
 define Package/luciexpress/install
-	grunt compile
-	$(INSTALL_DIR) $(1)/www
-	$(CP) ./bin/* $(1)/www/
-	$(CP) ./htdocs/img $(1)/www/
-	$(CP) ./htdocs/fonts $(1)/www/
-	$(CP) ./htdocs/index.html $(1)/www/
-	$(CP) ./htdocs/config.json $(1)/www/
-	$(INSTALL_DIR) $(1)/www/themes/vodafone/
-	$(CP) ./htdocs/themes/vodafone/img $(1)/www/themes/vodafone/
-	$(CP) ./htdocs/themes/vodafone/fonts $(1)/www/themes/vodafone/
+	#grunt compile
+	#$(INSTALL_DIR) $(1)/www
+	#$(CP) ./bin/* $(1)/www/
+	#$(CP) ./htdocs/img $(1)/www/
+	#$(CP) ./htdocs/fonts $(1)/www/
+	#$(CP) ./htdocs/index.html $(1)/www/
+	#$(CP) ./htdocs/config.json $(1)/www/
+	#$(INSTALL_DIR) $(1)/www/themes/vodafone/
+	#$(CP) ./htdocs/themes/vodafone/img $(1)/www/themes/vodafone/
+	#$(CP) ./htdocs/themes/vodafone/fonts $(1)/www/themes/vodafone/
 	$(INSTALL_DIR) $(1)/usr/share/rpcd
 	$(CP) ./share/* $(1)/usr/share/rpcd/
 	./install_menus.sh $(1)
