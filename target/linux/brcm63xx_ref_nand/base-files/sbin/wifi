@@ -10,7 +10,7 @@ DISABLE_HOOKS=
 
 exec >/dev/null 2>&1
 
-local RESTART="1"
+local RESTART="0"
 local _enWifi=0
 local _enWps=0
 local _vno=0
