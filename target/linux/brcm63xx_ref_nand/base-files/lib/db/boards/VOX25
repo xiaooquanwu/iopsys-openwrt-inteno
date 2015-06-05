@@ -89,12 +89,13 @@ config button_map TOUCH_NEAR
 	list button 3220_touch_near
 	option hotplug touch_near
 	option minpress 0
-	
+	option dimming	on
+
 config button_map TOUCH_FAR
 	list button 3220_touch_far
 	option hotplug touch_far
 	option minpress 0
-	
+
 #
 #		Button config , end
 #
@@ -157,6 +158,16 @@ config led_map led_map
        list functions wifi
        list functions wps
        list functions wifi_wps
+
+# dimming turn leds off unless above cutof level
+#
+       option dimming_level	notice
+       option dimming_on	5
+       list dimming		mobile
+       list dimming		internet
+       list dimming		wifi
+       list dimming		wps
+       list dimming		voice1
 
 config led_map led_mobile
 	
