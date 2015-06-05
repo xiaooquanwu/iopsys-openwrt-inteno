@@ -3,12 +3,12 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=juci
 PKG_VERSION:=15.6.2
-#PKG_RELEASE=$(PKG_SOURCE_VERSION)
+PKG_RELEASE=$(PKG_SOURCE_VERSION)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=git@iopsys.inteno.se:juci.git
-PKG_SOURCE_SUBDIR:=$(PKG_NAME)
-PKG_SOURCE_VERSION:=HEAD
+PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
+PKG_SOURCE_VERSION:=0a4dce1066a07820a83d9a874c78a843e82a8dda
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
 PKG_MAINTAINER:=Martin Schröder <mkschreder.uk@gmail.com>
 
@@ -16,19 +16,6 @@ PKG_LICENSE:=GPL
 PKG_LICENSE_FILES:=
 
 include $(INCLUDE_DIR)/package.mk
-
-PKG_BUILD_PARALLEL:=1
-PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)
-
-define Build/Configure
-	$(shell "cd $(PKG_BUILD_DIR) && git pull")
-endef
-#define Build/Configure
-	#(cd $(PKG_BUILD_DIR) && $(BASH) -x ./bootstrap)
-#	$(CP) ./share ./htdocs $(PKG_BUILD_DIR)/
-#	$(call Build/Configure/Default)
-#endef
-
 
 define Package/juci
   $(Package/juci/default)
