@@ -2,15 +2,14 @@
 
 . /lib/functions/network.sh
 
-restart_services() {
-	[ -f /etc/config/provisioning ] && /etc/init.d/iup restart
-	[ -f /etc/config/system ] && /etc/init.d/sysntpd restart
-	[ -f /etc/config/dropbear ] && /etc/init.d/dropbear restart
-	[ -e /var/run/asterisk/asterisk.ctl ] && /etc/init.d/asterisk restart
-	[ -f /etc/config/mcpd ] && /etc/init.d/mcpd restart
+reload_services() {
+	[ -f /etc/config/provisioning ] && /etc/init.d/iup reload
+	[ -f /etc/config/system ] && /etc/init.d/sysntpd reload
+	[ -e /var/run/asterisk/asterisk.ctl ] && /etc/init.d/asterisk reload
+	[ -f /etc/config/mcpd ] && /etc/init.d/mcpd reload
 	[ -f /etc/config/cwmp ] && /usr/sbin/freecwmp get cache InternetGatewayDevice.WANDevice. &
 	[ -f /etc/config/cwmp ] && /usr/sbin/freecwmp get cache InternetGatewayDevice.X_INTENO_SE_IpAccCfg. &
-	[ -f /etc/config/cwmp ] && /etc/init.d/cwmpd restart &
+	[ -f /etc/config/cwmp ] && /etc/init.d/cwmpd reload &
 }
 
 local IFACE=$1
@@ -40,5 +39,5 @@ network_get_subnets cursubnets $IFACE
 
 [ "$previpaddr" = "$curipaddr" -a "$prevgateway" = "$curgateway" -a "$prevsubnets" = "$cursubnets" ] && exit 0
 
-restart_services
+reload_services
 

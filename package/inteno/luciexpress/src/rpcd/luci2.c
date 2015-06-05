@@ -1518,27 +1518,63 @@ rpc_luci2_network_ct_count(struct ubus_context *ctx, struct ubus_object *obj,
                            struct blob_attr *msg)
 {
 	FILE *f;
-	char line[128];
+	char line[512];
+	int connum[255];
+	char srcip[255][16];
+	char *ip, *p;
+	int i;
+	int j = 0;
+	const char *ipaddrs = "192.168.1.100 192.168.1.241 192.168.1.214";
+
+	ip = strtok(ipaddrs, " ");
+	while (ip != NULL)
+	{
+		strcpy(srcip[j], ip);
+		j++;
+	}
+
+
+	if ((f = fopen("/proc/net/nf_conntrack", "r")) != NULL)
+	{
+		while (fgets(line, sizeof(line) - 1, f))
+		{
+			for (i = 0, p = strtok(line, " "); p; i++, p = strtok(NULL, " "))
+			{
+				if (i == 6) {
+					for(j = 0; srcip[j]; j++)
+						if(!strcmp(p+4, srcip[j]))
+							connum[j]++;
+				}
+			}
+		}
+
+		fclose(f);
+	}
 
 	blob_buf_init(&buf, 0);
-
-	if ((f = fopen("/proc/sys/net/netfilter/nf_conntrack_count", "r")) != NULL)
-	{
-		if (fgets(line, sizeof(line) - 1, f))
-			blobmsg_add_u32(&buf, "count", atoi(line));
-
-		fclose(f);
-	}
-
-	if ((f = fopen("/proc/sys/net/netfilter/nf_conntrack_max", "r")) != NULL)
-	{
-		if (fgets(line, sizeof(line) - 1, f))
-			blobmsg_add_u32(&buf, "limit", atoi(line));
-
-		fclose(f);
-	}
-
+	for(j = 0; srcip[j]; j++)
+		blobmsg_add_u32(&buf, srcip[j], connum);
 	ubus_send_reply(ctx, req, buf.head);
+
+/*	blob_buf_init(&buf, 0);*/
+
+/*	if ((f = fopen("/proc/sys/net/netfilter/nf_conntrack_count", "r")) != NULL)*/
+/*	{*/
+/*		if (fgets(line, sizeof(line) - 1, f))*/
+/*			blobmsg_add_u32(&buf, "count", atoi(line));*/
+
+/*		fclose(f);*/
+/*	}*/
+
+/*	if ((f = fopen("/proc/sys/net/netfilter/nf_conntrack_max", "r")) != NULL)*/
+/*	{*/
+/*		if (fgets(line, sizeof(line) - 1, f))*/
+/*			blobmsg_add_u32(&buf, "limit", atoi(line));*/
+
+/*		fclose(f);*/
+/*	}*/
+
+/*	ubus_send_reply(ctx, req, buf.head);*/
 
 	return 0;
 }
