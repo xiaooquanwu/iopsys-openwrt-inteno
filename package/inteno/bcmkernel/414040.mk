@@ -8,6 +8,10 @@
 # update this based on the Broadcom SDK version, 4.14L.04 -> 414040
 BRCM_SDK_VERSION:=414040
 
+ifeq ($(CONFIG_BCM_OPEN),y)
+$(error "OPEN SDK compile not tested with this kernel!")
+endif
+
 PKG_NAME:=bcmkernel-3.4
 PKG_VERSION:=4.14
 PKG_RELEASE:=$(BRCM_SDK_VERSION)

@@ -9,6 +9,10 @@
 #                                                4.16L.02A -> 416021
 BRCM_SDK_VERSION:=416021
 
+ifeq ($(CONFIG_BCM_OPEN),y)
+$(error "OPEN SDK compile not tested with this kernel!")
+endif
+
 PKG_NAME:=bcmkernel-3.4
 PKG_VERSION:=4.16
 PKG_RELEASE:=$(BRCM_SDK_VERSION)
