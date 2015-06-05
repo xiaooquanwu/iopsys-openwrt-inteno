@@ -98,7 +98,7 @@ run_acsd() {
 
 start_related_daemons() {
 	local wps
-	config_get_bool wps status wps
+	config_get_bool wps status wps "1"
 	eapd
 	nas
 	[ $wps -ne 0 -a $_enWps -gt 0 ] && wps_monitor &
@@ -982,7 +982,7 @@ setup_wifi_device() {
 	local device="$1"
 	local disabled wlan
 	config_get_bool disabled "$device" disabled "0"
-	config_get_bool wlan status wlan
+	config_get_bool wlan status wlan "1"
 
 	[ -n "$2" -a "$device" != "$2" ] && continue
 
