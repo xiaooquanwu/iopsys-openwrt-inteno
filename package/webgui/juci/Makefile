@@ -2,13 +2,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=juci
-PKG_VERSION:=15.6.5
+PKG_VERSION!=date +%Y-%M-%d
 PKG_RELEASE=$(PKG_SOURCE_VERSION)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=git@iopsys.inteno.se:juci.git
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
-PKG_SOURCE_VERSION:=28e415d6cec545306ceee789223d329407c3fb30
+PKG_SOURCE_VERSION:=4c92f781e8754106a0f6ed0d49a2fcf493b68194
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
 PKG_MAINTAINER:=Martin Schröder <mkschreder.uk@gmail.com>
 
@@ -34,6 +34,10 @@ define Package/juci/install
 	$(CP) $(PKG_BUILD_DIR)/htdocs/* $(1)/www/
 	$(INSTALL_DIR) $(1)/usr/share/ubus-plugind/
 	$(CP) $(PKG_BUILD_DIR)/menu.d $(1)/usr/share/ubus-plugind/
+	# install to rpcd directory as well for now, for compatibility
+	$(INSTALL_DIR) $(1)/usr/share/rpcd/
+	$(CP) $(PKG_BUILD_DIR)/menu.d $(1)/usr/share/rpcd/
+	# == 
 	$(INSTALL_DIR) $(1)/etc/config
 	$(CP) $(PKG_BUILD_DIR)/juci.config $(1)/etc/config/juci
 	$(INSTALL_DIR) $(1)/www/cgi-bin/
