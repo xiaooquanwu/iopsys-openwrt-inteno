@@ -420,6 +420,10 @@ wireless_assoclist()
 	int rssi = 0;
 
 	for (i = 0; wireless[i].device; i++) {
+		if (wireless[i].noise > -60) {
+			usleep(10000);
+			wireless[i].noise = atoi(chrCmd("wlctl -i %s noise", wireless[i].device));
+		}
 		usleep(10000);
 		sprintf(cmnd, "wlctl -i %s assoclist", wireless[i].vif);
 		if ((assoclist = popen(cmnd, "r"))) {
