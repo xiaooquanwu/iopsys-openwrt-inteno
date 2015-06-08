@@ -2,4 +2,6 @@
 
 [ "$ACTION" = ifup ] || exit 0
 
+pidof dropbearkey >/dev/null && exit 0
+pidof dropbear >/dev/null || exit 0
 /etc/init.d/dropbear enabled && /etc/init.d/dropbear reload
