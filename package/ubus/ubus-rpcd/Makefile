@@ -7,7 +7,7 @@
 
 include $(TOPDIR)/rules.mk
 
-PKG_NAME:=juci-rpcd
+PKG_NAME:=rpcd
 PKG_VERSION:=2015-05-17
 PKG_RELEASE=$(PKG_SOURCE_VERSION)
 
@@ -34,8 +34,8 @@ endef
 
 define Package/rpcd/default
   SECTION:=utils
-  CATEGORY:=Base system
-  TITLE:=OpenWrt ubus RPC backend server
+  CATEGORY:=UBUS
+  TITLE:=JUCI ubus RPC backend server
   DEPENDS:=+libubus +libubox
 endef
 
