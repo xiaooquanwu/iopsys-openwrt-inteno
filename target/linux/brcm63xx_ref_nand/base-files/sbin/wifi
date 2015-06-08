@@ -10,6 +10,7 @@ DISABLE_HOOKS=
 
 exec >/dev/null 2>&1
 
+local ALLJOYN="/usr/bin/alljoyn-daemon"
 local RESTART="0"
 local _enWifi=0
 local _enWps=0
@@ -61,6 +62,7 @@ cleanup() {
 }
 
 kill_related_daemons() {
+	killall -9 wifimngr 2>/dev/null
 	killall -9 eapd 2>/dev/null
 	killall -9 nas 2>/dev/null
 	killall -9 acsd 2>/dev/null
@@ -103,6 +105,7 @@ start_related_daemons() {
 	nas
 	[ $wps -ne 0 -a $_enWps -gt 0 ] && wps_monitor &
 	run_acsd
+	[ -f $ALLJOYN ] && wifimngr &
 }
 
 set_bridge() {
