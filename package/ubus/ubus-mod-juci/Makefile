@@ -40,6 +40,10 @@ define Package/ubus-mod-juci/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/ubus-mod-juci.so $(1)/usr/lib/rpcd/
 	$(INSTALL_DIR) $(1)/usr/share/rpcd/acl.d
 	$(INSTALL_BIN) ./access.json $(1)/usr/share/rpcd/acl.d/ubus-mod-juci.json
+	$(INSTALL_DIR) $(1)/usr/libexec $(1)/www/cgi-bin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/io/juci-cgi $(1)/usr/libexec/
+	$(LN) /usr/libexec/juci-cgi $(1)/www/cgi-bin/juci-upload
+	$(LN) /usr/libexec/juci-cgi $(1)/www/cgi-bin/juci-backup
 endef
 
 define Package/ubus-mod-juci/postinst

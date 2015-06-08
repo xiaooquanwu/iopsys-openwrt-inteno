@@ -13,7 +13,7 @@ IF(APPLE)
   LINK_DIRECTORIES(/opt/local/lib)
 ENDIF()
 
-ADD_EXECUTABLE(luciexpress-io main.c multipart_parser.c)
-TARGET_LINK_LIBRARIES(luciexpress-io ubox ubus)
+ADD_EXECUTABLE(juci-cgi main.c multipart_parser.c)
+TARGET_LINK_LIBRARIES(juci-cgi ubox ubus)
 
-INSTALL(TARGETS luciexpress-io RUNTIME DESTINATION sbin)
+INSTALL(TARGETS juci-cgi RUNTIME DESTINATION sbin)

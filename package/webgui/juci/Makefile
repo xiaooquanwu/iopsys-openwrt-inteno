@@ -8,7 +8,7 @@ PKG_RELEASE=$(PKG_SOURCE_VERSION)
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=git@iopsys.inteno.se:juci.git
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
-PKG_SOURCE_VERSION:=06727ef0cdafd2bcda2050206a764138c5227a0c
+PKG_SOURCE_VERSION:=f6d9d9729aa98de710da4bcf92d3ceb55381029c
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
 PKG_MAINTAINER:=Martin Schröder <mkschreder.uk@gmail.com>
 
@@ -22,7 +22,7 @@ define Package/juci
   SECTION:=juci
   CATEGORY:=JUCI
   TITLE:=JUCI Web Based Interface
-  DEPENDS:=+rpcd +luciexpress +uhttpd +uhttpd-mod-ubus +libubox +libubus
+  DEPENDS:=+rpcd +ubus-mod-juci +uhttpd +uhttpd-mod-ubus +libubox +libubus
 endef
 
 define Package/juci/description
