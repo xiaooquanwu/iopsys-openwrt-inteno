@@ -40,9 +40,7 @@
 
 #include <rpcd/plugin.h>
 
-#ifndef RPC_SHARE_DIRECTORY 
 #define RPC_SHARE_DIRECTORY "/usr/share/rpcd/"
-#endif
 
 /* limit of log size buffer */
 #define RPC_JUCI_MAX_LOGSIZE		(128 * 1024)
