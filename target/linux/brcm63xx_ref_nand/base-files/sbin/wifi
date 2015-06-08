@@ -10,7 +10,7 @@ DISABLE_HOOKS=
 
 exec >/dev/null 2>&1
 
-local RESTART="1"
+local RESTART="0"
 local _enWifi=0
 local _enWps=0
 local _vno=0
@@ -97,10 +97,12 @@ run_acsd() {
 }
 
 start_related_daemons() {
-	run_acsd
+	local wps
+	config_get_bool wps status wps "1"
 	eapd
 	nas
-	[ $_enWps -gt 0 ] && wps_monitor &
+	[ $wps -ne 0 -a $_enWps -gt 0 ] && wps_monitor &
+	run_acsd
 }
 
 set_bridge() {
@@ -360,7 +362,7 @@ wif_general_settings() {
 	config_get_bool isolate "$vif" isolate "0"
 	config_get_bool vlan_mode "$vif" vlan_mode "0"
 
-	wlctl -i $iface ssid "$ssid"
+	#wlctl -i $iface ssid "$ssid"
 	wlctl -i $iface bss_maxassoc "$bss_max"
 	wlctl -i $iface ap_isolate "$isolate"
 	wlctl -i $iface vlan_mode "$vlan_mode"
@@ -448,11 +450,13 @@ wif_wps_settings() {
 wif_macfilter() {
 	local vif=$1
 	local iface=$2
-	local macfilter maclist
+	local macfilter macmode maclist
 	config_get macfilter "$vif" macfilter "0"
+	config_get macmode "$vif" macmode "1"
 	config_get maclist "$vif" maclist
 
 	wlctl -i $iface macmode $macfilter
+	[ "$macfilter" == "1" ] && wlctl -i $iface macmode $macmode
 	wlctl -i $iface mac none
 	[ -n "$maclist" ] && {
 		for mac in $maclist; do
@@ -637,8 +641,8 @@ wdev_static_settings() {
 	wlctl -i $device mrate 0
 	wlctl -i $device bg_mrate 0
 	wlctl -i $device afterburner_override 0
-	wlctl -i $device amsdu 1
-	wlctl -i $device rx_amsdu_in_ampdu 1
+	wlctl -i $device amsdu 0
+	wlctl -i $device rx_amsdu_in_ampdu 0
 	wlctl -i $device ampdu 255
 	wlctl -i $device ampdu_tx 255
 	wlctl -i $device ampdu_rx 255
@@ -784,7 +788,7 @@ wdev_hwmode_settings() {
 
 wdev_channel_settings() {
 	local device=$1
-	local apsta doth channel scantimer acsifs dfsc
+	local apsta doth channel scantimer acsifs dfsc bandwidth chanspec
 
 	# if device is in apsta mode, no need for channel settings
 	# as it will operate at the channel selected by its master
@@ -798,6 +802,7 @@ wdev_channel_settings() {
 	config_get channel "$device" channel "auto"
 	config_get scantimer "$device" scantimer "15"
 	config_get dfsc "$device" dfsc "0"
+	config_get bandwidth "$device" bandwidth
 
 	case "$channel" in
 		auto)
@@ -828,9 +833,19 @@ wdev_channel_settings() {
 			fi
 			wlctl -i $device chanim_mode 2
 		;;
-		*)
+		*u|*l|*/80)
 			wlctl -i $device chanim_mode 0
 			wlctl -i $device chanspec $channel
+		;;
+		*)
+			wlctl -i $device chanim_mode 0
+			chanspec="$channel"
+			if [ "$bandwidth" == "40" ]; then
+				chanspec=$(cat /tmp/wireless/"$device"_chanspecs | grep -w "$channel\"l\"\|$channel\"u\"")
+			elif [ "$bandwidth" == "80" ]; then
+				chanspec=$(cat /tmp/wireless/"$device"_chanspecs | grep -w "$channel/80")
+			fi
+			wlctl -i $device chanspec $chanspec
 		;;
 	esac
 }
@@ -947,19 +962,27 @@ wdev_wif_bringup() {
 	for iface in $vifs; do
 		network=$(nvram get "$iface"_network)
 		bss=$(nvram get "$iface"_bss_enabled)
+		ssid="$(nvram get "$iface"_ssid)"
 
 		ifconfig "$iface" up >/dev/null 2>&1 && {
 			[ -n "$network" ] && ubus call network.interface."$network" add_device "{ \"name\": \"$iface\" }" 2>/dev/null
 		}
 
-		wlctl -i $iface bss ${bss:-1}
+		if [ $bss -eq 1 ]; then
+			wlctl -i $iface ssid "$ssid"
+			wlctl -i $iface bss up
+		else
+			wlctl -i $iface ssid ""
+			wlctl -i $iface bss down
+		fi
 	done
 }
 
 setup_wifi_device() {
 	local device="$1"
-	local radio
-	config_get radio "$device" radio "on"
+	local disabled wlan
+	config_get_bool disabled "$device" disabled "0"
+	config_get_bool wlan status wlan "1"
 
 	[ -n "$2" -a "$device" != "$2" ] && continue
 
@@ -971,10 +994,12 @@ setup_wifi_device() {
 	fi
 
 	# create virtual wireless interfaces
+	wlctl -i $device up
 	config_foreach create_vif wifi-iface "$device"
+	wlctl -i $device down
 	_cno=0
 
-	[ "$radio" == "off" ] && continue || _enWifi=$((_enWifi+1))
+	[ $wlan -eq 0 -o $disabled -eq 1 ] && continue || _enWifi=$((_enWifi+1))
 
 	if [ "$RESTART" == "0" ]; then
 		wdev_static_settings $device
@@ -1110,6 +1135,8 @@ wifi_detect() {
 	local BSSID=$(printf "%X\n" $((0x$BMAC + 2)))
 	local BSSID4=${BSSID:6:4}
 	local BSSID6=${BSSID:4:6}
+	local DECIMAL=$(printf "%d\n" 0x${BSSID6/:/})
+	DECIMAL=$((DECIMAL+98))
 	local WPAKEY=$(cat /proc/nvram/WpaKey)
 	WPAKEY="${WPAKEY:-1234567890}"
 	local SSID="$(uci -q get wireless.@wifi-iface[0].ssid)"
@@ -1282,6 +1309,7 @@ EOF
 	done
 	uci -q delete wireless.preferred
 	uci commit wireless
+	sed -i "s/\$DECIMAL/$DECIMAL/g" /etc/config/wireless
 	sed -i "s/\$BSSID6/$BSSID6/g" /etc/config/wireless
 	sed -i "s/\$BSSID4/$BSSID4/g" /etc/config/wireless
 	sed -i "s/\$BSSID2/$BSSID2/g" /etc/config/wireless
@@ -1289,22 +1317,39 @@ EOF
 	touch /tmp/wireless/first
 }
 
+#wifi_onoff() {
+#	local status="$1"
+#	[ "$status" == "on" ] && status="1" || status="0"
+#	local dualwf="$(uci -q get wireless.wl1)"
+#	local wl0sta="$(uci -q get wireless.wl0.disabled)"
+#	local wl1sta="$(uci -q get wireless.wl1.disabled)"
+#	[ -n "$dualwf" ] || wl1sta="$wl0sta"
+#	[ -n "$wl0sta" ] || wl0sta="1"
+#	[ -n "$wl1sta" ] || wl1sta="1"
+
+#	if [ "$wl0sta" == "$wl1sta" -a "$status" == "$wl0sta" ]; then
+#		return
+#	fi
+
+#	uci -q set wireless.wl0.disabled="$status"
+#	uci -q set wireless.wl1.disabled="$status"
+#	uci commit wireless
+
+#	wifi_updown "disable"
+#	[ "$status" == "1" ] && wifi_updown "enable"
+#}
+
 wifi_onoff() {
 	local status="$1"
 	[ "$status" == "on" ] && status="1" || status="0"
-	local dualwf="$(uci -q get wireless.wl1)"
-	local wl0sta="$(uci -q get wireless.wl0.disabled)"
-	local wl1sta="$(uci -q get wireless.wl1.disabled)"
-	[ -n "$dualwf" ] || wl1sta="$wl0sta"
-	[ -n "$wl0sta" ] || wl0sta="1"
-	[ -n "$wl1sta" ] || wl1sta="1"
+	local cursta="$(uci -q get wireless.status.wlan)"
+	cursta="${cursta:-1}"
 
-	if [ "$wl0sta" == "$wl1sta" -a "$status" == "$wl0sta" ]; then
+	if [ "$status" == "$cursta" ]; then
 		return
 	fi
 
-	uci -q set wireless.wl0.disabled="$status"
-	uci -q set wireless.wl1.disabled="$status"
+	uci -q set wireless.status.wlan="$status"
 	uci commit wireless
 
 	wifi_updown "disable"
@@ -1315,13 +1360,17 @@ wifi_toggle_iface() {
 	[ -z "$2" ] && return
 	local wif="$2"
 	local wdev="${wif:0:3}"
+	local ssid="$(nvget "$wif"_ssid)"
 	if [ "$1" == "disable" ]; then
 		nvset "$wif"_bss_enabled=0
+		wlctl -i $wif ssid ""
 		wlctl -i $wif bss down
 	else
 		nvset "$wif"_bss_enabled=1
+		wlctl -i $wif ssid "$ssid"
 		wlctl -i $wif bss up
 	fi
+	nvcommit
 }
 
 day_to_number() {
