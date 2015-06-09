@@ -3404,9 +3404,11 @@ CONFIG_WPA_MSG_MIN_PRIORITY=3
 CONFIG_PACKAGE_juci=y
 
 #
-# LuCiexpress
+# UBUS
 #
-CONFIG_PACKAGE_luciexpress=y
+CONFIG_PACKAGE_rpcd=y
+# CONFIG_PACKAGE_rpcd-mod-file is not set
+CONFIG_PACKAGE_ubus-mod-juci=y
 
 #
 # Kernel modules
