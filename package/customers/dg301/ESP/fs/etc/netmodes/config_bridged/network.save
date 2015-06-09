@@ -1,0 +1,57 @@
+
+config interface 'loopback'
+	option is_lan '1'
+	option ifname 'lo'
+	option proto 'static'
+	option ipaddr '127.0.0.1'
+	option netmask '255.0.0.0'
+
+config interface 'lan'
+	option is_lan '1'
+	option type 'bridge'
+	option proto 'static'
+	option ipaddr '192.168.1.1'
+	option netmask '255.255.255.0'
+	option ip6assign '60'
+	option ifname 'eth1 eth3 eth4'
+
+config interface 'wan'
+	option vendorid 'DG301A-W7P2UD-INTENO'
+	option proto 'dhcp'
+	option hostname 'Inteno_$MAC4'
+	option ipv6 '1'
+	option type 'bridge'
+	option ifname 'atm0.1 eth0.1 eth2 ptm0.1'
+
+config interface 'wan6'
+	option proto 'dhcpv6'
+	option ifname '@wan'
+
+config interface 'mgmt'
+	option type 'anywan'
+	option proto 'dhcp'
+	option ifname 'atm0.7 eth0.7 ptm0.7'
+	option defaultroute '0'
+
+config route
+	option interface 'mgmt'
+	option target '192.168.240.0'
+	option netmask '255.255.255.0'
+	option gateway '1.0.0.1'
+	option metric '1'
+
+config route
+	option interface 'mgmt'
+	option target '194.136.206.0'
+	option netmask '255.255.255.0'
+	option gateway '1.0.0.1'
+	option metric '2'
+
+config route
+	option interface 'mgmt'
+	option target '192.168.255.0'
+	option netmask '255.255.255.0'
+	option gateway '10.0.0.1'
+	option metric '3'
+
+

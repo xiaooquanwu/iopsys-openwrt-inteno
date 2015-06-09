@@ -1,0 +1,13 @@
+s/CONFIG_TARGET_CUSTOMER="INT"/CONFIG_TARGET_CUSTOMER="JNT"/g
+s/^# CONFIG_PACKAGE_ddns-scripts is not set/CONFIG_PACKAGE_ddns-scripts=y/g
+s/^# CONFIG_PACKAGE_luci-app-ddns is not set/CONFIG_PACKAGE_luci-app-ddns=y/g
+s/^# CONFIG_PACKAGE_p910nd is not set/CONFIG_PACKAGE_p910nd=y/g
+s/^# CONFIG_PACKAGE_luci-app-p910nd is not set/CONFIG_PACKAGE_luci-app-p910nd=y/g
+s/^# CONFIG_PACKAGE_luci-app-voice-pbx is not set/CONFIG_PACKAGE_luci-app-voice-pbx=y/g
+s/^# CONFIG_PACKAGE_asterisk18-mod-app-queue is not set/CONFIG_PACKAGE_asterisk18-mod-app-queue=y/g
+s/^# CONFIG_PACKAGE_asterisk18-mod-app-record is not set/CONFIG_PACKAGE_asterisk18-mod-app-record=y/g
+s/^# CONFIG_PACKAGE_asterisk18-mod-res-musiconhold is not set/CONFIG_PACKAGE_asterisk18-mod-res-musiconhold=y/g
+s/^# CONFIG_PACKAGE_asterisk18-mod-voicemail is not set/CONFIG_PACKAGE_asterisk18-mod-voicemail=y/g
+s/^# CONFIG_PACKAGE_openvpn is not set/CONFIG_PACKAGE_openvpn=y/g
+s/CONFIG_PACKAGE_ice-client=y/# CONFIG_PACKAGE_ice-client is not set/g
+s/CONFIG_PACKAGE_ice-client-torrent=m/# CONFIG_PACKAGE_ice-client-torrent is not set/g

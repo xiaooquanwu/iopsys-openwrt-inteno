@@ -1,0 +1,5 @@
+s/CONFIG_TARGET_CUSTOMER="INT"/CONFIG_TARGET_CUSTOMER="OWT"/g
+s/^CONFIG_PACKAGE_luci-app-dect=y/# CONFIG_PACKAGE_luci-app-dect is not set/g
+s/^CONFIG_PACKAGE_dectmngr=y/# CONFIG_PACKAGE_dectmngr is not set/g
+s/^CONFIG_PACKAGE_ice-client=y/# CONFIG_PACKAGE_ice-client is not set/g
+s/^CONFIG_PACKAGE_ice-client-guest=y/# CONFIG_PACKAGE_ice-client-guest is not set/g

@@ -1,0 +1,3 @@
+
+config anyfi 'config'
+        option controller 'demo.anyfi.net'

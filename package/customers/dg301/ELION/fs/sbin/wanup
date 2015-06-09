@@ -1,0 +1,23 @@
+#!/bin/sh
+
+. /usr/share/libubox/jshn.sh
+
+[ -f /etc/config/provisioning ] && /etc/init.d/iup restart
+[ -f /etc/config/system ] && /etc/init.d/sysntpd restart
+[ -f /etc/config/dropbear ] && /etc/init.d/dropbear restart
+[ -e /var/run/asterisk/asterisk.ctl ] && /etc/init.d/asterisk restart
+
+json_load "$(ifstatus internet)"
+json_get_var intup up
+json_load "$(ifstatus mobile)"
+json_get_var mobup up
+
+if [ "$mobup" == "1" ] && [ "$intup" == "0" ]; then
+	[ -f /etc/config/mcpd ] && /etc/init.d/mcpd stop
+	[ -f /etc/config/cwmp ] && /etc/init.d/cwmpd stop
+else
+	[ -f /etc/config/mcpd ] && /etc/init.d/mcpd restart
+	[ -f /etc/config/cwmp ] && /usr/sbin/freecwmp get cache InternetGatewayDevice.WANDevice. &
+	[ -f /etc/config/cwmp ] && /usr/sbin/freecwmp get cache InternetGatewayDevice.X_INTENO_SE_IpAccCfg. &
+	[ -f /etc/config/cwmp ] && /etc/init.d/cwmpd restart &
+fi

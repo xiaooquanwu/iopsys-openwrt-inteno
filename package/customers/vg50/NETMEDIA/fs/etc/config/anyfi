@@ -1,0 +1,3 @@
+config anyfi controller
+        option 'hostname' 62.148.197.154
+

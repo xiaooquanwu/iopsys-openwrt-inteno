@@ -1,0 +1,41 @@
+
+config interface 'loopback'
+	option is_lan '1'
+	option ifname 'lo'
+	option proto 'static'
+	option ipaddr '127.0.0.1'
+	option netmask '255.0.0.0'
+
+config interface 'lan'
+	option is_lan '1'
+	option type 'bridge'
+	option proto 'static'
+	option ipaddr '192.168.1.1'
+	option netmask '255.255.255.0'
+	option mtu '1500'
+	option ifname 'eth2 eth1 eth0 eth4'
+	option ip6assign '60'
+	
+config interface 'wan'
+	option type 'anywan'
+	option proto 'dhcp'
+	option hostname 'Inteno_$MAC4'
+	option vendorid 'VG50A-WU7U-INTENO'
+	option mtu '1500'
+	option ifname 'eth3.1 atm0.1 ptm0.1'
+	option ipv6 '1'
+
+config interface 'MGMT'
+	option type 'bridge'
+	option proto 'dhcp'
+	option ifname 'eth3.9 ptm0.9'
+	option defaultroute '0'
+	option peerdns '0'
+
+config route
+	option interface 'MGMT'
+	option target '10.13.0.0'
+	option netmask '255.255.255.0'
+	option gateway '10.21.16.1'
+
+

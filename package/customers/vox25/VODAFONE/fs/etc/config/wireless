@@ -1,0 +1,20 @@
+config wifi-settings preferred
+	option ssid 'VF-POC-$DECIMAL'
+	option enc 'mixed-psk'
+	option wpsb '1'
+	option ch5g 'auto'
+	option bw5g '80'
+	option ch2g 'auto'
+	option bw2g '20'
+	option dfsc '0'
+	option hw5g '11ac'
+	option hw2g 'auto'
+	option country 'PT'
+	option guest '1'
+
+config wifi-status status
+	option wlan 1
+	option wps 1
+	option schedule 0
+	option sched_status 0
+

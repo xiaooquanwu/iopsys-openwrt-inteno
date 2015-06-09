@@ -1,0 +1,6 @@
+s/CONFIG_TARGET_CUSTOMER="INT"/CONFIG_TARGET_CUSTOMER="ELEMENTS"/g
+s/^# CONFIG_PACKAGE_gigaset-elements is not set/CONFIG_PACKAGE_gigaset-elements=y/g
+
+
+
+

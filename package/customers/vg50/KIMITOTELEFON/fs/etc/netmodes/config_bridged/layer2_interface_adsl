@@ -1,0 +1,37 @@
+
+config atm_bridge
+	option link_type 'EoA'
+	option encapseoa 'llcsnap_eth'
+	option unit '0'
+	option ifname 'atm0.1'
+	option baseifname 'atm0'
+	option name 'pvc0_100'
+	option vpi '0'
+	option vci '100'
+	option atmtype 'ubr'
+	option bridge '1'
+
+config atm_bridge
+	option link_type 'EoA'
+	option encapseoa 'llcsnap_eth'
+	option unit '1'
+	option ifname 'atm1.1'
+	option baseifname 'atm1'
+	option name 'pvc0_101'
+	option vpi '0'
+	option vci '101'
+	option bridge '1'
+	option atmtype 'ubr'
+
+config atm_bridge
+	option link_type 'EoA'
+	option encapseoa 'llcsnap_eth'
+	option unit '2'
+	option ifname 'atm2.1'
+	option baseifname 'atm2'
+	option name 'pvc0_102'
+	option vpi '0'
+	option vci '102'
+	option bridge '1'
+	option atmtype 'ubr'
+

@@ -1,0 +1,5 @@
+config 'ethernet_interface' 'Wan'
+        option 'baseifname' 'eth2'
+        option 'ifname' 'eth2.1'
+        option 'name' 'WANGB1'
+

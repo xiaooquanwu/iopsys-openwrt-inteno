@@ -1,0 +1,105 @@
+
+config interface 'loopback'
+	option is_lan '1'
+	option ifname 'lo'
+	option proto 'static'
+	option ipaddr '127.0.0.1'
+	option netmask '255.0.0.0'
+
+config interface 'lan'
+	option is_lan '1'
+	option type 'bridge'
+	option proto 'static'
+	option ipaddr '192.168.1.1'
+	option netmask '255.255.255.0'
+	option ifname 'eth1 eth2'
+	option bridge_instance '1'
+
+config interface 'Internet'
+	option type 'bridge'
+	option proto 'dhcp'
+	option bridge_instance '2'
+	option _orig_ifname 'atm0.1 eth3.1 ptm0.713'
+	option _orig_bridge 'true'
+	option ifname 'atm0.1 eth0 eth3.1 ptm0.713'
+
+config interface 'IPTV'
+	option type 'bridge'
+	option proto 'none'
+	option ifname 'atm2.1 eth4 ptm0.2708'
+	option bridge_instance '4'
+
+config available-bridge
+	option baseifname 'eth3'
+	option key '1'
+
+config available-bridge
+	option baseifname 'atm0'
+	option key '2'
+
+config available-bridge
+	option baseifname 'atm1'
+	option key '3'
+
+config available-bridge
+	option baseifname 'atm2'
+	option key '4'
+
+config available-bridge
+	option baseifname 'ptm0'
+	option key '5'
+
+config available-bridge
+	option baseifname 'eth1'
+	option key '6'
+
+config available-bridge
+	option baseifname 'eth2'
+	option key '7'
+
+config marking-bridge
+	option baseifname 'atm0'
+	option bridgekey '2'
+	option interfacekey '2'
+	option instance '1'
+
+config marking-bridge
+	option baseifname 'ptm0'
+	option bridgekey '2'
+	option interfacekey '5'
+	option instance '2'
+
+config marking-bridge
+	option baseifname 'atm1'
+	option bridgekey '3'
+	option interfacekey '3'
+	option instance '3'
+
+config marking-bridge
+	option baseifname 'eth0'
+	option bridgekey '3'
+	option instance '4'
+
+config marking-bridge
+	option baseifname 'ptm0'
+	option bridgekey '3'
+	option interfacekey '5'
+	option instance '5'
+
+config marking-bridge
+	option baseifname 'atm2'
+	option bridgekey '4'
+	option interfacekey '4'
+	option instance '6'
+
+config marking-bridge
+	option baseifname 'ptm0'
+	option bridgekey '4'
+	option interfacekey '5'
+	option instance '7'
+
+config marking-bridge
+	option baseifname 'eth0'
+	option bridgekey '2'
+	option instance '8'
+

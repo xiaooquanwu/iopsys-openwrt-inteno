@@ -1,0 +1,2 @@
+s/# CONFIG_PACKAGE_anyfi is not set/CONFIG_PACKAGE_anyfi=y/g
+s/# CONFIG_PACKAGE_wl-anyfi is not set/CONFIG_PACKAGE_wl-anyfi=y/g

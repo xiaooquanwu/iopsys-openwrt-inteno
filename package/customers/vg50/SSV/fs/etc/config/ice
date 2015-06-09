@@ -1,0 +1,5 @@
+
+config ice 'cloud'
+	option server 'intenocloud.fi'
+    option enabled '0'
+

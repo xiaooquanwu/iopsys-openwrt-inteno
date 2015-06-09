@@ -1,0 +1,25 @@
+
+config vlan_interface
+	option ifname 'atm0.63'
+	option baseifname 'atm0'
+	option vlan8021q '63'
+	option vlan8021p '0'
+	option bridge '1'
+	option name 'iptvADSL'
+
+config vlan_interface
+	option name 'iptvVDSL'
+	option ifname 'ptm0.63'
+	option baseifname 'ptm0'
+	option vlan8021q '63'
+	option vlan8021p '0'
+	option bridge '1'
+
+config vlan_interface
+	option name 'iptvETH'
+	option ifname 'eth0.63'
+	option baseifname 'eth0'
+	option vlan8021q '63'
+	option vlan8021p '0'
+	option bridge '1'
+

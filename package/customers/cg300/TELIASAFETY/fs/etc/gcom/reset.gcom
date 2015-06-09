@@ -1,0 +1,15 @@
+opengt
+ set com 115200n81
+ set comecho off
+ set senddelay 0.02
+ waitquiet 0.2 0.2
+ flash 0.1
+
+:start
+ send "AT+CFUN=0^m"
+ waitfor 10
+ send "AT+CFUN=1^m"
+
+:continue
+ exit 0
+

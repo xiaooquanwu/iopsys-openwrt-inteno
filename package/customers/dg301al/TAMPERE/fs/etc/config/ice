@@ -1,0 +1,3 @@
+config ice 'cloud'
+        option server 'omaportti.fi'
+    option enabled '1'

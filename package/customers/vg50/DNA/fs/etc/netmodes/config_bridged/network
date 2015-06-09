@@ -1,0 +1,29 @@
+
+config interface 'loopback'
+	option is_lan '1'
+	option ifname 'lo'
+	option proto 'static'
+	option ipaddr '127.0.0.1'
+	option netmask '255.0.0.0'
+
+config interface 'wan'
+	option proto 'dhcp'
+	option type 'bridge'
+	option ifname 'atm0.1 atm1.1 eth0 eth1 eth2 eth3.1 eth4 ptm0.1'
+	option hostname 'DNA-$MAC4'
+	option vendorid 'VG50A-WU7U-INTENO'
+	option ipv6 '1'
+
+config interface 'Local'
+	option type 'alias'
+	option proto 'static'
+	option ifname 'br-wan'
+	option ipaddr '192.168.1.1'
+	option netmask '255.255.255.0'
+
+config interface 'wan6'
+        option proto 'dhcpv6'
+        option ifname '@wan'
+        option reqaddress 'try'
+        option reqprefix 'no'
+

@@ -1,0 +1,8 @@
+config server 'default'
+	option master 'GPON_Internet6'
+	list network 'lan'
+	option rd 'server'
+	option dhcpv6 'server'
+	option management_level '1'
+	option compat_ula '1'
+

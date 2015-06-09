@@ -1,0 +1,161 @@
+config defaults
+	option syn_flood	1
+	option input		ACCEPT
+	option output		ACCEPT
+	option forward		REJECT
+
+config zone
+	option name		lan
+	list   network		'lan'
+	option input		ACCEPT
+	option output		ACCEPT
+	option forward		ACCEPT
+	
+config zone
+	option name		guest
+	option network		'guest'
+	option input		ACCEPT 
+	option output		ACCEPT 
+	option forward		ACCEPT
+
+config zone
+	option name		wan
+	list network		'wan'
+	list network		'iptv'
+	option input		REJECT
+	option output		ACCEPT
+	option forward		REJECT
+	option masq		1
+	option mtu_fix		1
+
+config forwarding 
+	option src      	lan
+	option dest     	wan
+	
+config forwarding 
+	option src      	guest
+	option dest     	wan
+
+# Accept udp packets on port 68
+config rule
+	option name		Allow-DHCP-Renew
+	option src		wan
+	option proto		udp
+	option dest_port	68
+	option target		ACCEPT
+	option family		ipv4
+
+# Allow IPv4 ping
+config rule
+	option name		Allow-Ping
+	option src		wan
+	option proto		icmp
+	option icmp_type	echo-request
+	option family		ipv4
+	option target		ACCEPT
+
+# Allow DHCPv6 replies
+# see https://dev.openwrt.org/ticket/10381
+config rule
+	option name		Allow-DHCPv6
+	option src		wan
+	option proto		udp
+	option src_ip		fe80::/10
+	option src_port		547
+	option dest_ip		fe80::/10
+	option dest_port	546
+	option family		ipv6
+	option target		ACCEPT
+
+# Allow essential incoming IPv6 ICMP traffic
+config rule
+	option name		Allow-ICMPv6-Input
+	option src		wan
+	option proto		icmp
+	list icmp_type		echo-request
+	list icmp_type		echo-reply
+	list icmp_type		destination-unreachable
+	list icmp_type		packet-too-big
+	list icmp_type		time-exceeded
+	list icmp_type		bad-header
+	list icmp_type		unknown-header-type
+	list icmp_type		router-solicitation
+	list icmp_type		neighbour-solicitation
+	list icmp_type		router-advertisement
+	list icmp_type		neighbour-advertisement
+	option limit		1000/sec
+	option family		ipv6
+	option target		ACCEPT
+
+# Allow essential forwarded IPv6 ICMP traffic
+config rule
+	option name		Allow-ICMPv6-Forward
+	option src		wan
+	option dest		*
+	option proto		icmp
+	list icmp_type		echo-request
+	list icmp_type		echo-reply
+	list icmp_type		destination-unreachable
+	list icmp_type		packet-too-big
+	list icmp_type		time-exceeded
+	list icmp_type		bad-header
+	list icmp_type		unknown-header-type
+	option limit		1000/sec
+	option family		ipv6
+	option target		ACCEPT
+	
+config rule
+	option name 'NGT-Access-List'
+	option enabled '1'
+	option target 'ACCEPT'
+	option src 'wan'
+	option proto 'tcp'
+	option family 'ipv4'
+	list src_ip '217.13.4.192/27'
+	list src_ip '217.13.7.96/27'
+	list src_ip '217.13.7.64/27'
+	list src_ip '217.13.7.24/32'
+	list src_ip '217.13.1.24/32'
+	list src_ip '217.13.4.18/32'
+	list src_ip '217.13.4.57/32'
+	list src_ip '217.13.7.131/32'
+	list src_ip '80.202.6.32/27'
+	list src_ip '80.202.14.67/32'
+	list src_ip '80.202.14.68/30'
+	list src_ip '80.202.14.72/32'
+	list src_ip '80.202.14.73/32'
+	list src_ip '80.202.14.115/32'
+
+config rule
+        option name 'CWMP'
+        option enabled '1'
+        option target 'ACCEPT'
+        option src 'wan'
+        option proto 'tcp'
+	option family 'ipv4'
+        option src_ip '217.13.7.245'
+        option dest_port '7547'
+	
+# Clients on 'guest' zone cannot access CPE
+config rule
+	option name 'Deny-Guest-Access'
+        option proto 'tcp'
+        option src 'guest'
+        option target 'REJECT'
+
+# include a file with users custom iptables rules
+config include
+	option path /etc/firewall.user
+	option reload 1
+
+# include a file with rules for SIP and RTP traffic
+config include
+	option path /etc/firewall.sip
+	option reload 1
+
+config include 'miniupnpd'
+        option type 'script'
+        option path '/usr/share/miniupnpd/firewall.include'
+        option family 'IPv4'
+        option reload '1'
+

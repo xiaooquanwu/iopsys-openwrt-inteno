@@ -1,0 +1,36 @@
+. /usr/share/libubox/jshn.sh
+
+populate_nameservers() {
+	local up nserv
+	json_load "$(ifstatus $1)"
+	json_get_var up up
+	if [ "$up" == "1" ]; then
+		json_select dns-server
+		local _i=1
+		while json_get_var nserv $_i; do
+			echo "nameserver $nserv" >> /tmp/resolv.conf.default
+			_i=$(($_i + 1))
+		done
+		json_select ..
+	fi
+	json_close_object
+}
+
+dnsmasq_cache_reload() {
+	local pid=$(ps | pgrep dnsmasq)
+	[ -n "$pid" ] && kill -SIGHUP $pid
+}
+
+[ ifup = "$ACTION" ] && {
+	case "$INTERFACE" in
+		GPON_Internet)
+			for cnt in 1 2; do
+				rm -f /tmp/resolv.conf.default
+				populate_nameservers "GPON_Internet"
+				dnsmasq_cache_reload
+				[ -f /tmp/resolv.conf.default ] && break || sleep 2
+			done
+		;;
+	esac
+}
+

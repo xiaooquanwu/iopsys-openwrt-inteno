@@ -1,0 +1,6 @@
+
+config samba
+        option name 'IntenoSMB'
+        option workgroup 'IntenoSMB'
+        option description 'IntenoSMB'
+        option homes '0'

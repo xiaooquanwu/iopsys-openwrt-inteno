@@ -1,0 +1,10 @@
+
+config vlan_interface
+	option name 'WWW_VDSL_408'
+	option ifname 'ptm0.408'
+	option baseifname 'ptm0'
+	option vlan8021q '408'
+	option vlan8021p '0'
+	option bridge '1'
+
+

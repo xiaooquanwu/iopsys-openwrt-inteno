@@ -1,0 +1,2 @@
+s/CONFIG_TARGET_CUSTOMER="INT"/CONFIG_TARGET_CUSTOMER="VDF"/g
+s/# CONFIG_PACKAGE_ddns-scripts is not set/CONFIG_PACKAGE_ddns-scripts=y/g

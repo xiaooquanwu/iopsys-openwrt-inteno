@@ -1,0 +1,11 @@
+config atm_bridge
+        option link_type 'EoA'
+        option encapseoa 'llcsnap_eth'
+        option unit '0'
+        option ifname 'atm0.1'
+        option baseifname 'atm0'
+        option name 'ADSL0_100'
+        option vpi '0'
+        option vci '100'
+        option bridge '1'
+        option atmtype 'ubr'

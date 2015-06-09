@@ -1,0 +1,29 @@
+
+config vlan_interface
+	option name 'internet'
+	option ifname 'ptm0.2153'
+	option baseifname 'ptm0'
+	option vlan8021q '2153'
+	option vlan8021p '0'
+
+config vlan_interface
+	option name 'internetgb'
+	option vlan8021q '2153'
+	option vlan8021p '0'
+	option ifname 'eth3.2153'
+	option baseifname 'eth3'
+
+config vlan_interface
+	option ifname 'eth3.1311'
+	option baseifname 'eth3'
+	option vlan8021q '1311'
+	option vlan8021p '1'
+	option name 'mgmtgb'
+
+config vlan_interface
+	option vlan8021q '1311'
+	option vlan8021p '1'
+	option ifname 'ptm0.1311'
+	option baseifname 'ptm0'
+	option name 'mgmt'
+

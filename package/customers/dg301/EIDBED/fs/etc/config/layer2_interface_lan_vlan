@@ -1,0 +1,51 @@
+config vlan_interface
+	option ifname 'eth3.20'
+	option baseifname 'eth3'
+	option vlan8021q '20'
+	option vlan8021p '6'
+	option bridge '1'
+	option name 'LAN_ETH_vlan20'
+
+config vlan_interface
+	option ifname 'eth3.30'
+	option baseifname 'eth3'
+	option vlan8021q '30'
+	option vlan8021p '0'
+	option bridge '1'
+	option name 'LAN_ETH_vlan30'
+
+config vlan_interface
+	option ifname 'eth3.40'
+	option baseifname 'eth3'
+	option vlan8021q '40'
+	option vlan8021p '0'
+	option bridge '1'
+	option name 'LAN_ETH_vlan40'
+
+
+config vlan_interface
+	option ifname 'eth3.50'
+	option baseifname 'eth3'
+	option vlan8021q '50'
+	option vlan8021p '0'
+	option bridge '1'
+	option name 'LAN_ETH_vlan50'
+
+config vlan_interface
+	option ifname 'eth3.60'
+	option baseifname 'eth3'
+	option vlan8021q '60'
+	option vlan8021p '0'
+	option bridge '1'
+	option name 'LAN_ETH_vlan60'
+
+
+config vlan_interface
+	option ifname 'eth3.70'
+	option baseifname 'eth3'
+	option vlan8021q '70'
+	option vlan8021p '0'
+	option bridge '1'
+	option name 'LAN_ETH_vlan70'
+
+

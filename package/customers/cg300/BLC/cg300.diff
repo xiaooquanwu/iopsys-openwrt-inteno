@@ -1,0 +1,4 @@
+s/CONFIG_TARGET_CUSTOMER="INT"/CONFIG_TARGET_CUSTOMER="BLC"/g
+s/CONFIG_PACKAGE_ice-client-iperf=m/CONFIG_PACKAGE_ice-client-iperf=y/g
+s/CONFIG_PACKAGE_ice-client-torrent=m/# CONFIG_PACKAGE_ice-client-torrent is not set/g
+s/^# CONFIG_PACKAGE_openvpn is not set/CONFIG_PACKAGE_openvpn=y/g

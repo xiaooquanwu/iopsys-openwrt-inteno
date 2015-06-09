@@ -1,0 +1,30 @@
+
+config cwmp 'acs'
+	option periodic_inform_time '0'
+	option dhcp_url_path 'provisioning.iup.url'
+	option userid '$OUI-$SER'
+	option passwd '$DESKEY'
+	option periodic_inform_enable '1'
+	option dhcp_discovery 'disable'
+	option ParameterKey 'n/a'
+	option periodic_inform_interval '7200'
+	option url 'https://cpe01.ownit.se:8282/xapstr069'
+
+config cwmp 'cpe'
+	option default_wan_interface 'wan'
+	option manufacturer 'Inteno'
+	option log_to_console 'disable'
+	option log_to_file 'enable'
+	option log_severity 'INFO'
+	option log_file_name '/var/log/cwmpd.log'
+	option log_max_size '102400'
+	option ubus_socket '/var/run/ubus.sock'
+	option userid '$OUI-$SER'
+	option port '30005'
+	option interface 'eth2.1'
+	option passwd '575afdef'
+
+config cwmp
+	option parameter 'InternetGatewayDevice.DeviceInfo.SpecVersion'
+	option value '1.0'
+

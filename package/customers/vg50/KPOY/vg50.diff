@@ -1,0 +1,12 @@
+s/CONFIG_TARGET_CUSTOMER="INT"/CONFIG_TARGET_CUSTOMER="KARJAAN-PUHELIN"/g
+s/^# CONFIG_PACKAGE_ddns-scripts is not set/CONFIG_PACKAGE_ddns-scripts=y/g
+s/^# CONFIG_PACKAGE_luci-app-ddns is not set/CONFIG_PACKAGE_luci-app-ddns=y/g
+s/^# CONFIG_PACKAGE_p910nd is not set/CONFIG_PACKAGE_p910nd=y/g
+s/^# CONFIG_PACKAGE_luci-app-p910nd is not set/CONFIG_PACKAGE_luci-app-p910nd=y/g
+s/^# CONFIG_PACKAGE_iperf is not set/CONFIG_PACKAGE_iperf=y/g
+s/^# CONFIG_PACKAGE_qos-scripts is not set/CONFIG_PACKAGE_qos-scripts=y/g
+s/^# CONFIG_PACKAGE_luci-app-qos is not set/CONFIG_PACKAGE_luci-app-qos=y/g
+s/CONFIG_PACKAGE_luci-app-voice=y/# CONFIG_PACKAGE_luci-app-voice is not set/g
+s/CONFIG_PACKAGE_luci-app-voice-client=y/# CONFIG_PACKAGE_luci-app-voice-client is not set/g
+s/CONFIG_PACKAGE_luci-app-voice-pbx=y/# CONFIG_PACKAGE_luci-app-voice-pbx is not set/g
+s/^# CONFIG_PACKAGE_openvpn is not set/CONFIG_PACKAGE_openvpn=y/g

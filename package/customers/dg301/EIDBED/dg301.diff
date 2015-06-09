@@ -1,0 +1,3 @@
+s/CONFIG_TARGET_CUSTOMER="INT"/CONFIG_TARGET_CUSTOMER="EIDBED"/g
+s/# CONFIG_PACKAGE_qos-scripts is not set/CONFIG_PACKAGE_qos-scripts=y/g
+s/# CONFIG_PACKAGE_luci-app-qos is not set/CONFIG_PACKAGE_luci-app-qos=y/g

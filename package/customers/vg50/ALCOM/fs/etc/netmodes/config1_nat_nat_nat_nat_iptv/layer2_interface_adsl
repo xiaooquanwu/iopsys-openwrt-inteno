@@ -1,0 +1,24 @@
+
+config atm_bridge
+	option link_type 'EoA'
+	option encapseoa 'llcsnap_eth'
+	option unit '0'
+	option ifname 'atm0.1'
+	option baseifname 'atm0'
+	option vci '35'
+	option atmtype 'ubr'
+	option vpi '0'
+	option name 'WWW_ADSL_0_35'
+
+config atm_bridge
+	option link_type 'EoA'
+	option encapseoa 'llcsnap_eth'
+	option unit '1'
+	option ifname 'atm1.1'
+	option baseifname 'atm1'
+	option vpi '0'
+	option vci '36'
+	option bridge '1'
+	option atmtype 'ubr'
+	option name 'IPTV_ADSL_0_36'
+

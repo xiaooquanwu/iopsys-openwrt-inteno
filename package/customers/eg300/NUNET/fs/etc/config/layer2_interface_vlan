@@ -1,0 +1,23 @@
+
+config vlan_interface
+	option name 'mgmt'
+	option ifname 'eth2.66'
+	option baseifname 'eth2'
+	option vlan8021q '66'
+	option vlan8021p '7'
+
+config vlan_interface
+	option name 'iptv'
+	option ifname 'eth2.1511'
+	option baseifname 'eth2'
+	option vlan8021q '1511'
+	option vlan8021p '5'
+	option bridge '1'
+
+config vlan_interface
+	option name 'internet'
+	option ifname 'eth2.888'
+	option baseifname 'eth2'
+	option vlan8021q '888'
+	option vlan8021p '0'
+

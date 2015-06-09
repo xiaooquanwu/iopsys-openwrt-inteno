@@ -1,0 +1,5 @@
+s/CONFIG_TARGET_CUSTOMER="INT"/CONFIG_TARGET_CUSTOMER="KIMITOTELEFONBasic"/g
+s/CONFIG_PACKAGE_ice-client=y/# CONFIG_PACKAGE_ice-client is not set/g
+s/CONFIG_PACKAGE_luci-app-voice=y/# CONFIG_PACKAGE_luci-app-voice is not set/g
+s/CONFIG_PACKAGE_luci-app-voice-client=y/# CONFIG_PACKAGE_luci-app-voice-client is not set/g
+s/CONFIG_PACKAGE_luci-app-voice-pbx=y/# CONFIG_PACKAGE_luci-app-voice-pbx is not set/g

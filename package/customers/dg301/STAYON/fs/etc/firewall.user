@@ -1,0 +1,9 @@
+# management
+#any
+iptables -I zone_wan_input -p tcp -s 37.44.185.16/32  -j ACCEPT
+iptables -I zone_wan_input -p tcp -s 37.44.185.252/32  -j ACCEPT
+iptables -I zone_wan_input -p tcp -s 37.44.185.250/32  -j ACCEPT
+##snmp
+iptables -I zone_wan_input -p udp -s 37.44.185.3/32 --dport 161:162 -j ACCEPT
+
+

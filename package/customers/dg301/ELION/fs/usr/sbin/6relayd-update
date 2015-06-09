@@ -1,0 +1,3 @@
+#!/bin/sh
+# Make dnsmasq reread hostfile
+nvram set dnsmasq_reload=1

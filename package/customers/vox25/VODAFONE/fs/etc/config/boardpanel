@@ -1,0 +1,14 @@
+config settings 'settings'
+	option usb_port '1'
+	option wifibutton '1'
+	option wpsbutton '1'
+	option wpsdevicepin '1'
+	option power_led '1'
+	option power_led_br '100'
+	option status_led '1'
+
+config services 'network'
+	option internet 'GPON_Internet'
+	option voice 'GPON_VoIP'
+	option iptv 'GPON_IPTV'
+

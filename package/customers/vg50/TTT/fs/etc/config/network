@@ -1,0 +1,25 @@
+
+config interface 'loopback'
+	option is_lan '1'
+	option ifname 'lo'
+	option proto 'static'
+	option ipaddr '127.0.0.1'
+	option netmask '255.0.0.0'
+
+config interface 'lan'
+	option is_lan '1'
+	option type 'bridge'
+	option proto 'static'
+	option ipaddr '192.168.1.1'
+	option netmask '255.255.255.0'
+	option ifname 'eth0 eth1 eth2 eth4'
+
+config interface 'wan'
+	option type 'anywan'
+	option vendorid 'VG50A-WU7U-INTENO'
+	option proto 'dhcp'
+	option hostname 'Inteno_$MAC4'
+	option _orig_ifname 'atm0.1 eth3.1 ptm0.1'
+	option _orig_bridge 'false'
+	option ifname 'atm0.1 ptm0.835'
+

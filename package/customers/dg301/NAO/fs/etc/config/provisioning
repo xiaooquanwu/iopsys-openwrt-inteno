@@ -1,0 +1,16 @@
+config general 'polling'
+    option starttime '02'
+    option interval 'daily'
+    option enabled 'on'
+
+config server 'configserver'
+    option enabled 'on'
+    option reboot 'on'
+    option url 'http://voipprov.netatonce.net/iopsys/002207$MAC6.tar.gz'
+
+config server 'iup'
+    option enabled 'off'
+
+config software 'uppgradeserver'
+    option defaultreset 'off' 
+

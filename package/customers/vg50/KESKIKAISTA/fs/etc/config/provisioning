@@ -1,0 +1,14 @@
+package 'provisioning'
+
+config 'general' 'polling'
+        option 'enabled' 'off'
+        option 'starttime' '03'
+        option 'interval' 'daily'
+
+config 'server' 'configserver'
+        option enabled          off
+
+
+config 'server' 'iup'
+        option 'enabled' 'off'
+

@@ -1,0 +1,45 @@
+#!/bin/sh
+# Copyright (C) 2014 Inteno Broadband Technology AB
+
+prefix_list="$prefix_list InternetGatewayDevice.X_INTENO_SE_WANScript."
+prefix_list_skip_wait_cache="$prefix_list_skip_wait_cache InternetGatewayDevice.X_INTENO_SE_WANScript."
+
+exec_wanscript() {
+	local lower=$(echo $1 | tr '[A-Z]' '[a-z]')
+	case "$lower" in
+		"true"|1)
+			/sbin/ngtwan 1 & ;;
+		*) ;;
+	esac
+}
+
+# First specify the root object,
+# then map leaves to the getter and setter functions, defined above.
+get_cache_InternetGatewayDevice_X_INTENO_SE_WANScript() {
+	return $FAULT_CPE_NO_FAULT
+}
+
+get_dynamic_InternetGatewayDevice_X_INTENO_SE_WANScript() {
+	case "$1" in
+		""|\
+		InternetGatewayDevice.|\
+		InternetGatewayDevice.X_INTENO_SE_WANScript.|\
+		InternetGatewayDevice.X_INTENO_SE_WANScript.Exec)
+		get_object_cache_generic "InternetGatewayDevice.X_INTENO_SE_WANScript." "0"
+		get_param_cache_generic "InternetGatewayDevice.X_INTENO_SE_WANScript.Exec" "1" "" "exec_wanscript \$val" "" "xsd:boolean"
+		;;
+	esac
+}
+
+get_dynamic_linker_InternetGatewayDevice_X_INTENO_SE_WANScript() {
+	return $FAULT_CPE_NO_FAULT
+}
+
+add_object_InternetGatewayDevice_X_INTENO_SE_WANScript() {
+	return $FAULT_CPE_INVALID_PARAMETER_NAME
+}
+
+delete_object_InternetGatewayDevice_X_INTENO_SE_WANScript() {
+	return $FAULT_CPE_INVALID_PARAMETER_NAME
+}
+

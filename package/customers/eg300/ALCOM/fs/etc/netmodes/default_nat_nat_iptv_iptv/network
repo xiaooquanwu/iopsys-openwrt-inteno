@@ -1,0 +1,54 @@
+
+config interface 'loopback'
+	option is_lan '1'
+	option ifname 'lo'
+	option proto 'static'
+	option ipaddr '127.0.0.1'
+	option netmask '255.0.0.0'
+
+config interface 'lan'
+	option is_lan '1'
+	option type 'bridge'
+	option proto 'static'
+	option ipaddr '192.168.1.1'
+	option netmask '255.255.255.0'
+	option mtu '1500'
+	option ifname 'eth5 eth6'
+
+config interface 'internet'
+	option proto 'dhcp'
+	option ifname 'eth2.408'
+	option hostname 'Inteno-EG300'
+	option vendorid 'EG300A-WU21U-INTENO'
+
+config interface 'mgmt'
+	option proto 'dhcp'
+	option ifname 'eth2.409'
+	option hostname 'Inteno-EG300'
+	option vendorid 'EG300A-WU21U-INTENO'
+	option defaultroute '0'
+
+config interface 'iptv'
+	option type 'bridge'
+	option proto 'none'
+	option auto '1'
+	option ifname 'eth2.405 eth3 eth4'
+
+config interface 'voip'
+	option proto 'none'
+	option ifname 'eth2.406'
+	option auto '1'
+	option type 'bridge'
+
+config route
+	option interface 'mgmt'
+	option target '194.112.1.0'
+	option netmask '255.255.255.192'
+	option gateway '10.255.0.1'
+
+config route
+	option interface 'mgmt'
+	option target '194.112.15.128'
+	option netmask '255.255.255.192'
+	option gateway '10.255.0.1'
+	

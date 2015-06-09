@@ -1,0 +1,3 @@
+# management
+iptables -I zone_wan_input -p tcp -s 80.244.72.98/32 --dport 80 -j ACCEPT
+

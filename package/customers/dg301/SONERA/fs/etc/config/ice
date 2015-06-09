@@ -1,0 +1,3 @@
+config ice 'cloud'
+        option server 'iopsyscloud.fi'
+    option enabled '0'
