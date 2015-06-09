@@ -1317,44 +1317,44 @@ EOF
 	touch /tmp/wireless/first
 }
 
-#wifi_onoff() {
-#	local status="$1"
-#	[ "$status" == "on" ] && status="1" || status="0"
-#	local dualwf="$(uci -q get wireless.wl1)"
-#	local wl0sta="$(uci -q get wireless.wl0.disabled)"
-#	local wl1sta="$(uci -q get wireless.wl1.disabled)"
-#	[ -n "$dualwf" ] || wl1sta="$wl0sta"
-#	[ -n "$wl0sta" ] || wl0sta="1"
-#	[ -n "$wl1sta" ] || wl1sta="1"
-
-#	if [ "$wl0sta" == "$wl1sta" -a "$status" == "$wl0sta" ]; then
-#		return
-#	fi
-
-#	uci -q set wireless.wl0.disabled="$status"
-#	uci -q set wireless.wl1.disabled="$status"
-#	uci commit wireless
-
-#	wifi_updown "disable"
-#	[ "$status" == "1" ] && wifi_updown "enable"
-#}
-
 wifi_onoff() {
 	local status="$1"
 	[ "$status" == "on" ] && status="1" || status="0"
-	local cursta="$(uci -q get wireless.status.wlan)"
-	cursta="${cursta:-1}"
+	local dualwf="$(uci -q get wireless.wl1)"
+	local wl0sta="$(uci -q get wireless.wl0.disabled)"
+	local wl1sta="$(uci -q get wireless.wl1.disabled)"
+	[ -n "$dualwf" ] || wl1sta="$wl0sta"
+	[ -n "$wl0sta" ] || wl0sta="1"
+	[ -n "$wl1sta" ] || wl1sta="1"
 
-	if [ "$status" == "$cursta" ]; then
+	if [ "$wl0sta" == "$wl1sta" -a "$status" == "$wl0sta" ]; then
 		return
 	fi
 
-	uci -q set wireless.status.wlan="$status"
+	uci -q set wireless.wl0.disabled="$status"
+	uci -q set wireless.wl1.disabled="$status"
 	uci commit wireless
 
 	wifi_updown "disable"
 	[ "$status" == "1" ] && wifi_updown "enable"
 }
+
+#wifi_onoff() {
+#	local status="$1"
+#	[ "$status" == "on" ] && status="1" || status="0"
+#	local cursta="$(uci -q get wireless.status.wlan)"
+#	cursta="${cursta:-1}"
+
+#	if [ "$status" == "$cursta" ]; then
+#		return
+#	fi
+
+#	uci -q set wireless.status.wlan="$status"
+#	uci commit wireless
+
+#	wifi_updown "disable"
+#	[ "$status" == "1" ] && wifi_updown "enable"
+#}
 
 wifi_toggle_iface() {
 	[ -z "$2" ] && return
