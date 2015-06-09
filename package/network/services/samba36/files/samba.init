@@ -2,6 +2,30 @@
 # Copyright (C) 2008-2012 OpenWrt.org
 
 START=60
+USE_PROCD=1
+
+useradd()
+{
+	local user
+	local password
+	config_get user $1 user
+	config_get password $1 password
+	#grep -q $user /etc/passwd || adduser $user -s /bin/false -D -H -h  /mnt/$user
+	(echo $password; sleep 1; echo $password) | smbpasswd -a $user -s
+}
+
+purgepasswd()
+{
+	for us in `grep mnt /etc/passwd | cut -d":" -f1`; do
+		deluser $us
+	done
+}
+
+purgesmbpasswd()
+{
+	rm -rf /etc/samba/smbpasswd
+	touch /etc/samba/smbpasswd
+}
 
 smb_header() {
 	local interface
@@ -86,15 +110,28 @@ smb_add_share() {
 	[ -n "$browseable" ] && echo -e "\tbrowseable = $browseable" >> /var/etc/smb.conf
 }
 
-start() {
+start_service() {
 	config_load samba
+	config_foreach useradd sambausers
 	config_foreach smb_header samba
 	config_foreach smb_add_share sambashare
 	service_start /usr/sbin/smbd -D
 	service_start /usr/sbin/nmbd -D
 }
 
-stop() {
+stop_service() {
 	service_stop /usr/sbin/smbd
 	service_stop /usr/sbin/nmbd
+	#purgepasswd
+	purgesmbpasswd
 }
+
+reload_service() {
+	stop
+	start
+}
+
+service_triggers() {
+	procd_add_reload_trigger samba
+}
+
