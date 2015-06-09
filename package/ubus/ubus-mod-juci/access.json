@@ -14,7 +14,7 @@
 	},
 
 	"core": {
-		"description": "Core functions for LuCI",
+		"description": "Core functions for JUCI",
 		"read": {
 			"ubus": {
 				"juci.ui": [
@@ -92,7 +92,7 @@
 				]
 			},
 			"uci": [
-				"luci"
+				"juci"
 			]
 		},
 		"write": {
@@ -102,7 +102,7 @@
 				]
 			},
 			"uci": [
-				"luci"
+				"juci"
 			]
 		}
 	},
@@ -231,7 +231,7 @@
 			}
 		},
 		"write": {
-			"luci-io": [
+			"juci-io": [
 				"upload"
 			],
 			"ubus": {
@@ -248,7 +248,7 @@
 	"backup": {
 		"description": "Backup and Restore",
 		"read": {
-			"luci-io": [
+			"juci-io": [
 				"backup"
 			],
 			"ubus": {

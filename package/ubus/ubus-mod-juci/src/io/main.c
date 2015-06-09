@@ -1,5 +1,5 @@
 /*
- * luci-io - LuCI non-RPC helper
+ * juci-io - JUCI non-RPC helper
  *
  *   Copyright (C) 2013 Jo-Philipp Wich <jow@openwrt.org>
  *
@@ -102,7 +102,7 @@ session_access(const char *sid, const char *obj, const char *func)
 
 	blob_buf_init(&req, 0);
 	blobmsg_add_string(&req, "ubus_rpc_session", sid);
-	blobmsg_add_string(&req, "scope", "luci-io");
+	blobmsg_add_string(&req, "scope", "juci-io");
 	blobmsg_add_string(&req, "object", obj);
 	blobmsg_add_string(&req, "function", func);
 
@@ -678,9 +678,9 @@ main_backup(int argc, char **argv)
 
 int main(int argc, char **argv)
 {
-	if (strstr(argv[0], "luci-upload"))
+	if (strstr(argv[0], "juci-upload"))
 		return main_upload(argc, argv);
-	else if (strstr(argv[0], "luci-backup"))
+	else if (strstr(argv[0], "juci-backup"))
 		return main_backup(argc, argv);
 
 	return -1;

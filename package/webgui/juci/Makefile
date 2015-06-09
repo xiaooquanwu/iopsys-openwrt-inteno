@@ -8,7 +8,7 @@ PKG_RELEASE=$(PKG_SOURCE_VERSION)
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=git@iopsys.inteno.se:juci.git
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
-PKG_SOURCE_VERSION:=96d1612039f9efeccff9f3920c9d5116cd9ca533
+PKG_SOURCE_VERSION:=vodafone
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
 PKG_MAINTAINER:=Martin Schröder <mkschreder.uk@gmail.com>
 
@@ -41,7 +41,7 @@ define Package/juci/install
 	$(INSTALL_DIR) $(1)/etc/config
 	$(CP) $(PKG_BUILD_DIR)/juci.config $(1)/etc/config/juci
 	$(INSTALL_DIR) $(1)/www/cgi-bin/
-	$(CP) $(PKG_BUILD_DIR)/juci_redirect.sh $(1)/www/cgi-bin/juci
+	$(CP) $(PKG_BUILD_DIR)/juci_redirect.sh $(1)/www/cgi-bin/luci
 	$(INSTALL_DIR) $(1)/sbin/
 	$(CP) $(PKG_BUILD_DIR)/juci-update $(1)/sbin/juci-update
 endef
