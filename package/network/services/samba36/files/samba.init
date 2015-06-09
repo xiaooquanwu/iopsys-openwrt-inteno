@@ -11,7 +11,7 @@ useradd()
 	config_get user $1 user
 	config_get password $1 password
 	#grep -q $user /etc/passwd || adduser $user -s /bin/false -D -H -h  /mnt/$user
-	(echo $password; sleep 1; echo $password) | smbpasswd -a $user -s
+	smbpasswd -a $user -p $password
 }
 
 purgepasswd()
