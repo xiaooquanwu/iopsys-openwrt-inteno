@@ -71,6 +71,7 @@ struct function_action {
 struct function_led {
 	const char *name;		/* If name is set this led function is in use by the board.        */
 	led_action_t state;		/* state of the function led. contain what action is currently set */
+	int dimming;			/* should this led be dimmed */
 	int brightness;			/* Brightness of the led */
 	int press_indicator;		/* record if this is part of press indictor */
 	struct function_action actions[LED_ACTION_MAX];
@@ -81,6 +82,11 @@ static int total_functions;		/* number of entries in leds array */
 
 static leds_state_t global_state;	/* global state for the leds,overrids individual states */
 static leds_state_t press_state;	/* global state for the press indicator */
+
+static led_action_t dimming_level;	/* The min level where dimming should not happen on led */
+static int dimming_timeout;		/* The time to turn on leds when we have dimming on     */
+static int dimming_count;		/* as long as this is not zero show all leds */
+
 
 int get_index_by_name(const char *const*array, int max, const char *name);
 int get_index_for_function(const char *name);
@@ -491,6 +497,10 @@ static void flash_handler(struct uloop_timeout *timeout)
 	led_state_t slow=OFF,fast=OFF;
 	counter++;
 
+	/* count down dimming to zero */
+	if (dimming_count)
+		dimming_count--;
+
 	if (counter & 1 )
 		fast = ON;
 	if (counter & 4 )
@@ -518,6 +528,16 @@ static void flash_handler(struct uloop_timeout *timeout)
 					if (action_state == LED_OK)
 						action_state = LED_OFF;
 				}
+
+				/* is this function dimmed ? */
+				if (leds[i].dimming) {
+					/* if timer is not active we should dimm */
+					if (!dimming_count){
+						if (action_state < dimming_level)
+							action_state = LED_OFF;
+					}
+				}
+
 				list_for_each_entry(led, &leds[i].actions[action_state].led_list, list) {
 
 					if (led->state == FLASH_FAST) {
@@ -561,6 +581,13 @@ void led_pressindicator_set(void){
 
 void led_pressindicator_clear(void){
 	press_state = 0;
+}
+
+void led_dimming(void){
+
+	/* we resuse the flash timer and decrement dimmming_count on every loop */
+	/* set the intial value so that we get the correct timeout */
+	dimming_count = dimming_timeout * (1000/FLASH_TIMEOUT);
 }
 
 /*
@@ -641,11 +668,13 @@ const char * get_function_action( const char *s, struct function_led **function,
 	return last;
 }
 
+/* when this is called all driver leds needs to exist */
 void led_init( struct server_ctx *s_ctx)
 {
 	int i,j;
 	LIST_HEAD(led_map_list);
 	struct ucilist *map_node;
+	const char *s;
 
 	dump_drv_list();
 
@@ -723,7 +752,7 @@ void led_init( struct server_ctx *s_ctx)
 					struct led *led;
 					struct led_drv *drv;
 					char *c;
-					char *s = strdup(node->val);
+					s = strdup(node->val);
 					led_name[0]=0;
 					led_state[0]=0;
 
@@ -747,7 +776,7 @@ void led_init( struct server_ctx *s_ctx)
 						syslog(LOG_ERR,"Config specified use of led name [%s]. But it's not registerd with a led driver.", led_name);
 					}
 					DBG(2, "%-35s%s","",node->val);
-					free(s);
+					free((void*)s);
 				}
 
 				/* fill in button actions */
@@ -775,7 +804,6 @@ void led_init( struct server_ctx *s_ctx)
 				DBG(1,"A:%s %s is a super function ",led_fn_name,super_action);
 
 				list_for_each_entry(node, &super_action_list, list) {
-					const char *s;
 					struct function_led *function;
 					int action_ix;
 					struct super_list *sl = malloc(sizeof(struct super_list));
@@ -802,16 +830,54 @@ void led_init( struct server_ctx *s_ctx)
 		}
 	}
 
+
+	/* setup and read dimming options for led */
+	{
+		struct ucilist *node;
+		LIST_HEAD(dimm_list);
+
+		s = ucix_get_option(s_ctx->uci_ctx, "hw" , "led_map", "dimming_level");
+		dimming_level = LED_OFF;
+		if (s) {
+			DBG(1,"Dimming init");
+			for(i=0 ; i < LED_ACTION_MAX ; i++) {
+				if (! strncasecmp(s, fn_actions[i], sizeof(fn_actions[i]))){
+					dimming_level = i;
+				}
+			}
+		}
+
+		s = ucix_get_option(s_ctx->uci_ctx, "hw" , "led_map", "dimming_on");
+		dimming_timeout = 0;
+		if (s) {
+			dimming_timeout = strtol(s, NULL, 0);
+		}
+
+		ucix_get_option_list(s_ctx->uci_ctx, "hw" ,"led_map", "dimming", &dimm_list);
+		list_for_each_entry(node, &dimm_list, list) {
+			int ix;
+			s = node->val;
+			ix = get_index_for_function(s);
+			if (ix != -1){
+				leds[ix].dimming = 1;
+				DBG(1,"dimming on led [%s]", leds[ix].name);
+			}else
+				syslog(LOG_ERR,"dimming Led [%s] don't exist", s);
+		}
+	}
+
+	DBG(1,"Dimming level %s", fn_actions[dimming_level]);
+	DBG(1,"Dimming timeout %d", dimming_timeout);
+
 	{
 		struct ucilist *node;
 		/* read function buttons from section button_map */
 		LIST_HEAD(press_indicator);
 
-		/* read in generic configuration. press indicator list, dimm list default params..... */
+		/* read in generic configuration. press indicator listdefault params..... */
 
 		ucix_get_option_list(s_ctx->uci_ctx, "hw" ,"led_map", "press_indicator", &press_indicator);
 		list_for_each_entry(node, &press_indicator, list) {
-			char *s;
 			int ix;
 			s = node->val;
 			s +=4;	/*remove 'led_' from string */

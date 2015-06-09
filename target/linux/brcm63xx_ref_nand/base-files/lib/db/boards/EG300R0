@@ -119,11 +119,15 @@ config button_map Wireless
 config button_map THOUCH_NEAR
        list button 9512_touch_near
        option hotplug touch_near
+       option dimming	on
+       option minpress 0
+
 
 config button_map THOUCH_FAR
        list button 9512_touch_far
        option hotplug touch_far
-
+       option minpress 0
+	
 #
 #		Button config , end
 #
@@ -221,6 +225,19 @@ config led_map led_map
 	list functions voice1
 	list functions ext
 	list functions dect
+
+# dimming turn leds off unless above cutof level
+       option dimming_level	notice
+       option dimming_on	5
+       list dimming		wifi
+       list dimming		wps
+       list dimming		lan
+       list dimming 		status
+       list dimming		wan	
+       list dimming		internet
+       list dimming		voic1
+       list dimming 		dect
+       list dimming 		ext
 
 config led_map led_wifi
        list led_action_ok     'Wireless_green = ON'

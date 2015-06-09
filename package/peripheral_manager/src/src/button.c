@@ -19,6 +19,7 @@ struct button_drv_list {
 struct function_button {
 	struct list_head list;
         char *name;
+        int dimming;
         char *hotplug;
         int minpress;
         int longpress;                          /* negative value means valid if  mintime < time < abs(longpress ) */
@@ -202,6 +203,10 @@ static void button_handler(struct uloop_timeout *timeout)
 
                                                 if ( timer_valid(drv_node, node->minpress, node->longpress) ) {
                                                         char str[512];
+
+                                                        if(node->dimming)
+                                                                led_dimming();
+
                                                         DBG(1, "send key %s [%s]to system", node->name, node->hotplug);
                                                         snprintf(str,
                                                                  512,
@@ -292,6 +297,14 @@ void button_init( struct server_ctx *s_ctx)
 		function = malloc(sizeof(struct function_button));
 		memset(function,0,sizeof(struct function_button));
                 function->name = node->val;
+
+                /* read out dimming */
+                s = ucix_get_option(s_ctx->uci_ctx, "hw" , function->name, "dimming");
+                DBG(1, "dimming = [%s]", s);
+                if (s){
+                        function->dimming = 1;
+                }else
+                        function->dimming = 0;
 
                 /* read out minpress */
                 s = ucix_get_option(s_ctx->uci_ctx, "hw" , function->name, "minpress");
