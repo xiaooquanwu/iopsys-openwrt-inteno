@@ -1,13 +1,6 @@
-#
-# Copyright (C) 2013 Jo-Philipp Wich <jow@openwrt.org>
-#
-# Licensed under the Apache License, Version 2.0.
-#
-
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=vox25
-#PKG_VERSION:=$(shell git --git-dir=$(CURDIR)/../.git log -1 --pretty="%ci %h" | awk '{ print $$1 "-" $$4 }')
 PKG_VERSION:=15.6.8
 PKG_MAINTAINER:=Martin K. Schroder <mkschreder.uk@gmail.com>
 
@@ -19,27 +12,25 @@ PKG_BUILD_PARALLEL:=1
 include $(INCLUDE_DIR)/package.mk
 
 define Build/Prepare
-	
+	$(INSTALL_DIR) $(PKG_BUILD_DIR)
+	$(CP) ./juci-theme-vodafone/* $(PKG_BUILD_DIR)/
 endef
 
 define Package/vox25
 	CATEGORY:=Configs
   HIDDEN:=1
   TITLE:=VOX25 Router
-  DEPENDS:=@PACKAGE_vox25_selected +vodafone +CONFIG_TARGET_ROOTFS_UBIFS
+  DEPENDS:=+juci
 endef
 
 define Package/vox25/config
-	
-	if PACKAGE_vox25_selected 
+	if PACKAGE_vox25
 		choice 
-			prompt "Customer"
-			default PACKAGE_vox25-vodafone-selected
-			config PACKAGE_vox25-vodafone-selected
-				select PACKAGE_vox25-vodafone
+			prompt "Customer Config"
+			default PACKAGE_vox25-vodafone
+			config PACKAGE_vox25-vodafone
 				bool "Vodafone"
-			config PACKAGE_vox25-inteno-default-selected
-				select PACKAGE_vox25-inteno-default
+			config PACKAGE_vox25-inteno-default
 				bool "Inteno Default"
 		endchoice
 	endif
@@ -50,11 +41,15 @@ define Package/vox25/description
 endef
 
 define Package/vox25/install
-	
+	$(INSTALL_DIR) $(1)/www
+	$(CP) $(PKG_BUILD_DIR)/htdocs/* $(1)/www/
+	#$(1)/sbin/juci-update $(1)/www/ RELEASE
 endef
 
 define Package/vox25/postinst
-
+#!/bin/sh
+/sbin/juci-update /www/ RELEASE
+exit 0
 endef
 
 $(eval $(call BuildPackage,vox25))

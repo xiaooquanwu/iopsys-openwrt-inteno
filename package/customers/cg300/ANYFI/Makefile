@@ -1,6 +1,6 @@
 include $(TOPDIR)/rules.mk
 
-PKG_NAME:=vox25-inteno-default
+PKG_NAME:=cg300_anyfi
 PKG_VERSION:=1.0.0
 PKG_MAINTAINER:=Martin K. Schroder <mkschreder.uk@gmail.com>
 
@@ -15,26 +15,26 @@ define Build/Prepare
 	
 endef
 
-define Package/vox25-inteno-default
+define Package/cg300_anyfi
 	HIDDEN:=1
   TITLE:=Inteno Field
-  DEPENDS:=+vox25
+  DEPENDS:=+cg300
 endef
 
-define Package/vox25-inteno-default/config
+define Package/cg300_anyfi/config
 
 endef
 
-define Package/vox25-inteno-default/description
+define Package/cg300_anyfi/description
 	Inteno Default package
 endef
 
-define Package/vox25-inteno-default/install
+define Package/cg300_anyfi/install
 	$(CP) $(PKG_BUILD_DIR)/fs/* $(1)/
 endef
 
-define Package/vox25-inteno-default/postinst
+define Package/cg300_anyfi/postinst
 
 endef
 
-#$(eval $(call BuildPackage,vox25-inteno-default))
+#$(eval $(call BuildPackage,cg300_anyfi))

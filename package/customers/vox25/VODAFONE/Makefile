@@ -23,17 +23,13 @@ define Build/Prepare
 endef
 
 define Package/vox25/config
-	if PACKAGE_vox25-vodafone-selected 
-		config TARGET_CUSTOMER
-			string "Customer ID"
-			default "VDF"
-	endif
+
 endef
 
 define Package/vox25-vodafone
 	HIDDEN:=1
   TITLE:=Vodafone
-  DEPENDS:=+vox25 +vodafone +rpcd +libubox +libubus
+  DEPENDS:=+vox25
 endef
 
 define Package/vox25-vodafone/description
@@ -48,4 +44,4 @@ define Package/vox25-vodafone/postinst
 
 endef
 
-$(eval $(call BuildPackage,vox25-vodafone))
+#$(eval $(call BuildPackage,vox25-vodafone))
