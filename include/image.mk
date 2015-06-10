@@ -78,7 +78,7 @@ else
     define Image/mkfs/jffs2/sub
 		# FIXME: removing this line will cause strange behaviour in the foreach loop below
 		touch $(KDIR)/nocomprlist
-		$(STAGING_DIR_HOST)/bin/mkfs.jffs2 $(JFFS2OPTS) -e $(patsubst %k,%KiB,$(1)) -o $(KDIR)/root.jffs2-$(1) -b -p -n -N $(KDIR)/nocomprlist -S $(KDIR)/sortlist -d $(TARGET_DIR) -v 2>&1 1>/dev/null | awk '/^.+$$$$/'
+		$(STAGING_DIR_HOST)/bin/mkfs.jffs2 $(JFFS2OPTS) -e $(patsubst %k,%KiB,$(1)) -o $(KDIR)/root.jffs2-$(1) -p -n -N $(KDIR)/nocomprlist -S $(KDIR)/sortlist -d $(TARGET_DIR) -v 2>&1 1>/dev/null | awk '/^.+$$$$/'
 #		$(call add_jffs2_mark,$(KDIR)/root.jffs2-$(1))
 		$(call Image/Build,jffs2-$(1))
     endef

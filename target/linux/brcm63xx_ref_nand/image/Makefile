@@ -8,7 +8,7 @@ include $(TOPDIR)/rules.mk
 include $(INCLUDE_DIR)/image.mk
 IHGSP_VERSION:=$(CONFIG_TARGET_MODEL_NAME)_$(CONFIG_TARGET_CUSTOMER)$(CONFIG_TARGET_VERSION)-$(shell date '+%y%m%d_%H%M')
 IHGSP_BUILD_VERSION:=$(shell echo $(IHGSP_VERSION) | sed s/\"//g)
-BUILD_DIR_ROOT=$(BUILD_DIR)/root-brcm63xx_ref_nand
+#BUILD_DIR_ROOT=$(BUILD_DIR)/root-brcm63xx_ref_nand
 KERNEL_ENTRY:= $(shell readelf -h $(KDIR)/vmlinux.bcm.elf | grep Entry | awk '{print $$4}')
 
 CFE_BUILT:=
@@ -89,18 +89,18 @@ define Image/Prepare
 	cp $(KDIR)/vmlinux.lz $(TARGET_DIR)/
 
 	# add/set version info (.w.x.y)
-	touch -c $(TOPDIR)/target/linux/brcm63xx_ref_nand/base-files/etc/banner
-	cp $(TOPDIR)/target/linux/brcm63xx_ref_nand/base-files/etc/banner $(BUILD_DIR_ROOT)/etc/banner
-	sed -i '/^IOP Version:/d' $(BUILD_DIR_ROOT)/etc/banner
-	sed -i '7iIOP Version: $(IHGSP_BUILD_VERSION)' $(BUILD_DIR_ROOT)/etc/banner
-	mkdir -p $(BUILD_DIR_ROOT)/lib/db/version
-	echo $(IHGSP_BUILD_VERSION)  > $(BUILD_DIR_ROOT)/lib/db/version/iop_version
-#	echo $(CONFIG_TARGET_IBOARDID)> $(BUILD_DIR_ROOT)/lib/db/version/iop_iboardid
-	echo $(CONFIG_TARGET_CUSTOMER)> $(BUILD_DIR_ROOT)/lib/db/version/iop_customer
+	touch -c $(TOPDIR)/target/linux/$(BOARD)/base-files/etc/banner
+	cp $(TOPDIR)/target/linux/$(BOARD)/base-files/etc/banner $(TARGET_DIR)/etc/banner
+	sed -i '/^IOP Version:/d' $(TARGET_DIR)/etc/banner
+	sed -i '7iIOP Version: $(IHGSP_BUILD_VERSION)' $(TARGET_DIR)/etc/banner
+	mkdir $(TARGET_DIR)/lib/db/version
+	echo $(IHGSP_BUILD_VERSION)  > $(TARGET_DIR)/lib/db/version/iop_version
+#	echo $(CONFIG_TARGET_IBOARDID)> $(TARGET_DIR)/lib/db/version/iop_iboardid
+	echo $(CONFIG_TARGET_CUSTOMER)> $(TARGET_DIR)/lib/db/version/iop_customer
 
 	# strip out unneeded files (.w.x.y)
-	rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.3.8
-	rm -rf $(BUILD_DIR_ROOT)/usr/lib/libvorbisenc*
+	rm -rf $(TARGET_DIR)/lib/modules/3.3.8
+	rm -rf $(TARGET_DIR)/usr/lib/libvorbisenc*
 endef
 
 
