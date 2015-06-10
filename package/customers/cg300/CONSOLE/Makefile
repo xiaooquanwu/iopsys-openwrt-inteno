@@ -1,6 +1,6 @@
 include $(TOPDIR)/rules.mk
 
-PKG_NAME:=cg300_console
+PKG_NAME:=customer-console-cg300
 PKG_VERSION:=1.0.0
 PKG_MAINTAINER:=Martin K. Schroder <mkschreder.uk@gmail.com>
 
@@ -15,26 +15,26 @@ define Build/Prepare
 	
 endef
 
-define Package/cg300_console
+define Package/customer-console-cg300
 	HIDDEN:=1
   TITLE:=Inteno Field
   DEPENDS:=+cg300 +screen
 endef
 
-define Package/cg300_console/config
+define Package/customer-console-cg300/config
 
 endef
 
-define Package/cg300_console/description
+define Package/customer-console-cg300/description
 	Inteno Default package
 endef
 
-define Package/cg300_console/install
+define Package/customer-console-cg300/install
 	$(CP) $(PKG_BUILD_DIR)/fs/* $(1)/
 endef
 
-define Package/cg300_console/postinst
+define Package/customer-console-cg300/postinst
 
 endef
 
-#$(eval $(call BuildPackage,cg300_console))
+#$(eval $(call BuildPackage,customer-console-cg300))

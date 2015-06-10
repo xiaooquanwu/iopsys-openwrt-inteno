@@ -1,6 +1,6 @@
 include $(TOPDIR)/rules.mk
 
-PKG_NAME:=cg300_teliasafety
+PKG_NAME:=customer-teliasafety-cg300
 PKG_VERSION:=1.0.0
 PKG_MAINTAINER:=Martin K. Schroder <mkschreder.uk@gmail.com>
 
@@ -15,26 +15,26 @@ define Build/Prepare
 	
 endef
 
-define Package/cg300_teliasafety
+define Package/customer-teliasafety-cg300
 	HIDDEN:=1
   TITLE:=Inteno Field
   DEPENDS:=+cg300
 endef
 
-define Package/cg300_teliasafety/config
+define Package/customer-teliasafety-cg300/config
 
 endef
 
-define Package/cg300_teliasafety/description
+define Package/customer-teliasafety-cg300/description
 	Inteno Default package
 endef
 
-define Package/cg300_teliasafety/install
+define Package/customer-teliasafety-cg300/install
 	$(CP) $(PKG_BUILD_DIR)/fs/* $(1)/
 endef
 
-define Package/cg300_teliasafety/postinst
+define Package/customer-teliasafety-cg300/postinst
 
 endef
 
-#$(eval $(call BuildPackage,cg300_teliasafety))
+#$(eval $(call BuildPackage,customer-teliasafety-cg300))

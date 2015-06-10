@@ -23,86 +23,86 @@ define Package/customer-cg300
 endef
 
 define Package/customer-cg300/config
-	if PACKAGE_inteno-cg300
+	if PACKAGE_routermodel-cg300
 		choice 
 			prompt "Customer Config"
-			default PACKAGE_customer-cg300_field
-			config PACKAGE_customer-cg300_anyfi
+			default PACKAGE_customer-field-cg300
+			config PACKAGE_customer-cg300-anyfi
 				bool "Anyfi"
-			config PACKAGE_customer-cg300_field
+			config PACKAGE_customer-field-cg300
 				bool "Inteno Default"
-			config PACKAGE_customer-cg300_blc
+			config PACKAGE_customer-blc-cg300
 				bool "Blc"
-			config PACKAGE_customer-cg300_console
+			config PACKAGE_customer-console-cg300
 				bool "Console"
-			config PACKAGE_customer-cg300_elements
+			config PACKAGE_customer-elements-cg300
 				bool "Elements"
-			config PACKAGE_customer-cg300_get
+			config PACKAGE_customer-get-cg300
 				bool "Get"
-			config PACKAGE_customer-cg300_lounea
+			config PACKAGE_customer-lounea-cg300
 				bool "Lounea"
-			config PACKAGE_customer-cg300_netmedia
+			config PACKAGE_customer-netmedia-cg300
 				bool "Netmedia"
-			config PACKAGE_customer-cg300_nordix
+			config PACKAGE_customer-nordix-cg300
 				bool "Nordix"
-			config PACKAGE_customer-cg300_teliasafety
+			config PACKAGE_customer-teliasafety-cg300
 				bool "Telia Safety"
 		endchoice
-		if PACKAGE_customer-cg300_anyfi
+		if PACKAGE_customer-cg300-anyfi
 			config TARGET_CUSTOMER
 				string
 				default "ANYFI"
 				prompt "Customer ID"
 		endif
-		if PACKAGE_customer-cg300_field
+		if PACKAGE_customer-field-cg300
 			config TARGET_CUSTOMER
 				string
 				default "FIELD"
 				prompt "Customer ID"
 		endif
-		if PACKAGE_customer-cg300_blc
+		if PACKAGE_customer-blc-cg300
 			config TARGET_CUSTOMER
 				string
 				default "BLC"
 				prompt "Customer ID"
 		endif
-		if PACKAGE_customer-cg300_console
+		if PACKAGE_customer-console-cg300
 			config TARGET_CUSTOMER
 				string
 				default "CONSOLE"
 				prompt "Customer ID"
 		endif
-		if PACKAGE_customer-cg300_elements
+		if PACKAGE_customer-elements-cg300
 			config TARGET_CUSTOMER
 				string
 				default "ELEMENTS"
 				prompt "Customer ID"
 		endif
-		if PACKAGE_customer-cg300_get
+		if PACKAGE_customer-get-cg300
 			config TARGET_CUSTOMER
 				string
 				default "GET"
 				prompt "Customer ID"
 		endif
-		if PACKAGE_customer-cg300_lounea
+		if PACKAGE_customer-lounea-cg300
 			config TARGET_CUSTOMER
 				string
 				default "LOUNEA"
 				prompt "Customer ID"
 		endif
-		if PACKAGE_customer-cg300_netmedia
+		if PACKAGE_customer-netmedia-cg300
 			config TARGET_CUSTOMER
 				string
 				default "NETMEDIA"
 				prompt "Customer ID"
 		endif
-		if PACKAGE_customer-cg300_nordix
+		if PACKAGE_customer-nordix-cg300
 			config TARGET_CUSTOMER
 				string
 				default "NORDIX"
 				prompt "Customer ID"
 		endif
-		if PACKAGE_customer-cg300_teliasafety
+		if PACKAGE_customer-teliasafety-cg300
 			config TARGET_CUSTOMER
 				string
 				default "TELIASAFETY"
