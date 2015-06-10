@@ -126,7 +126,7 @@ exten => s,1,			Set(linecfim=${DB(CFIM/${ARG1})})
 exten => s,n,			GotoIf(${linecfim}?call_cfim)
 
 ; If ringing is disabled, skip calling line normally
-exten => s,n,			Set(shouldring=${SHELL(uci -q get voice_client.ringing_status.shouldring):0:-1})
+exten => s,n,			Set(shouldring=${SHELL(uci -q get voice_client.RINGING_STATUS.shouldring):0:-1})
 exten => s,n,			GotoIf(${shouldring}?:ringing_disabled)
 
 ;Call line normally, by going to call_line context
