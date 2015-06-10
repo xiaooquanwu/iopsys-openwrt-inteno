@@ -2092,6 +2092,11 @@ start_service() {
 	########################
 	config_foreach configure_opening_hours_profile opening_hours_profile
 
+	##################
+	# Ringing Schedule
+	##################
+	ringing schedule
+
 	####################
 	# Log configuration
 	####################

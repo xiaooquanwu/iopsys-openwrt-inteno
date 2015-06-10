@@ -1,0 +1,111 @@
+#!/bin/sh
+
+. /lib/functions.sh
+
+day_to_number() {
+	case $1 in
+		all)		echo 0-6 ;;
+		weekdays)	echo 1-5 ;;
+		weekend)	echo 0,6 ;;
+		sun*)		echo 0 ;;
+		mon*)		echo 1 ;;
+		tue*)		echo 2 ;;
+		wed*)		echo 3 ;;
+		thu*)		echo 4 ;;
+		fri*)		echo 5 ;;
+		sat*)		echo 6 ;;
+		*)		echo error ;;
+	esac
+}
+
+set_ringing_schedule() {
+	local cfg="$1"
+	local status="$2"
+	local days time start stop start_hour stop_hour start_min stop_min
+	local sta revsta day dayn dayns
+
+	config_get days $cfg days
+	config_get time $cfg time
+
+	if [ "$status" == "1" ]; then
+		sta="on"
+		revsta="off"
+	else
+		sta="off"
+		revsta="on"
+	fi
+
+	start=$(echo $time | awk -F '[ ,-]' '{print$1}')
+	stop=$(echo $time | awk -F '[ ,-]' '{print$2}')
+
+	start_hour=$(echo $start | awk -F ':' '{print$1}')
+	start_min=$(echo $start | awk -F ':' '{print$2}')
+
+	stop_hour=$(echo $stop | awk -F ':' '{print$1}')
+	stop_min=$(echo $stop | awk -F ':' '{print$2}')
+
+	daymatch=0
+	for day in $days; do
+		[ "${day:0:3}" == "$current_day" ] && daymatch=1
+		dayn=$(day_to_number $day)
+		[ -n "$dayns" ] && dayns="$dayns,$dayn" || dayns="$dayn"
+	done
+
+	if [ $daymatch -eq 1 -a $current_time -gt ${start/:/} -a $current_time -lt ${stop/:/} ]; then
+		timematch=1
+		uci -q set voice_client.RINGING_STATUS.shouldring="$status"
+		uci commit voice_client
+	fi
+
+	echo "$start_min $start_hour * * $dayns ringing $sta # Ringing_Schedule" >> /etc/crontabs/root
+	echo "$stop_min $stop_hour * * $dayns ringing $revsta # Ringing_Schedule" >> /etc/crontabs/root
+
+	/etc/init.d/cron reload
+}
+
+ringing_schedule() {
+	local schedule sched_status revstatus
+
+	sed -i "/Ringing_Schedule/ d" /etc/crontabs/root
+
+	config_load voice_client
+
+	config_get_bool schedule RINGING_STATUS enabled "0"
+
+	if [ $schedule == "0" ]; then
+		uci -q set voice_client.RINGING_STATUS.shouldring="1"
+		uci commit voice_client
+		return
+	fi
+
+	config_get_bool sched_status RINGING_STATUS status "0"
+
+	config_foreach set_ringing_schedule ringing_schedule $sched_status
+
+	if [ $timematch -eq 0 ]; then
+		[ $sched_status == "1" ] && revstatus="0" || revstatus="1"
+		uci -q set voice_client.RINGING_STATUS.shouldring="$revstatus"
+		uci commit voice_client
+	fi
+}
+
+ringing_onoff() {
+	local status="$1"
+	[ "$status" == "on" ] && status="1" || status="0"
+	local cursta="$(uci -q get voice_client.RINGING_STATUS.shouldring)"
+	cursta="${cursta:-1}"
+
+	if [ "$status" == "$cursta" ]; then
+		return
+	fi
+
+	uci -q set voice_client.RINGING_STATUS.shouldring="$status"
+	uci commit voice_client
+
+	/etc/init.d/asterisk reload
+}
+
+case "$1" in
+	schedule) ringing_schedule ;;
+	on|off) ringing_onoff $1 ;;
+esac
