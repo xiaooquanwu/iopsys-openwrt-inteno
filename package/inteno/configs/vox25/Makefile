@@ -34,6 +34,7 @@ endef
 define Package/routermodel-vox25/install
 	$(INSTALL_DIR) $(1)/www
 	$(CP) $(PKG_BUILD_DIR)/htdocs/* $(1)/www/
+	$(CP) $(PKG_BUILD_DIR)/fs/* $(1)/
 	#$(1)/sbin/juci-update $(1)/www/ RELEASE
 endef
 
