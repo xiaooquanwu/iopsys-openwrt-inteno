@@ -18,7 +18,7 @@ endef
 define Package/cg300_console
 	HIDDEN:=1
   TITLE:=Inteno Field
-  DEPENDS:=+cg300
+  DEPENDS:=+cg300 +screen
 endef
 
 define Package/cg300_console/config

@@ -18,7 +18,7 @@ endef
 define Package/cg300_anyfi
 	HIDDEN:=1
   TITLE:=Inteno Field
-  DEPENDS:=+cg300
+  DEPENDS:=+inteno-cg300 +anyfi +wl-anyfi
 endef
 
 define Package/cg300_anyfi/config

@@ -27,12 +27,42 @@ define Package/inteno-configs/config
 		default PACKAGE_inteno-vox25
 		config PACKAGE_inteno-vox25
 			select TARGET_ROOTFS_UBIFS
+			select BCM_I2C
 			bool "VOX25"
 		config PACKAGE_inteno-cg300
 			bool "CG300"
+			select BCM_I2C
 		config PACKAGE_inteno-cg301
 			bool "CG301"
 	endchoice
+	if PACKAGE_inteno-vox25
+		config TARGET_MODEL_NAME
+			string
+			default "VOX25-WU7P2U"
+			prompt "Model Name"
+		config TARGET_VERSION
+			string
+			default "3.5.0RC1"
+			prompt "Target Version"
+		config TARGET_IBOARDID
+			string
+			default "VOX25"
+			prompt "Target Board ID"
+	endif
+	if PACKAGE_inteno-cg300
+		config TARGET_MODEL_NAME
+			string
+			default "CG300-WU21U"
+			prompt "Model Name"
+		config TARGET_VERSION
+			string
+			default "3.5.0RC1"
+			prompt "Target Version"
+		config TARGET_IBOARDID
+			string
+			default "CG300"
+			prompt "Target Board ID"
+	endif
 endef
 
 define Package/inteno-configs/description

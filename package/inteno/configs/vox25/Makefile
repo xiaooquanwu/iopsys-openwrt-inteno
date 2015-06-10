@@ -37,6 +37,11 @@ define Package/inteno-vox25/install
 	#$(1)/sbin/juci-update $(1)/www/ RELEASE
 endef
 
+
+define Image/PreBuild
+	CONFIG_TARGET_MARTINTEST:="MARTINTEST is SET"
+endef
+
 define Package/inteno-vox25/postinst
 #!/bin/sh
 /sbin/juci-update /www/ RELEASE

@@ -1,6 +1,6 @@
 include $(TOPDIR)/rules.mk
 
-PKG_NAME:=vox25
+PKG_NAME:=customer-vox25
 PKG_VERSION:=15.6.8
 PKG_MAINTAINER:=Martin K. Schroder <mkschreder.uk@gmail.com>
 
@@ -11,40 +11,40 @@ PKG_BUILD_PARALLEL:=1
 
 include $(INCLUDE_DIR)/package.mk
 
-define Build/Prepare
-	$(INSTALL_DIR) $(PKG_BUILD_DIR)
-	$(CP) ./juci-theme-vodafone/* $(PKG_BUILD_DIR)/
-endef
-
-define Package/vox25
+define Package/customer-vox25
 	CATEGORY:=Configs
-  HIDDEN:=1
-  TITLE:=VOX25 Router Base Package
+	HIDDEN:=1
+	TITLE:=VOX25 Customer Base Package
 endef
 
-define Package/vox25/config
+define Package/customer-vox25/config
 	if PACKAGE_inteno-vox25
 		choice 
 			prompt "VOX25 Customer Config"
-			default PACKAGE_inteno-vox25-vodafone
-			config PACKAGE_inteno-vox25-vodafone
+			default PACKAGE_customer-vox25-vodafone
+			config PACKAGE_customer-vox25-vodafone
 				bool "VOX25 Vodafone"
-			config PACKAGE_inteno-vox25-default
+			config PACKAGE_customer-vox25-default
 				bool "VOX25 Default"
 		endchoice
+		
+		if PACKAGE_customer-vox25-vodafone
+			config TARGET_CUSTOMER
+				string
+				default "VDF"
+		endif
+		if PACKAGE_customer-vox25-default
+			config TARGET_CUSTOMER
+				string
+				default "INTFIELD"
+		endif
 	endif
-endef
-
-define Package/vox25/description
-	VOX25 base package
-endef
-
-define Package/vox25/install
 	
 endef
 
-define Package/vox25/postinst
-
+define Package/customer-vox25/description
+	VOX25 base package
 endef
 
-$(eval $(call BuildPackage,vox25))
+
+$(eval $(call BuildPackage,customer-vox25))

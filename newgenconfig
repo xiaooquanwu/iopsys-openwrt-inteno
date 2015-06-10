@@ -1,0 +1,16 @@
+#!/bin/sh 
+
+CONFIG=.config
+
+if [ -f ${CONFIG} ]; then
+	sed -i.bak "s/.*CONFIG_TARGET_MODEL_NAME.*//g" ${CONFIG}
+	sed -i.bak "s/.*CONFIG_TARGET_VERSION.*//g" ${CONFIG}
+	sed -i.bak "s/.*CONFIG_TARGET_CUSTOMER.*//g" ${CONFIG}
+	sed -i.bak "s/.*CONFIG_TARGET_IBOARDID.*//g" ${CONFIG}
+	# remove all references to any customer packages
+	sed -i.bak "s/.*PACKAGE_customer-.*//g" ${CONFIG}
+	sed -i.bak "s/.*PACKAGE_inteno-.*//g" ${CONFIG}
+	# append the model name 
+	echo "CONFIG_PACKAGE_inteno-${1}=y" >> ${CONFIG}
+	make defconfig
+fi
