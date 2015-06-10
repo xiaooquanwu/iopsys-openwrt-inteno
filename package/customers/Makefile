@@ -22,17 +22,7 @@ define Package/targets
 endef
 
 define Package/targets/config
-	choice
-		prompt "Selected Box Target"
-		default PACKAGE_vox25
-		config PACKAGE_vox25
-			select TARGET_ROOTFS_UBIFS
-			bool "VOX25"
-		config PACKAGE_cg300
-			bool "CG300"
-		config PACKAGE_cg301
-			bool "CG301"
-	endchoice
+	
 endef
 
 define Package/targets/description

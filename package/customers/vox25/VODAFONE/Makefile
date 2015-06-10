@@ -28,7 +28,7 @@ endef
 
 define Package/vox25-vodafone
 	HIDDEN:=1
-  TITLE:=Vodafone
+  TITLE:=VODAFONE VOX25 Customer Configuration
   DEPENDS:=+vox25
 endef
 

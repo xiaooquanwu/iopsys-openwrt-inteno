@@ -19,37 +19,32 @@ endef
 define Package/vox25
 	CATEGORY:=Configs
   HIDDEN:=1
-  TITLE:=VOX25 Router
-  DEPENDS:=+juci
+  TITLE:=VOX25 Router Base Package
 endef
 
 define Package/vox25/config
-	if PACKAGE_vox25
+	if PACKAGE_inteno-vox25
 		choice 
-			prompt "Customer Config"
-			default PACKAGE_vox25-vodafone
-			config PACKAGE_vox25-vodafone
-				bool "Vodafone"
-			config PACKAGE_vox25-inteno-default
-				bool "Inteno Default"
+			prompt "VOX25 Customer Config"
+			default PACKAGE_inteno-vox25-vodafone
+			config PACKAGE_inteno-vox25-vodafone
+				bool "VOX25 Vodafone"
+			config PACKAGE_inteno-vox25-default
+				bool "VOX25 Default"
 		endchoice
 	endif
 endef
 
 define Package/vox25/description
-	Vodafone VOX25 base package
+	VOX25 base package
 endef
 
 define Package/vox25/install
-	$(INSTALL_DIR) $(1)/www
-	$(CP) $(PKG_BUILD_DIR)/htdocs/* $(1)/www/
-	#$(1)/sbin/juci-update $(1)/www/ RELEASE
+	
 endef
 
 define Package/vox25/postinst
-#!/bin/sh
-/sbin/juci-update /www/ RELEASE
-exit 0
+
 endef
 
 $(eval $(call BuildPackage,vox25))
