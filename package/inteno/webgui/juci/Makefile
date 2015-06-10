@@ -2,13 +2,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=juci
-PKG_VERSION=2015-06-11
+PKG_VERSION=15.06.11
 PKG_RELEASE=$(PKG_SOURCE_VERSION)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=git@iopsys.inteno.se:juci.git
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
-PKG_SOURCE_VERSION:=34f135c377de47a3ac1344af59227444bf60ed2f
+PKG_SOURCE_VERSION:=799834d4b57211cba4569757ed20ee81871559c0
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
 PKG_MAINTAINER:=Martin Schröder <mkschreder.uk@gmail.com>
 
@@ -17,12 +17,37 @@ PKG_LICENSE_FILES:=
 
 include $(INCLUDE_DIR)/package.mk
 
+define Package/juci-theme-default
+	SECTION:=juci
+	CATEGORY:=JUCI
+	TITLE:=JUCI Default Theme
+	MAINTAINER:=Martin K. Schröder <mkschreder.uk@gmail.com>
+endef
+
 define Package/juci
   $(Package/juci/default)
   SECTION:=juci
   CATEGORY:=JUCI
   TITLE:=JUCI Web Based Interface
   DEPENDS:=+rpcd +ubus-mod-juci +uhttpd +uhttpd-mod-ubus +libubox +libubus
+  
+endef
+
+define Package/juci/config 
+	choice
+		prompt "Select JUCI Theme"
+		default JUCI-theme-none
+		config JUCI-theme-none
+			bool "No Theme"
+			default y
+		config JUCI-theme-default
+			bool "Inteno Default Theme"
+	endchoice
+endef
+
+define Build/Compile
+	echo "$(CONFIG_PACKAGE_juci-theme-default)"
+	$(MAKE) -C $(PKG_BUILD_DIR) DEFAULT_THEME=$(CONFIG_PACKAGE_juci-theme-default)
 endef
 
 define Package/juci/description
@@ -57,4 +82,6 @@ fi
 exit 0
 endef
 
+
+$(eval $(call BuildPackage,juci-theme-default))
 $(eval $(call BuildPackage,juci))

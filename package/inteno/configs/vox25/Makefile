@@ -1,6 +1,6 @@
 include $(TOPDIR)/rules.mk
 
-PKG_NAME:=inteno-vox25
+PKG_NAME:=routermodel-vox25
 PKG_VERSION:=15.6.8
 PKG_MAINTAINER:=Martin K. Schroder <mkschreder.uk@gmail.com>
 
@@ -16,22 +16,22 @@ define Build/Prepare
 	$(CP) ./juci-theme-vodafone/* $(PKG_BUILD_DIR)/
 endef
 
-define Package/inteno-vox25
+define Package/routermodel-vox25
 	CATEGORY:=Configs
   HIDDEN:=1
-  TITLE:=inteno-vox25 Router
-  DEPENDS:=+juci
+  TITLE:=VOX25 Router
+  DEPENDS:=+juci 
 endef
 
-define Package/inteno-vox25/config
+define Package/routermodel-vox25/config
 	
 endef
 
-define Package/inteno-vox25/description
+define Package/routermodel-vox25/description
 	Inteno VOX25 specific box and theming package. 
 endef
 
-define Package/inteno-vox25/install
+define Package/routermodel-vox25/install
 	$(INSTALL_DIR) $(1)/www
 	$(CP) $(PKG_BUILD_DIR)/htdocs/* $(1)/www/
 	#$(1)/sbin/juci-update $(1)/www/ RELEASE
@@ -42,10 +42,10 @@ define Image/PreBuild
 	CONFIG_TARGET_MARTINTEST:="MARTINTEST is SET"
 endef
 
-define Package/inteno-vox25/postinst
+define Package/routermodel-vox25/postinst
 #!/bin/sh
 /sbin/juci-update /www/ RELEASE
 exit 0
 endef
 
-$(eval $(call BuildPackage,inteno-vox25))
+$(eval $(call BuildPackage,routermodel-vox25))

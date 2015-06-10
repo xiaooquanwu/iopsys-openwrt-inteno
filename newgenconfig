@@ -1,16 +1,16 @@
 #!/bin/sh 
 
+# Author: Martin K. Schröder <mkschreder.uk@gmail.com>
+
+# The new genconfig script works by copying all base system options from the master
+# config and then using the builtin menuconfig Makefiles to setup all dependencies. 
+# This means that in order to get a package built only one specific system and not for the 
+# others, you need to make sure that the package is not already selected in the master config
+# Any other packages that you want to select for a specific model/customer you should set
+# in the model and customer makefiles as package dependencies to the given model/customer package
+
 CONFIG=.config
 
-if [ -f ${CONFIG} ]; then
-	sed -i.bak "s/.*CONFIG_TARGET_MODEL_NAME.*//g" ${CONFIG}
-	sed -i.bak "s/.*CONFIG_TARGET_VERSION.*//g" ${CONFIG}
-	sed -i.bak "s/.*CONFIG_TARGET_CUSTOMER.*//g" ${CONFIG}
-	sed -i.bak "s/.*CONFIG_TARGET_IBOARDID.*//g" ${CONFIG}
-	# remove all references to any customer packages
-	sed -i.bak "s/.*PACKAGE_customer-.*//g" ${CONFIG}
-	sed -i.bak "s/.*PACKAGE_inteno-.*//g" ${CONFIG}
-	# append the model name 
-	echo "CONFIG_PACKAGE_inteno-${1}=y" >> ${CONFIG}
-	make defconfig
-fi
+cp package/inteno/configs/MASTER/config ${CONFIG}
+echo "CONFIG_PACKAGE_routermodel-${1}=y" >> ${CONFIG}
+make defconfig 

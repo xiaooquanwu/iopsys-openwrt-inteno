@@ -24,18 +24,18 @@ endef
 define Package/inteno-configs/config
 	choice
 		prompt "Select Inteno Target Hardware"
-		default PACKAGE_inteno-vox25
-		config PACKAGE_inteno-vox25
+		default PACKAGE_routermodel-vox25
+		config PACKAGE_routermodel-vox25
 			select TARGET_ROOTFS_UBIFS
 			select BCM_I2C
 			bool "VOX25"
-		config PACKAGE_inteno-cg300
+		config PACKAGE_routermodel-cg300
 			bool "CG300"
 			select BCM_I2C
-		config PACKAGE_inteno-cg301
+		config PACKAGE_routermodel-cg301
 			bool "CG301"
 	endchoice
-	if PACKAGE_inteno-vox25
+	if PACKAGE_routermodel-vox25
 		config TARGET_MODEL_NAME
 			string
 			default "VOX25-WU7P2U"
@@ -49,7 +49,7 @@ define Package/inteno-configs/config
 			default "VOX25"
 			prompt "Target Board ID"
 	endif
-	if PACKAGE_inteno-cg300
+	if PACKAGE_routermodel-cg300
 		config TARGET_MODEL_NAME
 			string
 			default "CG300-WU21U"
