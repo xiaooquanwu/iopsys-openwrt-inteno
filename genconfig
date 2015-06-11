@@ -14,7 +14,7 @@ export CLEAN=0
 export IMPORT=0
 export OPEN=0
 export CONFIGPATH="package/inteno/configs"  
-export CUSTCONF="package/customers"
+export CUSTCONF="package/zustomers"
 export VERBOSE=0
 export BOARDTYPE=
 export CUSTOMER=
@@ -50,7 +50,7 @@ create_and_copy_files()
 
 	if [ $OPEN -eq 0 ]; then
 	 if [ ! -d "$CUSTCONF" ]; then
-		 git  clone  git@ihgsp.inteno.se:customerconfigs ${CUSTCONF}
+		 git  clone  -b martin git@ihgsp.inteno.se:customerconfigs ${CUSTCONF}
 	 elif [ $IMPORT -eq 1 ]; then
 		cd ${CUSTCONF}
 		v "git pull"
