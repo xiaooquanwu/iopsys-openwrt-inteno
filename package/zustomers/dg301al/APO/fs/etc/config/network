@@ -1,0 +1,41 @@
+
+config interface 'loopback'
+	option is_lan '1'
+	option ifname 'lo'
+	option proto 'static'
+	option ipaddr '127.0.0.1'
+	option netmask '255.0.0.0'
+
+config interface 'lan'
+	option is_lan '1'
+	option type 'bridge'
+	option proto 'static'
+	option ipaddr '192.168.1.1'
+	option netmask '255.255.255.0'
+	option ifname 'eth1 eth3 eth4'
+
+config interface 'wan'
+	option type 'anywan'
+	option vendorid 'DG301ALA-WU7U-INTENO'
+	option proto 'dhcp'
+	option hostname 'Inteno-DG301ALAC'
+	option ipv6 '0'
+	option ifname 'atm0.3802 eth0.3802 ptm0.3802'
+
+config interface 'mgmt'
+	option type 'anywan'
+	option proto 'dhcp'
+	option ifname 'atm0.7 eth0.7 ptm0.7'
+	option defaultroute '0'
+
+config route
+	option interface 'mgmt'
+	option target '10.11.12.0'
+	option netmask '255.255.255.0'
+	option gateway '1.0.0.1'
+
+config interface 'iptv'
+	option type 'bridge'
+	option proto 'none'
+	option ifname 'atm0.902 eth0.902 eth2 ptm0.902'
+	option auto '1'

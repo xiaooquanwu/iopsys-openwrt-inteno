@@ -1,0 +1,19 @@
+config mode 'setup'
+        option dir '/etc/netmodes'
+        option detail 'To change network configuration to preconfigured please select configuration mode from dropdown menu and press button'
+        option curmode 'bridged'
+
+config netmode 'bridged'
+        option desc 'Default'
+        option conf 'config_bridged'
+        option exp 'Default configuration'
+
+config netmode 'routed'
+        option desc 'Config-NAT'
+        option conf 'config_routed'
+        option exp 'Natted configuration'
+
+config netmode 'routedhcp'
+        option desc 'Config-Route DHCP'
+        option conf 'config_routedhcp'
+        option exp 'Route + DHCP'

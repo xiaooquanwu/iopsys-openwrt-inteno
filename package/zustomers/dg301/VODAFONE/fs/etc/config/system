@@ -1,0 +1,16 @@
+
+config system
+	option zonename 'Europe/Lisbon'
+	option timezone 'WET0WEST,M3.5.0/1,M10.5.0'
+	option hostname 'Inteno'
+	option conloglevel '7'
+	option cronloglevel '8'
+
+config rdate
+	option interface 'GPON_Internet'
+
+config timeserver 'ntp'
+	option enable_server '1'
+	list server 'ntp1.dsl.vodafone.pt'
+	list server 'ntp2.dsl.vodafone.pt'
+

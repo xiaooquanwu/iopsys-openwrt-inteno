@@ -1,0 +1,20 @@
+
+config 'system'
+	option 'conloglevel' '7'
+	option 'cronloglevel' '8'
+	option 'hostname' 'DNA'
+	option 'zonename' 'Europe/Helsinki'
+	option 'timezone' 'EET-2EEST,M3.5.0/3,M10.5.0/4'
+
+config 'rdate'
+	option 'interface' 'wan'
+
+config 'timeserver' 'ntp'
+	list server 'ntp1.dnaip.fi'
+	list server 'ntp2.dnaip.fi'
+
+config 'upgrade'
+	option 'fw_check_url' 'http://cpeupdate.dnaip.fi/NAMES/IOP_VG50'
+	option 'fw_path_url' 'http://cpeupdate.dnaip.fi/SOFTWARE/VG50'
+	option 'fw_find_ext' '.w'
+

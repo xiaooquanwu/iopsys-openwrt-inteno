@@ -1,0 +1,25 @@
+
+config multiwan 'config'
+	option enabled '1'
+	option default_route 'wan'
+
+config interface 'wan'
+	option weight '10'
+	option health_interval '10'
+	option icmp_hosts 'dns'
+	option timeout '3'
+	option health_fail_retries '3'
+	option health_recovery_retries '5'
+	option failover_to 'wan2'
+	option dns 'auto'
+
+config interface 'wan2'
+	option weight '10'
+	option health_interval '10'
+	option icmp_hosts 'gateway'
+	option timeout '3'
+	option health_fail_retries '3'
+	option health_recovery_retries '5'
+	option dns '208.67.222.222 208.67.220.220'
+	option failover_to 'disable'
+

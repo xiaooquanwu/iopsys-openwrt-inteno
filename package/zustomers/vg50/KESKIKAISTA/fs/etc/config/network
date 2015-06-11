@@ -1,0 +1,35 @@
+
+config interface 'loopback'
+	option is_lan '1'
+	option ifname 'lo'
+	option proto 'static'
+	option ipaddr '127.0.0.1'
+	option netmask '255.0.0.0'
+
+config interface 'lan'
+	option is_lan '1'
+	option type 'bridge'
+	option proto 'static'
+	option ipaddr '192.168.1.1'
+	option netmask '255.255.255.0'
+	option ifname 'eth0 eth1 eth2 eth4'
+	option bridge_instance '1'
+
+config interface 'Internet'
+	option type 'anywan'
+	option proto 'dhcp'
+	option ifname 'eth3.2153 ptm0.2153'
+	option vendorid 'INTENO-VG50'
+
+config interface 'mgmt'
+	option type 'anywan'
+	option proto 'dhcp'
+	option ifname 'eth3.1311 ptm0.1311'
+	option defaultroute '0'
+	option vendorid 'INTENO-VG50'
+
+config route
+	option interface 'mgmt'
+	option target '172.21.0.0'
+	option netmask '255.255.0.0'
+

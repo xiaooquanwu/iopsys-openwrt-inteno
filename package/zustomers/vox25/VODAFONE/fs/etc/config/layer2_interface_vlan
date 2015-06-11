@@ -1,0 +1,22 @@
+
+config vlan_interface
+	option name 'internet'
+	option ifname 'eth4.100'
+	option baseifname 'eth4'
+	option vlan8021q '100'
+	option vlan8021p '0'
+
+config vlan_interface
+	option name 'voice'
+	option ifname 'eth4.101'
+	option baseifname 'eth4'
+	option vlan8021q '101'
+	option vlan8021p '5'
+
+config vlan_interface
+	option name 'iptv'
+	option ifname 'eth4.105'
+	option baseifname 'eth4'
+	option vlan8021q '105'
+	option vlan8021p '4'
+

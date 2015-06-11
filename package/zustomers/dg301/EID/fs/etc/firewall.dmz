@@ -1,0 +1,8 @@
+OPTS=""
+dmzhost=$(uci -q get firewall.dmz.host)
+notports=$(uci -q get firewall.dmz.notports)
+[ -n "$notports" ] && OPTS="--match multiport ! --dports $notports"
+if [ -n "$dmzhost" ]; then
+	iptables -t filter -I zone_wan_forward -d $dmzhost -m comment --comment DMZ_Host -j ACCEPT
+	iptables -t nat -I zone_wan_prerouting -p tcp $OPTS -m comment --comment DMZ_Host -j DNAT --to-destination $dmzhost
+fi

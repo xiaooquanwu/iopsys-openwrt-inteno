@@ -1,0 +1,214 @@
+#!/bin/sh
+
+. /lib/functions.sh
+. /usr/share/libubox/jshn.sh
+
+local CONFIGNO WANNET PPPUSR PPPPAS
+
+local netpingaddr="$(uci get -q system.@system[0].netping_addr)"
+
+test_connection() {
+        local addr="$1"
+        local defroute="$(ip r | grep default | awk '{print$3}')"
+        local def6route="$(ip -f inet6 r | grep default | awk '{print$3}')"
+        local ping6dev="$(ip -f inet6 r | grep default | awk '{print$5}')"
+
+        if [ -n "$defroute" ]; then
+                if [ -n "$addr" ]; then
+                        ping -q -w 1 -c 1 $addr >/dev/null 2>&1 && return 0
+                else
+                        ping -q -w 1 -c 1 $defroute >/dev/null 2>&1 && return 0
+                        for nmsrv in $(grep nameserver /var/resolv.conf.auto | awk '{print$2}'); do
+                                ping -q -w 1 -c 1 $nmsrv >/dev/null 2>&1 && return 0
+                        done
+                fi
+        elif [ -n "$def6route" ] && [ -n "$ping6dev" ]; then
+                ndisc6 -1 $def6route $ping6dev >/dev/null 2>&1 && return 0
+        fi
+        return 1
+}
+
+convert_macros() {
+	local BMAC=$(cat /proc/nvram/BaseMacAddr | tr '[a-z]' '[A-Z]')
+	BMAC=${BMAC// /}
+	local MAC=$(printf "%X\n" $((0x$BMAC)))
+	local HWVER=$(db get hw.board.hardwareVersion)
+	local RMODEL=$(db get hw.board.routerModel)
+
+	local mac=$BMAC
+	local mac2=${MAC:8:2}
+	local mac4=${MAC:6:4}
+	local mac6=${MAC:4:6}
+	local hardwareid=$HWVER-$(echo $RMODEL | sed -r 's;.+-(.+);\1;')
+
+	sed -i "s/\$MAC/$mac/g" /etc/config/network
+	sed -i "s/\$MAC6/$mac6/g" /etc/config/network
+	sed -i "s/\$MAC4/$mac4/g" /etc/config/network
+	sed -i "s/\$HARDWAREID/$hardwareid/g" /etc/config/network
+}
+
+detect_firewall_config() {
+	uci -q get firewall.@include[0].reload && echo "new" || echo "old"
+}
+
+get_config_params() {
+	uci -q get network.pppoe835 && {
+		CONFIGNO="config1"
+		WANNET="pppoe835"
+		PPPUSR="$(uci get network.pppoe835.username)"
+		PPPPAS="$(uci get network.pppoe835.password)"
+		return
+	}
+	uci -q get network.pppoe133 && {
+		CONFIGNO="config2"
+		WANNET="pppoe133"
+		PPPUSR="$(uci get network.pppoe133.username)"
+		PPPPAS="$(uci get network.pppoe133.password)"
+		return
+	}
+	uci -q get network.pppoa132 && {
+		CONFIGNO="config3"
+		WANNET="pppoa132"
+		PPPUSR="$(uci get network.pppoa132.username)"
+		PPPPAS="$(uci get network.pppoa132.password)"
+		return
+	}
+	uci -q get network.pppoa835 && {
+		CONFIGNO="config4"
+		WANNET="pppoa835"
+		PPPUSR="$(uci get network.pppoa835.username)"
+		PPPPAS="$(uci get network.pppoa835.password)"
+		return
+	}
+	uci -q get network.pppoeVDSL && {
+		CONFIGNO="config5"
+		WANNET="pppoeVDSL"
+		PPPUSR="$(uci get network.pppoeVDSL.username)"
+		PPPPAS="$(uci get network.pppoeVDSL.password)"
+		return
+	}
+	uci -q get network.dhcpWAN && {
+		CONFIGNO="config0"
+		WANNET="dhcpWAN"
+		return
+	}
+}
+
+add_guest_wifi() {
+	if ! uci show wireless | grep network | grep guest; then
+		uci add wireless wifi-iface
+		uci set wireless.@wifi-iface[-1].device="wl0"
+		uci set wireless.@wifi-iface[-1].network="guest"
+		uci set wireless.@wifi-iface[-1].mode="ap"
+		uci set wireless.@wifi-iface[-1].encryption="none"
+		uci set wireless.@wifi-iface[-1].macfilter="0"
+		uci set wireless.@wifi-iface[-1].ssid="NextGenTel_\$BSSID4-Guest"
+		uci set wireless.@wifi-iface[-1].wps_pbc="0"
+		uci set wireless.@wifi-iface[-1].wmf_bss_enable="1"
+		uci set wireless.@wifi-iface[-1].isolate="1"
+		uci set wireless.@wifi-iface[-1].disabled="1"
+		uci commit wireless
+	fi
+}
+
+switching_dsl_type() {
+	local confno=$1
+	local tm grp
+	case "$confno" in
+		config0) grp="atm0.1\|ptm0.1\|eth0.1" ;;
+		config*) grp="atm0.1\|ptm0.1" ;;
+	esac
+
+	if ! ifconfig -a | grep -w $grp >/dev/null 2>&1; then
+		/etc/init.d/layer2_interface restart
+		for tm in 5 10 15 20; do
+			ifconfig -a | grep -w $grp >/dev/null 2>&1 && break || sleep $tm
+		done
+	else
+		/etc/init.d/layer2_interface_adsl restart
+	fi
+}
+
+handle_internet_led() {
+	local state
+	json_load "$(ubus call led.internet status)"
+	json_get_var state state
+	if [ "$state" != "ok" ]; then
+		killall testnet >/dev/null 2>&1
+		/sbin/testnet &
+	fi
+}
+
+# if called with an argument via tr069
+if [ "$1" == "1" ]; then
+	while true; do
+		test_connection "$netapingddr"
+		[ "$?" -eq "1" ] && break
+		sleep 10
+	done
+fi
+
+# find out if router is upgraded from 1.x to 2.x
+# if yes, conver old config files to 2.x compatible version
+if [ "$(detect_firewall_config)" == "old" ]; then
+	get_config_params
+	if [ -d /etc/ngt/$CONFIGNO ]; then
+		local lan_addr="$(uci -q get network.lan.ipaddr)"
+		local gst_addr="$(uci -q get network.guest.ipaddr)"
+		cp /etc/ngt/$CONFIGNO/* /etc/config/
+		[ -n "$lan_addr" ] && uci set network.lan.ipaddr="$lan_addr"
+		[ -n "$gst_addr" ] && uci set network.guest.ipaddr="$gst_addr"
+		cp /rom/etc/config/dropbear /etc/config/
+		cp /rom/etc/config/firewall /etc/config/
+		cp /rom/etc/firewall.user /etc/firewall.user
+		uci set network.wan.username=$PPPUSR
+		uci set network.wan.password=$PPPPAS
+		uci set cwmp.cpe.default_wan_interface="wan"
+		uci commit network
+		uci commit cwmp
+		add_guest_wifi
+		/etc/init.d/ppp_password start
+		switching_dsl_type "$CONFIGNO"
+		/etc/init.d/enviroment restart
+		/etc/init.d/network reload
+		/etc/init.d/firewall restart
+		sleep 10
+	fi
+fi
+
+# check if router is online
+test_connection "$netapingddr"
+if [ "$?" -eq "0" ]; then
+	/etc/init.d/network reload
+	handle_internet_led
+	/etc/init.d/ngtwan disable
+	exit
+fi
+
+# if router is still not online, try other configs
+local configs="config2 config3 config0"
+while true; do
+	for config in $configs; do
+		if [ -d /etc/ngt/$config ]; then
+			local lan_addr="$(uci -q get network.lan.ipaddr)"
+			local gst_addr="$(uci -q get network.guest.ipaddr)"
+			cp /etc/ngt/$config/* /etc/config/
+			[ -n "$lan_addr" ] && uci set network.lan.ipaddr="$lan_addr"
+			[ -n "$gst_addr" ] && uci set network.guest.ipaddr="$gst_addr"
+			uci commit network
+			convert_macros
+			/etc/init.d/ppp_password start
+			switching_dsl_type "$config"
+			ubus call network reload
+			/etc/init.d/firewall reload
+			sleep 10
+			test_connection "$netapingddr"
+			if [ "$?" -eq "0" ]; then
+				/etc/init.d/network reload
+				handle_internet_led
+				/etc/init.d/ngtwan disable
+				exit
+			fi
+		fi
+	done
+done

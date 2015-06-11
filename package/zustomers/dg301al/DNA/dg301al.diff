@@ -1,0 +1,17 @@
+s/CONFIG_TARGET_CUSTOMER="INT"/CONFIG_TARGET_CUSTOMER="DNA-WELHO"/g
+s/CONFIG_PACKAGE_ice-client=y/# CONFIG_PACKAGE_ice-client is not set/g
+s/CONFIG_PACKAGE_openvpn=y/#CONFIG_PACKAGE_openvpn is not set/g
+s/CONFIG_PACKAGE_openvpn-easy-rsa=y/#CONFIG_PACKAGE_openvpn-easy-rsa is not set/g
+s/CONFIG_PACKAGE_luci-app-openvpn=y/#CONFIG_PACKAGE_luci-app-openvpn is not set/g
+s/CONFIG_PACKAGE_luci-app-samba=y/#CONFIG_PACKAGE_luci-app-samba is not set/g
+s/CONFIG_PACKAGE_luci-app-minidlna=y/#CONFIG_PACKAGE_luci-app-minidlna is not set/g
+s/CONFIG_PACKAGE_libdlna=y/#CONFIG_PACKAGE_libdlna is not set/g
+s/CONFIG_PACKAGE_minidlna=y/#CONFIG_PACKAGE_minidlna is not set/g
+s/CONFIG_PACKAGE_luci-app-ipsec=y/#CONFIG_PACKAGE_luci-app-ipsec is not set/g
+s/CONFIG_PACKAGE_libminiupnpc=y/#CONFIG_PACKAGE_libminiupnpc is not set/g
+s/CONFIG_PACKAGE_libupnp=y/#CONFIG_PACKAGE_libupnp is not set/g
+s/CONFIG_PACKAGE_miniupnpc=y/#CONFIG_PACKAGE_miniupnpc is not set/g
+s/CONFIG_PACKAGE_luci-app-upnp=y/#CONFIG_PACKAGE_luci-app-upnp is not set/g
+s/CONFIG_PACKAGE_luci-app-siitwizard=y/#CONFIG_PACKAGE_luci-app-siitwizard is not set/g
+s/CONFIG_PACKAGE_luci-app-voice=y/#CONFIG_PACKAGE_luci-app-voice is not set/g
+s/CONFIG_PACKAGE_voicesec=y/#CONFIG_PACKAGE_voicesec is not set/g

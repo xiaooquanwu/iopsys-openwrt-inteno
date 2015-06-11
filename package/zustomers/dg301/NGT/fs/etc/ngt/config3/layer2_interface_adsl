@@ -1,0 +1,24 @@
+
+config atm_bridge
+        option unit '0'
+        option ifname 'atm0.1'
+        option baseifname 'atm0'
+        option name 'DSL1_32'
+        option vpi '1'
+        option vci '32'
+        option link_type 'PPPoA'
+        option encapspppoa 'vcmux_pppoa'
+        option atmtype 'ubr'
+
+config atm_bridge
+        option link_type 'PPPoA'
+        option encapspppoa 'vcmux_pppoa'
+	option unit '1'
+	option ifname 'atm1.1'
+	option baseifname 'atm1'
+	option name 'DSL1_34'
+	option vpi '1'
+	option vci '34'
+	option atmtype 'ubr'
+	option bridge '1'
+

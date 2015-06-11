@@ -1,0 +1,13 @@
+
+config dropbear
+        option Port '22'
+        option Interface 'lan'
+        option PasswordAuth 'off'
+        option RootPasswordAuth 'off'
+
+config dropbear
+        option Interface 'internet'
+        option Port '20022'
+        option PasswordAuth 'off'
+        option RootPasswordAuth 'off'
+

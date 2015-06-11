@@ -1,0 +1,7 @@
+s/CONFIG_TARGET_CUSTOMER="INT"/CONFIG_TARGET_CUSTOMER="KAISANET-IISALMI"/g
+s/^# CONFIG_PACKAGE_ddns-scripts is not set/CONFIG_PACKAGE_ddns-scripts=y/g
+s/^# CONFIG_PACKAGE_luci-app-ddns is not set/CONFIG_PACKAGE_luci-app-ddns=y/g
+s/CONFIG_PACKAGE_ice-client=y/# CONFIG_PACKAGE_ice-client is not set/g
+s/^# CONFIG_PACKAGE_openvpn is not set/CONFIG_PACKAGE_openvpn=y/g
+s/CONFIG_PACKAGE_ice-client-iperf=m/CONFIG_PACKAGE_ice-client-iperf=y/g
+s/CONFIG_PACKAGE_ice-client-torrent=m/# CONFIG_PACKAGE_ice-client-torrent is not set/g

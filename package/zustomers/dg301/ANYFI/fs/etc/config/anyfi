@@ -1,0 +1,3 @@
+
+config anyfi 'controller'
+        option hostname 'demo.anyfi.net'

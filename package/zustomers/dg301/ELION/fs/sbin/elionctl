@@ -1,0 +1,17 @@
+#!/bin/sh
+
+case "$1" in
+	info)
+		ubus call router info
+	;;
+	ports)
+		ubus call router ports "{ \"network\": \"${2:-lan}\" }"
+	;;
+	scan)
+		wlctl -i "${2:-wl0}" scan 2>/dev/null && sleep 2 && wlctl -i "${2:-wl0}" scanresults_summary
+	;;
+	usb)
+		ubus call router usb
+	;;
+esac
+

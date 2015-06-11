@@ -1,0 +1,3 @@
+s/CONFIG_TARGET_CUSTOMER="INT"/CONFIG_TARGET_CUSTOMER="ICE"/g
+s/^# CONFIG_PACKAGE_ice-client is not set/CONFIG_PACKAGE_ice-client=y/g
+

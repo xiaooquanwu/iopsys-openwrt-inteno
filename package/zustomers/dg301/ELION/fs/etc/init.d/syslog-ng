@@ -1,0 +1,91 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2006 OpenWrt.org
+
+START=15
+STOP=20
+
+create_user_server() {
+	local srv=$1
+	local port=$2
+	if [ -z "$port" ]; then
+		port="514"
+	fi
+	rm /etc/syslog-ng.user.conf
+	cat << "EOF" > /etc/syslog-ng.user.conf
+destination d_client {
+	udp("IPADDR" port(DPORT));
+};
+filter f_user {
+	not match ("rtsp" value(MESSAGE))
+	and not program("asterisk")
+	and not match ("uci: Entry not found" value(MESSAGE))
+	and not match ("Error writing to page 7f00000" value(MESSAGE))
+		and not program("ice");
+};
+log {
+     source(kernel);
+     source(local);
+     filter(f_user);
+     destination(d_client);
+};
+EOF
+/bin/sed -i "s/IPADDR/$srv/g" /etc/syslog-ng.user.conf
+/bin/sed -i "s/DPORT/$port/g" /etc/syslog-ng.user.conf
+grep "syslog-ng.user.conf" /etc/syslog-ng.conf || /bin/sed -i '2s/^/include \"\/etc\/syslog-ng.user.conf\";\n/' /etc/syslog-ng.conf
+}
+
+start_up() {
+	/etc/init.d/boot stop
+	[ -f /var/run/syslogd.pid ] && /bin/rm /var/run/syslogd.pid
+	sn=$(/bin/cat /proc/nvram/SerialNumber)
+	/bin/sed -i "s/#D301\+[0-9A-Z]\+/#$sn/" /etc/syslog-ng.remote.conf
+	/bin/sed -i "s/SNUMBER/$sn/" /etc/syslog-ng.remote.conf
+	[ -f /etc/syslog-ng.conf ] || {
+		echo "/etc/syslog-ng.conf does not exist !";
+		exit 0;
+	};
+	[ -d /var/run ] || mkdir -p /var/run
+	user_ip=$(uci -q get system.@system[0].log_ip)
+	if [ ! -z "$user_ip" ] && [ "0.0.0.0" != "$user_ip" ] && [ "127.0.0.1" != "$user_ip" ]; then
+	   echo "User set logging"
+	   create_user_server $user_ip $(uci -q get system.@system[0].log_port)
+	else
+		sed -i "/syslog-ng.user.conf/d" /etc/syslog-ng.conf
+	fi
+	[ -x /usr/sbin/syslog-ng ] && /usr/sbin/syslog-ng --pidfile=/var/run/syslog-ng.pid
+	/bin/sed -i 's/logread/\/usr\/bin\/tail -n 100 \/log\/messages/g' /usr/lib/lua/luci/sys.lua
+}
+
+stop() {
+	[ -f /var/run/syslog-ng.pid ] && {
+		pr=$(/bin/cat /var/run/syslog-ng.pid)
+		/bin/echo "Killing process $pr"
+		/bin/kill -9 $pr
+		/bin/rm /var/run/syslog-ng.pid
+	} || /bin/echo "PID not found!"
+}
+
+reload() {
+	/usr/bin/killall -HUP syslog-ng &>/dev/null
+}
+
+start() {
+	if [ -f /var/run/syslog-ng.pid ];then
+		/bin/echo "Syslog-ng is already running"
+	else
+		uptime=$(/bin/cat /proc/uptime | cut -d "." -f1)
+		sed -i "/syslog-ng.remote.conf/d" /etc/syslog-ng.conf
+		if [ $uptime -lt 150 ];then
+			/bin/sleep 120 && /etc/init.d/syslog-ng restart && /usr/bin/logger -t sysinit -p 14 "FULLYBOOTED" && /usr/bin/logger -t sysinit "Uptime $(/usr/bin/uptime)" &
+			start_up
+		else
+			grep "syslog-ng.remote.conf" /etc/syslog-ng.conf || /bin/sed -i '2s/^/include \"\/etc\/syslog-ng.remote.conf\";\n/' /etc/syslog-ng.conf
+			start_up
+		fi
+	fi
+}
+restart() {
+	stop
+	start
+}
+

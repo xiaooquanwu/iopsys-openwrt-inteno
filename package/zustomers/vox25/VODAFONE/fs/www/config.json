@@ -1,0 +1,18 @@
+{
+	"showlogin": false, 
+	"defaultuser": "admin", 
+	"languages": [
+		"tr", "de", "se", "en"
+	],
+	"themes": [
+		"vodafone"
+	], 
+	"plugins": [
+		"core", 
+		"phone", 
+		"settings", 
+		"status",
+		"internet",
+		"wifi"
+	]
+}

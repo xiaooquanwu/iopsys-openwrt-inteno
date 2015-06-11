@@ -1,0 +1,3 @@
+config ice 'cloud'
+        option server 'cloud.alcom.ax'
+        option enabled '1'

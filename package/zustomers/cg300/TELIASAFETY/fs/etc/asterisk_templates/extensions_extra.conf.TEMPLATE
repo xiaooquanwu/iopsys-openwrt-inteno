@@ -1,0 +1,127 @@
+;------------------------------------------------------------------------------
+; Allows customized handling of outgoing calls.
+;
+; - The called extension is stored in DIAL_EXTEN and may be altered
+;
+; - If enabled, this macro will be called before an outbound call is placed
+;   but after matching any local or special extensions
+;
+; - Control will be handed back to normal call handler at the end of this
+;   macro unless the call is ended with Hangup() or similar.
+;------------------------------------------------------------------------------
+[macro-custom-outgoing]
+;Hooks for health gateway events
+
+;Alarm press
+exten => s,1,		GotoIf($["${DIAL_EXTEN}" = "#717771714#"]?bridge:battery_check)
+exten => s,n(bridge), System(ubus send safety_alarm '{ "alarm_press" : 1 }')
+exten => s,n,Set(CONF_LIMIT_TIMEOUT_FILE=end-conf)
+exten => s,n, MeetMe(1234,xL(900000)Mq)
+exten => s,n,		Hangup()
+
+exten => s,n(battery_check),  GotoIf($["${DIAL_EXTEN}" = "#717771715#"]?battery:beacon_check)
+exten => s,n(battery), NoOp(Low battery alarm)
+exten => s,n, System(ubus send safety_alarm '{ "low_battery" : 1}')
+exten => s,n,		Hangup()
+
+exten => s,n(beacon_check),  GotoIf($["${DIAL_EXTEN}" = "#717771716#"]?beacon:continue)
+exten => s,n(beacon), NoOp(Beacon)
+exten => s,n, System(ubus send safety_alarm '{ "beacon" : 1}')
+exten => s,n,		Hangup()
+
+
+;Don't allow outgoing calls
+exten => s,n(continue), Playback(no-outgoing)
+exten => s,n, Hangup()
+
+;------------------------------------------------------------------------------
+; Allows customized handling of incoming calls.
+; NOTE: any extension matching _[0-9a-zA-Z]. will end up here. Make sure
+; to handle extensions in a secure way - follw best practices.
+;
+; - The called extension is stored in MACRO_EXTEN
+;
+; - If enabled, this macro will be called before normal call handling begins
+;
+; - Control will be handed back to normal call handler at the end of this
+;   macro unless the call is ended with Hangup() or similar.
+;------------------------------------------------------------------------------
+
+; Only allows calls from numbers in the whitelist DB
+[macro-whitelist-vip]
+; Check if
+exten => s,1,GotoIf(${DB_EXISTS(vip/${CALLERID(num)})}?:continue)
+
+; Get number of users already in conference
+exten => s,n,MeetMeCount(1234,users)
+exten => s,n,NoOp(users: ${users})
+
+; If there are users in confbridge, place call in confbridge, otherwise call pendant
+exten => s,n,GotoIf($[${users} > 0],?bridge:dialthrough)
+
+; Place call in confbridge
+exten => s,n(bridge), MeetMe(1234,A)
+exten => s,n, Hangup()
+
+; Dial pendant
+exten => s,n(dialthrough),Goto(macro-custom-incoming,continue-dialing,1)
+
+; Number not in vip list, continue
+exten => s,n(continue), NoOp()
+
+
+[macro-whitelist-family]
+; Check if
+exten => s,1,GotoIf(${DB_EXISTS(family/${CALLERID(num)})}?:continue)
+
+; Get number of users already in conference
+exten => s,n,MeetMeCount(1234,users)
+exten => s,n,NoOp(users: ${users})
+
+; If there are users in confbridge, place call in confbridge, otherwise call pendant
+exten => s,n,GotoIf($[${users} > 0],?howmany:dialthrough)
+
+; If more than allowed nr of users, don't allow family member to join
+exten => s,n(howmany),GotoIf($[${users} > 2],?toomany:bridge)
+
+; Place call in confbridge
+exten => s,n(bridge), MeetMe(1234,A)
+exten => s,n, Hangup()
+
+; Too many users, terminate call
+exten => s,n(toomany), Playback(too-many)
+exten => s,n, Hangup()
+
+; Dial pendant
+exten => s,n(dialthrough),Goto(macro-custom-incoming,continue-dialing,1)
+
+; Number not in family list, continue
+exten => s,n(continue), NoOp()
+
+
+
+[macro-custom-incoming]
+exten => s,1,NoOp(Incoming call: ${CALLERID(num)})
+
+; Filter incoming calls
+exten => s,n,Macro(whitelist-vip)
+exten => s,n,Macro(whitelist-family)
+
+; Default handling. Terminate call if not in any whitelist
+exten => s,n,Playback(not-on-whitelist)
+exten => s,n,Hangup()
+
+; Continue to normal incoming call handling
+exten => s,n(continue-dialing), NoOp()
+
+
+
+
+;------------------------------------------------------------------------------
+; Allows customized actions when other party hangs up, for example
+; playing a beep or busy tone to indicate that call is ended.
+;------------------------------------------------------------------------------
+[macro-custom-hangup]
+exten => s,1,Playtones(busy)
+exten => s,n,Wait(10)
+exten => s,n,Hangup()

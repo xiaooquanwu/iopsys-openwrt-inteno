@@ -1,0 +1,19 @@
+config samba
+	option name 'Vodafone'
+	option workgroup 'Vodafone'
+	option description 'Vodafone'
+	option homes '1'
+
+config sambashare
+	option create_mask '0700'
+	option dir_mask '0700'
+	option name 'VFPOC'
+	option users 'admin'
+	option guest_ok 'no'
+	option read_only 'no'
+	option path '/mnt'
+
+config sambausers
+        option user 'admin'
+        option password 'vodafone'
+

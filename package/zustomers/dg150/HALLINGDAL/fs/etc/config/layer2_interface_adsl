@@ -1,0 +1,23 @@
+
+config atm_bridge
+        option unit '0'
+        option link_type 'EoA'
+        option encapseoa 'llcsnap_eth'
+        option baseifname 'atm0'
+        option ifname 'atm0.1'
+        option name 'DSL8_35'
+        option vpi '8'
+        option vci '35'
+        option atmtype 'ubr'
+
+config atm_bridge
+	option unit '1'
+	option link_type 'EoA'
+	option encapseoa 'llcsnap_eth'
+	option baseifname 'atm1'
+	option ifname 'atm1.1'
+	option name 'DSL0_33'
+	option vpi '0'
+	option vci '33'
+	option atmtype 'ubr'
+

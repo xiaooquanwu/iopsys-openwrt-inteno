@@ -1,0 +1,25 @@
+
+config vlan_interface
+	option name 'adslbridge'
+	option ifname 'atm0.3750'
+	option baseifname 'atm0'
+	option vlan8021q '3750'
+	option vlan8021p '2'
+	option bridge '1'
+
+config vlan_interface
+	option name 'vdslbridge'
+	option ifname 'ptm0.3750'
+	option baseifname 'ptm0'
+	option vlan8021q '3750'
+	option vlan8021p '2'
+	option bridge '1'
+
+config vlan_interface
+	option name 'ethbridge'
+	option ifname 'eth3.3750'
+	option baseifname 'eth3'
+	option vlan8021q '3750'
+	option vlan8021p '2'
+	option bridge '1'
+

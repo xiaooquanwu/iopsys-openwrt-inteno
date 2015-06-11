@@ -1,0 +1,194 @@
+config vlan_interface
+	option ifname 'eth0.20'
+	option baseifname 'eth0'
+	option vlan8021q '20'
+	option vlan8021p '0'
+	option bridge '1'
+	option name 'ETH_vlan20'
+
+config vlan_interface
+	option name 'dsl_835_20'
+	option ifname 'atm0.20'
+	option baseifname 'atm0'
+	option vlan8021q '20'
+	option vlan8021p '6'
+	option bridge '1'
+
+config vlan_interface
+	option name 'dsl_033_20'
+	option ifname 'atm1.20'
+	option baseifname 'atm1'
+	option vlan8021q '20'
+	option vlan8021p '0'
+	option bridge '1'
+
+config vlan_interface
+	option name 'ptm_20'
+	option ifname 'ptm0.20'
+	option baseifname 'ptm0'
+	option vlan8021q '20'
+	option vlan8021p '0'
+	option bridge '1'
+
+config vlan_interface
+	option ifname 'eth0.30'
+	option baseifname 'eth0'
+	option vlan8021q '30'
+	option vlan8021p '0'
+	option bridge '1'
+	option name 'ETH_vlan30'
+
+config vlan_interface
+	option name 'dsl_835_30'
+	option ifname 'atm0.30'
+	option baseifname 'atm0'
+	option vlan8021q '30'
+	option vlan8021p '0'
+	option bridge '1'
+
+config vlan_interface
+	option name 'dsl_033_30'
+	option ifname 'atm1.30'
+	option baseifname 'atm1'
+	option vlan8021q '30'
+	option vlan8021p '0'
+	option bridge '1'
+
+config vlan_interface
+	option name 'ptm_30'
+	option ifname 'ptm0.30'
+	option baseifname 'ptm0'
+	option vlan8021q '30'
+	option vlan8021p '0'
+	option bridge '1'
+
+config vlan_interface
+	option ifname 'eth0.40'
+	option baseifname 'eth0'
+	option vlan8021q '40'
+	option vlan8021p '0'
+	option bridge '1'
+	option name 'ETH_vlan40'
+
+config vlan_interface
+	option name 'dsl_835_40'
+	option ifname 'atm0.40'
+	option baseifname 'atm0'
+	option vlan8021q '40'
+	option vlan8021p '0'
+	option bridge '1'
+
+config vlan_interface
+	option name 'dsl_033_40'
+	option ifname 'atm1.40'
+	option baseifname 'atm1'
+	option vlan8021q '40'
+	option vlan8021p '0'
+	option bridge '1'
+
+config vlan_interface
+	option name 'ptm_40'
+	option ifname 'ptm0.40'
+	option baseifname 'ptm0'
+	option vlan8021q '40'
+	option vlan8021p '0'
+	option bridge '1'
+
+
+config vlan_interface
+	option ifname 'eth0.50'
+	option baseifname 'eth0'
+	option vlan8021q '50'
+	option vlan8021p '0'
+	option bridge '1'
+	option name 'ETH_vlan50'
+
+config vlan_interface
+	option name 'dsl_835_50'
+	option ifname 'atm0.50'
+	option baseifname 'atm0'
+	option vlan8021q '50'
+	option vlan8021p '0'
+	option bridge '1'
+
+config vlan_interface
+	option name 'dsl_033_50'
+	option ifname 'atm1.50'
+	option baseifname 'atm1'
+	option vlan8021q '50'
+	option vlan8021p '0'
+	option bridge '1'
+
+config vlan_interface
+	option name 'ptm_50'
+	option ifname 'ptm0.50'
+	option baseifname 'ptm0'
+	option vlan8021q '50'
+	option vlan8021p '0'
+	option bridge '1'
+
+config vlan_interface
+	option ifname 'eth0.60'
+	option baseifname 'eth0'
+	option vlan8021q '60'
+	option vlan8021p '0'
+	option bridge '1'
+	option name 'ETH_vlan20'
+
+config vlan_interface
+	option name 'dsl_835_60'
+	option ifname 'atm0.60'
+	option baseifname 'atm0'
+	option vlan8021q '60'
+	option vlan8021p '0'
+	option bridge '1'
+
+config vlan_interface
+	option name 'dsl_033_60'
+	option ifname 'atm1.60'
+	option baseifname 'atm1'
+	option vlan8021q '60'
+	option vlan8021p '0'
+	option bridge '1'
+
+config vlan_interface
+	option name 'ptm_60'
+	option ifname 'ptm0.60'
+	option baseifname 'ptm0'
+	option vlan8021q '60'
+	option vlan8021p '0'
+	option bridge '1'
+
+
+config vlan_interface
+	option ifname 'eth0.70'
+	option baseifname 'eth0'
+	option vlan8021q '70'
+	option vlan8021p '0'
+	option bridge '1'
+	option name 'ETH_vlan70'
+
+config vlan_interface
+	option name 'dsl_835_70'
+	option ifname 'atm0.70'
+	option baseifname 'atm0'
+	option vlan8021q '70'
+	option vlan8021p '0'
+	option bridge '1'
+
+config vlan_interface
+	option name 'dsl_033_70'
+	option ifname 'atm1.70'
+	option baseifname 'atm1'
+	option vlan8021q '70'
+	option vlan8021p '0'
+	option bridge '1'
+
+config vlan_interface
+	option name 'ptm_70'
+	option ifname 'ptm0.70'
+	option baseifname 'ptm0'
+	option vlan8021q '70'
+	option vlan8021p '0'
+	option bridge '1'
+

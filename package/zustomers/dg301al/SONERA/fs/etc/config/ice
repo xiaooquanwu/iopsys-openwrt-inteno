@@ -1,0 +1,3 @@
+config ice 'cloud'
+        option server 'intenocloud.com'
+        option enabled '1'

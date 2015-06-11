@@ -1,0 +1,34 @@
+
+config atm_bridge
+	option link_type 'EoA'
+	option encapseoa 'llcsnap_eth'
+	option unit '0'
+	option ifname 'atm0.1'
+	option baseifname 'atm0'
+	option name 'internet_0_33'
+	option vpi '0'
+	option vci '33'
+	option atmtype 'ubr'
+
+config atm_bridge
+	option link_type 'EoA'
+	option encapseoa 'llcsnap_eth'
+	option unit '1'
+	option ifname 'atm1.1'
+	option baseifname 'atm1'
+	option vci '35'
+	option name 'iptv_0_35'
+	option vpi '0'
+	option atmtype 'ubr'
+
+config atm_bridge
+	option link_type 'EoA'
+	option encapseoa 'llcsnap_eth'
+	option unit '2'
+	option ifname 'atm2.1'
+	option baseifname 'atm2'
+	option name 'mgmt_0_36'
+	option vpi '0'
+	option vci '36'
+	option atmtype 'ubr'
+

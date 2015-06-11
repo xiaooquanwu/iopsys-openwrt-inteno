@@ -1,0 +1,4 @@
+s/CONFIG_TARGET_CUSTOMER="INT"/CONFIG_TARGET_CUSTOMER="DHCPRELAY"/g
+s/^# CONFIG_PACKAGE_relayd is not set/CONFIG_PACKAGE_relayd=y/g
+s/^# CONFIG_PACKAGE_luci-proto-relay is not set/CONFIG_PACKAGE_luci-proto-relay=y/g
+s/^# CONFIG_PACKAGE_dhcp-forwarder is not set/CONFIG_PACKAGE_dhcp-forwarder=y/g

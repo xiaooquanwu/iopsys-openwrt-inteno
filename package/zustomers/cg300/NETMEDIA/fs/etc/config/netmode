@@ -1,0 +1,76 @@
+config mode 'setup'
+        option dir '/etc/netmodes'
+        option detail ''
+        option curmode 'routed'
+		option credmodes 'repeater'
+
+config netmode 'routed'
+        option desc 'Fully Routed (NAT)'
+        option conf 'config_routed'
+        option exp ''
+
+config netmode 'repeater'
+        option desc 'Wireless Repeater'
+        option conf 'config_repeater'
+        option exp 'Your router is going to act as a wireless repeater to the selected Wireless Access Point.'
+
+config netmode 'bridge'
+        option desc 'Bridge'
+        option conf 'config_bridged'
+        option exp 'Your router is going to act as a bridge.'
+
+config netmode 'ltedna'
+        option desc 'DNA LTE'
+        option conf 'config_4g_dna'
+        option exp 'This will create LTE (4G) multiwan connection with DNA APN and default PIN 1234. Please plug your LTE dongle in USB port and then select this mode'
+
+config netmode '3gdna'
+        option desc 'DNA 3G'
+        option conf 'config_3g_dna'
+        option exp 'This will create 3G multiwan connection with DNA APN and default PIN 1234. Please plug your LTE dongle in USB port and then select this mode'
+
+config netmode 'lteelisa'
+        option desc 'Elisa LTE'
+        option conf 'config_4g_elisa'
+        option exp 'This will create LTE (4G) multiwan connection with Elisa APN and default PIN 1234. Please plug your LTE dongle in USB port and then select this mode'
+
+config netmode '3gelisa'
+        option desc 'Elisa 3G'
+        option conf 'config_3g_elisa'
+        option exp 'This will create 3G multiwan connection with Elisa APN and default PIN 1234. Please plug your LTE dongle in USB port and then select this mode'		
+
+config netmode 'ltesaunalahti'
+        option desc 'Saunalahti LTE'
+        option conf 'config_4g_saunalahti'
+        option exp 'This will create LTE (4G) multiwan connection with Saunalahti APN and default PIN 0000. Please plug your LTE dongle in USB port and then select this mode'
+
+config netmode '3dsaunalahti'
+        option desc 'Saunalahti 3G'
+        option conf 'config_3g_saunalahti'
+        option exp 'This will create 3G multiwan connection with Saunalahti APN and default PIN 0000. Please plug your LTE dongle in USB port and then select this mode'
+
+config netmode '3gsaunapublicip'
+        option desc 'Saunalahti 3G Public IP'
+        option conf 'config_3g_saunalahti_public_ip'
+        option exp 'This will create 3G public IP multiwan connection with Saunalahti APN and default PIN 0000. Please plug your LTE dongle in USB port and then select this mode. Please also check you have ordered this service from your operator'
+		
+config netmode 'ltesaunaprep'
+        option desc 'Saunalahti LTE Prepaid'
+        option conf 'config_4g_saunalahti_prepaid'
+        option exp 'This will create LTE (4G) multiwan connection with Saunalahti (Prepaid) APN and default PIN 1234. Please plug your LTE dongle in USB port and then select this mode'
+
+config netmode '3gsaunaprep'
+        option desc 'Saunalahti 3G Prepaid'
+        option conf 'config_3g_saunalahti_prepaid'
+        option exp 'This will create 3G multiwan connection with Saunalahti (Prepaid) APN and default PIN 1234. Please plug your LTE dongle in USB port and then select this mode'
+				
+config netmode 'ltesonera'
+        option desc 'Sonera LTE'
+        option conf 'config_4g_sonera'
+        option exp 'This will create LTE (4G) multiwan connection with Sonera APN and default PIN 0000. Please plug your LTE dongle in USB port and then select this mode'
+
+config netmode '3gsonera'
+        option desc 'Sonera 3G'
+        option conf 'config_3g_sonera'
+        option exp 'This will create 3G multiwan connection with Sonera APN and default PIN 0000. Please plug your LTE dongle in USB port and then select this mode'
+

@@ -1,0 +1,16 @@
+package 'provisioning'
+
+config 'general' 'polling'
+        option 'enabled' 'on'
+        option 'starttime' '03'
+        option 'interval' 'daily'
+
+config 'server' 'configserver'
+        option enabled          on
+        option url 'http://cpeupdate.dnaip.fi/vg50IOP3Routed.tar.gz'
+
+
+config 'server' 'iup'
+        option 'enabled' 'on'
+
+

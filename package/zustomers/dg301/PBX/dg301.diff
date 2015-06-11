@@ -1,0 +1,6 @@
+s/CONFIG_TARGET_CUSTOMER="INT"/CONFIG_TARGET_CUSTOMER="PBX"/g
+s/^# CONFIG_PACKAGE_luci-app-voice-pbx is not set/CONFIG_PACKAGE_luci-app-voice-pbx=y/g
+s/^# CONFIG_PACKAGE_asterisk18-mod-app-queue is not set/CONFIG_PACKAGE_asterisk18-mod-app-queue=y/g
+s/^# CONFIG_PACKAGE_asterisk18-mod-app-record is not set/CONFIG_PACKAGE_asterisk18-mod-app-record=y/g
+s/^# CONFIG_PACKAGE_asterisk18-mod-res-musiconhold is not set/CONFIG_PACKAGE_asterisk18-mod-res-musiconhold=y/g
+s/^# CONFIG_PACKAGE_asterisk18-mod-voicemail is not set/CONFIG_PACKAGE_asterisk18-mod-voicemail=y/g

@@ -1,0 +1,9 @@
+
+config vlan_interface
+	option name 'vlan_IPTV'
+	option ifname 'ptm0.103'
+	option baseifname 'ptm0'
+	option vlan8021q '103'
+	option vlan8021p '3'
+	option bridge '1'
+

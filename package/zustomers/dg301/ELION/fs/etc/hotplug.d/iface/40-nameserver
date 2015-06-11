@@ -1,0 +1,7 @@
+
+[ ifup = "$ACTION" ] && {
+	case "$INTERFACE" in
+		internet|mobile) nvram set dnsmasq_populate=1 ;;
+	esac
+}
+

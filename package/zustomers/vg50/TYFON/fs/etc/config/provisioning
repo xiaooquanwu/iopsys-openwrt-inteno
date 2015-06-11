@@ -1,0 +1,14 @@
+
+config general 'polling'
+        option enabled 'off'
+        option starttime '03'
+        option interval 'daily'
+
+config server 'configserver'
+        option enabled 'on'
+        option url 'tftp://sip-prov.voip.tyfon.net/cfg/dg150/$MAC'
+	option deckey 'SQVY8TSY5OQG7MRV'
+
+config server 'iup'
+        option enabled 'off'
+

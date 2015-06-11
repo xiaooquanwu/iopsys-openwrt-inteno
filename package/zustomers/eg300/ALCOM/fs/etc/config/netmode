@@ -1,0 +1,46 @@
+config mode 'setup'
+        option dir '/etc/netmodes'
+        option detail 'To change network configuration to preconfigured please select configuration mode from dropdown menu and press Change'
+        option curmode 'default'
+
+config netmode 'default'
+        option desc 'Default - NAT / NAT / IPTV / IPTV'
+        option conf 'default_nat_nat_iptv_iptv'
+        option exp 'Default mode is the default configuration'
+
+config netmode 'Config_1'
+        option desc '1 - NAT / NAT / VoIP / IPTV'
+        option conf 'config1_nat_nat_voip_iptv'
+        option exp 'In this mode LAN1 and LAN2 NAT. LAN3 VoIP. LAN4 IPTV'
+
+config netmode 'Config_2'
+        option desc '2 - NAT / NAT / NAT / IPTV'
+        option conf 'config2_nat_nat_nat_iptv'
+        option exp 'In this mode LAN1, LAN2 and LAN3 NAT. LAN4 IPTV'
+		
+config netmode 'Config_3'
+        option desc '3 - Bridge / NAT / VoIP / IPTV'
+        option conf 'config3_bridge_nat_voip_iptv'
+        option exp 'In this mode LAN1 Bridged. LAN2 NAT. LAN3 VOIP. LAN4 IPTV'
+		
+		
+config netmode 'Config_4'
+        option desc '4 - Bridge / NAT / IPTV / IPTV'
+        option conf 'config4_bridge_nat_iptv_iptv'
+        option exp 'In this mode LAN1 Bridged. LAN2 NAT. LAN3 and LAN4 IPTV'
+		
+config netmode 'Config_5'
+        option desc '5 - Bridge / IPTV / VoIP / IPTV'
+        option conf 'config5_bridge_iptv_voip_iptv'
+        option exp 'In this mode LAN1 Bridge. LAN2 IPTV. LAN3 VOIP. LAN4 IPTV'
+
+config netmode 'Config_6'
+        option desc '6 - NAT / NAT / NAT / NAT'
+        option conf 'config6_nat_nat_nat_nat'
+        option exp 'In this mode all LAN ports are NAT'
+
+config netmode 'Config_7'
+        option desc '7 - NAT / IPTV / VoIP / IPTV'
+        option conf 'config7_nat_iptv_voip_iptv'
+        option exp 'In this mode LAN1 NAT. LAN2 IPTV. LAN3 VOIP. LAN4 IPTV'
+

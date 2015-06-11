@@ -1,0 +1,37 @@
+
+config 'interface' 'loopback'
+	option 'is_lan' 1
+	option 'ifname' 'lo'
+	option 'proto' 'static'
+	option 'ipaddr' '127.0.0.1'
+	option 'netmask' '255.0.0.0'
+
+config 'interface' 'lan'
+	option 'is_lan' 1
+	option 'type' 'bridge'
+	option 'proto' 'static'
+	option 'ipaddr' '192.168.1.1'
+	option 'netmask' '255.255.255.0'
+	option 'ifname' 'eth1 eth2 eth3 eth4'
+
+config 'interface' 'internet'
+	option 'type' 'anywan'
+	option 'ifname' 'atm0.1 eth0.1'
+	option 'vendorid' 'DG301-W7P2U-INTENO'
+	option 'proto' 'dhcp'
+	option 'hostname' 'Inteno_$MAC4'
+
+config 'interface' 'iptv'
+	option 'type' 'anywan'
+	option 'ifname' 'atm1.1 eth0.6'
+	option 'proto' 'dhcp'
+	option defaultroute '0'
+	option reqopts '121 241'
+
+config 'interface' 'voip'
+	option 'type' 'anywan'
+	option 'ifname' 'atm2.1 eth0.5'
+	option 'proto' 'dhcp'
+	option defaultroute '0'
+	option reqopts '121'
+
