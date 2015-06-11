@@ -197,33 +197,9 @@ mknod /dev/sdh4 b 8 116
 }
 
 id_upgrade_reconfig() {
-
-    local basemac=$(cat /proc/nvram/BaseMacAddr | tr '[a-z]' '[A-Z]')
-    local boardid=$(cat /proc/nvram/BoardId)
-    local vendorid=${basemac:0:8}
-    if [ "$boardid" == "963268BU" ]; then
-        if [ "$vendorid" == "00 22 07" ]; then
-            echo "Setting new boardid and voiceboardid"
-            echo DG301R0 > /proc/nvram/BoardId
-            echo SI32176X2 > /proc/nvram/VoiceBoardId
-            echo "00 00 00 01" >/proc/nvram/ulBoardStuffOption
-            sync
-            sleep 3
-            /sbin/brcm_fw_tool set -x 17 -p 0
-        fi
-    fi
 }
 
 check_num_mac_address() {
-    local nummac=$(cat /proc/nvram/NumMacAddrs)
-    local boardid=$(cat /proc/nvram/BoardId)
-    if [ "$boardid" != "CG300R0" ]; then
-        if [ "$nummac" != "00 00 00 08 " ]; then
-            echo "Setting NumMacAddrs to 8"
-            echo "00 00 00 08" >/proc/nvram/NumMacAddrs
-            sync
-        fi
-    fi
 }
 
 brcm_env
