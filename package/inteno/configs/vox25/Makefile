@@ -20,7 +20,7 @@ define Package/routermodel-vox25
 	CATEGORY:=Configs
   HIDDEN:=1
   TITLE:=VOX25 Router
-  DEPENDS:=+juci +6relayd +cwmp +dhcp +dropbear +firewall +mcpd +upnpd +voice-client
+  DEPENDS:=+juci +6relayd +cwmp +dhcp +dropbear +firewall +mcpd +upnpd +voice-client +layer2interface
 endef
 
 define Package/routermodel-vox25/config

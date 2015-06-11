@@ -22,47 +22,7 @@ define Package/inteno-configs
 endef
 
 define Package/inteno-configs/config
-	choice
-		prompt "Select Inteno Target Hardware"
-		default PACKAGE_routermodel-vox25
-		config PACKAGE_routermodel-vox25
-			select TARGET_ROOTFS_UBIFS
-			select BCM_I2C
-			bool "VOX25"
-		config PACKAGE_routermodel-cg300
-			bool "CG300"
-			select BCM_I2C
-		config PACKAGE_routermodel-cg301
-			bool "CG301"
-	endchoice
-	if PACKAGE_routermodel-vox25
-		config TARGET_MODEL_NAME
-			string
-			default "VOX25-WU7P2U"
-			prompt "Model Name"
-		config TARGET_VERSION
-			string
-			default "3.5.0RC1"
-			prompt "Target Version"
-		config TARGET_IBOARDID
-			string
-			default "VOX25"
-			prompt "Target Board ID"
-	endif
-	if PACKAGE_routermodel-cg300
-		config TARGET_MODEL_NAME
-			string
-			default "CG300-WU21U"
-			prompt "Model Name"
-		config TARGET_VERSION
-			string
-			default "3.5.0RC1"
-			prompt "Target Version"
-		config TARGET_IBOARDID
-			string
-			default "CG300"
-			prompt "Target Board ID"
-	endif
+	
 endef
 
 define Package/inteno-configs/description
