@@ -1,6 +1,6 @@
 {
-	"unauthenticated": {
-		"description": "Functions allowed for unauthenticated requests",
+	"juciguest": {
+		"description": "Functions allowed for non logged-in users",
 		"read": {
 			"ubus": {
 				"juci.ui": [

@@ -19,6 +19,8 @@ export VERBOSE=0
 export BOARDTYPE=
 export CUSTOMER=
 
+echo "$0 $1 $2 $3 $4" > genconfig.last 
+
 usage() {
 	echo
 	echo 1>&2 "Usage:  [OPTION]  $0 BoardConfig Customerconfig"

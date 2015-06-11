@@ -8,7 +8,7 @@ PKG_RELEASE=$(PKG_SOURCE_VERSION)
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=git@iopsys.inteno.se:juci.git
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
-PKG_SOURCE_VERSION:=799834d4b57211cba4569757ed20ee81871559c0
+PKG_SOURCE_VERSION:=f20d4490cd96cb665bf28e7d658ec1933f957f06
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
 PKG_MAINTAINER:=Martin Schröder <mkschreder.uk@gmail.com>
 
@@ -47,6 +47,7 @@ endef
 
 define Build/Compile
 	echo "$(CONFIG_PACKAGE_juci-theme-default)"
+	$(MAKE) -C $(PKG_BUILD_DIR) clean
 	$(MAKE) -C $(PKG_BUILD_DIR) DEFAULT_THEME=$(CONFIG_PACKAGE_juci-theme-default)
 endef
 
