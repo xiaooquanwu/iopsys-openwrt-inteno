@@ -1,3 +1,0 @@
-s/^# CONFIG_PACKAGE_alsa-utils is not set/CONFIG_PACKAGE_alsa-utils=y/g
-s/^# CONFIG_PACKAGE_madplay is not set/CONFIG_PACKAGE_madplay=y/g
-s/^# CONFIG_BCM_USBSOUND_MODULES is not set/CONFIG_BCM_USBSOUND_MODULES=y/g

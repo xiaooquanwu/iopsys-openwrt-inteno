@@ -1,8 +1,0 @@
-
-config vlan_interface
-	option name 'VLAN835'
-	option ifname 'ptm0.835'
-	option baseifname 'ptm0'
-	option vlan8021q '835'
-	option vlan8021p '0'
-

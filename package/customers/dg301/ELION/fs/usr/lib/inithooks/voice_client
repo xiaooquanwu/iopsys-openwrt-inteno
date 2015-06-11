@@ -1,9 +1,0 @@
-preinit_hook()                    
-{                                  
-    sed -i "s/\(.\)$/\~0\"/g" /etc/asterisk/sip_registrations.conf && asterisk -rx "sip reload"  && /usr/bin/logger -t sip_unregister "Unregistered sip account\(s\) because of configuration change/reload" 
-}
-
-postinit_hook()
-{
-return 0
-}

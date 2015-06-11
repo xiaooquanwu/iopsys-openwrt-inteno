@@ -1,3 +1,0 @@
-config ice 'cloud'
-        option server 'blcportal.fi'
-    option enabled '1'

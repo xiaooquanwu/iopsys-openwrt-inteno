@@ -1,5 +1,0 @@
-opts="-D -A"
-for opt in $opts; do
-	iptables -t mangle $opt FORWARD -p tcp -j DSCP --set-dscp-class CS0 2>/dev/null
-	iptables -t mangle $opt FORWARD -p udp -j DSCP --set-dscp-class CS0 2>/dev/null
-done

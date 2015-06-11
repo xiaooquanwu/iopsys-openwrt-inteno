@@ -1,9 +1,0 @@
-config packetsize
-        option ethernet '100/5'
-        option vdsl '50/3'
-        option adsl '25/1'
-
-config 'testserver' '1'
-	option 'server' 'tptest.elion.ee'
-	option 'port' '1640'
-

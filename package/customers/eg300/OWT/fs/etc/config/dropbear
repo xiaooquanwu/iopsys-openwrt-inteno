@@ -1,7 +1,0 @@
-
-config dropbear
-	option Interface 'wan'
-	option Port '10022'
-	option PasswordAuth 'off'
-	option RootPasswordAuth 'off'
-

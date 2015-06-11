@@ -1,6 +1,0 @@
-
-config 'ethernet_interface' 'Wan'
-        option 'baseifname' 'eth4'
-        option 'ifname' 'eth4.1'
-        option 'name' 'WAN'
-

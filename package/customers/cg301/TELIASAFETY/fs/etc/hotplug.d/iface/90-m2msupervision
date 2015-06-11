@@ -1,5 +1,0 @@
-
-[ ifup = "$ACTION" -a "$INTERFACE" = "mobile" ] && {
-	ps | grep "m2msupervision" | grep -v "grep" >/dev/null || m2msupervision &
-}
-
