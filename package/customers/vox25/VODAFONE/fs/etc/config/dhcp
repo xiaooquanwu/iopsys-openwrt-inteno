@@ -21,6 +21,7 @@ config dnsmasq
 	list server '/ims.vodafone.pt/GPON_VoIP'
 
 config domain
+	list name 'inteno.lan'
 	list name 'vodafone.poc'
 
 config dhcp lan

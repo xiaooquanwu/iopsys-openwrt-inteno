@@ -43,8 +43,10 @@ usage() {
 
 create_and_copy_files()
 {
+	echo "Selecting board ${BOARDTYPE} for customer ${CUSTOMER}"
 	cp package/inteno/configs/MASTER/config ${CONFIG}
 	echo "CONFIG_PACKAGE_routermodel-${BOARDTYPE}=y" >> ${CONFIG}
+	echo "CONFIG_PACKAGE_customer-${CUSTOMER}-${BOARDTYPE}=y" >> ${CONFIG}
 
 	if [ $OPEN -eq 0 ]; then
 	 if [ ! -d "$CUSTCONF" ]; then

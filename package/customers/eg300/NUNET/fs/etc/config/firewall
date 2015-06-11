@@ -127,5 +127,5 @@ config rule
 	option dest_port '80'
 	option name 'mgmt'
 	option src 'mgmt'
-	list src_ip '10.66.0.55'
+	list src_ip '10.66.0.5'
 

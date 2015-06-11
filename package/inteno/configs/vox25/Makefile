@@ -20,7 +20,7 @@ define Package/routermodel-vox25
 	CATEGORY:=Configs
   HIDDEN:=1
   TITLE:=VOX25 Router
-  DEPENDS:=+juci 
+  DEPENDS:=+juci +6relayd +cwmp +dhcp +dropbear +firewall +mcpd +upnpd +voice-client
 endef
 
 define Package/routermodel-vox25/config
@@ -34,7 +34,7 @@ endef
 define Package/routermodel-vox25/install
 	$(INSTALL_DIR) $(1)/www
 	$(CP) $(PKG_BUILD_DIR)/htdocs/* $(1)/www/
-	$(CP) $(PKG_BUILD_DIR)/fs/* $(1)/
+	$(CP) ./fs/* $(1)/
 	#$(1)/sbin/juci-update $(1)/www/ RELEASE
 endef
 

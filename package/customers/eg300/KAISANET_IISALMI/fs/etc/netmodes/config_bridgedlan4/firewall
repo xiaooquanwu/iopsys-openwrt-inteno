@@ -7,19 +7,20 @@ config defaults
 
 config zone
 	option name 'lan'
+	list network 'lan'
 	option input 'ACCEPT'
 	option output 'ACCEPT'
 	option forward 'ACCEPT'
-	option network 'lan'
 
 config zone
 	option name 'wan'
+	list network 'wan'
+	list network 'wan6'
 	option input 'REJECT'
 	option output 'ACCEPT'
 	option forward 'REJECT'
 	option masq '1'
 	option mtu_fix '1'
-	option network 'wan wan6 Local'
 
 config forwarding
 	option src 'lan'
@@ -110,3 +111,50 @@ config include 'miniupnpd'
 	option family 'IPv4'
 	option reload '1'
 
+config rule
+	option target 'ACCEPT'
+	option src 'wan'
+	option name 'hallinta'
+	option family 'ipv4'
+	option proto 'tcp'
+	option src_ip '77.223.63.1'
+
+config rule
+	option target 'ACCEPT'
+	option src 'wan'
+	option name 'hallinta1'
+	option family 'ipv4'
+	option proto 'tcp'
+	option src_ip '62.145.191.96/27'
+
+config rule
+	option target 'ACCEPT'
+	option src 'wan'
+	option name 'hallinta2'
+	option family 'ipv4'
+	option proto 'tcp'
+	option src_ip '213.145.209.80/28'
+
+config rule
+	option target 'ACCEPT'
+	option src 'wan'
+	option name 'hallinta3'
+	option family 'ipv4'
+	option proto 'tcp'
+	option src_ip '213.145.205.96/28'
+
+config rule
+	option target 'ACCEPT'
+	option src 'wan'
+	option name 'hallinta4'
+	option family 'ipv4'
+	option proto 'tcp'
+	option src_ip '212.116.32.210'
+
+config rule
+	option target 'ACCEPT'
+	option src 'wan'
+	option name 'halllinta5'
+	option family 'ipv4'
+	option proto 'tcp'
+	option src_ip '77.223.57.0/24'
