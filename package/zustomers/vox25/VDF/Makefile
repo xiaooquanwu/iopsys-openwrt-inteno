@@ -6,7 +6,7 @@
 
 include $(TOPDIR)/rules.mk
 
-PKG_NAME:=customer-vodafone-vox25
+PKG_NAME:=customer-vdf-vox25
 #PKG_VERSION:=$(shell git --git-dir=$(CURDIR)/../.git log -1 --pretty="%ci %h" | awk '{ print $$1 "-" $$4 }')
 PKG_VERSION:=15.6.8
 PKG_MAINTAINER:=Martin K. Schroder <mkschreder.uk@gmail.com>
@@ -23,22 +23,22 @@ define Build/Prepare
 	$(CP) ./fs/* $(PKG_BUILD_DIR)/
 endef
 
-define Package/customer-vodafone-vox25
+define Package/customer-vdf-vox25
 	HIDDEN:=1
   TITLE:=VODAFONE VOX25 Customer Configuration
   DEPENDS:=+routermodel-vox25 +juci
 endef
 
-define Package/customer-vodafone-vox25/description
+define Package/customer-vdf-vox25/description
 	Vodafone VOX25 base package
 endef
 
-define Package/customer-vodafone-vox25/install
+define Package/customer-vdf-vox25/install
 	$(CP) ./fs/etc $(1)/
 endef
 
-define Package/customer-vodafone-vox25/postinst
+define Package/customer-vdf-vox25/postinst
 
 endef
 
-$(eval $(call BuildPackage,customer-vodafone-vox25))
+$(eval $(call BuildPackage,customer-vdf-vox25))

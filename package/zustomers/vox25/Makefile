@@ -18,27 +18,7 @@ define Package/customer-vox25
 endef
 
 define Package/customer-vox25/config
-	if PACKAGE_routermodel-vox25
-		choice 
-			prompt "VOX25 Customer Config"
-			default PACKAGE_customer-vodafone-vox25
-			config PACKAGE_customer-vodafone-vox25
-				bool "VOX25 Vodafone"
-			config PACKAGE_customer-field-vox25
-				bool "VOX25 Default"
-		endchoice
-		
-		if PACKAGE_customer-vodafone-vox25
-			config TARGET_CUSTOMER
-				string
-				default "VDF"
-		endif
-		if PACKAGE_customer-field-vox25
-			config TARGET_CUSTOMER
-				string
-				default "INTFIELD"
-		endif
-	endif
+	
 	
 endef
 

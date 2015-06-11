@@ -53,8 +53,6 @@ create_and_copy_files()
 	echo "CONFIG_TARGET_IBOARDID=\"${BOARDTYPE^^}\"" >> ${CONFIG}
 	echo "CONFIG_TARGET_CUSTOMER=\"${CUSTOMER^^}\"" >> ${CONFIG}
 	
-	exit 0 
-	
 	if [ $OPEN -eq 0 ]; then
 	 if [ ! -d "$CUSTCONF" ]; then
 		 git  clone  -b martin git@ihgsp.inteno.se:customerconfigs ${CUSTCONF}
