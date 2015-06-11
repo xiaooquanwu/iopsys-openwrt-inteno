@@ -48,6 +48,7 @@ create_and_copy_files()
 	cp package/inteno/configs/MASTER/config ${CONFIG}
 	echo "CONFIG_PACKAGE_routermodel-${BOARDTYPE,,}=y" >> ${CONFIG}
 	echo "CONFIG_PACKAGE_customer-${CUSTOMER,,}-${BOARDTYPE,,}=y" >> ${CONFIG}
+	#echo "CONFIG_PACKAGE_customer-${BOARDTYPE,,}=y" >> ${CONFIG}
 	echo "CONFIG_TARGET_MODEL_NAME=\"${BOARDTYPE^^}-WU7P2U\"" >> ${CONFIG}
 	echo "CONFIG_TARGET_VERSION=\"${GITVERSION^^}\"" >> ${CONFIG}
 	echo "CONFIG_TARGET_IBOARDID=\"${BOARDTYPE^^}\"" >> ${CONFIG}
@@ -65,7 +66,7 @@ create_and_copy_files()
 	fi
 	
 	echo "Updating .config dependencies..."
-	make defconfig 1>/dev/null
+	make defconfig #1>/dev/null
 	
 ##### if open change to open kernel and remove building of nand tool
 #if [ $OPEN -eq 1 ]; then

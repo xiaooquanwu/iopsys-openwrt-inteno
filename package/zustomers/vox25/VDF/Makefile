@@ -23,10 +23,14 @@ define Build/Prepare
 	$(CP) ./fs/* $(PKG_BUILD_DIR)/
 endef
 
+define Build/Compile
+
+endef
+
 define Package/customer-vdf-vox25
-	HIDDEN:=1
+	CATEGORY:=Configs
   TITLE:=VODAFONE VOX25 Customer Configuration
-  DEPENDS:=+routermodel-vox25 +juci
+  DEPENDS:=+routermodel-vox25 +customer-vox25 +juci
 endef
 
 define Package/customer-vdf-vox25/description
@@ -34,7 +38,7 @@ define Package/customer-vdf-vox25/description
 endef
 
 define Package/customer-vdf-vox25/install
-	$(CP) ./fs/etc $(1)/
+	$(CP) ./fs/* $(1)/
 endef
 
 define Package/customer-vdf-vox25/postinst

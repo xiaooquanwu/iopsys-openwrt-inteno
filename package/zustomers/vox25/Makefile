@@ -13,12 +13,10 @@ include $(INCLUDE_DIR)/package.mk
 
 define Package/customer-vox25
 	CATEGORY:=Configs
-	HIDDEN:=1
 	TITLE:=VOX25 Customer Base Package
 endef
 
 define Package/customer-vox25/config
-	
 	
 endef
 

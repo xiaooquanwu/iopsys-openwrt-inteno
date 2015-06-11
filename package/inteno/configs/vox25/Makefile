@@ -18,7 +18,6 @@ endef
 
 define Package/routermodel-vox25
 	CATEGORY:=Configs
-  HIDDEN:=1
   TITLE:=VOX25 Router
   DEPENDS:=+juci +6relayd +cwmp +dhcp +dropbear +firewall +mcpd +upnpd +voice-client +layer2interface
 endef
@@ -36,11 +35,6 @@ define Package/routermodel-vox25/install
 	$(CP) $(PKG_BUILD_DIR)/htdocs/* $(1)/www/
 	$(CP) ./fs/* $(1)/
 	#$(1)/sbin/juci-update $(1)/www/ RELEASE
-endef
-
-
-define Image/PreBuild
-	CONFIG_TARGET_MARTINTEST:="MARTINTEST is SET"
 endef
 
 define Package/routermodel-vox25/postinst
