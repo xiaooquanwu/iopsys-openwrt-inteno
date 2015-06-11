@@ -79,6 +79,7 @@ if [ "$$(uci -q get uhttpd.main.ubus_prefix)" != "/ubus" ]; then
 	uci commit uhttpd
 fi
 
+juci-update
 exit 0
 endef
 
