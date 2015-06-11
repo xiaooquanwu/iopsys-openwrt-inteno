@@ -2,6 +2,11 @@
 
 . /lib/functions.sh
 
+local daymatch=0
+local timematch=0
+local current_day=$(date | awk '{print$1}' | tr '[A-Z]' '[a-z]')
+local current_time=$(date +%H%M)
+
 day_to_number() {
 	case $1 in
 		all)		echo 0-6 ;;
