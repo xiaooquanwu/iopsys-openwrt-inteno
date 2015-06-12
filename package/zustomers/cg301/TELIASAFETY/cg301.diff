@@ -35,13 +35,7 @@ s/^CONFIG_PACKAGE_minidlna=y/# CONFIG_PACKAGE_minidlna is not set/g
 s/^CONFIG_PACKAGE_samba3=y/# CONFIG_PACKAGE_samba3 is not set/g
 s/^# CONFIG_PACKAGE_all-omc is not set/CONFIG_PACKAGE_all-omc=y/g
 s/^# CONFIG_PACKAGE_screen is not set/CONFIG_PACKAGE_screen=y/g
-s/^# CONFIG_PACKAGE_ice-client-sip is not set/CONFIG_PACKAGE_ice-client-sip=y/g
 s/^# CONFIG_PACKAGE_voicesec is not set/CONFIG_PACKAGE_voicesec=y/g
-s/^# CONFIG_PACKAGE_ice-client-iperf is not set/CONFIG_PACKAGE_ice-client-iperf=y/g
-s/^# CONFIG_PACKAGE_ice-client-logreader is not set/CONFIG_PACKAGE_ice-client-logreader=y/g
-s/^# CONFIG_PACKAGE_ice-client-rshell is not set/CONFIG_PACKAGE_ice-client-rshell=y/g
-s/^# CONFIG_PACKAGE_ice-client-monitor is not set/CONFIG_PACKAGE_ice-client-monitor=y/g
-s/^# CONFIG_PACKAGE_ice-client-camerawatch is not set/CONFIG_PACKAGE_ice-client-camerawatch=y/g
 s/^# CONFIG_PACKAGE_syslog-ng3 is not set/CONFIG_PACKAGE_syslog-ng3=y/g
 s/^# CONFIG_PACKAGE_libeventlog is not set/CONFIG_PACKAGE_libeventlog=y/g
 s/^# CONFIG_PACKAGE_libwrap is not set/CONFIG_PACKAGE_libwrap=y/g
@@ -56,11 +50,24 @@ s/^# CONFIG_PACKAGE_collectd-mod-interface is not set/CONFIG_PACKAGE_collectd-mo
 s/^# CONFIG_PACKAGE_collectd-mod-network is not set/CONFIG_PACKAGE_collectd-mod-network=y/g
 s/^# CONFIG_PACKAGE_collectd-mod-syslog is not set/CONFIG_PACKAGE_collectd-mod-syslog=y/g
 s/^# CONFIG_PACKAGE_collectd-mod-memory is not set/CONFIG_PACKAGE_collectd-mod-memory=y/g
-
+s/^CONFIG_PACKAGE_collectd=m/CONFIG_PACKAGE_collectd=y/g
+s/^CONFIG_PACKAGE_collectd-mod-cpu=m/CONFIG_PACKAGE_collectd-mod-cpu=y/g
+s/^CONFIG_PACKAGE_collectd-mod-df=m/CONFIG_PACKAGE_collectd-mod-df=y/g
+s/^CONFIG_PACKAGE_collectd-mod-interface=m/CONFIG_PACKAGE_collectd-mod-interface=y/g
+s/^CONFIG_PACKAGE_collectd-mod-network=m/CONFIG_PACKAGE_collectd-mod-network=y/g
+s/^CONFIG_PACKAGE_collectd-mod-syslog=m/CONFIG_PACKAGE_collectd-mod-syslog=y/g
+s/^CONFIG_PACKAGE_collectd-mod-memory=m/CONFIG_PACKAGE_collectd-mod-memory=y/g
 s/^CONFIG_PACKAGE_ice-client-iperf=m/CONFIG_PACKAGE_ice-client-iperf=y/g
+s/^# CONFIG_PACKAGE_ice-client-iperf is not set/CONFIG_PACKAGE_ice-client-iperf=y/g
+s/^# CONFIG_PACKAGE_ice-client-logreader is not set/CONFIG_PACKAGE_ice-client-logreader=y/g
+s/^# CONFIG_PACKAGE_ice-client-rshell is not set/CONFIG_PACKAGE_ice-client-rshell=y/g
+s/^# CONFIG_PACKAGE_ice-client-monitor is not set/CONFIG_PACKAGE_ice-client-monitor=y/g
+s/^CONFIG_PACKAGE_ice-client-sip=m/CONFIG_PACKAGE_ice-client-sip=y/g
+s/^# CONFIG_PACKAGE_ice-client-sip is not set/CONFIG_PACKAGE_ice-client-sip=y/g
 s/^CONFIG_PACKAGE_ice-client-logreader=m/CONFIG_PACKAGE_ice-client-logreader=y/g
 s/^CONFIG_PACKAGE_ice-client-monitor=m/CONFIG_PACKAGE_ice-client-monitor=y/g
 s/^CONFIG_PACKAGE_ice-client-rshell=m/CONFIG_PACKAGE_ice-client-rshell=y/g
-s/^CONFIG_PACKAGE_ice-client-torrent=m/CONFIG_PACKAGE_ice-client-torrent=y/g
 s/^# CONFIG_PACKAGE_libltdl is not set/CONFIG_PACKAGE_libltdl=y/g
 s/^# CONFIG_PACKAGE_libiptc is not set/CONFIG_PACKAGE_libiptc=y/g
+s/^CONFIG_PACKAGE_libltdl=m/CONFIG_PACKAGE_libltdl=y/g
+s/^CONFIG_PACKAGE_libiptc=m/CONFIG_PACKAGE_libiptc=y/g

@@ -9,5 +9,4 @@ config mcpd 'mcpd'
 	option igmp_max_sources '10'
 	option igmp_max_members '25'
 	option igmp_snooping_enable '2'
-	option igmp_snooping_interfaces 'br-IPTV'
 

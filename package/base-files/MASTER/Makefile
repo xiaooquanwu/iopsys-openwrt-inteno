@@ -10,31 +10,24 @@ include $(TOPDIR)/rules.mk
 include $(INCLUDE_DIR)/version.mk
 include $(INCLUDE_DIR)/kernel.mk
 
-PKG_NAME:=base-files
+PKG_NAME:=inteno-base
 PKG_RELEASE:=156
 
-PKG_FILE_DEPENDS:=$(PLATFORM_DIR)/ $(GENERIC_PLATFORM_DIR)/base-files/
+PKG_FILE_DEPENDS:=$(PLATFORM_DIR)/ $(GENERIC_PLATFORM_DIR)/inteno-base/
 PKG_BUILD_DEPENDS:=opkg/host
 
 include $(INCLUDE_DIR)/package.mk
 
-ifneq ($(DUMP),1)
-  TARGET:=-$(BOARD)
-  ifneq ($(wildcard $(PLATFORM_DIR)/base-files-$(PROFILE) $(PLATFORM_SUBDIR)/base-files-$(PROFILE)),)
-    TARGET:=$(TARGET)-$(PROFILE)
-  endif
-endif
-
-define Package/base-files
-  SECTION:=base
-  CATEGORY:=Base system
+define Package/inteno-base
+ # SECTION:=base
+  CATEGORY:=Base System
   DEPENDS:=+netifd +libc +procd +jsonfilter
-  TITLE:=Base filesystem for OpenWrt
+  TITLE:=Base filesystem for OpenWrt and IOPSYS
   URL:=http://openwrt.org/
   VERSION:=$(PKG_RELEASE)-$(REVISION)
 endef
 
-define Package/base-files/conffiles
+define Package/inteno-base/conffiles
 /etc/hosts
 /etc/inittab
 /etc/group
@@ -51,7 +44,7 @@ define Package/base-files/conffiles
 $(call $(TARGET)/conffiles)
 endef
 
-define Package/base-files/description
+define Package/inteno-base/description
  This package contains a base filesystem and system scripts for OpenWrt.
 endef
 
@@ -80,40 +73,14 @@ endef
 define Build/Compile/Default
 
 endef
+
 Build/Compile = $(Build/Compile/Default)
 
-define Package/base-files/install
-	$(CP) ./files/* $(1)/
-	if [ -d $(GENERIC_PLATFORM_DIR)/base-files/. ]; then \
-		$(CP) $(GENERIC_PLATFORM_DIR)/base-files/* $(1)/; \
-	fi
-	if [ -d $(PLATFORM_DIR)/base-files/. ]; then \
-		$(CP) $(PLATFORM_DIR)/base-files/* $(1)/; \
-	fi
-	if [ -d $(PLATFORM_DIR)/base-files-$(PROFILE)/. ]; then \
-		$(CP) $(PLATFORM_DIR)/base-files-$(PROFILE)/* $(1)/; \
-	fi
-	if [ -d $(PLATFORM_DIR)/$(PROFILE)/base-files/. ]; then \
-		$(CP) $(PLATFORM_DIR)/$(PROFILE)/base-files/* $(1)/; \
-	fi
-	$(if $(filter-out $(PLATFORM_DIR),$(PLATFORM_SUBDIR)), \
-		if [ -d $(PLATFORM_SUBDIR)/base-files/. ]; then \
-			$(CP) $(PLATFORM_SUBDIR)/base-files/* $(1)/; \
-		fi; \
-		if [ -d $(PLATFORM_SUBDIR)/base-files-$(PROFILE)/. ]; then \
-			$(CP) $(PLATFORM_SUBDIR)/base-files-$(PROFILE)/* $(1)/; \
-		fi; \
-		if [ -d $(PLATFORM_SUBDIR)/$(PROFILE)/base-files/. ]; then \
-			$(CP) $(PLATFORM_SUBDIR)/$(PROFILE)/base-files/* $(1)/; \
-		fi \
-	)
-
-	$(VERSION_SED) \
-		$(1)/etc/banner \
-		$(1)/etc/openwrt_version \
-		$(1)/etc/openwrt_release \
-		$(1)/etc/device_info
-
+define Package/inteno-base/install
+	$(CP) ./base-files-openwrt/* $(1)/
+	$(CP) ./base-files-iopsys/* $(1)/
+	
+	# setup root filesystem
 	mkdir -p $(1)/CONTROL
 	mkdir -p $(1)/dev
 	mkdir -p $(1)/etc/crontabs
@@ -140,7 +107,7 @@ define Package/base-files/install
 	chmod 1777 $(1)/tmp
 
 	$(call ImageConfigOptions,$(1))
-	$(call Package/base-files/install-target,$(1))
+	$(call Package/inteno-base/install-target,$(1))
 	for conffile in $(1)/etc/config/*; do \
 		if [ -f "$$$$conffile" ]; then \
 			grep "$$$${conffile##$(1)}" $(1)/CONTROL/conffiles || \
@@ -149,8 +116,4 @@ define Package/base-files/install
 	done
 endef
 
-ifneq ($(DUMP),1)
-  -include $(PLATFORM_DIR)/base-files.mk
-endif
-
-$(eval $(call BuildPackage,base-files))
+$(eval $(call BuildPackage,inteno-base))

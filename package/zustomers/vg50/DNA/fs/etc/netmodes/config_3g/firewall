@@ -124,7 +124,6 @@ config include 'miniupnpd'
 
 config rule
         option enabled '1'
-        option hidden '0'
         option target 'ACCEPT'
         option src 'wan'
         option proto 'tcp'

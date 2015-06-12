@@ -16,9 +16,8 @@ define Build/Prepare
 endef
 
 define Package/customer-field-cg300
-	HIDDEN:=1
   TITLE:=Inteno Field
-  DEPENDS:=+cg300
+  DEPENDS:=+customer-cg300
 endef
 
 define Package/customer-field-cg300/config
@@ -37,4 +36,4 @@ define Package/customer-field-cg300/postinst
 
 endef
 
-#$(eval $(call BuildPackage,customer-field-cg300))
+$(eval $(call BuildPackage,customer-field-cg300))
