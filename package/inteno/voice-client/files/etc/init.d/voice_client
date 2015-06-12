@@ -1141,9 +1141,13 @@ configure_call_filter()
 #
 configure_call_filter_helper()
 {
+	local block_outgoing
+	local block_incoming
 	local block_foreign
 	local block_special_rate
 
+	config_get block_outgoing $1 block_outgoing
+	config_get block_incoming $1 block_incoming
 	config_get block_foreign $1 block_foreign
 	config_get block_special_rate $1 block_special_rate
 
@@ -1156,6 +1160,18 @@ configure_call_filter_helper()
 
 	echo "[macro-$1-$direction]" >>				$WORKDIR/macros.tmp
 	echo "exten => s,1,NoOp()" >>				$WORKDIR/macros.tmp
+
+	# Do nothing if blocking of outgoing calls is disabled
+	if [ "x$direction" == "xoutgoing" -a "x$block_outgoing" != "x1" ] ; then
+		echo "exten => s,n,MacroExit()" >>		$WORKDIR/macros.tmp
+		return
+	fi
+
+	# Do nothing if blocking of incoming calls is disabled
+	if [ "x$direction" == "xincoming" -a "x$block_incoming" != "x1" ] ; then
+		echo "exten => s,n,MacroExit()" >>		$WORKDIR/macros.tmp
+		return
+	fi
 
 	if [ "x$direction" == "xoutgoing" -a "x$block_foreign" == "x1" ] ; then
 		echo "exten => s,n,Macro(check-foreign,\${DIAL_EXTEN})" >>	$WORKDIR/macros.tmp
