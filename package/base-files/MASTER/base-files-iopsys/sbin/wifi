@@ -1124,7 +1124,7 @@ wifi_reload_legacy() {
 }
 
 wifi_reload() {
-	ubus call network reload
+	#ubus call network reload
 	wifi_reload_legacy
 }
 
@@ -1465,13 +1465,13 @@ wifi_schedule() {
 }
 
 check_md5sum() {
-	local old_md5sum="$(nvget wlmd5sum)"
+	local old_md5sum="$(cat /tmp/wireless/md5sum 2>/dev/null)"
 	local new_md5sum="$(md5sum /etc/config/wireless | awk '{print$1}')"
 
 	if [ "$old_md5sum" == "$new_md5sum" ]; then
 		exit
 	else
-		nvset wlmd5sum=$new_md5sum
+		echo $new_md5sum >/tmp/wireless/md5sum
 	fi
 }
 
@@ -1483,7 +1483,7 @@ esac
 
 if [ -f /tmp/wireless/first ]; then
 	RESTART="0"
-	nvset wlmd5sum=""
+	rm -f /tmp/wireless/md5sum
 	rm -f /tmp/wireless/first
 fi
 
@@ -1491,7 +1491,7 @@ case "$1" in
 	disable|enable) wifi_toggle_iface "$1" "$2" ;;
 	down) wifi_updown "disable" "$2" ;;
 	reload) check_md5sum; wifi_reload "$2" ;;
-	reload_legacy) check_md5sum; wifi_reload_legacy "$2" ;;
+	reload_legacy) wifi_reload_legacy "$2" ;;
 	*) ubus call network reload; wifi_updown "enable" "$2";;
 esac
 
