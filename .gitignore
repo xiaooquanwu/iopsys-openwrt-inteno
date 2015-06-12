@@ -34,3 +34,5 @@ ccache
 __all.js
 __all.css
 package/zustomers
+*.bak
+genconfig.last
