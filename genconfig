@@ -45,7 +45,7 @@ usage() {
 
 create_and_copy_files()
 {
-	local GITVERSION=$(git describe --tags)
+	local GITVERSION=$(git describe --tags --abbrev=0)
 	echo "Selecting board ${BOARDTYPE} for customer ${CUSTOMER}"
 	cp ${CONFIGPATH}/MASTER/config ${CONFIG}
 	echo "CONFIG_PACKAGE_routermodel-${BOARDTYPE,,}=y" >> ${CONFIG}
