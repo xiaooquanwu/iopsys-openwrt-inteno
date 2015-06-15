@@ -18,6 +18,11 @@ endef
 define Package/customer-cg300
 	CATEGORY:=Configs
   TITLE:=CG300 Customer Base Configs
+  DEPENDS:=+routermodel-cg300
+endef
+
+define Build/Compile
+
 endef
 
 define Package/customer-cg300/config

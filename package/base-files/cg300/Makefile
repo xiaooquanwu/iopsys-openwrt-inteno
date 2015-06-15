@@ -12,15 +12,17 @@ PKG_BUILD_PARALLEL:=1
 include $(INCLUDE_DIR)/package.mk
 
 define Build/Prepare
-	$(INSTALL_DIR) $(PKG_BUILD_DIR)
-	$(CP) ./juci-theme-vodafone/* $(PKG_BUILD_DIR)/
+
 endef
 
 define Package/routermodel-cg300
 	CATEGORY:=Configs
   TITLE:=CG300 Router
   DEPENDS:=+juci +juci-theme-default
-  HIDDEN:=1
+endef
+
+define Build/Compile
+
 endef
 
 define Package/routermodel-cg300/config
@@ -32,7 +34,7 @@ define Package/routermodel-cg300/description
 endef
 
 define Package/routermodel-cg300/install
-	$(CP) $(PKG_BUILD_DIR)/fs/* $(1)/
+	$(CP) ./fs/* $(1)/
 endef
 
 define Package/routermodel-cg300/postinst

@@ -20,6 +20,10 @@ define Package/customer-field-cg300
   DEPENDS:=+customer-cg300
 endef
 
+define Build/Compile
+
+endef
+
 define Package/customer-field-cg300/config
 
 endef
@@ -29,7 +33,7 @@ define Package/customer-field-cg300/description
 endef
 
 define Package/customer-field-cg300/install
-	$(CP) $(PKG_BUILD_DIR)/fs/* $(1)/
+	$(CP) ./fs/* $(1)/
 endef
 
 define Package/customer-field-cg300/postinst
