@@ -87,7 +87,7 @@ start_service() {
 }
 
 
-stop() {
+stop_service() {
 	echo "Stopping DSL"
 	xdslctl stop
 }
@@ -95,6 +95,11 @@ stop() {
 boot() {
 	vlanctl --if-suffix .
 	add_ebtables_default_arp
+	start
+}
+
+reload_service() {
+	stop
 	start
 }
 

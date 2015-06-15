@@ -61,6 +61,11 @@ stop_service() {
 	config_foreach removeethernet ethernet_interface
 }
 
+reload_service() {
+	stop
+	start
+}
+
 service_triggers() {
         procd_add_reload_trigger layer2_interface_ethernet
 }

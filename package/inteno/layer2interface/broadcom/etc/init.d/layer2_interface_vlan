@@ -36,6 +36,11 @@ stop_service() {
 	removeall_vlandevices
 }
 
+reload_service() {
+	stop
+	start
+}
+
 service_triggers() {
         procd_add_reload_trigger layer2_interface_vlan
 }
