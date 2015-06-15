@@ -16,14 +16,14 @@ export PLATFORM_INCLUDE:=platforms/iopsys/build.mk
 export DATE:=$(shell date +%Y-%m-%d-%H-%M-%S)
 export LOGIN:=$(shell whoami)
 BASE_PKG_VERSION:=3.3.0
-PKG_RELEASE:=RC3
+PKG_RELEASE:=RC4
 PKG_VERSION:=$(BASE_PKG_VERSION)-$(PKG_RELEASE)_$(DATE)_$(LOGIN)
 export PKG_VERSION
 
 ###########################--RELEASE--################################
 
 PKG_SOURCE_URL:=ssh://git@iopsys.inteno.se/ice-client.git
-PKG_SOURCE_VERSION:=e4fe162bf4660c06029b93414cf871476fb3378e
+PKG_SOURCE_VERSION:=a6a74d8f8a9bc5d9f4246ab8d0312f091d748e1b
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(BASE_PKG_VERSION)
 PKG_SOURCE:=$(PKG_NAME)-$(BASE_PKG_VERSION)-$(PKG_RELEASE).tar.gz
 
@@ -116,7 +116,7 @@ define Package/ice-client/install
 	$(CP) $(PKG_BUILD_DIR)/core/ice $(1)/bin
 	$(CP) $(PKG_BUILD_DIR)/modules/system/ubusevent/obj/iopsys/ubusevent $(1)/bin
 	$(INSTALL_DIR) $(1)/usr/lib
-	$(CP) $(PKG_BUILD_DIR)/core/lib/{systemService.so.1.0.1,libconfStore.so.1,networkService.so.1.0.1,packageService.so.1.0.1} $(1)/usr/lib
+	$(CP) $(PKG_BUILD_DIR)/core/lib/{systemService.so.1.0.1,libconfStore.so.1,networkService.so.1.0.1,packageService.so.1.0.1,monitorService.so.1.0.1,iperfService.so.1.0.1,logService.so.1.0.1} $(1)/usr/lib
 	$(INSTALL_DIR) $(1)/etc/config
 	$(CP) $(PKG_BUILD_DIR)/scripts/etc/config/ice $(1)/etc/config
 	$(INSTALL_DIR) $(1)/etc/cloudfriends
@@ -436,7 +436,10 @@ endef
 define Package/ice-client-logreader
   $(call Package/ice-client/Default)
   TITLE:=LogReader
-  DEPENDS+= +collectd
+  DEPENDS+= 
+  # Actually logreader still works without all this
+  # however when collectd support is needed, all this is required on top
+  # +collectd +libltdl +libiptc +collectd-mod-network +collectd-mod-memory +collectd-mod-cpu +collectd-mod-interface
 endef
 
 define Package/ice-client-logreader/description
