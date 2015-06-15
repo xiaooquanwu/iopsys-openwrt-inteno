@@ -2,7 +2,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=juci
-PKG_VERSION=2015-06-11
+PKG_VERSION=15.6.15
 PKG_RELEASE=$(PKG_SOURCE_VERSION)
 
 PKG_SOURCE_PROTO:=git
@@ -46,7 +46,7 @@ define Package/juci/config
 endef
 
 define Build/Compile
-	echo "$(CONFIG_PACKAGE_juci-theme-default)"
+	echo "Using JUCI theme: $(CONFIG_PACKAGE_juci-theme-default)"
 	$(MAKE) -C $(PKG_BUILD_DIR) clean
 	$(MAKE) -C $(PKG_BUILD_DIR) DEFAULT_THEME=$(CONFIG_PACKAGE_juci-theme-default)
 endef

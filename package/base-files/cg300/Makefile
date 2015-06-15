@@ -18,7 +18,7 @@ endef
 define Package/routermodel-cg300
 	CATEGORY:=Configs
   TITLE:=CG300 Router
-  DEPENDS:=+juci +juci-theme-default
+  DEPENDS:=+inteno-base +juci +juci-theme-default
 endef
 
 define Build/Compile
