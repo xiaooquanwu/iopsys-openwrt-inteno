@@ -10,6 +10,9 @@ DISABLE_HOOKS=
 
 exec >/dev/null 2>&1
 
+local LUCI=0
+grep -q "luci-mod-admin-full" && LUCI=1
+
 local ALLJOYN="/usr/bin/alljoyn-daemon"
 local RESTART="0"
 local _enWifi=0
@@ -36,6 +39,7 @@ nvget() {
 	optval=${optval/wl0./wl0_}
 	optval=${optval/wl1./wl1_}
 	uci -q get broadcom.nvram."$optval"
+	[ $LUCI -eq 1 ] && uci commit broadcom
 }
 
 nvcommit() {
