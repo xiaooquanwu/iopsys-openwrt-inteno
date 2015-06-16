@@ -1,7 +1,0 @@
-#!/bin/sh /etc/rc.common
-
-START=99
-
-boot() {
-        /etc/init.d/samba reload
-}

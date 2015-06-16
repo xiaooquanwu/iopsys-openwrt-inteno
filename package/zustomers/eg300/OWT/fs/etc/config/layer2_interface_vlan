@@ -1,8 +1,0 @@
-
-config vlan_interface
-        option name 'IPTV'
-        option ifname 'eth2.501'
-        option baseifname 'eth2'
-        option vlan8021q '501'
-        option vlan8021p '4'
-	option bridge '1'

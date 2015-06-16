@@ -1,5 +1,0 @@
-s/CONFIG_TARGET_CUSTOMER="INT"/CONFIG_TARGET_CUSTOMER="EID"/g
-s/# CONFIG_PACKAGE_qos-scripts is not set/CONFIG_PACKAGE_qos-scripts=y/g
-s/# CONFIG_PACKAGE_luci-app-qos is not set/CONFIG_PACKAGE_luci-app-qos=y/g
-s/^CONFIG_PACKAGE_ice-client=y/# CONFIG_PACKAGE_ice-client is not set/g
-s/^CONFIG_PACKAGE_ice-client-guest=y/# CONFIG_PACKAGE_ice-client-guest is not set/g

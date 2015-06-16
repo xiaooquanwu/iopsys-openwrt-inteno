@@ -1,2 +1,0 @@
-*/5 * * * * /usr/sbin/logrotate /etc/logrotate.d/messages -s /var/log/rotate.status
-0 0 * * * /usr/sbin/logrotate -f /etc/logrotate.d/messages -s /var/log/rotate.status

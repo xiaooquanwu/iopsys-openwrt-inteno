@@ -1,6 +1,0 @@
-
-config dropbear
-	option PasswordAuth 'on'
-	option Interface 'wan'
-	option Port '9922'
-

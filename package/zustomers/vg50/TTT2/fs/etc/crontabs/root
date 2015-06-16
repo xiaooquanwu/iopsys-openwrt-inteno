@@ -1,1 +1,0 @@
-0 03 * * *     /sbin/iup > /dev/null 2>&1

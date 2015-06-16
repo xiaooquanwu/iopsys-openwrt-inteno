@@ -30,12 +30,12 @@
   * Clear bridge (membership) state and bring down device
   */
 @@ -537,6 +559,9 @@ void system_if_clear_state(struct device *dev)
- 	if (dev->external)
+ 	if (dev->external || !dev->ifindex)
  		return;
  
 +	if (is_parent_dev(dev->ifname))
 +		return;
 +
- 	dev->ifindex = system_if_resolve(dev);
- 	if (!dev->ifindex)
- 		return;
+	system_if_flags(dev->ifname, 0, IFF_UP);
+
+	if (system_is_bridge(dev->ifname, buf, sizeof(buf))) {

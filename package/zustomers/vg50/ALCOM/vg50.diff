@@ -1,8 +1,0 @@
-s/CONFIG_TARGET_CUSTOMER="INT"/CONFIG_TARGET_CUSTOMER="ALCOM"/g
-s/CONFIG_PACKAGE_luci-app-voice=y/# CONFIG_PACKAGE_luci-app-voice is not set/g
-s/CONFIG_PACKAGE_luci-app-voice-client=y/# CONFIG_PACKAGE_luci-app-voice-client is not set/g
-s/CONFIG_PACKAGE_luci-app-voice-pbx=y/# CONFIG_PACKAGE_luci-app-voice-pbx is not set/g
-s/^# CONFIG_PACKAGE_openvpn is not set/CONFIG_PACKAGE_openvpn=y/g
-s/CONFIG_PACKAGE_ice-client-iperf=m/CONFIG_PACKAGE_ice-client-iperf=y/g
-s/CONFIG_PACKAGE_ice-client-torrent=m/# CONFIG_PACKAGE_ice-client-torrent is not set/g
-

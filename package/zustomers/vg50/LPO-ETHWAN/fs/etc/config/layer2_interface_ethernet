@@ -1,5 +1,0 @@
-config 'ethernet_interface' 'Wan'
-        option 'baseifname' 'eth3'
-        option 'ifname' 'eth3.1'
-        option 'name' 'WANGB1'
-	option bridge '1'

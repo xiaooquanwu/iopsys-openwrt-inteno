@@ -1,4 +1,0 @@
-config 'testserver' '1'
-	option 'server' 'tptest.stayon.no'
-	option 'port' '1640'
-

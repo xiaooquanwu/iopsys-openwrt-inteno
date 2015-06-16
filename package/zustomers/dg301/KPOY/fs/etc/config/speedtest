@@ -1,4 +1,0 @@
-config 'testserver' '1'
-        option 'server' 'speedtest.ktab.fi'
-        option 'port' '1634'
-

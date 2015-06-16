@@ -2279,10 +2279,6 @@ CONFIG_PACKAGE_uci=y
 #
 # Lua
 #
-CONFIG_PACKAGE_libiwinfo-lua=y
-CONFIG_PACKAGE_lua=y
-# CONFIG_PACKAGE_lua-examples is not set
-# CONFIG_PACKAGE_luac is not set
 
 #
 # Perl
@@ -2736,7 +2732,6 @@ CONFIG_PACKAGE_libjpeg=y
 CONFIG_PACKAGE_libjson=y
 CONFIG_PACKAGE_libjson-c=y
 CONFIG_PACKAGE_libltdl=m
-CONFIG_PACKAGE_liblua=y
 CONFIG_PACKAGE_liblzo=y
 # CONFIG_PACKAGE_libmad is not set
 CONFIG_PACKAGE_libmbim=y
@@ -2782,11 +2777,8 @@ CONFIG_PACKAGE_libreadline=y
 # CONFIG_PACKAGE_libtiff is not set
 # CONFIG_PACKAGE_libtiffxx is not set
 CONFIG_PACKAGE_libubox=y
-# CONFIG_PACKAGE_libubox-lua is not set
 CONFIG_PACKAGE_libubus=y
-CONFIG_PACKAGE_libubus-lua=y
 CONFIG_PACKAGE_libuci=y
-CONFIG_PACKAGE_libuci-lua=y
 # CONFIG_PACKAGE_libucix is not set
 # CONFIG_PACKAGE_libuclient is not set
 # CONFIG_PACKAGE_libupnp is not set
@@ -2869,7 +2861,6 @@ CONFIG_PACKAGE_iptables-mod-ipopt=y
 # CONFIG_PACKAGE_iptables-mod-length2 is not set
 # CONFIG_PACKAGE_iptables-mod-logmark is not set
 # CONFIG_PACKAGE_iptables-mod-lscan is not set
-# CONFIG_PACKAGE_iptables-mod-lua is not set
 # CONFIG_PACKAGE_iptables-mod-nat-extra is not set
 # CONFIG_PACKAGE_iptables-mod-nflog is not set
 # CONFIG_PACKAGE_iptables-mod-nfqueue is not set
@@ -3149,15 +3140,12 @@ CONFIG_PACKAGE_lighttpd-mod-webdav=m
 CONFIG_PACKAGE_uhttpd=y
 # CONFIG_PACKAGE_uhttpd_debug is not set
 # CONFIG_PACKAGE_uhttpd_no_same_origin is not set
-# CONFIG_PACKAGE_uhttpd-mod-lua is not set
 # CONFIG_PACKAGE_uhttpd-mod-tls is not set
 CONFIG_PACKAGE_uhttpd-mod-ubus=y
 CONFIG_PACKAGE_4g-support=y
 CONFIG_PACKAGE_6in4=y
 CONFIG_PACKAGE_6rd=y
 CONFIG_PACKAGE_6to4=y
-CONFIG_PACKAGE_alljoyn=m
-CONFIG_PACKAGE_alljoyn-about=m
 # CONFIG_PACKAGE_alljoyn-c is not set
 # CONFIG_PACKAGE_alljoyn-config is not set
 # CONFIG_PACKAGE_alljoyn-controlpanel is not set
@@ -3235,7 +3223,6 @@ CONFIG_PACKAGE_tcpdump=y
 # CONFIG_PACKAGE_uclient-fetch is not set
 # CONFIG_PACKAGE_uqmi is not set
 # CONFIG_PACKAGE_vnstat is not set
-CONFIG_PACKAGE_wifimngr=m
 # CONFIG_PACKAGE_wpa-supplicant is not set
 CONFIG_WPA_MSG_MIN_PRIORITY=3
 # CONFIG_DRIVER_WEXT_SUPPORT is not set
@@ -3440,7 +3427,6 @@ CONFIG_PACKAGE_kmod-ipt-ipset=y
 # CONFIG_PACKAGE_kmod-ipt-length2 is not set
 # CONFIG_PACKAGE_kmod-ipt-logmark is not set
 # CONFIG_PACKAGE_kmod-ipt-lscan is not set
-# CONFIG_PACKAGE_kmod-ipt-lua is not set
 CONFIG_PACKAGE_kmod-ipt-nat=y
 # CONFIG_PACKAGE_kmod-ipt-nat-extra is not set
 # CONFIG_PACKAGE_kmod-ipt-nathelper is not set

@@ -1,5 +1,0 @@
-s/CONFIG_TARGET_CUSTOMER="INT"/CONFIG_TARGET_CUSTOMER="SONERA"/g
-s/^# CONFIG_PACKAGE_ddns-scripts is not set/CONFIG_PACKAGE_ddns-scripts=y/g
-s/^# CONFIG_PACKAGE_luci-app-ddns is not set/CONFIG_PACKAGE_luci-app-ddns=y/g
-s/^# CONFIG_PACKAGE_luci-app-voice-pbx is not set/CONFIG_PACKAGE_luci-app-voice-pbx=y/g
-s/^# CONFIG_PACKAGE_ice-client is not set/CONFIG_PACKAGE_ice-client=y/g

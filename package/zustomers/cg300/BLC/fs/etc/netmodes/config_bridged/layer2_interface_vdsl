@@ -1,9 +1,0 @@
-config vdsl_interface
-	option unit '0'
-	option ifname 'ptm0.1'
-	option baseifname 'ptm0'
-	option name 'VDSL2'
-	option dslat '1'
-	option ptmprio '1'
-	option ipqos '1'
-

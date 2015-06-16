@@ -1,7 +1,0 @@
-
-[ ifup = "$ACTION" ] {
-        local islan="$(uci -q get network.$INTERFACE.is_lan)"
-        if [ "$INTERFACE" != "loopback" ] && [ "$islan" == "1" ]; then
-                pidof neighlogger >/dev/null 2>&1 || /sbin/neighlogger &
-        fi
-}

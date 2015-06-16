@@ -1,5 +1,0 @@
-config ethernet_interface 'Wan'
-	option name 'WAN'
-	option ifname 'eth3.1'
-	option baseifname 'eth3'
-	option bridge '1'
