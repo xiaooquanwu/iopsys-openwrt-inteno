@@ -32,6 +32,7 @@ nvset() {
 	local val=$(echo $1 | cut -d'=' -f2)
 	opt=${opt/./_}
 	uci -q set broadcom.nvram."$opt=$val"
+	[ $LUCI -eq 1 ] && uci commit broadcom
 }
 
 nvget() {
@@ -39,7 +40,6 @@ nvget() {
 	optval=${optval/wl0./wl0_}
 	optval=${optval/wl1./wl1_}
 	uci -q get broadcom.nvram."$optval"
-	[ $LUCI -eq 1 ] && uci commit broadcom
 }
 
 nvcommit() {
