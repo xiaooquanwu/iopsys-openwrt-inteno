@@ -21,11 +21,32 @@ include $(INCLUDE_DIR)/package.mk
 define Package/inteno-base
  # SECTION:=base
   CATEGORY:=Base System
-  DEPENDS:=+netifd +libc +procd +jsonfilter
+  DEPENDS:=+netifd +libc +procd +jsonfilter +ice-client +ice-client-guest
   TITLE:=Base filesystem for OpenWrt and IOPSYS
   URL:=http://openwrt.org/
   VERSION:=$(PKG_RELEASE)-$(REVISION)
 endef
+
+define Package/inteno-asterisk-modules
+  CATEGORY:=Config
+  DEPENDS:=+asterisk18-mod +asterisk18-mod-app-playtones +asterisk18-mod-app-read +asterisk18-mod-app-transfer +asterisk18-mod-cdr +asterisk18-mod-chan-brcm +asterisk18-mod-codec-a-mu +asterisk18-mod-codec-alaw +asterisk18-mod-codec-g722 +asterisk18-mod-codec-g726 +asterisk18-mod-codec-ulaw +asterisk18-mod-format-g726 +asterisk18-mod-format-g729 +asterisk18-mod-format-sln +asterisk18-mod-format-sln16 +asterisk18-mod-func-channel +asterisk18-mod-func-db +asterisk18-mod-func-shell +asterisk18-mod-pbx-spool +asterisk18-mod-res-stun +asterisk18-mod-res-voice +asterisk18-mod-sounds +voice-client
+  TITLE:=Preselected modules for standard asterisk setup
+endef
+$(eval $(call BuildPackage,inteno-asterisk-modules))
+
+define Package/inteno-base-voice
+  CATEGORY:=Config
+  DEPENDS:=+asterisk18 +inteno-asterisk-modules +voice-client +natalie-dect +natalie-dect-h +dectmgr +endpntcfg +alsa-lib 
+  TITLE:=Preselected packages for voice
+endef
+$(eval $(call BuildPackage,inteno-base-voice))
+
+define Package/inteno-base-juci
+  CATEGORY:=Config
+  DEPENDS:=+uhttpd +rpcd +uhttpd-mod-ubus +ubus-mod-juci +juci +questd +uci +ubus
+  TITLE:=Preselected packages for voice
+endef
+$(eval $(call BuildPackage,inteno-base-juci))
 
 define Package/inteno-base/conffiles
 /etc/hosts

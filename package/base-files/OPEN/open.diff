@@ -1,9 +1,0 @@
-s/\# CONFIG_PACKAGE_bcmopen is not set/CONFIG_PACKAGE_bcmopen=y/g
-s/CONFIG_TARGET_brcmref_nand=y/\# CONFIG_TARGET_brcmref_nand is not set/g
-s/CONFIG_PACKAGE_bcmkernel=y/\# CONFIG_PACKAGE_bcmkernel is not set/g
-s/CONFIG_PACKAGE_cfmod=y/\# CONFIG_PACKAGE_cfmod is not set/g
-s/CONFIG_PACKAGE_natalie-dect=y/\# CONFIG_PACKAGE_natalie-dect is not set/g
-s/\# CONFIG_PACKAGE_natalie-dect-open is not set/CONFIG_PACKAGE_natalie-dect-open=y/g
-s/CONFIG_PACKAGE_ice-client=y/\# CONFIG_PACKAGE_ice-client is not set/g
-s/CONFIG_PACKAGE_ice-client-guest=y/\# CONFIG_PACKAGE_ice-client-guest is not set/g
-

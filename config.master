@@ -531,7 +531,6 @@ CONFIG_BRCM_SDK_VER_416030=y
 CONFIG_BCM_KERNEL_PROFILE="963268GWV"
 CONFIG_BCM_CHIP_ID="63268"
 CONFIG_BCM_BLNAND="0"
-CONFIG_BCM_ENDPOINT_MODULE=y
 # CONFIG_BCM_USBSOUND_MODULES is not set
 # CONFIG_BCM_I2C is not set
 # CONFIG_BCM_BLUETOOTH is not set
@@ -2251,8 +2250,6 @@ CONFIG_PACKAGE_librt=y
 CONFIG_PACKAGE_libstdcpp=y
 # CONFIG_PACKAGE_libthread-db is not set
 CONFIG_PACKAGE_mtd=y
-CONFIG_PACKAGE_natalie-dect=y
-CONFIG_PACKAGE_natalie-dect-h=y
 # CONFIG_PACKAGE_natalie-dect-open is not set
 CONFIG_PACKAGE_netifd=y
 CONFIG_PACKAGE_opkg=y
@@ -2444,10 +2441,8 @@ CONFIG_CWMP_ACS_MULTI=y
 # CONFIG_CWMP_ACS_HDM is not set
 CONFIG_CWMP_DEBUG=y
 # CONFIG_CWMP_DEVEL_DEBUG is not set
-CONFIG_PACKAGE_dectmngr=y
 # CONFIG_PACKAGE_dmesg is not set
 # CONFIG_PACKAGE_dropbearconvert is not set
-CONFIG_PACKAGE_endptcfg=y
 # CONFIG_PACKAGE_endptctl is not set
 # CONFIG_PACKAGE_fconfig is not set
 # CONFIG_PACKAGE_flock is not set
@@ -2455,7 +2450,6 @@ CONFIG_PACKAGE_getopt=y
 # CONFIG_PACKAGE_gpioctl is not set
 # CONFIG_PACKAGE_hwclock is not set
 # CONFIG_PACKAGE_i2c-tools is not set
-CONFIG_PACKAGE_ice-client=y
 # CONFIG_PACKAGE_ice-client-anyfi is not set
 CONFIG_PACKAGE_ice-client-camerawatch=m
 # CONFIG_PACKAGE_ice-client-example is not set
@@ -2636,7 +2630,6 @@ CONFIG_PACKAGE_libsqlite3=y
 # CONFIG_PACKAGE_pgsqlodbc is not set
 # CONFIG_PACKAGE_unixodbc is not set
 # CONFIG_PACKAGE_af_alg is not set
-CONFIG_PACKAGE_alsa-lib=y
 CONFIG_PACKAGE_bcmnvram=y
 # CONFIG_PACKAGE_bind-libs is not set
 # CONFIG_PACKAGE_bluez-libs is not set
@@ -2822,8 +2815,6 @@ CONFIG_PACKAGE_zlib=y
 # CONFIG_PACKAGE_owhttpd is not set
 # CONFIG_PACKAGE_owserver is not set
 # CONFIG_PACKAGE_samba2-common is not set
-CONFIG_PACKAGE_samba2-common=m
-CONFIG_PACKAGE_samba2-client=m
 # CONFIG_PACKAGE_samba36-client is not set
 CONFIG_PACKAGE_samba36-server=y
 CONFIG_PACKAGE_SAMBA_MAX_DEBUG_LEVEL=-1
@@ -3007,83 +2998,6 @@ CONFIG_PACKAGE_tc=y
 #
 # Telephony
 #
-CONFIG_PACKAGE_asterisk18-mod=y
-# CONFIG_PACKAGE_asterisk18-mod-app-alarmreceiver is not set
-# CONFIG_PACKAGE_asterisk18-mod-app-authenticate is not set
-# CONFIG_PACKAGE_asterisk18-mod-app-chanisavail is not set
-# CONFIG_PACKAGE_asterisk18-mod-app-chanspy is not set
-# CONFIG_PACKAGE_asterisk18-mod-app-directed-pickup is not set
-# CONFIG_PACKAGE_asterisk18-mod-app-disa is not set
-# CONFIG_PACKAGE_asterisk18-mod-app-exec is not set
-# CONFIG_PACKAGE_asterisk18-mod-app-meetme is not set
-# CONFIG_PACKAGE_asterisk18-mod-app-minivm is not set
-# CONFIG_PACKAGE_asterisk18-mod-app-mixmonitor is not set
-# CONFIG_PACKAGE_asterisk18-mod-app-originate is not set
-CONFIG_PACKAGE_asterisk18-mod-app-playtones=y
-# CONFIG_PACKAGE_asterisk18-mod-app-queue is not set
-CONFIG_PACKAGE_asterisk18-mod-app-read=y
-# CONFIG_PACKAGE_asterisk18-mod-app-readexten is not set
-# CONFIG_PACKAGE_asterisk18-mod-app-record is not set
-# CONFIG_PACKAGE_asterisk18-mod-app-sayunixtime is not set
-# CONFIG_PACKAGE_asterisk18-mod-app-senddtmf is not set
-# CONFIG_PACKAGE_asterisk18-mod-app-setcallerid is not set
-# CONFIG_PACKAGE_asterisk18-mod-app-sms is not set
-# CONFIG_PACKAGE_asterisk18-mod-app-softhangup is not set
-# CONFIG_PACKAGE_asterisk18-mod-app-stack is not set
-# CONFIG_PACKAGE_asterisk18-mod-app-system is not set
-# CONFIG_PACKAGE_asterisk18-mod-app-talkdetect is not set
-CONFIG_PACKAGE_asterisk18-mod-app-transfer=y
-# CONFIG_PACKAGE_asterisk18-mod-app-verbose is not set
-# CONFIG_PACKAGE_asterisk18-mod-app-waituntil is not set
-# CONFIG_PACKAGE_asterisk18-mod-app-while is not set
-CONFIG_PACKAGE_asterisk18-mod-cdr=y
-# CONFIG_PACKAGE_asterisk18-mod-chan-agent is not set
-CONFIG_PACKAGE_asterisk18-mod-chan-brcm=y
-# CONFIG_PACKAGE_asterisk18-mod-chan-gtalk is not set
-# CONFIG_PACKAGE_asterisk18-mod-chan-iax2 is not set
-# CONFIG_PACKAGE_asterisk18-mod-chan-local is not set
-# CONFIG_PACKAGE_asterisk18-mod-chan-mgcp is not set
-# CONFIG_PACKAGE_asterisk18-mod-chan-mobile is not set
-# CONFIG_PACKAGE_asterisk18-mod-chan-skinny is not set
-CONFIG_PACKAGE_asterisk18-mod-codec-a-mu=y
-CONFIG_PACKAGE_asterisk18-mod-codec-alaw=y
-CONFIG_PACKAGE_asterisk18-mod-codec-g722=y
-CONFIG_PACKAGE_asterisk18-mod-codec-g726=y
-CONFIG_PACKAGE_asterisk18-mod-codec-ulaw=y
-# CONFIG_PACKAGE_asterisk18-mod-curl is not set
-CONFIG_PACKAGE_asterisk18-mod-format-g726=y
-CONFIG_PACKAGE_asterisk18-mod-format-g729=y
-CONFIG_PACKAGE_asterisk18-mod-format-sln=y
-CONFIG_PACKAGE_asterisk18-mod-format-sln16=y
-# CONFIG_PACKAGE_asterisk18-mod-func-blacklist is not set
-CONFIG_PACKAGE_asterisk18-mod-func-channel=y
-# CONFIG_PACKAGE_asterisk18-mod-func-cut is not set
-CONFIG_PACKAGE_asterisk18-mod-func-db=y
-# CONFIG_PACKAGE_asterisk18-mod-func-devstate is not set
-# CONFIG_PACKAGE_asterisk18-mod-func-extstate is not set
-# CONFIG_PACKAGE_asterisk18-mod-func-global is not set
-CONFIG_PACKAGE_asterisk18-mod-func-shell=y
-# CONFIG_PACKAGE_asterisk18-mod-func-uri is not set
-# CONFIG_PACKAGE_asterisk18-mod-func-vmcount is not set
-# CONFIG_PACKAGE_asterisk18-mod-mysql is not set
-# CONFIG_PACKAGE_asterisk18-mod-pbx-ael is not set
-CONFIG_PACKAGE_asterisk18-mod-pbx-spool=y
-# CONFIG_PACKAGE_asterisk18-mod-res-ael-share is not set
-# CONFIG_PACKAGE_asterisk18-mod-res-agi is not set
-# CONFIG_PACKAGE_asterisk18-mod-res-clioriginate is not set
-# CONFIG_PACKAGE_asterisk18-mod-res-crypto is not set
-# CONFIG_PACKAGE_asterisk18-mod-res-fax is not set
-# CONFIG_PACKAGE_asterisk18-mod-res-fax-spandsp is not set
-# CONFIG_PACKAGE_asterisk18-mod-res-musiconhold is not set
-CONFIG_PACKAGE_asterisk18-mod-res-stun=y
-# CONFIG_PACKAGE_asterisk18-mod-res-timing-pthread is not set
-# CONFIG_PACKAGE_asterisk18-mod-res-timing-timerfd is not set
-CONFIG_PACKAGE_asterisk18-mod-res-voice=y
-CONFIG_PACKAGE_asterisk18-mod-sounds=y
-# CONFIG_PACKAGE_asterisk18-mod-voicemail is not set
-# CONFIG_PACKAGE_smap is not set
-# CONFIG_PACKAGE_smap-to-devinfo is not set
-CONFIG_PACKAGE_voice-client=y
 
 #
 # Time Synchronization
@@ -3249,14 +3163,11 @@ CONFIG_WPA_MSG_MIN_PRIORITY=3
 #
 # JUCI
 #
-CONFIG_PACKAGE_juci=y
 
 #
 # UBUS
 #
-CONFIG_PACKAGE_rpcd=y
 # CONFIG_PACKAGE_rpcd-mod-file is not set
-CONFIG_PACKAGE_ubus-mod-juci=y
 
 #
 # Kernel modules

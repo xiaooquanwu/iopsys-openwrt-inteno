@@ -1,6 +1,0 @@
-s/^CONFIG_TARGET_MODEL_NAME.*/CONFIG_TARGET_MODEL_NAME="EG300-WU21U"/g
-s/^CONFIG_TARGET_IBOARDID.*/CONFIG_TARGET_IBOARDID="EG300"/g
-s/^# CONFIG_BCM_I2C is not set/CONFIG_BCM_I2C=y/g
-s/^# CONFIG_PACKAGE_i2c-tools is not set/CONFIG_PACKAGE_i2c-tools=y/g
-s/# CONFIG_PACKAGE_luci-app-catv is not set/CONFIG_PACKAGE_luci-app-sfp=y/g
-s/# CONFIG_PACKAGE_luci-app-sfp is not set/CONFIG_PACKAGE_luci-app-catv=y/g
