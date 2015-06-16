@@ -29,7 +29,7 @@ define Package/routermodel-dg351/config
 endef
 
 define Package/routermodel-dg351/description
-	
+	Router model support package
 endef
 
 define Package/routermodel-dg351/install

@@ -39,7 +39,7 @@ define Package/${PACKAGE_NAME}/config
 endef
 
 define Package/${PACKAGE_NAME}/description
-	
+	Router model support package
 endef
 
 define Package/${PACKAGE_NAME}/install

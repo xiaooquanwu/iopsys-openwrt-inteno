@@ -29,7 +29,7 @@ define Package/routermodel-dg301al/config
 endef
 
 define Package/routermodel-dg301al/description
-	
+	Router model support package
 endef
 
 define Package/routermodel-dg301al/install

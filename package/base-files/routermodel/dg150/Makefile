@@ -29,7 +29,7 @@ define Package/routermodel-dg150/config
 endef
 
 define Package/routermodel-dg150/description
-	
+	Router model support package
 endef
 
 define Package/routermodel-dg150/install

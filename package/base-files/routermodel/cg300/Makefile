@@ -29,7 +29,7 @@ define Package/routermodel-cg300/config
 endef
 
 define Package/routermodel-cg300/description
-	
+	Router model support package
 endef
 
 define Package/routermodel-cg300/install

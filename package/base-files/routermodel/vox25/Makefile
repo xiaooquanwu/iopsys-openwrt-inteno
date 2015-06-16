@@ -29,7 +29,7 @@ define Package/routermodel-vox25/config
 endef
 
 define Package/routermodel-vox25/description
-	
+	Router model support package
 endef
 
 define Package/routermodel-vox25/install

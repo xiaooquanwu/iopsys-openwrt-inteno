@@ -29,7 +29,7 @@ define Package/routermodel-eg200/config
 endef
 
 define Package/routermodel-eg200/description
-	
+	Router model support package
 endef
 
 define Package/routermodel-eg200/install

@@ -29,7 +29,7 @@ define Package/routermodel-vg50/config
 endef
 
 define Package/routermodel-vg50/description
-	
+	Router model support package
 endef
 
 define Package/routermodel-vg50/install
