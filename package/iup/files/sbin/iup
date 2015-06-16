@@ -15,6 +15,9 @@ export VERBOSE=0
 export CONF=1
 export DESKEY=$(cat /proc/nvram/DesKey | hexdump -e '16/1 "%02x"')
 export MAC=$(cat /proc/nvram/BaseMacAddr)
+export RANGE=10
+export RETRYSTOP=5
+export SLEEP=10
 #remove whitespace
 MAC=${MAC// /}
 #lower to upper Conversion
@@ -96,6 +99,11 @@ handle_provisioning() {
 	local defaultreset
 	local pack
 	local packname
+	local number=$RANDOM
+	local retry=1
+	local number
+	local incsleep=$SLEEP
+	let "number %= $RANGE"
 	if [[ ! -e $IUPTEMP ]]; then
 		mkdir $IUPTEMP
 	fi
@@ -107,18 +115,28 @@ handle_provisioning() {
 		config_get url "$config" url
 		url=${url//\$MAC/$MAC}
 		v "Download from $url"
-
-		if [ ${url%%:*} == "tftp" ]; then
+		  
+		while [ $retry -le $RETRYSTOP ]  
+		do
+		  if [ ${url%%:*} == "tftp" ]; then
 			tftpfile=${url#*\/\/}
 			host=${tftpfile%%\/*}
 			tftpfile=${tftpfile#*\/}
 
 			/usr/bin/tftp -l $IUPCONFFILES -r "$tftpfile" -g "$host"
-		else
-			###ugly will remove sleep when backof and retry is implemented
-			sleep 1
+		  else
 			get_image "$url" "cat" > $IUPCONFFILES
-		fi
+		  fi
+		  if [ -s $IUPCONFFILES ]; then
+			v "File Downloaded"
+			retry=$((RETRYSTOP + 1))
+		  else		  
+		  v "Download failed will try again in $incsleep sec"
+		  sleep $incsleep
+		  incsleep=$((incsleep * retry + number))
+		  retry=$((retry+1))
+		  fi
+		done
 	fi
 	if [ ! -s "$IUPCONFFILES" ]; then
 		echo "File not Found"
