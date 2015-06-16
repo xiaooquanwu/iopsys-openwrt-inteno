@@ -37,7 +37,7 @@
 struct i2c_reg_tab {
 	char addr;
 	char value;
-	char range;  /* if set registers starting from addr to addr+range will be set to the same value */
+	char range;  
 };
 
 struct button_data {
@@ -60,6 +60,7 @@ static const struct i2c_reg_tab i2c_init_tab_vox25[]={
 
 int dev;
 int shadow_proximity;
+
 
 void do_init_tab(const struct i2c_reg_tab *tab, int len );
 

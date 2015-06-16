@@ -50,7 +50,7 @@
 struct i2c_reg_tab {
 	char addr;
 	char value;
-	char range;  /* if set registers starting from addr to addr+range will be set to the same value */
+	char range;  
 };
 
 struct i2c_touch{
@@ -76,13 +76,14 @@ struct sx9512_list{
 	struct led_data *drv;
 };
 
+
 /* holds all leds that is configured to be used. needed for reset */
 static LIST_HEAD(sx9512_leds);
 
 static struct i2c_touch *i2c_touch_current;	/* pointer to current active table */
 
-static void do_init_tab( struct i2c_touch *i2c_touch);
-static struct i2c_touch * i2c_init(struct uci_context *uci_ctx, const char* i2c_dev_name, struct i2c_touch* i2c_touch_list, int len);
+//static void do_init_tab( struct i2c_touch *i2c_touch);
+//static struct i2c_touch * i2c_init(struct uci_context *uci_ctx, const char* i2c_dev_name, struct i2c_touch* i2c_touch_list, int len);
 
 static int sx9512_led_set_state(struct led_drv *drv, led_state_t state);
 static led_state_t sx9512_led_get_state(struct led_drv *drv);
@@ -293,7 +294,7 @@ static void do_init_tab( struct i2c_touch *i2c_touch)
 }
 
 
-static struct i2c_touch * i2c_init(struct uci_context *uci_ctx, const char* i2c_dev_name, struct i2c_touch* touch_list, int len)
+struct i2c_touch * i2c_init(struct uci_context *uci_ctx, const char* i2c_dev_name, struct i2c_touch* touch_list, int len)
 {
 	const char *p;
 	int i;
@@ -305,8 +306,7 @@ static struct i2c_touch * i2c_init(struct uci_context *uci_ctx, const char* i2c_
 		return 0;
 	}
 
-	/* Here we match the hardware name to a init table, and get the
-	   i2c chip address */
+	
 	i2c_touch = NULL;
 	for (i = 0; i < len; i++) {
 		if (!strcmp(touch_list[i].name, p)) {
