@@ -13,7 +13,8 @@ include $(INCLUDE_DIR)/kernel.mk
 PKG_NAME:=inteno-base
 PKG_RELEASE:=156
 
-PKG_FILE_DEPENDS:=$(PLATFORM_DIR)/ $(GENERIC_PLATFORM_DIR)/inteno-base/
+#PKG_FILE_DEPENDS:=$(PLATFORM_DIR)/ 
+#$(GENERIC_PLATFORM_DIR)/inteno-base/
 PKG_BUILD_DEPENDS:=opkg/host
 
 include $(INCLUDE_DIR)/package.mk
@@ -89,6 +90,7 @@ endif
 
 define Build/Prepare
 	mkdir -p $(PKG_BUILD_DIR)
+	touch $(PKG_BUILD_DIR)/test
 endef
 
 define Build/Compile/Default
@@ -96,6 +98,10 @@ define Build/Compile/Default
 endef
 
 Build/Compile = $(Build/Compile/Default)
+
+define Package/inteno-base/compile
+
+endef
 
 define Package/inteno-base/install
 	$(CP) ./base-files-openwrt/* $(1)/
