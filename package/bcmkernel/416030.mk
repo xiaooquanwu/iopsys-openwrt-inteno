@@ -244,7 +244,6 @@ define Package/bcmkernel/install
 
 	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/etc/wlan/*			$(1)/etc/wlan
 	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/etc/telephonyProfiles.d		$(1)/etc/
-	cp -r $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/dev				$(1)/
 
 #	rm -rf $(1)/lib/modules/$(BCM_KERNEL_VERSION)/bcm_usb.ko
 
