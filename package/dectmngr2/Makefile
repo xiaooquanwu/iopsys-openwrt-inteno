@@ -8,14 +8,14 @@
 include $(TOPDIR)/rules.mk
 
 PKG_RELEASE:=1
-PKG_VERSION:=1.0.7
+PKG_VERSION:=1.0.8
 ifeq ($(CONFIG_PACKAGE_bcmkernel),y)
 PKG_SOURCE_URL:=git@iopsys.inteno.se:dectmngr2.git
 else
 PKG_SOURCE_URL:=http://ihgsp.inteno.se/git/dectmngr2.git
 endif
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=d44f8a1fbfed8c3111de37d5503aa4d840122e08
+PKG_SOURCE_VERSION:=199ae00aa57ebda9cfdc2bccbb95374c4b1b7a0c
 PKG_NAME:=dectmngr2
 
 
