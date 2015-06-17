@@ -610,16 +610,17 @@ main_backup(int argc, char **argv)
 	printf("Status: 200 OK\r\n");
 	
 	char cmd[256]; 
-	
-	if(fields[3]){
+	const char *enctype = ""; 
+	if(fields[3] && strlen(fields[3]) > 0){
 		snprintf(cmd, sizeof(cmd), "sysupgrade --create-backup - --password %s", fields[3]);
+		enctype = "encrypted"; 
 	} else {
 		snprintf(cmd, sizeof(cmd), "sysupgrade --create-backup -");
 	} 
 	
 	printf("Content-Type: application/x-targz\r\n");
 	printf("Content-Disposition: attachment; "
-		   "filename=\"backup-%s-%s.tar.gz\"\r\n\r\n", hostname, datestr);
+		   "filename=\"backup-%s-%s-%s.tar.gz\"\r\n\r\n", enctype, hostname, datestr);
 		
 	run_child(cmd); 
 	
