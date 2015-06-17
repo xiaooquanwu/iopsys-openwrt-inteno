@@ -1052,10 +1052,9 @@ rpc_juci_upgrade_start(struct ubus_context *ctx, struct ubus_object *obj,
                         struct ubus_request_data *req, const char *method,
                         struct blob_attr *msg)
 {
-	char fwpath[255]; 
+	char fwpath[255];
+	const char *keep = "";
 	strcpy(fwpath, "/tmp/firmware.bin");
-	
-	//const char *keep = "";
 
 	struct blob_attr *tb[__RPC_UPGRADE_MAX];
 	blobmsg_parse(rpc_upgrade_policy, __RPC_UPGRADE_MAX, tb, blob_data(msg), blob_len(msg));
@@ -1064,10 +1063,10 @@ rpc_juci_upgrade_start(struct ubus_context *ctx, struct ubus_object *obj,
 		strncpy(fwpath, blobmsg_data(tb[RPC_UPGRADE_PATH]),  sizeof(fwpath));
 	}
 
-/*	if (tb[RPC_UPGRADE_KEEP] && !blobmsg_data(tb[RPC_UPGRADE_KEEP]))*/
-/*		keep = "-n";*/
+	if (tb[RPC_UPGRADE_KEEP] && !blobmsg_data(tb[RPC_UPGRADE_KEEP]))
+		keep = "-n";
 	
-	const char *cmd[3] = { "sysupgrade", fwpath, NULL };
+	const char *cmd[4] = { "sysupgrade", keep, fwpath, NULL };
 	return ops->exec(cmd, NULL, NULL, NULL, NULL, NULL, ctx, req);
 }
 
