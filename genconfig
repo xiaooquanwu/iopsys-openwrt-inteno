@@ -45,6 +45,18 @@ usage() {
 		exit 127
 }
 
+update_customer_configs() 
+{
+	if [ ! -d "$CUSTCONF" ]; then
+		git  clone  -b martin git@ihgsp.inteno.se:customerconfigs ${CUSTCONF}
+	elif [ $IMPORT -eq 1 ]; then
+		cd ${CUSTCONF}
+		v "git pull"
+		git pull
+		cd ..
+	fi
+}
+
 create_and_copy_files()
 {
 	local GITVERSION=$(git describe --tags --abbrev=0)
@@ -60,14 +72,7 @@ create_and_copy_files()
 	cat "${CONFIGPATH}/${BOARDTYPE}/config" >> ${CONFIG}
 	
 	if [ $OPEN -eq 0 ]; then
-		if [ ! -d "$CUSTCONF" ]; then
-			git  clone  -b martin git@ihgsp.inteno.se:customerconfigs ${CUSTCONF}
-		elif [ $IMPORT -eq 1 ]; then
-			cd ${CUSTCONF}
-			v "git pull"
-			git pull
-			cd ..
-		fi
+		
 		# apply customer specific patch for the config
 		CONFIGPATCH="$CUSTCONF/$CUSTOMER/$BOARDTYPE/config.force"
 		if [ -f "${CONFIGPATCH}" ]; then 
@@ -116,6 +121,9 @@ echo "Using boardtype: $BOARDTYPE"
 if [ -z "$BOARDTYPE" ]; then
 	usage
 else
+	if [ $OPEN -eq 0 ]; then
+		update_customer_configs
+	fi
 	(cd ${CONFIGPATH}; bash ./update-makefiles.sh)
 	(cd ${CUSTCONF}; bash ./update-makefiles.sh)
 	create_and_copy_files "$1" "$2"
