@@ -117,9 +117,9 @@ elif [[ ${ONLINE} -eq 1 ]]; then
 	exit 0
 fi
 
-##always add complete path to argument and move to / directory
-if [ $(dirname $ARGV) == "." ]; then 
-  ARGV="$PWD/`basename $ARGV`"
+# always add complete path to argument and move to / directory
+if [ -n "$ARGV" ]; then
+	[ "$(dirname $ARGV)" == "." ] && ARGV="$PWD/$(basename $ARGV)"
 fi
 
 ##always add complete path to argument and move to / directory
