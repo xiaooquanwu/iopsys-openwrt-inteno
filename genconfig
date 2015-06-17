@@ -103,8 +103,8 @@ echo "Using boardtype: $BOARDTYPE"
 if [ -z "$BOARDTYPE" ]; then
 	usage
 else
-	bash ${CONFIGPATH}/update-makefiles.sh
-	bash ${CUSTCONF}/update-makefiles.sh
+	(cd ${CONFIGPATH}; bash ./update-makefiles.sh)
+	(cd ${CUSTCONF}; bash ./update-makefiles.sh)
 	create_and_copy_files "$1" "$2"
 fi
 
