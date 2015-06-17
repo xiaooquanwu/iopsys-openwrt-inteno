@@ -229,6 +229,10 @@ get_image_chip_id() {
 	fi
 }
 
+get_chip_id() {
+	brcm_fw_tool -k info
+}
+
 get_image_board_id() {
 	if is_inteno_image $1; then
 		get_inteno_tag_val $1 board
