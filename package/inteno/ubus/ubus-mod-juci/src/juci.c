@@ -1053,7 +1053,7 @@ rpc_juci_upgrade_start(struct ubus_context *ctx, struct ubus_object *obj,
                         struct blob_attr *msg)
 {
 	char fwpath[255];
-	const char *keep = "";
+	const char *keep = "-q";
 	strcpy(fwpath, "/tmp/firmware.bin");
 
 	struct blob_attr *tb[__RPC_UPGRADE_MAX];
