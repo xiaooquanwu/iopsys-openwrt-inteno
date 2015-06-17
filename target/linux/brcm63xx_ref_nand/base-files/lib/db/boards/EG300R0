@@ -227,7 +227,7 @@ config led_map led_map
 	list functions dect
 
 # dimming turn leds off unless above cutof level
-       option dimming_level	notice
+       option dimming_level	off
        option dimming_on	5
        list dimming		wifi
        list dimming		wps
