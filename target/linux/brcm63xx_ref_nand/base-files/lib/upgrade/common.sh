@@ -314,14 +314,24 @@ find_mtd_no() {
 	echo ${part##mtd}
 }
 
+get_bootblock_nvram_offset() {
+	case "$(get_chip_id)" in
+		63138)
+			echo "$((65536+1408))" ;;
+		*)
+			echo "1408" ;;
+	esac
+}
+
 cfe_image_upgrade() {
 	local from=$1
 	local ofs=$2
 	local size=$3
 
 	local mtd_no=$(find_mtd_no "nvram")
-	dd if=/dev/mtd$mtd_no bs=1 count=1k skip=1408 \
-	   of=$from seek=$(( $ofs + 1408 )) conv=notrunc
+	local skip=$(get_bootblock_nvram_offset)
+	dd if=/dev/mtd$mtd_no bs=1 count=1k skip=$skip \
+	   of=$from seek=$(( $ofs + $skip )) conv=notrunc
 	imagewrite -c -k $ofs -l $size /dev/mtd$mtd_no $from
 }
 
@@ -333,7 +343,8 @@ make_nvram2_image() {
 	cat /dev/zero | tr '\000' '\377' | head -c $(( 2048 - 16 )) >> $img
 	
 	mtd_no=$(find_mtd_no "nvram")
-	dd if=/dev/mtd$mtd_no bs=1 count=1k skip=1408 \
+	local skip=$(get_bootblock_nvram_offset)
+	dd if=/dev/mtd$mtd_no bs=1 count=1k skip=$skip \
 	   of=$img seek=16 conv=notrunc
 }
 
