@@ -17,6 +17,14 @@ BOARD_ID:=D301
 UBIFS_OPTS = -v -c 2048 -m 2048 -e 126976 -x lzma --squash-uids
 UBINIZE_OPTS = -v -m 2048 -p 128KiB
 
+ifeq ($(CONFIG_BCM_CHIP_ID),"63138")
+IMAGETAG_KERNEL_ARGS := -L -K -i $(KDIR)/vmlinux.lzma -o $(KDIR)/vmlinux.lz -e $(KERNEL_ENTRY) -l $(KERNEL_ENTRY)
+IMAGETAG_IMAGE_ARGS  := -c $(CONFIG_BCM_CHIP_ID) -q NAND128 -L
+else
+IMAGETAG_KERNEL_ARGS := -K -i $(KDIR)/vmlinux.lzma -o $(KDIR)/vmlinux.lz -e $(KERNEL_ENTRY)
+IMAGETAG_IMAGE_ARGS  := -c $(CONFIG_BCM_CHIP_ID) -q NAND128 -b $(BOARD_ID)
+endif
+
 
 # NOTE:
 #
@@ -46,7 +54,7 @@ define Image/Prepare
 
 	# compressed kernel (.w.x.y)
 	$(STAGING_DIR_HOST)/bin/lzma e -d22 -lp2 -lc1 $(KDIR)/vmlinux.bcm $(KDIR)/vmlinux.lzma
-	$(STAGING_DIR_HOST)/bin/imagetag_nand -K -i $(KDIR)/vmlinux.lzma -o $(KDIR)/vmlinux.lz -e $(KERNEL_ENTRY)
+	$(STAGING_DIR_HOST)/bin/imagetag_nand $(IMAGETAG_KERNEL_ARGS)
 
     ifneq ($(CONFIG_TARGET_ROOTFS_UBIFS),)
 	# make kernel jffs2 image (.x.y)
@@ -93,7 +101,7 @@ define Image/Prepare
 	cp $(TOPDIR)/target/linux/$(BOARD)/base-files/etc/banner $(TARGET_DIR)/etc/banner
 	sed -i '/^IOP Version:/d' $(TARGET_DIR)/etc/banner
 	sed -i '7iIOP Version: $(IHGSP_BUILD_VERSION)' $(TARGET_DIR)/etc/banner
-	mkdir $(TARGET_DIR)/lib/db/version
+	mkdir -p $(TARGET_DIR)/lib/db/version
 	echo $(IHGSP_BUILD_VERSION)  > $(TARGET_DIR)/lib/db/version/iop_version
 #	echo $(CONFIG_TARGET_IBOARDID)> $(TARGET_DIR)/lib/db/version/iop_iboardid
 	echo $(CONFIG_TARGET_CUSTOMER)> $(TARGET_DIR)/lib/db/version/iop_customer
@@ -130,9 +138,7 @@ define Image/Build/CFE
 	# Tag the (old style) cfe image
 	$(STAGING_DIR_HOST)/bin/imagetag_nand -f $(KDIR)/cfe$(CONFIG_BCM_CHIP_ID)_nand.v \
 		-o $(BIN_DIR)/$(IHGSP_BUILD_VERSION)_cfe \
-		-b $(BOARD_ID) \
-                -c $(CONFIG_BCM_CHIP_ID) \
-		-q NAND128
+		$(IMAGETAG_IMAGE_ARGS)
 
     ifneq ($(CONFIG_TARGET_ROOTFS_UBIFS),)
 	# Make header (.z)
@@ -161,9 +167,7 @@ define Image/Build/jffs2-128k
 	# Tag the rootfs image
 	$(STAGING_DIR_HOST)/bin/imagetag_nand -f $(KDIR)/root.$(1) \
 		-o $(BIN_DIR)/$(IHGSP_BUILD_VERSION)_fs_image \
-		-b $(BOARD_ID) \
-                -c $(CONFIG_BCM_CHIP_ID) \
-		-q NAND128
+		$(IMAGETAG_IMAGE_ARGS)
 
 	# Concat the cfe and rootfs together (.w)
 	cat $(BIN_DIR)/$(IHGSP_BUILD_VERSION)_cfe \
@@ -172,9 +176,7 @@ define Image/Build/jffs2-128k
 	# Tag the combined image (.w)
 	$(STAGING_DIR_HOST)/bin/imagetag_nand -f $(KDIR)/cfe_fs_image_128 \
 		-o $(BIN_DIR)/$(IHGSP_BUILD_VERSION).w \
-		-b $(BOARD_ID) \
-                -c $(CONFIG_BCM_CHIP_ID) \
-		-q NAND128
+		$(IMAGETAG_IMAGE_ARGS)
 
 	# DIRTY! DIRTY! DIRTY! DIRTY! DIRTY! DIRTY! DIRTY!
 	# kernel and cferam flag not needed in UBI file systems!
@@ -213,9 +215,7 @@ define Image/Build/ubi
 	$(STAGING_DIR_HOST)/bin/imagetag_nand \
 		-f $(KDIR)/cfe_nvram_vmlinux_ubi_image_128 \
 		-o $(BIN_DIR)/$(IHGSP_BUILD_VERSION).x \
-		-b $(BOARD_ID) \
-		-c $(CONFIG_BCM_CHIP_ID) \
-		-q NAND128
+		$(IMAGETAG_IMAGE_ARGS)
 
 	# Make header (.y)
 	$(call Image/Build/Header,header.y,cfe$(CONFIG_BCM_CHIP_ID)_nand.v,vmlinux.jffs2,root.ubifs)
