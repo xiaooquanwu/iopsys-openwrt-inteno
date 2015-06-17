@@ -11,7 +11,7 @@ DISABLE_HOOKS=
 exec >/dev/null 2>&1
 
 local LUCI=0
-grep -q "luci-mod-admin-full" && LUCI=1
+opkg list_installed | grep -q "luci-mod-admin-full" && LUCI=1
 
 local ALLJOYN="/usr/bin/alljoyn-daemon"
 local RESTART="0"
