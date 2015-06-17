@@ -15,7 +15,7 @@ s/^CONFIG_TARGET_SUFFIX="uclibc"/CONFIG_TARGET_SUFFIX="uclibcgnueabi"/g
 s/^CONFIG_BCM_KERNEL_PROFILE.*/CONFIG_BCM_KERNEL_PROFILE="963138BGWV"/g
 s/^CONFIG_BCM_CHIP_ID.*/CONFIG_BCM_CHIP_ID="63138"/g
 s/^CONFIG_PACKAGE_ice-client.*/# CONFIG_PACKAGE_ice-client is not set/g
-
+s/^# CONFIG_PACKAGE_dectmngr2 is not set/CONFIG_PACKAGE_dectmngr2=y/g
 s/^CONFIG_PACKAGE_dectmngr=y/# CONFIG_PACKAGE_dectmngr is not set/g
 s/^CONFIG_PACKAGE_luci-app-dect=y/# CONFIG_PACKAGE_luci-app-dect is not set/g
 s/^CONFIG_PACKAGE_natalie-dect=y/# CONFIG_PACKAGE_natalie-dect is not set/g

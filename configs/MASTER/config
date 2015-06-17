@@ -2549,6 +2549,7 @@ CONFIG_CWMP_ACS_MULTI=y
 CONFIG_CWMP_DEBUG=y
 # CONFIG_CWMP_DEVEL_DEBUG is not set
 CONFIG_PACKAGE_dectmngr=y
+# CONFIG_PACKAGE_dectmngr2 is not set
 # CONFIG_PACKAGE_dmesg is not set
 # CONFIG_PACKAGE_dropbearconvert is not set
 # CONFIG_PACKAGE_endptctl is not set
