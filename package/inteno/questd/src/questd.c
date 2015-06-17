@@ -355,6 +355,8 @@ load_wireless()
 				while (token != NULL)
 				{
 					radio[rno].channels[chn] = atoi(token);
+					if (radio[rno].channels[chn] > 48)
+						break;
 					token = strtok (NULL, " ");
 					chn++;
 				}
