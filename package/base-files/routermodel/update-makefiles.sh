@@ -43,7 +43,7 @@ define Package/${PACKAGE_NAME}/description
 endef
 
 define Package/${PACKAGE_NAME}/install
-	
+	\$(CP) ./fs/* \$(1)/
 endef
 
 define Package/${PACKAGE_NAME}/postinst

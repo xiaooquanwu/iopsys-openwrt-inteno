@@ -33,7 +33,7 @@ define Package/routermodel-dg150/description
 endef
 
 define Package/routermodel-dg150/install
-	
+	$(CP) ./fs/* $(1)/
 endef
 
 define Package/routermodel-dg150/postinst

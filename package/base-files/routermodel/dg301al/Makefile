@@ -33,7 +33,7 @@ define Package/routermodel-dg301al/description
 endef
 
 define Package/routermodel-dg301al/install
-	
+	$(CP) ./fs/* $(1)/
 endef
 
 define Package/routermodel-dg301al/postinst

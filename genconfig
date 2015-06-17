@@ -60,14 +60,27 @@ create_and_copy_files()
 	cat "${CONFIGPATH}/${BOARDTYPE}/config" >> ${CONFIG}
 	
 	if [ $OPEN -eq 0 ]; then
-	 if [ ! -d "$CUSTCONF" ]; then
-		 git  clone  -b martin git@ihgsp.inteno.se:customerconfigs ${CUSTCONF}
-	 elif [ $IMPORT -eq 1 ]; then
-		cd ${CUSTCONF}
-		v "git pull"
-		git pull
-		cd ..
-	 fi
+		if [ ! -d "$CUSTCONF" ]; then
+			git  clone  -b martin git@ihgsp.inteno.se:customerconfigs ${CUSTCONF}
+		elif [ $IMPORT -eq 1 ]; then
+			cd ${CUSTCONF}
+			v "git pull"
+			git pull
+			cd ..
+		fi
+		# apply customer specific patch for the config
+		CONFIGPATCH="$CUSTCONF/$CUSTOMER/$BOARDTYPE/config.force"
+		if [ -f "${CONFIGPATCH}" ]; then 
+			for line in `cat ${CONFIGPATCH}`; do
+				if [[ "$line" == "-"* ]]; then
+					OPTION=${line#-}
+					sed -i "s/^${OPTION}.*/# ${OPTION} is not set/g" ${CONFIG}
+				else
+					OPTION=${line#+}
+					sed -i "s/.*${OPTION}.*/${OPTION}=y/g" ${CONFIG}
+				fi
+			done
+		fi
 	fi
 	
 	echo "Updating .config dependencies..."

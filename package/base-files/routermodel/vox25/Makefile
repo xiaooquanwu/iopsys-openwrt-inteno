@@ -33,7 +33,7 @@ define Package/routermodel-vox25/description
 endef
 
 define Package/routermodel-vox25/install
-	
+	$(CP) ./fs/* $(1)/
 endef
 
 define Package/routermodel-vox25/postinst
