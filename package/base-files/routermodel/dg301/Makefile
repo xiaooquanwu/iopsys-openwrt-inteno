@@ -21,7 +21,7 @@ endef
 
 define Package/routermodel-dg301
 	TITLE:=routermodel-dg301
-	DEPENDS:= +inteno-base +inteno-base-voice
+	DEPENDS:= +inteno-base +inteno-base-voice +inteno-base-dect
 endef
 
 define Package/routermodel-dg301/config

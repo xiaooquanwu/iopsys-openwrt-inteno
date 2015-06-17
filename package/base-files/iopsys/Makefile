@@ -134,12 +134,22 @@ $(eval $(call BuildPackage,inteno-asterisk-modules))
 
 define Package/inteno-base-voice
   CATEGORY:=Config
-  DEPENDS:=+asterisk18 +inteno-asterisk-modules +voice-client +natalie-dect +natalie-dect-h +dectmgr +endpntcfg +alsa-lib 
+  DEPENDS:=+asterisk18 +inteno-asterisk-modules +voice-client +endptcfg +alsa-lib 
   TITLE:=Preselected packages for voice
 endef
 $(eval $(call BuildPackage,inteno-base-voice))
 define Package/inteno-base-voice/description
  Inteno voice base packages
+endef
+
+define Package/inteno-base-dect
+  CATEGORY:=Config
+  DEPENDS:=+inteno-base-voice +natalie-dect +natalie-dect-h +dectmgr 
+  TITLE:=Preselected packages for dect
+endef
+$(eval $(call BuildPackage,inteno-base-voice))
+define Package/inteno-base-dect/description
+ Inteno dect default packages
 endef
 
 define Package/inteno-base-juci

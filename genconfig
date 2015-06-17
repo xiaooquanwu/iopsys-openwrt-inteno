@@ -53,7 +53,7 @@ create_and_copy_files()
 	echo "CONFIG_PACKAGE_routermodel-${BOARDTYPE,,}=y" >> ${CONFIG}
 	echo "CONFIG_PACKAGE_profile-${CUSTOMER,,}-${BOARDTYPE,,}=y" >> ${CONFIG}
 	#echo "CONFIG_PACKAGE_customer-${BOARDTYPE,,}=y" >> ${CONFIG}
-	echo "CONFIG_TARGET_MODEL_NAME=\"${BOARDTYPE^^}-WU7P2U\"" >> ${CONFIG}
+	#echo "CONFIG_TARGET_MODEL_NAME=\"${BOARDTYPE^^}-WU7P2U\"" >> ${CONFIG}
 	echo "CONFIG_TARGET_VERSION=\"${GITVERSION^^}\"" >> ${CONFIG}
 	#echo "CONFIG_TARGET_IBOARDID=\"${BOARDTYPE^^}\"" >> ${CONFIG}
 	echo "CONFIG_TARGET_CUSTOMER=\"${CUSTOMER^^}\"" >> ${CONFIG}

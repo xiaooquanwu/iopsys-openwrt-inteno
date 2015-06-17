@@ -21,7 +21,7 @@ endef
 
 define Package/routermodel-vg50
 	TITLE:=routermodel-vg50
-	DEPENDS:= +inteno-base +inteno-base-voice +luci-app-voice +luci-app-voice-client +luci-app-dect
+	DEPENDS:= +inteno-base 
 endef
 
 define Package/routermodel-vg50/config

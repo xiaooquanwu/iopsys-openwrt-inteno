@@ -21,7 +21,7 @@ endef
 
 define Package/routermodel-cg300
 	TITLE:=routermodel-cg300
-	DEPENDS:= +inteno-base +inteno-base-voice 
+	DEPENDS:= +inteno-base +inteno-base-voice +inteno-base-dect
 endef
 
 define Package/routermodel-cg300/config

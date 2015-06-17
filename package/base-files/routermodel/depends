@@ -1,11 +1,12 @@
-cg300: +inteno-base +inteno-base-voice 
-cg301: +inteno-base +inteno-base-voice 
-dg150: +inteno-base 
-dg301: +inteno-base +inteno-base-voice
+cg300: +inteno-base +inteno-base-voice +inteno-base-dect
+cg301: +inteno-base +inteno-base-voice +inteno-base-dect 
+dg150: +inteno-base +inteno-base-voice
+dg301: +inteno-base +inteno-base-voice +inteno-base-dect
 dg301al: +inteno-base +inteno-base-voice
-dg351: +inteno-base +inteno-base-voice
 eg200: +inteno-base +inteno-base-voice
-eg300: +inteno-base +i2c-tools +luci-app-sfp +luci-app-catv
-vg50: +inteno-base +inteno-base-voice +luci-app-voice +luci-app-voice-client +luci-app-dect
+dg200: +inteno-base +inteno-base-voice
+dg400: +inteno-base +inteno-base-voice +inteno-base-dect
+eg300: +inteno-base +luci-app-sfp +luci-app-catv
+vg50: +inteno-base 
 vox25: +inteno-base +inteno-base-voice 
 default: +bcmopen

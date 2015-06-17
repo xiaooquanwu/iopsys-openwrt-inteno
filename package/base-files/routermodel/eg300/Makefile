@@ -21,7 +21,7 @@ endef
 
 define Package/routermodel-eg300
 	TITLE:=routermodel-eg300
-	DEPENDS:= +inteno-base +i2c-tools +luci-app-sfp +luci-app-catv
+	DEPENDS:= +inteno-base +luci-app-sfp +luci-app-catv
 endef
 
 define Package/routermodel-eg300/config

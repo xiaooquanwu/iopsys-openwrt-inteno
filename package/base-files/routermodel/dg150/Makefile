@@ -21,7 +21,7 @@ endef
 
 define Package/routermodel-dg150
 	TITLE:=routermodel-dg150
-	DEPENDS:= +inteno-base 
+	DEPENDS:= +inteno-base +inteno-base-voice
 endef
 
 define Package/routermodel-dg150/config
