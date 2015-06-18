@@ -71,7 +71,7 @@ create_and_copy_files()
 	echo "CONFIG_TARGET_CUSTOMER=\"${CUSTOMER^^}\"" >> ${CONFIG}
 	
 	local BOARD_DIR="${CONFIGPATH}/${BOARDTYPE}"
-	if [ ! -d "${BOARD_DIR}" -o ! -d ]; then
+	if [ ! -d "${BOARD_DIR}" ]; then
 		echo "Could not find ${BOARDDIR}..."
 		exit 
 	fi 
