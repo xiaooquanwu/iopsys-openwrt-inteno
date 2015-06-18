@@ -1,0 +1,25 @@
+. /lib/functions.sh
+
+block_url_per_mac() {
+	local cfg="$1"
+	local enabled url src_mac
+
+	config_get enabled "$cfg" enabled "1"
+	[ "$enabled" == "1" ] || return
+
+	config_get url "$cfg" url
+	config_get src_mac "$cfg" src_mac
+
+	for u in $url; do
+		for m in $src_mac; do
+			iptables -I zone_lan_forward -p udp --dport 53 -m mac --mac-source $m -m string --algo bm --string "$u" -j DROP
+			iptables -I zone_lan_forward -p tcp --dport 53 -m mac --mac-source $m -m string --algo bm --string "$u" -j DROP
+			iptables -I zone_wan_input   -p udp --dport 53 -m mac --mac-source $m -m string --algo bm --string "$u" -j DROP
+			iptables -I zone_wan_input   -p tcp --dport 53 -m mac --mac-source $m -m string --algo bm --string "$u" -j DROP
+		done
+	done	
+}
+
+config_load firewall
+config_foreach block_url_per_mac urlblock
+

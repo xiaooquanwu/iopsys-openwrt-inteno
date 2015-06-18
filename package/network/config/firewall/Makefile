@@ -59,6 +59,7 @@ define Package/firewall/install
 	$(INSTALL_DIR) $(1)/etc/
 	$(INSTALL_DATA) ./files/firewall.user $(1)/etc/firewall.user
 	$(INSTALL_DATA) ./files/firewall.dmz $(1)/etc/firewall.dmz
+	$(INSTALL_DATA) ./files/firewall.url $(1)/etc/firewall.url
 endef
 
 $(eval $(call BuildPackage,firewall))
