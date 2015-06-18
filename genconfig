@@ -16,8 +16,8 @@ export OPEN=0
 export CONFIGPATH="package/base-files/routermodel"  
 export CUSTCONF="package/zustomers"
 export VERBOSE=0
-export BOARDTYPE=
-export CUSTOMER=
+export BOARDTYPE="$1"
+export CUSTOMER="$2"
 
 set -e 
 
@@ -69,11 +69,23 @@ create_and_copy_files()
 	echo "CONFIG_TARGET_VERSION=\"${GITVERSION^^}\"" >> ${CONFIG}
 	#echo "CONFIG_TARGET_IBOARDID=\"${BOARDTYPE^^}\"" >> ${CONFIG}
 	echo "CONFIG_TARGET_CUSTOMER=\"${CUSTOMER^^}\"" >> ${CONFIG}
+	
+	local BOARD_DIR="${CONFIGPATH}/${BOARDTYPE}"
+	if [ ! -d "${BOARD_DIR}" -o ! -d ]; then
+		echo "Could not find ${BOARDDIR}..."
+		exit 
+	fi 
+	
 	cat "${CONFIGPATH}/${BOARDTYPE}/config" >> ${CONFIG}
 	
 	if [ $OPEN -eq 0 ]; then
 		
 		# apply customer specific patch for the config
+		if [ ! -d "$CUSTCONF/$CUSTOMER/$BOARDTYPE" ]; then 
+			echo "Could not find $CUSTCONF/$CUSTOMER/$BOARDTYPE..."; 
+			exit
+		fi
+		
 		CONFIGPATCH="$CUSTCONF/$CUSTOMER/$BOARDTYPE/config.force"
 		if [ -f "${CONFIGPATCH}" ]; then 
 			for line in `cat ${CONFIGPATCH}`; do
@@ -113,9 +125,6 @@ while [ -n "$1" ]; do
 	esac
 	shift;
 done
-
-BOARDTYPE=$1
-CUSTOMER=$2
 
 echo "Using boardtype: $BOARDTYPE"
 if [ -z "$BOARDTYPE" ]; then

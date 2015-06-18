@@ -82,6 +82,9 @@ define Package/inteno-base/install
 	$(CP) ./base-files-openwrt/* $(1)/
 	$(CP) ./base-files-iopsys/* $(1)/
 	
+	# TODO: remove this after all customers have upgraded to 3.0
+	rm -f $(1)/etc/dsl/b_adsl_phy.bin
+	
 	# setup root filesystem
 	mkdir -p $(1)/CONTROL
 	mkdir -p $(1)/dev
@@ -129,7 +132,6 @@ endef
 define Package/inteno-asterisk-modules/description
  Inteno asterisk modules preselection package
 endef
-
 $(eval $(call BuildPackage,inteno-asterisk-modules))
 
 define Package/inteno-base-voice
@@ -160,4 +162,15 @@ endef
 $(eval $(call BuildPackage,inteno-base-juci))
 define Package/inteno-base-juci/description
  Inteno juci packages
+endef
+
+#+lighttpd-mod-setenv +lighttpd-mod-userdir +lighttpd-mod-webdav 
+define Package/inteno-base-luci
+	CATEGORY:=Config
+	DEPENDS:= +lighttpd +lighttpd-mod-cgi +luci +luci-mod-admin-core +luci-mod-admin-full +luci-lib-core +luci-lib-core_source +luci-lib-ipkg +luci-lib-json +luci-lib-nixio +luci-lib-nixio_notls +luci-lib-sys +luci-lib-web +luci-theme-base +luci-theme-bootstrap +luci-i18n-english +luci-proto-3g +luci-proto-4g +luci-proto-core +luci-proto-ipv6 +luci-proto-ppp +luci-sgi-cgi +luci-app-firewall +luci-app-iup +luci-app-mcpd +luci-app-parental-control +luci-app-port-management +luci-app-power-mgmt +luci-app-speedtest +luci-app-minidlna +luci-app-multiwan +luci-app-qos +luci-app-samba +luci-app-snmp +luci-app-upnp
+	TITLE:=Inteno luci base libraries
+endef 
+$(eval $(call BuildPackage,inteno-base-luci))
+define Package/inteno-base-luci/description
+ Inteno luci base package
 endef
