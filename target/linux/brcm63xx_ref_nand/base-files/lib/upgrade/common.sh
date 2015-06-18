@@ -233,6 +233,10 @@ get_chip_id() {
 	brcm_fw_tool -k info
 }
 
+get_endian() {
+	[ $(echo -n I | hexdump -o | awk '{ print substr($2,6,1); exit}') -eq 0 ] && echo big || echo little
+}
+
 get_image_board_id() {
 	if is_inteno_image $1; then
 		get_inteno_tag_val $1 board
@@ -545,7 +549,8 @@ inteno_image_upgrade() {
 				v "Writing springboard fs to high bank..."
 				mtd_no=$(find_mtd_no "rootfs_update")
 				mkfs.jffs2 \
-					-e 128KiB --big-endian --squash \
+					-e 128KiB --squash \
+					--$(get_endian)-endian \
 					--no-cleanmarkers --pad \
 					-N /tmp/viplist -S /tmp/viplist \
 					-d $newroot | \
