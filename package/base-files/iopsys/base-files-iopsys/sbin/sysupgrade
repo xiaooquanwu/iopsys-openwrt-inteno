@@ -121,12 +121,6 @@ fi
 if [ -n "$ARGV" ]; then
 	[ "$(dirname $ARGV)" == "." ] && ARGV="$PWD/$(basename $ARGV)"
 fi
-
-##always add complete path to argument and move to / directory
-if [ $(dirname $ARGV) == "." ]; then
-	ARGV="$PWD/`basename $ARGV`"
-fi
-
 cd /
 
 [ -z "$ARGV" -a -z "$NEED_IMAGE" -o $HELP -gt 0 ] && {
