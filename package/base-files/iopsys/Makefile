@@ -149,7 +149,7 @@ define Package/inteno-base-dect
   DEPENDS:=+inteno-base-voice +natalie-dect +natalie-dect-h +dectmgr 
   TITLE:=Preselected packages for dect
 endef
-$(eval $(call BuildPackage,inteno-base-voice))
+$(eval $(call BuildPackage,inteno-base-dect))
 define Package/inteno-base-dect/description
  Inteno dect default packages
 endef
