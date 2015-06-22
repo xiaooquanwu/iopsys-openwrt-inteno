@@ -21,11 +21,12 @@
  */
 
 #include "questd.h"
+#include <string.h>
 
 static void
 remove_space(char *buf)
 {
-	char *newbuf;
+	char *newbuf = malloc(strlen(buf)+1);
 	int i = 0;
 	int j = 0;
 
@@ -37,6 +38,7 @@ remove_space(char *buf)
 	}
 	newbuf[j] = '\0';
 	strcpy(buf, newbuf);
+	free(newbuf); 
 }
 
 static void

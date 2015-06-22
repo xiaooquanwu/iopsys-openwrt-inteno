@@ -1,20 +1,23 @@
 /*
- *  dslstats.c - Quest U-bus daemon IOPSYS
+ * dslstats -- collects adsl information for questd
  *
- *  Author: Martin K. Schröder, martin.schroder@inteno.se
+ * Copyright (C) 2012-2013 Inteno Broadband Technology AB. All rights reserved.
  *
- *  Copyright © 2004-2007 Rémi Denis-Courmont.
- *  This program is free software: you can redistribute and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, versions 2 of the license.
+ * Author: martin.schroder@inteno.se
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * version 2 as published by the Free Software Foundation.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA
  */
 
 #include "questd.h"
@@ -23,12 +26,6 @@
 
 void dslstats_init(struct dsl_stats *self){
 	*self = (struct dsl_stats){0}; 
-	self->mode = ""; 
-	self->traffic = ""; 
-	self->status = ""; 
-	self->link_power_state = ""; 
-	self->line_status = ""; 
-	self->vdsl2_profile = ""; 
 }
 
 void dslstats_load(struct dsl_stats *self){
@@ -38,7 +35,6 @@ void dslstats_load(struct dsl_stats *self){
 	char sep[64]; 
 	char arg1[64]; 
 	char arg2[64]; 
-	int i = 0;
 	
 	// start with default bearer 0 (we can support more later)
 	DSLBearer *bearer = &self->bearers[0]; 
@@ -48,19 +44,19 @@ void dslstats_load(struct dsl_stats *self){
 	if(!(fp = popen("xdslctl info --stats", "r"))) return; 
 	
 	while(!done && fgets(line, sizeof(line), fp) != NULL) {
+		DSLDEBUG("LINE: %d, %s, args:%d\n", strlen(line), line, narg); 
 		name[0] = 0; arg1[0] = 0; arg2[0] = 0; 
 		remove_newline(line);
 		int narg = sscanf(line, "%[^\t]%[\t ]%[^\t]%[\t]%[^\t]", name, sep, arg1, sep, arg2); 
-		//DSLDEBUG("LINE: %s, args:%d\n", line, narg); 
 		switch(narg){
 			case 0: { // sections
 				if(strstr(line, "Bearer")){
 					int id = 0; 
-					if(sscanf(strstr(line, "Bearer"), "Bearer %d", sep, &id) > 0){
+					if(sscanf(strstr(line, "Bearer"), "Bearer %d", &id) > 0){
 						if(id < DSLSTATS_BEARER_COUNT){
 							bearer = &self->bearers[id];
 							DSLDEBUG("Switching bearer: %d\n", id); 
-						} 
+						}  
 					}
 				} 
 				// it is possible to add more stats like this though
@@ -74,13 +70,13 @@ void dslstats_load(struct dsl_stats *self){
 			case 1: { // various one liners
 				if(strstr(line, "Total time =") == line) counters = &self->counters[DSLSTATS_COUNTER_TOTALS]; 
 				else if(strstr(line, "Latest 15 minutes time =") == line) done = 1; // we stop parsing at this right now
-				
+				else if(strstr(line, "Status") == line && strlen(line) > 9) strncpy(self->status, line + 8, sizeof(self->status)); 
 			} break; 
 			case 3: {
-				if(strstr(name, "Link Power State") == name) self->link_power_state = strdup(arg1); 
-				else if(strstr(name, "Mode") == name) self->mode = strdup(arg1); 
-				else if(strstr(name, "VDSL2 Profile") == name) self->vdsl2_profile = strdup(arg1); 
-				else if(strstr(name, "TPS") == name) self->traffic = strdup(arg1); 
+				if(strstr(name, "Link Power State") == name) strncpy(self->link_power_state, arg1, sizeof(self->link_power_state)); 
+				else if(strstr(name, "Mode") == name) strncpy(self->mode, arg1, sizeof(self->mode)); 
+				else if(strstr(name, "VDSL2 Profile") == name) strncpy(self->vdsl2_profile, arg1, sizeof(self->vdsl2_profile));
+				else if(strstr(name, "TPS") == name) strncpy(self->traffic, arg1, sizeof(self->traffic)); 
 				else if(strstr(name, "Trellis") == name){
 					char tmp[2][64]; 
 					if(sscanf(arg1, "U:%s /D:%s", tmp[0], tmp[1])){
@@ -91,11 +87,10 @@ void dslstats_load(struct dsl_stats *self){
 						else self->trellis.up = 0; 
 					}
 				}
-				else if(strstr(name, "Training Status") == name) self->status = strdup(arg1); 
-				else if(strstr(name, "Line Status") == name) self->line_status = strdup(arg1); 
+				else if(strstr(name, "Line Status") == name) strncpy(self->line_status, arg1, sizeof(self->line_status)); 
 				else if(strstr(name, "Bearer") == name){
 					unsigned long id, up, down, ret; 
-					if((ret = sscanf(arg1, "%d, Upstream rate = %lu Kbps, Downstream rate = %lu Kbps", &id, &up, &down)) == 3){
+					if((ret = sscanf(arg1, "%lu, Upstream rate = %lu Kbps, Downstream rate = %lu Kbps", &id, &up, &down)) == 3){
 						if(id < DSLSTATS_BEARER_COUNT){
 							bearer = &self->bearers[id]; 
 							bearer->rate.up = up; 
@@ -237,6 +232,10 @@ void dslstats_load(struct dsl_stats *self){
 	pclose(fp);
 }
 
+void dslstats_free(struct dsl_stats *self){
+	
+}
+
 void dslstats_to_blob_buffer(struct dsl_stats *self, struct blob_buf *b){
 	void *t, *array, *obj;
 	DSLBearer *bearer = &self->bearers[0]; 
@@ -344,5 +343,8 @@ int dslstats_rpc(struct ubus_context *ctx, struct ubus_object *obj,
 	dslstats_to_blob_buffer(&dslstats, &bb); 
 	
 	ubus_send_reply(ctx, req, bb.head); 
+	
+	dslstats_free(&dslstats); 
+	
 	return 0; 	
 }

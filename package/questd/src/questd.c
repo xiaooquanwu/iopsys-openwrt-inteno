@@ -37,11 +37,13 @@ static struct ubus_context *ctx = NULL;
 static struct blob_buf bb;
 static const char *ubus_path;
 
+static Radio radio[MAX_RADIO];
 static Wireless wireless[MAX_VIF];
 static Network network[MAX_NETWORK];
-static Detail details[MAX_CLIENT];
+static Detail details[MAX_CLIENT], details6[MAX_CLIENT];
 static Client clients[MAX_CLIENT], clients_old[MAX_CLIENT], clients_new[MAX_CLIENT];
 static Client6 clients6[MAX_CLIENT];
+static Sta stas[MAX_CLIENT];
 static Router router;
 static Memory memory;
 static Key keys;
@@ -87,6 +89,16 @@ enum {
 static const struct blobmsg_policy host_policy[__HOST_MAX] = {
 	[IP_ADDR] = { .name = "ipaddr", .type = BLOBMSG_TYPE_STRING },
 	[MAC_ADDR] = { .name = "macaddr", .type = BLOBMSG_TYPE_STRING },
+};
+
+enum {
+	PIN,
+	__PIN_MAX,
+};
+
+
+static const struct blobmsg_policy pin_policy[__PIN_MAX] = {
+	[PIN] = { .name = "pin", .type = BLOBMSG_TYPE_STRING },
 };
 /* END POLICIES */
 
@@ -261,13 +273,17 @@ load_wireless()
 	const char *device = NULL;
 	const char *network = NULL;
 	const char *ssid = NULL;
+	char *token;
 	char wdev[16];
+	int rno = 0;
 	int wno = 0;
+	int chn;
 	int vif;
 	int vif0 = 0;
 	int vif1 = 0;
 
 	memset(wireless, '\0', sizeof(wireless));
+	memset(radio, '\0', sizeof(radio));
 
 	if((uci_wireless = init_package("wireless"))) {
 		uci_foreach_element(&uci_wireless->sections, e) {
@@ -279,6 +295,8 @@ load_wireless()
 				ssid = uci_lookup_option_string(uci_ctx, s, "ssid");
 				if (device) {
 					wireless[wno].device = device;
+					usleep(10000);
+					wireless[wno].noise = atoi(chrCmd("wlctl -i %s noise", wireless[wno].device));
 					(network) ? (wireless[wno].network = network) : (wireless[wno].network = "");
 					(ssid) ? (wireless[wno].ssid = ssid) : (wireless[wno].ssid = "");
 					if (!strcmp(device, "wl0")) {
@@ -297,13 +315,61 @@ load_wireless()
 
 					wno++;
 				}
+			} else if (!strcmp(s->type, "wifi-device")) {
+				radio[rno].name = s->e.name;
+				if(!(radio[rno].band = uci_lookup_option_string(uci_ctx, s, "band")))
+					radio[rno].band = "b";
+				radio[rno].frequency = !strcmp(radio[rno].band, "a") ? 5 : 2;
+				usleep(10000);
+				runCmd("wlctl -i %s band %s", radio[rno].name, radio[rno].band);
+				usleep(10000);
+				radio[rno].pcid = chrCmd("wlctl -i %s revinfo | awk 'FNR == 2 {print}' | cut -d'x' -f2", radio[rno].name);
+				radio[rno].is_ac = false;
+				if (radio[rno].pcid && atoi(chrCmd("db -q get hw.%s.is_ac", radio[rno].pcid)) == 1)
+					radio[rno].is_ac = true;
+
+				if(radio[rno].frequency == 2) {
+					radio[rno].hwmodes[0] = "11b";
+					radio[rno].hwmodes[1] = "11g";
+					radio[rno].hwmodes[2] = "11bg";
+					radio[rno].hwmodes[3] = "11n";
+					radio[rno].bwcaps[0] = 20;
+					radio[rno].bwcaps[1] = 40;
+					radio[rno].bwcaps[2] = '\0';
+				} else if (radio[rno].frequency == 5) {
+					radio[rno].hwmodes[0] = "11a";
+					radio[rno].hwmodes[1] = "11n";
+					radio[rno].hwmodes[2] = '\0';
+					radio[rno].hwmodes[3] = '\0';
+					radio[rno].bwcaps[0] = 20;
+					radio[rno].bwcaps[1] = 40;
+					radio[rno].bwcaps[2] = 80;
+					radio[rno].bwcaps[3] = '\0';
+					if (radio[rno].is_ac)
+						radio[rno].hwmodes[2] = "11ac";
+				}
+
+				chn = 0;
+				usleep(10000);
+				token = strtok(chrCmd("wlctl -i %s channels", radio[rno].name), " ");
+				while (token != NULL)
+				{
+					radio[rno].channels[chn] = atoi(token);
+					if (radio[rno].channels[chn] > 48)
+						break;
+					token = strtok (NULL, " ");
+					chn++;
+				}
+				radio[rno].channels[chn] = '\0';
+
+				rno++;
 			}
 		}
 	}
 }
 
 static void
-match_client_to_network(Network *lan, char *hostaddr, bool *local, char **net, char **dev)
+match_client_to_network(Network *lan, char *ipaddr, bool *local, char *net, char *dev)
 {
 	if(!lan->ipaddr || !lan->netmask)
 		return;
@@ -312,7 +378,7 @@ match_client_to_network(Network *lan, char *hostaddr, bool *local, char **net, c
 
 	inet_pton(AF_INET, lan->ipaddr, &(ip.s_addr));
 	inet_pton(AF_INET, lan->netmask, &(mask.s_addr));
-	inet_pton(AF_INET, hostaddr, &(host.s_addr));
+	inet_pton(AF_INET, ipaddr, &(host.s_addr));
 
 	snet.s_addr = (ip.s_addr & mask.s_addr);
 	rslt.s_addr = (host.s_addr & mask.s_addr);
@@ -334,10 +400,10 @@ handle_client(Client *clnt)
 	int netno;
 
 	clnt->local = false;
-	if (sscanf(clnt->hostaddr, "%d.%d.%d.%d", &ip[0], &ip[1], &ip[2], &ip[3]) == 4) {
+	if (sscanf(clnt->ipaddr, "%d.%d.%d.%d", &ip[0], &ip[1], &ip[2], &ip[3]) == 4) {
 		for (netno=0; network[netno].exists; netno++) {
 			if (network[netno].is_lan) {
-				match_client_to_network(&network[netno], clnt->hostaddr, &clnt->local, (char**)&clnt->network, (char**)&clnt->device);
+				match_client_to_network(&network[netno], clnt->ipaddr, &clnt->local, clnt->network, clnt->device);
 				if (clnt->local)
 					break;
 			}
@@ -345,44 +411,140 @@ handle_client(Client *clnt)
 	}
 }
 
+static void
+wireless_assoclist()
+{
+	FILE *assoclist;
+	char cmnd[64];
+	char line[64];
+	int i = 0;
+	int j = 0;
+	int rssi = 0;
+
+	for (i = 0; wireless[i].device; i++) {
+		if (wireless[i].noise > -60) {
+			usleep(10000);
+			wireless[i].noise = atoi(chrCmd("wlctl -i %s noise", wireless[i].device));
+		}
+		usleep(10000);
+		sprintf(cmnd, "wlctl -i %s assoclist", wireless[i].vif);
+		if ((assoclist = popen(cmnd, "r"))) {
+			while(fgets(line, sizeof(line), assoclist) != NULL)
+			{
+				remove_newline(line);
+				stas[j].exists = false;
+				if (sscanf(line, "assoclist %s", stas[j].macaddr) == 1) {
+					stas[j].exists = true;
+					strcpy(stas[j].wdev, wireless[i].vif);
+					usleep(10000);
+					rssi = atoi(chrCmd("wlctl -i %s rssi %s", wireless[i].vif, stas[j].macaddr));
+					stas[j].snr = rssi - wireless[i].noise;
+					j++;
+				}
+			}
+			pclose(assoclist);
+		}
+	}
+}
+
+/*static bool*/
+/*wireless_sta(Client *clnt, Detail *dtl)*/
+/*{*/
+/*	FILE *stainfo;*/
+/*	char cmnd[64];*/
+/*	char line[128];*/
+/*	int i = 0;*/
+/*	bool there = false;*/
+/*	char tab[16];*/
+/*	int tmp;*/
+/*	int noise;*/
+
+/*	for (i = 0; wireless[i].device; i++) {*/
+/*		sprintf(cmnd, "wlctl -i %s sta_info %s 2>/dev/null", wireless[i].vif, clnt->macaddr);*/
+/*		if ((stainfo = popen(cmnd, "r"))) {*/
+/*			while(fgets(line, sizeof(line), stainfo) != NULL)*/
+/*			{*/
+/*				remove_newline(line);*/
+/*				if(sscanf(line, "%sstate: AUTHENTICATED ASSOCIATED AUTHORIZED", tab)) {*/
+/*					there = true;*/
+/*					strncpy(clnt->wdev, wireless[i].vif, sizeof(clnt->wdev));*/
+/*				}*/
+/*				sscanf(line, "\t idle %d seconds", &(dtl->idle));*/
+/*				sscanf(line, "\t in network %d seconds", &(dtl->in_network));*/
+/*				sscanf(line, "\t tx total bytes: %ld\n", &(dtl->tx_bytes));*/
+/*				sscanf(line, "\t rx data bytes: %ld", &(dtl->rx_bytes));*/
+/*				sscanf(line, "\t rate of last tx pkt: %d kbps - %d kbps", &tmp, &(dtl->tx_rate));*/
+/*				sscanf(line, "\t rate of last rx pkt: %d kbps", &(dtl->rx_rate));*/
+/*			}*/
+/*			pclose(stainfo);*/
+/*		}*/
+/*		if (there) {*/
+/*			sprintf(cmnd, "wlctl -i %s noise", wireless[i].device);*/
+/*			if ((stainfo = popen(cmnd, "r"))) {*/
+/*				fgets(line, sizeof(line), stainfo);*/
+/*				remove_newline(line);*/
+/*				noise = atoi(line);*/
+/*				pclose(stainfo);*/
+/*			}*/
+/*			sprintf(cmnd, "wlctl -i %s rssi %s", wireless[i].vif, clnt->macaddr);*/
+/*			if ((stainfo = popen(cmnd, "r"))) {*/
+/*				fgets(line, sizeof(line), stainfo);*/
+/*				remove_newline(line);*/
+/*				dtl->snr = atoi(line) - noise;*/
+/*				pclose(stainfo);*/
+/*			}*/
+/*		}*/
+/*		if (there)*/
+/*			break;*/
+/*	}*/
+/*	return there;*/
+/*}*/
+
 static bool
 wireless_sta(Client *clnt, Detail *dtl)
 {
-	FILE *stainfo;
-	char cmnd[64];
-	char line[128];
-	int i = 0;
 	bool there = false;
-	char tab[16];
-	int ret, tmp;
+	int i = 0;
 
-	for (i = 0; wireless[i].device; i++) {
-		sprintf(cmnd, "wlctl -i %s sta_info %s 2>/dev/null", wireless[i].vif, clnt->macaddr);
-		if ((stainfo = popen(cmnd, "r"))) {
-			while(fgets(line, sizeof(line), stainfo) != NULL)
-			{
-				remove_newline(line);
-				if(sscanf(line, "%sstate: AUTHENTICATED ASSOCIATED AUTHORIZED", tab)) {
-					there = true;
-					strncpy(clnt->wdev, wireless[i].vif, sizeof(clnt->wdev));
-				}
-				ret = sscanf(line, "\t idle %d seconds", &(dtl->idle));
-				ret = sscanf(line, "\t in network %d seconds", &(dtl->in_network));
-				ret = sscanf(line, "\t tx total bytes: %ld\n", &(dtl->tx_bytes));
-				ret = sscanf(line, "\t rx data bytes: %ld", &(dtl->rx_bytes));
-				ret = sscanf(line, "\t rate of last tx pkt: %d kbps - %d kbps", &tmp, &(dtl->tx_rate));
-				ret = sscanf(line, "\t rate of last rx pkt: %d kbps", &(dtl->rx_rate));
-			}
-			pclose(stainfo);
-		}
-		if (there)
+	while(stas[i].exists) {
+		if (!strcasecmp(stas[i].macaddr, clnt->macaddr)) {
+			there = true;
+			strncpy(clnt->wdev, stas[i].wdev, sizeof(clnt->wdev));
+			dtl->snr = stas[i].snr;
 			break;
+		}
+		i++;
 	}
 	return there;
 }
 
+static int
+active_connections(char *ipaddr)
+{
+	FILE *f;
+	int i;
+	char *p, line[512];
+	int connum = 0;
+
+	if ((f = fopen("/proc/net/nf_conntrack", "r")) != NULL)
+	{
+		while (fgets(line, sizeof(line) - 1, f))
+		{
+			for (i = 0, p = strtok(line, " "); p; i++, p = strtok(NULL, " "))
+			{
+				if (i == 6 && !strcmp(p+4, ipaddr))
+					connum++;
+			}
+		}
+
+		fclose(f);
+	}
+
+	return connum;
+}
+
 static void
-populate_clients()
+ipv4_clients()
 {
 	FILE *leases, *arpt;
 	char line[256];
@@ -403,15 +565,19 @@ populate_clients()
 			remove_newline(line);
 			clients[cno].exists = false;
 			clients[cno].wireless = false;
-			memset(clients[cno].hostname, '\0', 64);
-			if (sscanf(line, "%s %s %s %s %s", clients[cno].leaseno, clients[cno].macaddr, clients[cno].hostaddr, clients[cno].hostname, mask) == 5) {
+			memset(clients[cno].hostname, '\0', sizeof(clients[cno].hostname));
+			if (sscanf(line, "%s %s %s %s %s", clients[cno].leaseno, clients[cno].macaddr, clients[cno].ipaddr, clients[cno].hostname, mask) == 5) {
 				clients[cno].exists = true;
 				clients[cno].dhcp = true;
 				handle_client(&clients[cno]);
 				if((clients[cno].connected = wireless_sta(&clients[cno], &details[cno])))
 					clients[cno].wireless = true;
-				else if(!(clients[cno].connected = arping(clients[cno].hostaddr, clients[cno].device, toms)))
+				else if(!(clients[cno].connected = arping(clients[cno].ipaddr, clients[cno].device, toms)))
 					recalc_sleep_time(true, toms);
+
+				/*if (clients[cno].connected)
+					details[cno].connum = active_connections(clients[cno].ipaddr);*/
+
 				cno++;
 			}
 		}
@@ -425,8 +591,8 @@ populate_clients()
 			there = false;
 			clients[cno].exists = false;
 			clients[cno].wireless = false;
-			memset(clients[cno].hostname, '\0', 64);
-			if ((lno > 0) && sscanf(line, "%s 0x%d 0x%d %s %s %s", clients[cno].hostaddr, &hw, &flag, clients[cno].macaddr, mask, clients[cno].device)) {
+			memset(clients[cno].hostname, '\0', sizeof(clients[cno].hostname));
+			if ((lno > 0) && sscanf(line, "%s 0x%d 0x%d %s %s %s", clients[cno].ipaddr, &hw, &flag, clients[cno].macaddr, mask, clients[cno].device)) {
 				for (i=0; i < cno; i++) {
 					if (!strcmp(clients[cno].macaddr, clients[i].macaddr)) {
 						if (clients[i].connected) {
@@ -436,7 +602,7 @@ populate_clients()
 							strcpy(clients[cno].hostname, clients[i].hostname);
 						}
 					}
-					if (!strcmp(clients[cno].hostaddr, clients[i].hostaddr)) {
+					if (!strcmp(clients[cno].ipaddr, clients[i].ipaddr)) {
 						there = true;
 						break;
 					}
@@ -448,8 +614,11 @@ populate_clients()
 						clients[cno].dhcp = false;
 						if((clients[cno].connected = wireless_sta(&clients[cno], &details[cno])))
 							clients[cno].wireless = true;
-						else if(!(clients[cno].connected = arping(clients[cno].hostaddr, clients[cno].device, toms)))
+						else if(!(clients[cno].connected = arping(clients[cno].ipaddr, clients[cno].device, toms)))
 							recalc_sleep_time(true, toms);
+
+						/*if (clients[cno].connected)
+							details[cno].connum = active_connections(clients[cno].ipaddr);*/
 						cno++;
 					}
 				}
@@ -465,32 +634,8 @@ populate_clients()
 	memcpy(&clients_old, &clients_new, sizeof(clients));
 }
 
-static bool
-wireless_sta6(Client6 *clnt6)
-{
-	FILE *stainfo;
-	char cmnd[64];
-	char line[128];
-	int i = 0;
-	bool there = false;
-
-	for (i = 0; wireless[i].device; i++) {
-		sprintf(cmnd, "wlctl -i %s sta_info %s 2>/dev/null | grep ASSOCIATED", wireless[i].vif, clnt6->macaddr);
-		if ((stainfo = popen(cmnd, "r"))) {
-			if(fgets(line, sizeof(line), stainfo) != NULL) {
-				there = true;
-				strncpy(clnt6->wdev, wireless[i].vif, sizeof(clnt6->wdev));
-			}
-			pclose(stainfo);
-		}
-		if (there)
-			break;
-	}
-	return there;
-}
-
 static void
-populate_clients6()
+ipv6_clients()
 {
 	FILE *hosts6;
 	char line[512];
@@ -498,26 +643,35 @@ populate_clients6()
 	int iaid, ts, id, length;
 	int toms = 500;
 
-	if ((hosts6 = fopen("/tmp/hosts/6relayd", "r"))) {
+	if ((hosts6 = fopen("/tmp/hosts/odhcpd", "r"))) {
 		while(fgets(line, sizeof(line), hosts6) != NULL)
 		{
 			remove_newline(line);
 			clients6[cno].exists = false;
 			clients6[cno].wireless = false;
-			memset(clients6[cno].hostname, '\0', 64);
-			if (sscanf(line, "# %s %s %x %s %d %x %d %s", clients6[cno].device, clients6[cno].duid, iaid, clients6[cno].hostname, &ts, &id, &length, clients6[cno].ip6addr)) {
+			memset(clients6[cno].hostname, '\0', sizeof(clients[cno].hostname));
+			if (sscanf(line, "# %s %s %x %s %d %x %d %s", clients6[cno].device, clients6[cno].duid, &iaid, clients6[cno].hostname, &ts, &id, &length, clients6[cno].ip6addr)) {
 				clients6[cno].exists = true;
 				clear_macaddr();
 				if(!(clients6[cno].connected = ndisc (clients6[cno].hostname, clients6[cno].device, 0x8, 1, toms)))
 					recalc_sleep_time(true, toms);
 				sprintf(clients6[cno].macaddr, get_macaddr());
-				if(clients6[cno].connected && wireless_sta6(&clients6[cno]))
+				if(clients6[cno].connected && wireless_sta(&clients6[cno], &details6[cno]));
 					clients6[cno].wireless = true;
+
 				cno++;
 			}
 		}
 		fclose(hosts6);
 	}
+}
+
+static void
+populate_clients()
+{
+	wireless_assoclist();
+	ipv4_clients();
+	ipv6_clients();
 }
 
 static void
@@ -618,7 +772,7 @@ router_dump_system_info(struct blob_buf *b, bool table)
 	blobmsg_add_string(b, "name", router.name);
 	blobmsg_add_string(b, "hardware", router.hardware);
 	blobmsg_add_string(b, "model", router.model);
-	blobmsg_add_string(b, "nvramver", router.nvramver); 
+	blobmsg_add_string(b, "boardid", router.boardid);
 	blobmsg_add_string(b, "firmware", router.firmware);
 	blobmsg_add_string(b, "brcmver", router.brcmver);
 	blobmsg_add_string(b, "socmod", router.socmod);
@@ -683,21 +837,24 @@ router_dump_clients(struct blob_buf *b)
 		sprintf(clientnum, "client-%d", num);
 		t = blobmsg_open_table(b, clientnum);
 		blobmsg_add_string(b, "hostname", clients[i].hostname);
-		blobmsg_add_string(b, "ipaddr", clients[i].hostaddr);
+		blobmsg_add_string(b, "ipaddr", clients[i].ipaddr);
 		blobmsg_add_string(b, "macaddr", clients[i].macaddr);
 		blobmsg_add_string(b, "network", clients[i].network);
 		blobmsg_add_string(b, "device", clients[i].device);
 		blobmsg_add_u8(b, "dhcp", clients[i].dhcp);
 		blobmsg_add_u8(b, "connected", clients[i].connected);
 		blobmsg_add_u8(b, "wireless", clients[i].wireless);
+		/*if(clients[i].connected)
+			blobmsg_add_u32(b, "active_cons", active_connections(clients[i].ipaddr));*/
 		if(clients[i].wireless) {
 			blobmsg_add_string(b, "wdev", clients[i].wdev);
-			blobmsg_add_u32(b, "idle", details[i].idle);
-			blobmsg_add_u32(b, "in_network", details[i].in_network);
-			blobmsg_add_u64(b, "tx_bytes", details[i].tx_bytes);
-			blobmsg_add_u64(b, "rx_bytes", details[i].rx_bytes);
-			blobmsg_add_u32(b, "tx_rate", details[i].tx_rate);
-			blobmsg_add_u32(b, "rx_rate", details[i].rx_rate);
+			//blobmsg_add_u32(b, "idle", details[i].idle);
+			//blobmsg_add_u32(b, "in_network", details[i].in_network);
+			blobmsg_add_u32(b, "snr", details[i].snr);
+			//blobmsg_add_u64(b, "tx_bytes", details[i].tx_bytes);
+			//blobmsg_add_u64(b, "rx_bytes", details[i].rx_bytes);
+			//blobmsg_add_u32(b, "tx_rate", details[i].tx_rate);
+			//blobmsg_add_u32(b, "rx_rate", details[i].rx_rate);
 		}
 		blobmsg_close_table(b, t);
 		num++;
@@ -720,12 +877,13 @@ router_dump_connected_clients(struct blob_buf *b)
 		sprintf(clientnum, "client-%d", num);
 		t = blobmsg_open_table(b, clientnum);
 		blobmsg_add_string(b, "hostname", clients[i].hostname);
-		blobmsg_add_string(b, "ipaddr", clients[i].hostaddr);
+		blobmsg_add_string(b, "ipaddr", clients[i].ipaddr);
 		blobmsg_add_string(b, "macaddr", clients[i].macaddr);
 		blobmsg_add_string(b, "network", clients[i].network);
 		blobmsg_add_string(b, "device", clients[i].device);
 		blobmsg_add_u8(b, "dhcp", clients[i].dhcp);
 		blobmsg_add_u8(b, "wireless", clients[i].wireless);
+		blobmsg_add_u32(b, "active_cons", details[i].connum);
 		if(clients[i].wireless) {
 			blobmsg_add_string(b, "wdev", clients[i].wdev);
 			blobmsg_add_u32(b, "idle", details[i].idle);
@@ -756,13 +914,15 @@ router_dump_network_clients(struct blob_buf *b, char *net)
 		sprintf(clientnum, "client-%d", num);
 		t = blobmsg_open_table(b, clientnum);
 		blobmsg_add_string(b, "hostname", clients[i].hostname);
-		blobmsg_add_string(b, "ipaddr", clients[i].hostaddr);
+		blobmsg_add_string(b, "ipaddr", clients[i].ipaddr);
 		blobmsg_add_string(b, "macaddr", clients[i].macaddr);
 		blobmsg_add_string(b, "network", clients[i].network);
 		blobmsg_add_string(b, "device", clients[i].device);
 		blobmsg_add_u8(b, "dhcp", clients[i].dhcp);
 		blobmsg_add_u8(b, "connected", clients[i].connected);
 		blobmsg_add_u8(b, "wireless", clients[i].wireless);
+		if(clients[i].connected)
+			blobmsg_add_u32(b, "active_cons", details[i].connum);
 		if(clients[i].wireless) {
 			blobmsg_add_string(b, "wdev", clients[i].wdev);
 			blobmsg_add_u32(b, "idle", details[i].idle);
@@ -850,13 +1010,14 @@ router_dump_stas(struct blob_buf *b)
 		sprintf(stanum, "sta-%d", num);
 		t = blobmsg_open_table(b, stanum);
 		blobmsg_add_string(b, "hostname", clients[i].hostname);
-		blobmsg_add_string(b, "ipaddr", clients[i].hostaddr);
+		blobmsg_add_string(b, "ipaddr", clients[i].ipaddr);
 		blobmsg_add_string(b, "macaddr", clients[i].macaddr);
 		blobmsg_add_string(b, "network", clients[i].network);
 		blobmsg_add_u8(b, "dhcp", clients[i].dhcp);
 		if(strstr(clients[i].device, "br-"))
 			blobmsg_add_string(b, "bridge", clients[i].device);
 		blobmsg_add_string(b, "wdev", clients[i].wdev);
+		blobmsg_add_u32(b, "active_cons", details[i].connum);
 		blobmsg_add_u32(b, "idle", details[i].idle);
 		blobmsg_add_u32(b, "in_network", details[i].in_network);
 		blobmsg_add_u64(b, "tx_bytes", details[i].tx_bytes);
@@ -883,7 +1044,7 @@ router_dump_wireless_stas(struct blob_buf *b, char *wname, bool vif)
 		if(!(clients[i].wireless))
 			continue;
 
-		memset(compare, '\0', 8);
+		memset(compare, '\0', sizeof(compare));
 		if (vif)
 			strcpy(compare, clients[i].wdev);
 		else
@@ -895,7 +1056,7 @@ router_dump_wireless_stas(struct blob_buf *b, char *wname, bool vif)
 		sprintf(stanum, "sta-%d", num);
 		t = blobmsg_open_table(b, stanum);
 		blobmsg_add_string(b, "hostname", clients[i].hostname);
-		blobmsg_add_string(b, "ipaddr", clients[i].hostaddr);
+		blobmsg_add_string(b, "ipaddr", clients[i].ipaddr);
 		blobmsg_add_string(b, "macaddr", clients[i].macaddr);
 		blobmsg_add_string(b, "network", clients[i].network);
 		blobmsg_add_u8(b, "dhcp", clients[i].dhcp);
@@ -903,6 +1064,7 @@ router_dump_wireless_stas(struct blob_buf *b, char *wname, bool vif)
 			blobmsg_add_string(b, "bridge", clients[i].device);
 		if(!vif)
 			blobmsg_add_string(b, "wdev", clients[i].wdev);
+		blobmsg_add_u32(b, "active_cons", details[i].connum);
 		blobmsg_add_u32(b, "idle", details[i].idle);
 		blobmsg_add_u32(b, "in_network", details[i].in_network);
 		blobmsg_add_u64(b, "tx_bytes", details[i].tx_bytes);
@@ -999,7 +1161,7 @@ router_dump_ports(struct blob_buf *b, char *interface)
 			for(j=0; port[i].client[j].exists; j++) {
 				h = blobmsg_open_table(b, "NULL");
 				blobmsg_add_string(b, "hostname", port[i].client[j].hostname);
-				blobmsg_add_string(b, "ipaddr", port[i].client[j].hostaddr);
+				blobmsg_add_string(b, "ipaddr", port[i].client[j].ipaddr);
 				blobmsg_add_string(b, "macaddr", port[i].client[j].macaddr);
 				blobmsg_close_table(b, h);
 			}
@@ -1032,7 +1194,7 @@ network_dump_leases(struct blob_buf *b, char *leasenet)
 			t = blobmsg_open_table(b, leasenum);
 			blobmsg_add_string(b, "leaseno", clients[i].leaseno);
 			blobmsg_add_string(b, "hostname", clients[i].hostname);
-			blobmsg_add_string(b, "ipaddr", clients[i].hostaddr);
+			blobmsg_add_string(b, "ipaddr", clients[i].ipaddr);
 			blobmsg_add_string(b, "macaddr", clients[i].macaddr);
 			blobmsg_add_string(b, "device", clients[i].device);
 			blobmsg_add_u8(b, "connected", clients[i].connected);
@@ -1048,13 +1210,15 @@ host_dump_status(struct blob_buf *b, char *addr, bool byIP)
 
 	if(byIP) {
 		for (i=0; clients[i].exists; i++)
-			if(!strcmp(clients[i].hostaddr, addr)) {
+			if(!strcmp(clients[i].ipaddr, addr)) {
 				blobmsg_add_string(b, "hostname", clients[i].hostname);
 				blobmsg_add_string(b, "macaddr", clients[i].macaddr);
 				blobmsg_add_string(b, "network", clients[i].network);
 				blobmsg_add_string(b, "device", clients[i].device);
 				blobmsg_add_u8(b, "connected", clients[i].connected);
 				blobmsg_add_u8(b, "wireless", clients[i].wireless);
+				if(clients[i].connected)
+					blobmsg_add_u32(b, "active_cons", details[i].connum);
 				if(clients[i].wireless) {
 					blobmsg_add_string(b, "wdev", clients[i].wdev);
 					blobmsg_add_u32(b, "idle", details[i].idle);
@@ -1071,11 +1235,13 @@ host_dump_status(struct blob_buf *b, char *addr, bool byIP)
 		for (i=0; clients[i].exists; i++)
 			if(!strcasecmp(clients[i].macaddr, addr)) {
 				blobmsg_add_string(b, "hostname", clients[i].hostname);
-				blobmsg_add_string(b, "ipaddr", clients[i].hostaddr);
+				blobmsg_add_string(b, "ipaddr", clients[i].ipaddr);
 				blobmsg_add_string(b, "network", clients[i].network);
 				blobmsg_add_string(b, "device", clients[i].device);
 				blobmsg_add_u8(b, "connected", clients[i].connected);
 				blobmsg_add_u8(b, "wireless", clients[i].wireless);
+				if(clients[i].connected)
+					blobmsg_add_u32(b, "active_cons", details[i].connum);
 				if(clients[i].wireless) {
 					blobmsg_add_string(b, "wdev", clients[i].wdev);
 					blobmsg_add_u32(b, "idle", details[i].idle);
@@ -1090,6 +1256,7 @@ host_dump_status(struct blob_buf *b, char *addr, bool byIP)
 	}
 }
 
+/* ROUTER OBJECT */
 static int
 quest_router_specific(struct ubus_context *ctx, struct ubus_object *obj,
 		  struct ubus_request_data *req, const char *method,
@@ -1231,6 +1398,22 @@ quest_router_connected_clients6(struct ubus_context *ctx, struct ubus_object *ob
 
 	return 0;
 }
+/*
+static int
+quest_router_igmp_table(struct ubus_context *ctx, struct ubus_object *obj,
+		  struct ubus_request_data *req, const char *method,
+		  struct blob_attr *msg)
+{
+	struct blob_attr *tb[__QUEST_MAX];
+
+	blobmsg_parse(quest_policy, __QUEST_MAX, tb, blob_data(msg), blob_len(msg));
+
+	blob_buf_init(&bb, 0);
+	igpm_rpc(&bb);
+	ubus_send_reply(ctx, req, bb.head);
+
+	return 0;
+}*/
 
 static int
 quest_router_clients6(struct ubus_context *ctx, struct ubus_object *obj,
@@ -1282,7 +1465,7 @@ quest_router_wireless_stas(struct ubus_context *ctx, struct ubus_object *obj,
 	if (tb[RADIO_NAME] && strchr(blobmsg_data(tb[RADIO_NAME]), '.'))
 		return UBUS_STATUS_INVALID_ARGUMENT;
 
-	memset(lookup, '\0', 8);
+	memset(lookup, '\0', sizeof(lookup));
 	if (tb[VIF_NAME])
 		strcpy(lookup, blobmsg_data(tb[VIF_NAME]));
 	else
@@ -1407,6 +1590,46 @@ quest_host_status(struct ubus_context *ctx, struct ubus_object *obj,
 }
 
 static int
+quest_router_radios(struct ubus_context *ctx, struct ubus_object *obj,
+		  struct ubus_request_data *req, const char *method,
+		  struct blob_attr *msg)
+{
+	void *t, *c;
+	int i, j;
+
+	blob_buf_init(&bb, 0);
+
+	for (i = 0; i < MAX_RADIO; i++) {
+		if (!radio[i].name)
+			break;
+		t = blobmsg_open_table(&bb, radio[i].name);
+		blobmsg_add_string(&bb, "band", radio[i].band);
+		blobmsg_add_u32(&bb, "frequency", radio[i].frequency);
+		c = blobmsg_open_array(&bb, "hwmodes");
+		for(j=0; radio[i].hwmodes[j]; j++) {
+			blobmsg_add_string(&bb, "", radio[i].hwmodes[j]);
+		}
+		blobmsg_close_array(&bb, c);
+		c = blobmsg_open_array(&bb, "bwcaps");
+		for(j=0; radio[i].bwcaps[j]; j++) {
+			blobmsg_add_u32(&bb, "", radio[i].bwcaps[j]);
+		}
+		blobmsg_close_array(&bb, c);
+		c = blobmsg_open_array(&bb, "channels");
+		for(j=0; radio[i].channels[j]; j++) {
+			blobmsg_add_u32(&bb, "", radio[i].channels[j]);
+		}
+		blobmsg_close_array(&bb, c);
+		blobmsg_close_table(&bb, t);
+	}
+
+	ubus_send_reply(ctx, req, bb.head);
+
+	return 0;
+}
+
+
+static int
 quest_reload(struct ubus_context *ctx, struct ubus_object *obj,
 		  struct ubus_request_data *req, const char *method,
 		  struct blob_attr *msg)
@@ -1427,12 +1650,14 @@ static struct ubus_method router_object_methods[] = {
 	UBUS_METHOD_NOARG("clients6", quest_router_clients6),
 	UBUS_METHOD_NOARG("connected", quest_router_connected_clients),
 	UBUS_METHOD_NOARG("connected6", quest_router_connected_clients6),
+	UBUS_METHOD_NOARG("igmptable", igmp_rpc),
 	UBUS_METHOD("sta", quest_router_wireless_stas, wl_policy),
 	UBUS_METHOD_NOARG("stas", quest_router_stas),
 	UBUS_METHOD("ports", quest_router_ports, network_policy),
 	UBUS_METHOD("leases", quest_network_leases, network_policy),
 	UBUS_METHOD("host", quest_host_status, host_policy),
 	UBUS_METHOD_NOARG("usb", quest_router_usbs),
+	UBUS_METHOD_NOARG("radios", quest_router_radios),
 	UBUS_METHOD_NOARG("reload", quest_reload),
 };
 
@@ -1445,6 +1670,207 @@ static struct ubus_object router_object = {
 	.methods = router_object_methods,
 	.n_methods = ARRAY_SIZE(router_object_methods),
 };
+/* END OF ROUTER OBJECT */
+
+/* WPS OBJECT */
+
+static int
+wps_status(struct ubus_context *ctx, struct ubus_object *obj,
+		  struct ubus_request_data *req, const char *method,
+		  struct blob_attr *msg)
+{
+	const char *status = "unknown";
+	int code = atoi(chrCmd("nvram get wps_proc_status"));
+
+	switch (code) {
+		case 0:
+			status = "init";
+			break;
+		case 1:
+			status = "processing";
+			break;
+		case 2:
+			status = "success";
+			break;
+		case 3:
+			status = "fail";
+			break;
+		case 4:
+			status = "timeout";
+			break;
+		case 7:
+			status = "msgdone";
+			break;
+		default:
+			break;
+	}
+
+	blob_buf_init(&bb, 0);
+	blobmsg_add_u32(&bb, "code", code);
+	blobmsg_add_string(&bb, "status", status);
+	ubus_send_reply(ctx, req, bb.head);
+
+	return 0;
+}
+
+static int
+wps_pbc(struct ubus_context *ctx, struct ubus_object *obj,
+		  struct ubus_request_data *req, const char *method,
+		  struct blob_attr *msg)
+{
+	system("killall -SIGUSR2 wps_monitor");
+	return 0;
+}
+
+static int
+wps_genpin(struct ubus_context *ctx, struct ubus_object *obj,
+		  struct ubus_request_data *req, const char *method,
+		  struct blob_attr *msg)
+{
+	FILE *genpin;
+	char cmnd[16];
+	char pin[9] = { '\0' };
+
+	sprintf(cmnd, "wps_cmd genpin");
+	if ((genpin = popen(cmnd, "r"))) {
+		fgets(pin, sizeof(pin), genpin);
+		remove_newline(pin);
+		pclose(genpin);
+	}
+
+	blob_buf_init(&bb, 0);
+
+	blobmsg_add_string(&bb, "pin", pin);
+	ubus_send_reply(ctx, req, bb.head);
+
+	return 0;
+}
+
+static int
+wps_checkpin(struct ubus_context *ctx, struct ubus_object *obj,
+		  struct ubus_request_data *req, const char *method,
+		  struct blob_attr *msg)
+{
+	struct blob_attr *tb[__PIN_MAX];
+
+	blobmsg_parse(pin_policy, __PIN_MAX, tb, blob_data(msg), blob_len(msg));
+
+	if (!(tb[PIN]))
+		return UBUS_STATUS_INVALID_ARGUMENT;
+
+	FILE *checkpin;
+	char cmnd[32];
+	char pin[9] = { '\0' };
+	bool valid = false;
+
+	snprintf(cmnd, 32, "wps_cmd checkpin %s", (char*)blobmsg_data(tb[PIN]));
+	if ((checkpin = popen(cmnd, "r"))) {
+		fgets(pin, sizeof(pin), checkpin);
+		remove_newline(pin);
+		pclose(checkpin);
+	}
+
+	if(strlen(pin))
+		valid = true;
+
+	blob_buf_init(&bb, 0);
+	blobmsg_add_u8(&bb, "valid", valid);
+	ubus_send_reply(ctx, req, bb.head);
+
+	return 0;
+}
+
+static int
+wps_stapin(struct ubus_context *ctx, struct ubus_object *obj,
+		  struct ubus_request_data *req, const char *method,
+		  struct blob_attr *msg)
+{
+	struct blob_attr *tb[__PIN_MAX];
+
+	blobmsg_parse(pin_policy, __PIN_MAX, tb, blob_data(msg), blob_len(msg));
+
+	if (!(tb[PIN]))
+		return UBUS_STATUS_INVALID_ARGUMENT;
+
+	runCmd("wps_cmd addenrollee wl0 sta_pin=%s &", blobmsg_data(tb[PIN]));
+
+	return 0;
+}
+
+static int
+wps_setpin(struct ubus_context *ctx, struct ubus_object *obj,
+		  struct ubus_request_data *req, const char *method,
+		  struct blob_attr *msg)
+{
+	struct blob_attr *tb[__PIN_MAX];
+
+	blobmsg_parse(pin_policy, __PIN_MAX, tb, blob_data(msg), blob_len(msg));
+
+	if (!(tb[PIN]))
+		return UBUS_STATUS_INVALID_ARGUMENT;
+
+	runCmd("wps_cmd setpin %s &", blobmsg_data(tb[PIN]));
+
+	return 0;
+}
+
+static int
+wps_showpin(struct ubus_context *ctx, struct ubus_object *obj,
+		  struct ubus_request_data *req, const char *method,
+		  struct blob_attr *msg)
+{
+	FILE *showpin;
+	char cmnd[32];
+	char pin[9] = { '\0' };
+
+	sprintf(cmnd, "nvram get wps_device_pin");
+	if ((showpin = popen(cmnd, "r"))) {
+		fgets(pin, sizeof(pin), showpin);
+		remove_newline(pin);
+		pclose(showpin);
+	}
+
+	blob_buf_init(&bb, 0);
+
+	blobmsg_add_string(&bb, "pin", pin);
+	ubus_send_reply(ctx, req, bb.head);
+
+	return 0;
+}
+
+static int
+wps_stop(struct ubus_context *ctx, struct ubus_object *obj,
+		  struct ubus_request_data *req, const char *method,
+		  struct blob_attr *msg)
+{
+	system("killall -SIGTERM wps_monitor");
+	system("nvram set wps_proc_status=0");
+	system("wps_monitor &");
+	return 0;
+}
+
+
+static struct ubus_method wps_object_methods[] = {
+	UBUS_METHOD_NOARG("status", wps_status),
+	UBUS_METHOD_NOARG("pbc", wps_pbc),
+	UBUS_METHOD_NOARG("genpin", wps_genpin),
+	UBUS_METHOD("checkpin", wps_checkpin, pin_policy),
+	UBUS_METHOD("stapin", wps_stapin, pin_policy),
+	UBUS_METHOD("setpin", wps_setpin, pin_policy),
+	UBUS_METHOD_NOARG("showpin", wps_showpin),
+	UBUS_METHOD_NOARG("stop", wps_stop),
+};
+
+static struct ubus_object_type wps_object_type =
+	UBUS_OBJECT_TYPE("wps", wps_object_methods);
+
+static struct ubus_object wps_object = {
+	.name = "wps",
+	.type = &wps_object_type,
+	.methods = wps_object_methods,
+	.n_methods = ARRAY_SIZE(wps_object_methods),
+};
+/* END OF WPS OBJECT */
 
 static void
 quest_ubus_add_fd(void)
@@ -1470,6 +1896,8 @@ quest_ubus_reconnect_timer(struct uloop_timeout *timeout)
 	printf("reconnected to ubus, new id: %08x\n", ctx->local_id);
 	quest_ubus_add_fd();
 }
+
+
 
 static void
 quest_ubus_connection_lost(struct ubus_context *ctx)
@@ -1501,6 +1929,7 @@ quest_ubus_init(const char *path)
 	quest_ubus_add_fd();
 
 	quest_add_object(&router_object);
+	quest_add_object(&wps_object);
 
 	return 0;
 }
@@ -1509,7 +1938,7 @@ void *dump_router_info(void *arg)
 {
 	int lpcnt = 0;
 
-	jiffy_counts_t cur_jif, prev_jif;
+	jiffy_counts_t cur_jif = {0}, prev_jif = {0};
 	
 	
 	init_db_hw_config();
@@ -1523,7 +1952,6 @@ void *dump_router_info(void *arg)
 		dump_sysinfo(&router, &memory);
 		dump_cpuinfo(&router, &prev_jif, &cur_jif);
 		populate_clients();
-		populate_clients6();
 		get_jif_val(&prev_jif);
 		usleep(sleep_time);
 		recalc_sleep_time(false, 0);
@@ -1547,7 +1975,8 @@ int main(int argc, char **argv)
 		fprintf(stderr, "Failed to connect to ubus\n");
 		return 1;
 	}
-        if ((pt = pthread_create(&(tid[0]), NULL, &dump_router_info, NULL) != 0)) {
+	
+	if ((pt = pthread_create(&(tid[0]), NULL, &dump_router_info, NULL) != 0)) {
 		fprintf(stderr, "Failed to create thread\n");
 		return 1;
 	}
