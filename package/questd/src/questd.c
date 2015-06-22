@@ -643,7 +643,7 @@ ipv6_clients()
 	int iaid, ts, id, length;
 	int toms = 500;
 
-	if ((hosts6 = fopen("/tmp/hosts/odhcpd", "r"))) {
+	if ((hosts6 = fopen("/tmp/hosts/6relayd", "r"))) {
 		while(fgets(line, sizeof(line), hosts6) != NULL)
 		{
 			remove_newline(line);
