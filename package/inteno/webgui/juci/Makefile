@@ -8,7 +8,7 @@ PKG_RELEASE=$(PKG_SOURCE_VERSION)
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://github.com/mkschreder/luci-express.git
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
-PKG_SOURCE_VERSION:=8bda9cbf6e82c60291253b1cb3afd204f384574e
+PKG_SOURCE_VERSION:=945435c28edd395bbf39dd8c4f0f68e35185f23b
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
 PKG_MAINTAINER:=Martin Schröder <mkschreder.uk@gmail.com>
 
@@ -57,12 +57,12 @@ endef
 
 define Package/juci/install
 	$(INSTALL_DIR) $(1)/www
-	$(CP) $(PKG_BUILD_DIR)/htdocs/* $(1)/www/
+	$(CP) $(PKG_BUILD_DIR)/bin/htdocs/* $(1)/www/
 	$(INSTALL_DIR) $(1)/usr/share/ubus-plugind/
-	$(CP) $(PKG_BUILD_DIR)/menu.d $(1)/usr/share/ubus-plugind/
+	$(CP) $(PKG_BUILD_DIR)/bin/menu.d $(1)/usr/share/ubus-plugind/
 	# install to rpcd directory as well for now, for compatibility
 	$(INSTALL_DIR) $(1)/usr/share/rpcd/
-	$(CP) $(PKG_BUILD_DIR)/menu.d $(1)/usr/share/rpcd/
+	$(CP) $(PKG_BUILD_DIR)/bin/menu.d $(1)/usr/share/rpcd/
 	# == 
 	$(INSTALL_DIR) $(1)/etc/config
 	$(CP) $(PKG_BUILD_DIR)/juci.config $(1)/etc/config/juci

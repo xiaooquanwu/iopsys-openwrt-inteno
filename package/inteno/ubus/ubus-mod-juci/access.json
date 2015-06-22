@@ -64,6 +64,9 @@
 					"syslog",
 					"dmesg",
 					"process_list"
+				],
+				"service": [
+					"list"
 				]
 			}
 		},
