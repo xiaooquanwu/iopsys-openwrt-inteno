@@ -39,12 +39,26 @@ boot() {
 	local $baseifname
 	config_load layer2_interface_ethernet
 	config_get baseifname Wan baseifname
+	
+	if [ "$(db get hw.board.hardware)" != "EG300" ]; then  
+	  get_current_status $baseifname
+	  local ret=$?
+	  if [ $ret -eq 1 ]; then                                                        
+	      ethctl $baseifname phy-power down
+	      ethctl $baseifname phy-power up    
+	  fi
+	fi  
 	for interf in `db get hw.board.ethernetPortOrder`; do ethswctl -c wan -i $interf -o disable ; done
+	local tm=`db get hw.board.tm`
+	if [ "$tm" == "1" ]; then
+		for interf in `db get hw.board.ethernetPortOrder`; do tmctl porttminit --devtype ETH --if $interf --flag 1 ; done
+	fi
 	ethswctl -c pause -p 8 -v 1
 	ethswctl -c hw-switching -o enable
 	if [ $baseifname ]; then
 		ethswctl -c wan -i $baseifname -o enable
 	fi
+					    
 	ifconfig $baseifname up
 }
 

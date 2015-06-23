@@ -53,6 +53,11 @@ platform_check_image() {
 		return 1
 	}
 
+	if [ "$(get_image_chip_id "$from")" != "$(get_chip_id)" ]; then
+		echo "Chip model of image does not match" > /dev/console
+		return 1
+	fi
+
 	# Customer name check should be carried out
 	# only if a regarding parameter set in config.
 	# For now skip customer name check.

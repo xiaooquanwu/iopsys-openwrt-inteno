@@ -260,6 +260,14 @@ get_image_chip_id() {
 	fi
 }
 
+get_chip_id() {
+	brcm_fw_tool -k info
+}
+
+get_endian() {
+	[ $(echo -n I | hexdump -o | awk '{ print substr($2,6,1); exit}') -eq 0 ] && echo big || echo little
+}
+
 get_image_board_id() {
 	if is_inteno_image $1; then
 		get_inteno_tag_val $1 board
@@ -341,14 +349,24 @@ find_mtd_no() {
 	echo ${part##mtd}
 }
 
+get_bootblock_nvram_offset() {
+	case "$(get_chip_id)" in
+		63138)
+			echo "$((65536+1408))" ;;
+		*)
+			echo "1408" ;;
+	esac
+}
+
 cfe_image_upgrade() {
 	local from=$1
 	local ofs=$2
 	local size=$3
 
 	local mtd_no=$(find_mtd_no "nvram")
-	dd if=/dev/mtd$mtd_no bs=1 count=1k skip=1408 \
-	   of=$from seek=$(( $ofs + 1408 )) conv=notrunc
+	local skip=$(get_bootblock_nvram_offset)
+	dd if=/dev/mtd$mtd_no bs=1 count=1k skip=$skip \
+	   of=$from seek=$(( $ofs + $skip )) conv=notrunc
 	imagewrite -c -k $ofs -l $size /dev/mtd$mtd_no $from
 }
 
@@ -358,9 +376,10 @@ make_nvram2_image() {
 
 	echo -ne "NVRAM\n\377\377\000\000\000\001\377\377\377\377" > $img
 	cat /dev/zero | tr '\000' '\377' | head -c $(( 2048 - 16 )) >> $img
-
+	
 	mtd_no=$(find_mtd_no "nvram")
-	dd if=/dev/mtd$mtd_no bs=1 count=1k skip=1408 \
+	local skip=$(get_bootblock_nvram_offset)
+	dd if=/dev/mtd$mtd_no bs=1 count=1k skip=$skip \
 	   of=$img seek=16 conv=notrunc
 }
 
@@ -561,7 +580,8 @@ inteno_image_upgrade() {
 				v "Writing springboard fs to high bank..."
 				mtd_no=$(find_mtd_no "rootfs_update")
 				mkfs.jffs2 \
-					-e 128KiB --big-endian --squash \
+					-e 128KiB --squash \
+					--$(get_endian)-endian \
 					--no-cleanmarkers --pad \
 					-N /tmp/viplist -S /tmp/viplist \
 					-d $newroot | \
