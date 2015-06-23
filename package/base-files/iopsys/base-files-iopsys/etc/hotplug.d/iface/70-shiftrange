@@ -1,12 +1,47 @@
+#!/bin/sh
 
-[ ifup = "$ACTION" ] && {
-	local islan="$(uci -q get network.$INTERFACE.is_lan)"
-	local proto="$(uci -q get network.$INTERFACE.proto)"
-	if [ "$islan" != "1" ] && [ "$proto" != "none" ]; then
-		. /lib/functions/network.sh
-		network_get_ipaddr wan_ip $INTERFACE
+[ "$ACTION" = ifup ] || exit 0
 
-		shift_range $wan_ip && /etc/init.d/network reload
+. /lib/functions.sh
+. /lib/functions/network.sh
+
+local wanip newip netip
+local changed=0
+local net=""
+local islan="$(uci -q get network.$INTERFACE.is_lan)"
+local proto="$(uci -q get network.$INTERFACE.proto)"
+
+get_new_ip() {
+	local ip="$1"
+	local oct1="$(echo $ip | cut -d'.' -f1)"
+	local oct2="$(echo $ip | cut -d'.' -f2)"
+	local oct3="$(echo $ip | cut -d'.' -f3)"
+	local oct4="$(echo $ip | cut -d'.' -f4)"
+
+	if [ $oct3 == 255 ]; then
+		oct3=1
+		oct2=$((oct2+1))
+	else
+		oct3=$((oct3+1))
 	fi
+	echo "$oct1.$oct2.$oct3.$oct4"
 }
+
+if [ "$islan" != "1" ] && [ "$proto" != "none" ]; then
+	network_get_ipaddr wanip $INTERFACE
+
+	net=$(netcheck -h $wanip -n)
+
+	if [ -n "$net" ]; then
+		netip="$(uci -q get network.$net.ipaddr)"
+		newip=$(get_new_ip $netip)
+		uci -q set network.$net.ipaddr=$newip
+		changed=1
+	fi
+fi
+
+if [ $changed -eq 1 ]; then
+	rm -f /tmp/wireless/md5sum
+	ubus call uci commit '{"config":"network"}'
+fi
 
