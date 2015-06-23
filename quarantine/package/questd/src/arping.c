@@ -25,6 +25,7 @@
 #include <net/ethernet.h>
 #include <net/if_arp.h>
 #include <netinet/ether.h>
+#include <string.h>
 
 #include "questd.h"
 
@@ -34,6 +35,8 @@ struct in_addr dst;
 struct sockaddr_ll me;
 struct sockaddr_ll he;
 int sock_fd;
+
+//void *mempcpy(void *dst, const void *src, size_t n); 
 
 static int
 send_pack(struct in_addr *src_addr, struct in_addr *dst_addr, struct sockaddr_ll *ME, struct sockaddr_ll *HE)

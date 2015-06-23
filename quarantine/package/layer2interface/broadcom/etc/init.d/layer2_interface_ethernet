@@ -61,6 +61,10 @@ boot() {
 	  fi
 	fi  
 	for interf in `db get hw.board.ethernetPortOrder`; do ethswctl -c wan -i $interf -o disable ; done
+	local tm=`db get hw.board.tm`
+	if [ "$tm" == "1" ]; then
+		for interf in `db get hw.board.ethernetPortOrder`; do tmctl porttminit --devtype ETH --if $interf --flag 1 ; done
+	fi
 	ethswctl -c pause -p 8 -v 1
 	ethswctl -c hw-switching -o enable
 	if [ $baseifname ]; then

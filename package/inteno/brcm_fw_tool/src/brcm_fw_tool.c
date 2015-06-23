@@ -913,7 +913,7 @@ int main (int argc, char **argv)
 
 	while ((ch = getopt(argc, argv,
 
-			"g:SIMlefriyqjbtkvwW:Z:Vzmoac:d:s:n:h:x:u:p:")) != -1)
+			"g:SIMlefriyqjbtkvwW:Z:Vzmoacd:s:n:h:x:u:p:")) != -1)
 		switch (ch) {
             case 'I':
                 boot_mode = 1;
