@@ -16,8 +16,6 @@ export OPEN=0
 export CONFIGPATH="package/base-files/routermodel"  
 export CUSTCONF="package/zustomers"
 export VERBOSE=0
-export BOARDTYPE="$1"
-export CUSTOMER="$2"
 
 set -e 
 
@@ -44,6 +42,30 @@ usage() {
 	echo 	
 		exit 127
 }
+
+
+while [ -n "$1" ]; do 
+	case "$1" in
+		-c) export CLEAN=1;;
+		-u) export IMPORT=1;;
+		-o) export OPEN=1;;
+		-v) export VERBOSE="$(($VERBOSE + 1))";;
+		-h) usage;;
+		-*)
+			echo "Invalid option: $1 "
+			echo "Try  -h' for more information."
+		  exit 1
+		;;
+		*) break;;
+	esac
+	shift;
+done
+
+# must do this here after we have parsed all the arguments
+export BOARDTYPE="$1"
+export CUSTOMER="$2"
+
+if [ "$CUSTOMER" == "" ]; then CUSTOMER="field"; fi
 
 update_customer_configs() 
 {
@@ -108,23 +130,6 @@ create_and_copy_files()
 #  [ -e "$CONFIGPATH/OPEN/open.diff" ] && generate_config $CONFIGPATH/OPEN/open.diff .config
 #fi
 }
-
-while [ -n "$1" ]; do 
-	case "$1" in
-		-c) export CLEAN=1;;
-		-u) export IMPORT=1;;
-		-o) export OPEN=1;;
-		-v) export VERBOSE="$(($VERBOSE + 1))";;
-		-h) usage;;
-		-*)
-			echo "Invalid option: $1 "
-			echo "Try  -h' for more information."
-		  exit 1
-		;;
-		*) break;;
-	esac
-	shift;
-done
 
 echo "Using boardtype: $BOARDTYPE"
 if [ -z "$BOARDTYPE" ]; then
