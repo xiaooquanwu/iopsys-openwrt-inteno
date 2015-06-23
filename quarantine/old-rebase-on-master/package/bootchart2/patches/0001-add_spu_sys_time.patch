@@ -1,0 +1,40 @@
+diff --git a/pybootchartgui/draw.py b/pybootchartgui/draw.py
+index 7c3f60c..5c9f046 100644
+--- a/pybootchartgui/draw.py
++++ b/pybootchartgui/draw.py
+@@ -63,6 +63,7 @@ AXIS_FONT_SIZE = 11
+ LEGEND_FONT_SIZE = 12
+ 
+ # CPU load chart color.
++CPU_SYS_COLOR = (0.65, 0.13, 0.36, 1.0)
+ CPU_COLOR = (0.40, 0.55, 0.70, 1.0)
+ # IO wait chart color.
+ IO_COLOR = (0.76, 0.48, 0.48, 0.5)
+@@ -300,21 +301,19 @@ def render_charts(ctx, options, clip, trace, curr_y, w, h, sec_w):
+ 	# render bar legend
+ 	ctx.set_font_size(LEGEND_FONT_SIZE)
+ 
+-	draw_legend_box(ctx, "CPU (user+sys)", CPU_COLOR, off_x, curr_y+20, leg_s)
+-	draw_legend_box(ctx, "I/O (wait)", IO_COLOR, off_x + 120, curr_y+20, leg_s)
++	draw_legend_box(ctx, "CPU (user)", CPU_COLOR, off_x, curr_y+20, leg_s)
++	draw_legend_box(ctx, "CPU (sys)", CPU_SYS_COLOR, off_x + 120, curr_y+20, leg_s)
++	draw_legend_box(ctx, "I/O (wait)", IO_COLOR, off_x + 120 + 120 , curr_y+20, leg_s)
+ 
+ 	# render I/O wait
+ 	chart_rect = (off_x, curr_y+30, w, bar_h)
+ 	if clip_visible (clip, chart_rect):
+ 		draw_box_ticks (ctx, chart_rect, sec_w)
+ 		draw_annotations (ctx, proc_tree, trace.times, chart_rect)
+-		draw_chart (ctx, IO_COLOR, True, chart_rect, \
+-			    [(sample.time, sample.user + sample.sys + sample.io) for sample in trace.cpu_stats], \
+-			    proc_tree, None)
++		draw_chart (ctx, IO_COLOR, True, chart_rect, [(sample.time, sample.user + sample.sys + sample.io) for sample in trace.cpu_stats], proc_tree, None)
+ 		# render CPU load
+-		draw_chart (ctx, CPU_COLOR, True, chart_rect, \
+-			    [(sample.time, sample.user + sample.sys) for sample in trace.cpu_stats], \
+-			    proc_tree, None)
++		draw_chart (ctx, CPU_SYS_COLOR, True, chart_rect, [(sample.time, sample.user + sample.sys) for sample in trace.cpu_stats], proc_tree, None)
++		draw_chart (ctx, CPU_COLOR, True, chart_rect, [(sample.time, sample.user ) for sample in trace.cpu_stats], proc_tree, None)
+ 
+ 	curr_y = curr_y + 30 + bar_h
+ 

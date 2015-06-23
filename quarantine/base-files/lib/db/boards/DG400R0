@@ -1,0 +1,44 @@
+
+config board 'board'
+	option hardware 'DG400'
+	option hasAdsl '1'
+	option hasVdsl '1'
+	option hasVoice '1'
+	option hasDect '1'
+	option VoicePorts '2'
+	option VoiceLeds '1'
+	option hasWifi '1'
+	option ethernetPorts '5'
+	option tm '1'
+	option ethernetPortNames 'LAN1 LAN2 LAN3 LAN4 WAN'
+	option ethernetPortOrder 'eth1 eth2 eth3 eth4 eth0'
+	option ethernetLanPorts 'eth1 eth1 eth3 eth4'
+	option ethernetWanPort 'eth0'
+	option adslWanPort ''
+	option vdslWanPort ''
+	option lednames 'Status WAN Internet Wireless Ethernet WPS Voice DECT EXT'
+	option buttonnames 'RESET Wireless WPS DECT TOUCH_NEAR TOUCH_FAR'
+	option wpsButtonGpio '0'
+	option hasBrcmAvs '1'
+
+config wifi-chip '435f'
+        option bands 'b'
+
+config wifi-chip '43a0'
+        option bands 'a'
+        option is_ac '1'
+
+config wifi-chip '43a2'
+        option bands 'a'
+        option is_ac '1'
+
+config wifi-chip '43bc'
+        option bands 'a'
+        option is_ac '1'
+
+config buttons 'buttons'
+
+config leds 'leds'
+
+config led_map 'led_map'
+
