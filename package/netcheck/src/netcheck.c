@@ -359,7 +359,8 @@ stats:
 static void
 arpscan(char *netname, char *ipaddr, char *netmask, char *device, long timeout)
 {
-	struct in_addr ip, nmask, fmask, rmask, last, host;
+	struct in_addr ip, nmask, fmask, rmask, host;
+	uint32_t last, addr;
 	char str[INET_ADDRSTRLEN];
 
 	inet_pton(AF_INET, ipaddr, &(ip.s_addr));
@@ -367,10 +368,11 @@ arpscan(char *netname, char *ipaddr, char *netmask, char *device, long timeout)
 	inet_pton(AF_INET, "255.255.255.255", &(fmask.s_addr));
 
 	rmask.s_addr = (nmask.s_addr ^ fmask.s_addr);
-	last.s_addr = (ip.s_addr | rmask.s_addr);
+	last = ntohl(ip.s_addr | rmask.s_addr);
 
         fprintf(stdout, "Scanning network '%s'\n", netname);
-	for(host.s_addr = ip.s_addr; host.s_addr <= last.s_addr; host.s_addr++) {
+	for(addr = ntohl(ip.s_addr); addr <= last; addr++) {
+		host.s_addr = htonl(addr);
 		inet_ntop(AF_INET, &(host.s_addr), str, INET_ADDRSTRLEN);
 		if(arping(str, device, timeout))
 			fprintf(stdout, "Host found: %s\n", str);
@@ -553,9 +555,9 @@ int main(int argc, char **argv)
 
 	if (qinf == 1 && qhost == 1)
 		usage();
-	else if (qinf == 1 & (qaddr + qmask + qclnt + qport + qscan) == 1)
+	else if (qinf == 1 && (qaddr + qmask + qclnt + qport + qscan) == 1)
 		handle_network(interface, qaddr, qmask, qclnt, qport, qscan, timeout);
-	else if (qhost == 1 & (qnet + qlocal + qdev + qstat) == 1)
+	else if (qhost == 1 && (qnet + qlocal + qdev + qstat) == 1)
 		handle_ip(host, qnet, qlocal, qdev, qstat);
 	else
 		usage();

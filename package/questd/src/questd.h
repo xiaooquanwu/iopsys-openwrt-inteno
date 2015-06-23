@@ -1,3 +1,5 @@
+//#define _GNU_SOURCE 
+
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -12,7 +14,6 @@
 
 #include <uci.h>
 
-
 #include <libubox/blobmsg.h>
 #include <libubox/uloop.h>
 #include <libubox/ustream.h>
@@ -21,7 +22,9 @@
 #include <libubus.h>
 
 #include "dslstats.h"
+#include "igmp.h"
 
+#define MAX_RADIO	4
 #define MAX_VIF		8
 #define MAX_NETWORK	16
 #define MAX_CLIENT	128
@@ -33,16 +36,29 @@ typedef struct {
 	const char *device;
 	const char *ssid;
 	const char *network;
+	int noise;
 } Wireless;
 
 typedef struct {
+	const char *name;
+	const char *band;
+	int frequency;
+	const char *hwmodes[6];
+	int channels[16];
+	const char *pcid;
+	int bwcaps[4];
+	bool is_ac;
+} Radio;
+
+typedef struct {
+	int connum;
 	int idle;
 	int in_network;
 	long tx_bytes;
 	long rx_bytes;
 	int tx_rate;
 	int rx_rate;
-	int rssi;
+	int snr;
 } Detail;
 
 typedef struct {
@@ -51,7 +67,7 @@ typedef struct {
 	bool dhcp;
 	char leaseno[24];
 	char macaddr[24];
-	char hostaddr[24];
+	char ipaddr[24];
 	char hostname[64];
 	char network[32];
 	char device[32];
@@ -59,6 +75,13 @@ typedef struct {
 	char wdev[8];
 	bool connected;
 } Client;
+
+typedef struct {
+	bool exists;
+	char macaddr[24];
+	char wdev[8];
+	int snr;
+} Sta;
 
 typedef struct {
 	bool exists;
@@ -106,7 +129,7 @@ typedef struct {
 	char name[64];
 	char *hardware;
 	char *model;
-	char *nvramver;
+	char *boardid;
 	char *firmware;
 	char *brcmver;
 	char *socmod;
@@ -175,6 +198,9 @@ void recalc_sleep_time(bool calc, int toms);
 void init_db_hw_config(void);
 bool arping(char *target, char *device, int toms);
 void remove_newline(char *buf);
+void replace_char(char *buf, char a, char b);
+void runCmd(const char *pFmt, ...);
+const char *chrCmd(const char *pFmt, ...);
 void get_jif_val(jiffy_counts_t *p_jif);
 void dump_keys(Key *keys);
 void dump_specs(Spec *spec);
