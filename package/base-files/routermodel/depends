@@ -6,7 +6,7 @@ dg301al: +inteno-base +inteno-base-voice
 eg200: +inteno-base +inteno-base-voice
 dg200: +inteno-base +inteno-base-voice
 dg400: +inteno-base +inteno-base-voice +inteno-base-dect
-eg300: +inteno-base +luci-app-sfp +luci-app-catv
+eg300: +inteno-base +inteno-base-voice +inteno-base-dect +block-mount +luci-app-sfp-removed +luci-app-catv-removed
 vg50: +inteno-base 
 vox25: +inteno-base +inteno-base-voice 
 default: +bcmopen

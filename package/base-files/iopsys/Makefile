@@ -146,7 +146,7 @@ endef
 
 define Package/inteno-base-dect
   CATEGORY:=Config
-  DEPENDS:=+inteno-base-voice +natalie-dect +natalie-dect-h +dectmgr 
+  DEPENDS:=+inteno-base-voice +natalie-dect +natalie-dect-h +dectmngr 
   TITLE:=Preselected packages for dect
 endef
 $(eval $(call BuildPackage,inteno-base-dect))

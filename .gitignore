@@ -36,3 +36,4 @@ __all.css
 package/zustomers
 *.bak
 genconfig.last
+package/base-files/routermodel/*/Makefile
