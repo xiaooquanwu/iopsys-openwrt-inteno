@@ -552,7 +552,7 @@ ipv4_clients()
 	int lno = 0;
 	int hw;
 	int flag;
-	char mask[64];
+	char mask[256];
 	int i;
 	bool there;
 	int toms = 1000;
