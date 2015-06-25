@@ -18,9 +18,11 @@ UBIFS_OPTS = -v -c 2048 -m 2048 -e 126976 -x lzma --squash-uids
 UBINIZE_OPTS = -v -m 2048 -p 128KiB
 
 ifeq ($(CONFIG_BCM_CHIP_ID),"63138")
+MKFS_JFFS2_ARGS      := --little-endian
 IMAGETAG_KERNEL_ARGS := -L -K -i $(KDIR)/vmlinux.lzma -o $(KDIR)/vmlinux.lz -e $(KERNEL_ENTRY) -l $(KERNEL_ENTRY)
 IMAGETAG_IMAGE_ARGS  := -c $(CONFIG_BCM_CHIP_ID) -q NAND128 -L
 else
+MKFS_JFFS2_ARGS      := --big-endian
 IMAGETAG_KERNEL_ARGS := -K -i $(KDIR)/vmlinux.lzma -o $(KDIR)/vmlinux.lz -e $(KERNEL_ENTRY)
 IMAGETAG_IMAGE_ARGS  := -c $(CONFIG_BCM_CHIP_ID) -q NAND128 -b $(BOARD_ID)
 endif
@@ -64,7 +66,8 @@ define Image/Prepare
 	echo "/cferam.001" > $(KDIR)/nocomprlist
 	echo "/vmlinux.lz" >> $(KDIR)/nocomprlist
 	$(STAGING_DIR_HOST)/bin/mkfs.jffs2 \
-		-v -e 128KiB --big-endian --squash --no-cleanmarkers \
+		$(MKFS_JFFS2_ARGS) \
+		-v -e 128KiB --squash --no-cleanmarkers \
 		--pad -N $(KDIR)/nocomprlist \
 		-d $(KDIR)/kernel_fs -o $(KDIR)/vmlinux.jffs2
     endif
