@@ -15,7 +15,7 @@ PKG_RELEASE:=$(BRCM_SDK_VERSION)
 PKG_SOURCE_URL:=git@iopsys.inteno.se:bcmkernel-4.16L.03
 PKG_SOURCE_PROTO:=git
 
-PKG_SOURCE_VERSION:=d444a339a9d4d43e0c62a2b3c1efa3d0a5bcd22d
+PKG_SOURCE_VERSION:=e176e44f704382aeb36019afe96d323216b0f19c
 PKG_SOURCE:=$(PKG_NAME)-$(BRCM_SDK_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
 
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
@@ -87,6 +87,7 @@ endef
 endif
 
 define Package/bcmkernel/install
+	$(INSTALL_DIR) $(1)/lib
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_DIR) $(1)/usr/lib
 	$(INSTALL_DIR) $(1)/etc/adsl
@@ -191,6 +192,10 @@ define Package/bcmkernel/install
 	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/etc/cms_entity_info.d/eid_bcm_kthreads.txt	$(1)/etc/cms_entity_info.d/
 	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/etc/cms_entity_info.d/symbol_table.txt		$(1)/etc/cms_entity_info.d/
 
+	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/etc/init.d/bcm-base-drivers.sh			$(1)/lib/
+	if [ -a $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/etc/rdpa_init.sh ]; then $(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/etc/rdpa_init.sh $(1)/etc/; fi;
+
+
 	# Install libraries
 	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/*		$(1)/usr/lib/
 	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/gpl/*	$(1)/usr/lib/
@@ -221,6 +226,7 @@ define Package/bcmkernel/install
 	ln -s /usr/lib/libssl.so.1.0.0 $(1)/usr/lib/libssl.so.0.9.7
 
 	$(CP) $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/public/*	$(1)/usr/lib/
+	$(CP) --remove-destination $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/public/*	$(1)/usr/lib/
 
 	rm -rf $(1)/usr/lib/modules
 	rm -rf $(1)/usr/lib/private
@@ -229,13 +235,12 @@ define Package/bcmkernel/install
 
 	# Install kernel modules
 	rm -rf $(1)/lib/modules/$(BCM_KERNEL_VERSION)/*
-	mkdir -p $(1)/lib/
 	mkdir -p $(1)/lib/modules/
 	mkdir -p $(1)/lib/modules/$(BCM_KERNEL_VERSION)/
 	mkdir -p $(1)/lib/modules/$(BCM_KERNEL_VERSION)/extra
 
 	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/extra/*	$(1)/lib/modules/$(BCM_KERNEL_VERSION)/extra/
-	find $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/ -name *.ko -exec cp {} $(1)/lib/modules/$(BCM_KERNEL_VERSION)/ \;
+	cp -r $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/			$(1)/lib/modules/$(BCM_KERNEL_VERSION)/
 
 	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/etc/wlan/*			$(1)/etc/wlan
 	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/etc/telephonyProfiles.d		$(1)/etc/
@@ -250,7 +255,8 @@ define Package/bcmkernel/install
 #	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/cfe/build/broadcom/bcm63xx_rom/bcm9$(CONFIG_BCM_CHIP_ID)_cfe.w $(KDIR)/bcm_bootloader_cfe.w
 
 	# ram part of the bootloader for nand boot
-	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/cfe/build/broadcom/bcm63xx_ram/cfe$(CONFIG_BCM_CHIP_ID).bin $(KDIR)/cferam.001
+	if [ -a $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/cfe/build/broadcom/bcm63xx_ram/cfe$(CONFIG_BCM_CHIP_ID).bin ]; then cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/cfe/build/broadcom/bcm63xx_ram/cfe$(CONFIG_BCM_CHIP_ID).bin $(KDIR)/cferam.001; fi;
+	if [ -a $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/cfe/build/broadcom/bcm63xx_ram/cfe$(CONFIG_BCM_CHIP_ID)ram.bin ]; then cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/cfe/build/broadcom/bcm63xx_ram/cfe$(CONFIG_BCM_CHIP_ID)ram.bin $(KDIR)/cferam.001; fi;
 	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/cfe/build/broadcom/bcm63xx_rom/cfe$(CONFIG_BCM_CHIP_ID)_nand.v $(KDIR)/cfe$(CONFIG_BCM_CHIP_ID)_nand.v
 	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/cfe/ $(KDIR)/cfe
 #	dd if=$(KDIR)/vmlinux.bcm.elf of=$(KDIR)/vmlinux.bcm bs=4096 count=1
