@@ -163,7 +163,7 @@ config led_map led_map
 # dimming turn leds off unless above cutof level
 #
        option dimming_level	notice
-       option dimming_on	5
+       option dimming_on	20
        list dimming		mobile
        list dimming		internet
        list dimming		wifi
