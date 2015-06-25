@@ -94,7 +94,6 @@ addbrcmvlan ()
 				vlanctl --if $baseifname --rx --tags 1 --filter-vid $vlan8021q 0 --pop-tag --set-rxif $ifname --rule-insert-before -1
 				# tags 2 rx
 				vlanctl --if $baseifname --rx --tags 2 --filter-vid $vlan8021q 0 --pop-tag --set-rxif $ifname --rule-insert-before -1
-				ifconfig $ifname up
 			else
 				vlanctl --routed --if-create $baseifname $vlan8021q
 				vlanctl --if $baseifname --set-if-mode-rg
@@ -113,8 +112,9 @@ addbrcmvlan ()
 				vlanctl --if $baseifname --rx --tags 1 --filter-vlan-dev-mac-addr 1 --filter-vid $vlan8021q 0 --pop-tag --set-rxif $ifname --rule-insert-before -1	 
 				# tags 2 rx
 				vlanctl --if $baseifname --rx --tags 2 --filter-vlan-dev-mac-addr 1 --filter-vid $vlan8021q 0 --pop-tag --set-rxif $ifname --rule-insert-before -1
-				ifconfig $ifname up
 			fi
+			ifconfig $ifname up
+			ifconfig $ifname multicast
 		fi
 	fi
 }
