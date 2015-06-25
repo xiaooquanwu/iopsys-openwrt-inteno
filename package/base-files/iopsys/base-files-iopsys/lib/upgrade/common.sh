@@ -261,7 +261,11 @@ get_image_chip_id() {
 }
 
 get_chip_id() {
-	brcm_fw_tool -k info
+	local chip_id=$(brcm_fw_tool -k info)
+	case $chip_id in
+		6313?)  echo 63138 ;;
+		*)      echo $chip_id ;;
+	esac
 }
 
 get_endian() {
