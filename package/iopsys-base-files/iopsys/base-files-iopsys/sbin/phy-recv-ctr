@@ -1,0 +1,21 @@
+#! /bin/sh
+
+set -e
+
+IF=$1
+
+if [ -z "$IF" ] ; then
+   echo >&2 Usage: $0 interface
+   exit 1
+fi
+
+# Wrapper to send output to stdout, and keep only final word.
+ethctl_value () {
+    ethctl "$@" 2>&1 | sed 's/^.* //'
+}
+
+# Set counter in recv mode
+old=`ethctl_value $IF reg_s18 7`
+ethctl $IF reg_s18 7 `printf "%x" $(($old | 0x800))` 2>/dev/null
+
+ethctl_value $IF reg_exp 0

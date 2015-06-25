@@ -1,0 +1,59 @@
+#!/usr/bin/env lua
+--[[
+Print system info and logs
+--]]
+
+local cmd = {
+    'cat /etc/banner',
+    'date',
+    'cat /proc/cpuinfo',
+    'top -b -n 1',
+    "ubus call router quest '{ \"info\": \"system\" }'",
+    "ubus call router quest '{ \"info\": \"memory\" }'",
+    "ubus call router quest '{ \"info\": \"specs\" }'",
+    "ubus call router networks",
+    "ubus call router clients",
+    "ubus call router leases '{ \"network\": \"lan\" }'",
+    'cat /proc/net/arp',
+    'ifstatus lan',
+    'ifstatus wan',
+    'logread',
+    'dmesgh',
+    'lsusb',
+    'lspci -k',
+    'lsmod',
+    'cat /proc/slabinfo',
+    'cat /etc/config/network',
+    'ifconfig',
+    'iptables-save',
+    'opkg list',
+    'db show | grep has[A-Z]',
+    'freecwmp --json get InternetGatewayDevice.',
+}
+
+function os.capture(cmd)
+    local f = assert(io.popen(cmd, 'r'))
+    local s = assert(f:read('*a'))
+    f:close()
+    return s
+end
+
+local results = {}
+
+for _,cmd in ipairs(cmd) do
+    local cap = os.capture(cmd)
+    table.insert(results, {cmd, cap})
+end
+
+function show_result(res)
+    io.write(string.rep("#", 3))
+    io.write(" " .. res[1] .. " ")
+    io.write(string.rep("#", 63 - string.len(res[1])))
+    print()
+    print(res[2])
+end
+
+for _,res in ipairs(results) do
+    show_result(res)
+end
+

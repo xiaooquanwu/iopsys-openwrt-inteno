@@ -1,0 +1,17 @@
+#!/bin/sh
+
+# Copyright (C) 2009 OpenWrt.org
+
+case "$ACTION" in
+	add)
+		if [ -d /sys/bus/usb/devices/1-1 -o -d /sys/bus/usb/devices/1-2 -o -d /sys/bus/usb/devices/2-1 -o -d /sys/bus/usb/devices/2-2 ] ; then
+			ubus call led.usb  set '{"state" : "ok"}'  2>&1
+		fi
+	;;
+	remove)
+		if [ ! -d /sys/bus/usb/devices/1-1 -a ! -d /sys/bus/usb/devices/1-2 -a ! -d /sys/bus/usb/devices/2-1 -a ! -d /sys/bus/usb/devices/2-2 ]; then
+			ubus call led.usb  set '{"state" : "off"}'  2>&1
+		fi
+	;;
+esac	
+

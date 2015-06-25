@@ -1,0 +1,38 @@
+#!/bin/sh
+# Inteno 2014
+#
+# The script is run on router. It dumps nvram and hashes files on the
+# filesystem, and stores the result in the files:
+#     <iopsys version>.nvram
+#     <iopsys version>.fshash
+#
+# Usage:
+#   Comparing filesystem of two routers.
+#     1. Run script on each router,
+#        which saves the hash of files in: "<router version>.fshash"
+#        and the hexdump of nvram in:      "<router version>.nvram"
+#     2. Gather the files centrally and make a list of diffing files:
+#        diff --changed-group-format='%<' --unchanged-group-format='' <fshash1> <fshash2> | cut -c 35- > diffing_files.list
+#     3. Copy diffing_files.list to each router.
+#     4. Archive the files from the router by:
+#        tar -cvf $(cat /etc/banner | grep "IOP Version:" | sed 's,IOP Version: ,,')-fshash.tar -T diffing_files.list
+#     5. Copy the archived files centrally for review.
+#
+
+# Generate a filename based on iopsys version
+iopsys_version="iopsys"
+[ -e /etc/banner ] && {
+    iopsys_version="$(cat /etc/banner | grep "IOP Version:" | sed 's,IOP Version: ,,')"
+}
+echo "" > $iopsys_version.fshash # create empty file
+
+hash_files() {
+    for dir in "$@"; do
+        find $dir -type f -exec md5sum {} + >> $iopsys_version.fshash
+    done
+}
+hash_files "/bin" "/etc" "/lib" "/root" "/sbin" "/usr"
+
+# Dump nvram to a file
+hexdump -C /dev/mtd3 -s 0x580 -n 1024 -v > $iopsys_version.nvram
+

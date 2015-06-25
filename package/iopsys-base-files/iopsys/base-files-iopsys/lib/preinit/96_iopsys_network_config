@@ -1,0 +1,80 @@
+#!/bin/sh
+
+iopsys_generate_default_config() {
+
+	if [ ! -f /etc/config/network ]; then
+		cat >> /etc/config/network <<EOF
+config interface 'loopback'
+	option is_lan '1'
+	option ifname 'lo'
+	option proto 'static'
+	option ipaddr '127.0.0.1'
+	option netmask '255.0.0.0'
+
+config interface 'lan'
+	option is_lan '1'
+	option type 'bridge'
+	option proto 'static'
+	option ipaddr '192.168.1.1'
+	option netmask '255.255.255.0'
+
+config interface 'guest'
+	option is_lan '1'
+	option type 'bridge'
+	option proto 'static'
+	option ipaddr '192.168.10.1'
+	option netmask '255.255.255.0'
+
+config interface 'wan'
+	option type 'anywan'
+	option proto 'dhcp'
+EOF
+	fi
+
+	local net_ifname="X"
+	uci get -q network.wan >/dev/null && net_ifname=$(uci get -q network.wan.ifname)
+	if [ "$net_ifname" == "" ]; then
+		echo "Setting default network config"
+
+		local lanports=$(uci get -q /lib/db/config/hw.board.ethernetLanPorts)
+		local wanEthernetPort=$(uci get -q /lib/db/config/hw.board.ethernetWanPort)
+		local wanAdslPort=$(uci get -q /lib/db/config/hw.board.adslWanPort)
+		local wanVdslPort=$(uci get -q /lib/db/config/hw.board.vdslWanPort)
+
+		local wanports=""
+		[ "$wanEthernetPort" != "" ] && wanports="$wanEthernetPort.1"
+		[ "$wanAdslPort" != "" ] && wanports="$wanports $wanAdslPort.1"
+		[ "$wanVdslPort" != "" ] && wanports="$wanports $wanVdslPort.1"
+
+		echo "Setting $lanports as lanports"
+		uci get -q network.lan.ifname || uci set network.lan.ifname="$lanports"
+		echo "Setting $wanports as wanports"
+		uci set network.wan.ifname="$wanports"
+		uci commit network
+	fi
+
+	if [ ! -f /etc/config/layer2_interface_ethernet ]; then
+		cat >> /etc/config/layer2_interface_ethernet <<EOF
+config ethernet_interface 'Wan'
+	option name 'WAN'
+EOF
+	fi
+
+	local l2_ifname=$(uci get -q layer2_interface_ethernet.Wan.ifname)
+	if [ "$l2_ifname" == "" ]; then
+		echo "Setting layer2_interface_ethernet config"
+		local wanEthernetPort=$(uci get -q /lib/db/config/hw.board.ethernetWanPort)
+
+		if [ "$wanEthernetPort" != "" ]; then
+			wanEthernetPort_dot=$wanEthernetPort.1
+		fi
+
+		uci set layer2_interface_ethernet.Wan.name="WAN"
+		uci set layer2_interface_ethernet.Wan.baseifname="$wanEthernetPort"
+		uci set layer2_interface_ethernet.Wan.ifname="$wanEthernetPort_dot"
+		uci commit layer2_interface_ethernet
+	fi
+}
+
+boot_hook_add preinit_main iopsys_generate_default_config
+

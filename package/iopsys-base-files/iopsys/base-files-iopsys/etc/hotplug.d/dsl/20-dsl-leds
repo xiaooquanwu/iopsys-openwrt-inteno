@@ -1,0 +1,29 @@
+wantest() {
+	local wandev=$(db get hw.board.ethernetWanPort)
+	local ledontest
+	ledontest=$(cat /sys/class/net/$wandev/operstate)
+	if [ "$ledontest" == "up" ]; then
+		return 0
+	fi
+	return 1
+}
+
+if [ "$INTERFACE" == "led" ]; then
+	if [ "$ACTION" == "link_up" ]; then
+		ubus call led.dsl set '{"state":"ok"}'
+	fi
+
+	if [ "$ACTION" == "link_down" ]; then
+		ubus call led.dsl set '{"state":"off"}'
+#		$(wantest) && ubus call led.wan set '{"state":"ok"}'
+	fi
+
+	if [ "$ACTION" == "started_training" ]; then
+		ubus call led.dsl set '{"state":"alert"}'
+	fi
+
+	if [ "$ACTION" == "looking_for_carrier" ]; then
+		ubus call led.dsl set '{"state":"notice"}'
+	fi
+fi
+

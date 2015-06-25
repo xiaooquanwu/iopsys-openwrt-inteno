@@ -1,0 +1,17 @@
+#!/bin/sh
+
+iopsys_generate_i2c_config() {
+
+    local i2c_config=$(uci get -q /lib/db/config/hw.board.i2cGpioCustom)
+    if [ "$i2c_config" != "" ]; then
+        echo "Setting up i2c config: $i2c_config"
+        echo i2c-core > /etc/modules.d/60-i2c
+        echo i2c-dev >> /etc/modules.d/60-i2c
+        echo i2c-algo-bit >> /etc/modules.d/60-i2c
+        echo i2c-gpio >> /etc/modules.d/60-i2c
+	echo i2c-gpio-custom $i2c_config >> /etc/modules.d/60-i2c
+    fi
+}
+
+boot_hook_add preinit_main iopsys_generate_i2c_config
+

@@ -1,0 +1,27 @@
+#!/usr/bin/lua
+
+local io = require "io"
+local os = require "os"
+local utl = require "luci.util"
+
+local basetime = tonumber(utl.exec("cut -d '.' -f1 /proc/uptime")) 
+local seconds = tonumber(utl.exec("date +%s"))
+local line, dmsg, stmp1, stmp2, msg, date
+
+for ln in utl.execi("dmesg") do
+	line = ln
+	stmp1, stmp2, msg = ln:match("(%d+).(%d+)] (%S.*)")
+
+	if stmp1 and stmp2 and msg then
+		dmsg = " " .. msg
+	else
+		stmp1, stmp2 = ln:match("(%d+).(%d+)]%s")
+		dmsg = ""
+	end
+
+	if stmp1 and stmp2 then
+		date = os.date("%b %d %H:%M:%S", tonumber(seconds - basetime + tonumber(stmp1)))
+		line = date .. dmsg
+	end
+	print(line)
+end

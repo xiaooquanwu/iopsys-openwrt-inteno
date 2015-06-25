@@ -1,0 +1,11 @@
+#!/bin/sh
+
+init_nfs() {
+	grep -q "nfsroot" /proc/cmdline && {
+		echo "- nfs-root detected -"
+		pi_mount_skip_next=true
+		pi_iopsys_skip_overlay=true
+	}
+}
+
+boot_hook_add preinit_main init_nfs

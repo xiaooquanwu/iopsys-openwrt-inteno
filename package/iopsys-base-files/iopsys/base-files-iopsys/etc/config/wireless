@@ -1,0 +1,21 @@
+config wifi-settings preferred
+	option ssid 'Inteno-$BSSID6'
+	option enc 'psk2'
+	option wpsb '1'
+	option ch5g 'auto'
+	option bw5g '80'
+	option ch2g 'auto'
+	option bw2g '20'
+	option dfsc '1'
+	option hw5g '11ac'
+	option hw2g 'auto'
+	option country 'EU/13'
+	option extrassid '0'
+	option guest '1'
+
+config wifi-status 'status'
+	option wlan '1'
+	option wps '1'
+	option sched_status '0'
+	option schedule '0'
+

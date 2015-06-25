@@ -1,0 +1,107 @@
+. /lib/network/config.sh
+
+addif() {
+	# check if wan had a event and start all related services
+	wan=`uci -q get layer2_interface_ethernet.Wan.baseifname`
+	if [ "$INTERFACE" == "$wan" ]; then
+		/etc/init.d/layer2_interface_ethernet start
+		/etc/init.d/layer2_interface_vlan start
+	fi
+}
+
+delif() {
+	##remove ethernet wan and nuke any vlans associated
+	wan=`uci -q get layer2_interface_ethernet.Wan.baseifname`
+	if [ "$INTERFACE" == "$wan"  ]; then
+		/etc/init.d/layer2_interface_ethernet stop
+	fi
+}
+
+# true if speed on interface is Gbit
+gigatest() {
+	local speed=$(ethctl $INTERFACE media-type 2>&1 | awk '{if (NR == 2) print $6}')
+	case "$speed" in
+		1000*) return 0 ;;
+		*) return 1 ;;
+	esac
+}
+
+# true if there is a link on any lan port
+lan_test () {
+	local landev=$(db get hw.board.ethernetLanPorts)
+	local ledontest
+	for dev in $landev; do
+		ledontest=$(cat /sys/class/net/$dev/operstate)
+		if [ "$ledontest" == "up" ]; then
+			return 0
+		fi
+	done
+	return 1
+}
+
+# true if adsl or vdsl is up.
+dsltest() {
+	if cat /var/state/layer2_interface 2>/dev/null | grep 'adsl\|vdsl' | grep up; then
+		return 0
+	else
+		return 1
+	fi
+}
+
+case "$ACTION" in
+	add|register)
+		case "$PHYSDEVDRIVER" in
+			natsemi) sleep 1 ;;
+		esac
+		addif
+		local interfname=$(interfacename $INTERFACE)
+		local operstate=$(cat /sys/class/net/$INTERFACE/operstate)
+#		if [ "$operstate" == "up" ]; then
+		if true ; then
+			case "$interfname" in
+				GbE*)
+					ubus call led.lan           set '{"state" : "ok"}'
+					ubus call led.gbe           set '{"state" : "ok"}'
+					ubus call led.gbe_phy_link  set '{"state" : "ok"}'
+					ubus call led.gbe_phy_speed set '{"state": "off"}'
+					$(gigatest) && ubus call led.gbe_phy_speed set '{"state":"ok"}'
+				;;
+				LAN*)
+					ubus call led.lan set '{"state":"ok"}'
+				;;
+				WAN*)
+					ubus call led.wan           set '{"state" : "notice"}'
+					ubus call led.wan_phy_link  set '{"state" : "ok"}'
+					ubus call led.wan_phy_speed set '{"state" : "off"}'
+					$(gigatest) && ubus call led.wan_phy_speed set '{"state":"ok"}'
+				;;
+			esac
+		fi		
+	;;
+	remove|unregister)
+		local interfname=$(interfacename $INTERFACE)
+		local operstate=$(cat /sys/class/net/$INTERFACE/operstate)
+		if [ "$operstate" == "down" ]; then
+			case "$interfname" in
+				GbE*)
+					ubus call led.gbe           set '{"state" : "off"}'
+					ubus call led.gbe_phy_link  set '{"state" : "off"}'
+					ubus call led.gbe_phy_speed set '{"state" : "off"}'
+					$(lan_test) || ubus call led.lan set '{"state":"off"}'
+				;;
+				LAN*)
+					$(lan_test) || ubus call led.lan set '{"state":"off"}'
+				;;
+				WAN*)
+					ubus call led.wan           set '{"state" : "off"}'
+					ubus call led.wan_phy_speed set '{"state" : "off"}'
+					ubus call led.wan_phy_link  set '{"state" : "off"}'
+					# is this needed here ?? don't the dsl hotplug event control this ???
+#					$(dsltest) || ubus call led.dsl set '{"state":"off"}'
+				;;
+			esac
+		fi
+		delif
+	;;
+esac
+
