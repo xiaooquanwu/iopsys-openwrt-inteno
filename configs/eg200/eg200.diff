@@ -1,0 +1,6 @@
+s/^CONFIG_TARGET_MODEL_NAME.*/CONFIG_TARGET_MODEL_NAME="EG200-WU7P1U"/g
+s/^CONFIG_TARGET_IBOARDID.*/CONFIG_TARGET_IBOARDID="EG200"/g
+s/^CONFIG_PACKAGE_dectmngr=y/# CONFIG_PACKAGE_dectmngr is not set/g
+s/^CONFIG_PACKAGE_luci-app-dect=y/# CONFIG_PACKAGE_luci-app-dect is not set/g
+s/^CONFIG_PACKAGE_natalie-dect=y/# CONFIG_PACKAGE_natalie-dect is not set/g
+s/^# CONFIG_BCM_I2C is not set/CONFIG_BCM_I2C=y/g

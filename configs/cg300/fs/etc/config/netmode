@@ -1,0 +1,17 @@
+config mode 'setup'
+        option dir '/etc/netmodes'
+        option detail ''
+        option curmode 'routed'
+	option credmodes 'repeater'
+
+config netmode 'routed'
+        option desc 'Fully Routed (NAT)'
+        option conf 'config_routed'
+        option exp ''
+
+config netmode 'repeater'
+        option desc 'Wireless Repeater'
+        option conf 'config_repeater'
+        option exp 'Your router is going to act as a wireless repeater to the selected Wireless Access Point.'
+
+
