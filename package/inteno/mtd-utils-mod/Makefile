@@ -11,11 +11,15 @@ PKG_NAME:=mtd-utils
 PKG_VERSION:=1.5.1
 PKG_RELEASE:=1
 PKG_INSTALL:=1
-
-PKG_SOURCE_URL:=git@iopsys.inteno.se:mtd-utils
 PKG_SOURCE_PROTO:=git
-
 PKG_SOURCE_VERSION:=1627a29d45121fe96fa19f07eb41ccef5638b9ec
+
+ifeq ($(CONFIG_BCM_OPEN),y)
+PKG_SOURCE_URL:=http://ihgsp.inteno.se/git/mtd-utils
+else
+PKG_SOURCE_URL:=git@ihgsp.inteno.se:mtd-utils
+endif
+
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
 

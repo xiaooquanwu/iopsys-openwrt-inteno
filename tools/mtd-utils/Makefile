@@ -9,8 +9,11 @@ include $(TOPDIR)/rules.mk
 PKG_NAME:=mtd-utils
 PKG_VERSION:=1.4.5
 PKG_RELEASE:=1
-
-PKG_SOURCE_URL:=git@iopsys.inteno.se:mtd-utils
+ifeq ($(CONFIG_BCM_OPEN),y)
+PKG_SOURCE_URL:=http://ihgsp.inteno.se/git/mtd-utils
+else
+PKG_SOURCE_URL:=git@ihgsp.inteno.se:mtd-utils
+endif
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_VERSION:=3a0d8a01d91e0e80bc59d6320e91c07383f0ede2
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
