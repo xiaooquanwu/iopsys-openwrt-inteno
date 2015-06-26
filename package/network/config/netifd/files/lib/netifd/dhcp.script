@@ -70,11 +70,34 @@ setup_interface () {
 		ubus call network add_dynamic "$(json_dump)"
 	fi
 
+	[ -f /etc/config/provisioning ] && iup
+
 	# TODO
 	# [ -n "$ntpsrv" ] && 	change_state network "$ifc" lease_ntpsrv "$ntpsrv"
 	# [ -n "$timesvr" ] && 	change_state network "$ifc" lease_timesrv "$timesvr"
 	# [ -n "$hostname" ] &&	change_state network "$ifc" lease_hostname "$hostname"
-	# [ -n "$timezone" ] && 	change_state network "$ifc" lease_timezone "$timezone"
+	# [ -n "$timezone" ] && change_state network "$ifc" lease_timezone "$timezone"
+}
+
+iup() {
+	local url
+	local provisioningcode
+	local rest
+
+	if [ $vendorspecinf ]; then
+		url=${vendorspecinf%%,*}; rest=${vendorspecinf#*,}
+		provisioningcode=${rest%%,*};
+		uci_set_state provisioning iup url "$url"
+		uci_set_state provisioning iup provisioningcode "$provisioningcode"
+	elif [ $httpurl128 ]; then
+		uci_set_state provisioning iup url "$httpurl128"
+	elif [ $tftp ]; then
+		if [ ${bootfile:0:1} == '/' ]; then 
+			uci_set_state provisioning iup url "tftp://$tftp$bootfile"
+		else
+			uci_set_state provisioning iup url "tftp://$tftp/$bootfile"
+		fi
+	fi
 }
 
 deconfig_interface() {
