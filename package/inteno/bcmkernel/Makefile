@@ -25,6 +25,19 @@ ifeq ($(CONFIG_ARCH),)
 include $(TOPDIR)/.config
 endif
 
+ifeq ($(CONFIG_BCM_OPEN),y)
+PKG_NAME:=bcmopen
+PKG_VERSION:=consumer
+PKG_RELEASE:=1
+
+TARGET_VERSION=$(shell echo $(CONFIG_TARGET_VERSION) | sed s/\"//g)
+TARGET_IBOARDID=$(shell echo $(CONFIG_TARGET_IBOARDID) | sed s/\"//g)
+
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).$(TARGET_VERSION).$(TARGET_IBOARDID).tar.gz
+#PKG_SOURCE_URL:=http://ihgsp.inteno.se/ihgsp/consumer/
+PKG_SOURCE_URL:=http://10.10.1.14/software/slask/
+endif
+
 ifeq ($(CONFIG_BRCM_SDK_VER_414040),y)
 include ./414040.mk
 

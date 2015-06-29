@@ -9,9 +9,13 @@
 #                                                4.16L.02A -> 416021
 BRCM_SDK_VERSION:=416021
 
+ifeq ($(CONFIG_BCM_OPEN),y)
+$(error "OPEN SDK compile not tested with this kernel!")
+endif
+
 PKG_NAME:=bcmkernel-3.4
-PKG_VERSION:=4.16
-PKG_RELEASE:=$(BRCM_SDK_VERSION)
+PKG_VERSION:=$(BRCM_SDK_VERSION)
+PKG_RELEASE:=1
 
 PKG_SOURCE_URL:=git@iopsys.inteno.se:bcmkernel-4.16L.02A
 PKG_SOURCE_PROTO:=git
@@ -19,7 +23,7 @@ PKG_SOURCE_PROTO:=git
 PKG_SOURCE_VERSION:=00e673bd751d19059cb3ed5fd2dbf3831a7e0401
 PKG_SOURCE:=$(PKG_NAME)-$(BRCM_SDK_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
 
-PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
+PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(BRCM_SDK_VERSION)
 
 
 include $(INCLUDE_DIR)/package.mk

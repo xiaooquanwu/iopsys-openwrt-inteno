@@ -12,10 +12,10 @@ PKG_VERSION:=11.19
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-ifeq ($(CONFIG_PACKAGE_bcmkernel),y)
-PKG_SOURCE_URL:=git@iopsys.inteno.se:natalie-dect-h
-else
+ifeq ($(CONFIG_BCM_OPEN),y)
 PKG_SOURCE_URL:=http://ihgsp.inteno.se/git/natalie-dect-h
+else
+PKG_SOURCE_URL:=git@iopsys.inteno.se:natalie-dect-h
 endif
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_VERSION:=c2139d05e3d082f1dcf58ce3f19306cb76fd0873

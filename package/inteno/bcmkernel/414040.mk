@@ -8,9 +8,13 @@
 # update this based on the Broadcom SDK version, 4.14L.04 -> 414040
 BRCM_SDK_VERSION:=414040
 
+ifeq ($(CONFIG_BCM_OPEN),y)
+$(error "OPEN SDK compile not tested with this kernel!")
+endif
+
 PKG_NAME:=bcmkernel-3.4
-PKG_VERSION:=4.14
-PKG_RELEASE:=$(BRCM_SDK_VERSION)
+PKG_VERSION:=$(BRCM_SDK_VERSION)
+PKG_RELEASE:=1
 
 PKG_SOURCE_URL:=git@iopsys.inteno.se:bcmkernel-4.14L.04
 PKG_SOURCE_PROTO:=git
@@ -18,7 +22,7 @@ PKG_SOURCE_PROTO:=git
 PKG_SOURCE_VERSION:=8216815ced065e527681a079ad0e17fbb007baec
 PKG_SOURCE:=$(PKG_NAME)-$(BRCM_SDK_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
 
-PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
+PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(BRCM_SDK_VERSION)
 
 
 include $(INCLUDE_DIR)/package.mk

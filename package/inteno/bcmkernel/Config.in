@@ -1,6 +1,13 @@
 menu "Profile and CFE"
 depends on PACKAGE_bcmkernel
 
+config BCM_OPEN
+       bool
+       prompt "Build package for Public SDK"
+       default n
+       help
+		Set this to build an package using a release tarball with the proprietary components removed.
+
 choice
        prompt "Broadcom SDK version"
        default BRCM_SDK_VER_416030
