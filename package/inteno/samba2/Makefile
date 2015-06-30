@@ -11,9 +11,13 @@ PKG_NAME:=samba2
 PKG_VERSION:=2.2.12.inteno
 PKG_RELEASE:=1
 
-
-#PKG_SOURCE_URL:=ssh://inteno@ihgsp.inteno.se/home/inteno/private/git/samba.git
+ifeq ($(CONFIG_BCM_OPEN),y)
+PKG_SOURCE_URL:=http://ihgsp.inteno.se/git/samba
+else
 PKG_SOURCE_URL:=ssh://git@iopsys.inteno.se/samba.git
+endif
+PKG_SOURCE_PROTO:=git
+#PKG_SOURCE_URL:=ssh://inteno@ihgsp.inteno.se/home/inteno/private/git/samba.git
 PKG_SOURCE_VERSION:=d687d07a137981f4fe78cc289b040e6426c61e29
 PKG_BUILD_DIR=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
