@@ -13,7 +13,7 @@ CONFIG=.config
 export CLEAN=0
 export IMPORT=0
 export OPEN=0
-export CONFIGPATH="package/zeta/base-files/routermodel"
+export CONFIGPATH="package/zeta/basefiles/routermodel"
 export CUSTCONF="package/zeta/customers"
 export VERBOSE=0
 
