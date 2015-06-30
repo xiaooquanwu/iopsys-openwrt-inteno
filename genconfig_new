@@ -66,6 +66,7 @@ export BOARDTYPE="$1"
 export CUSTOMER="$2"
 
 if [ "$CUSTOMER" == "" ]; then CUSTOMER="field"; fi
+if [ "$CUSTOMER" == "open" ]; then OPEN=1; fi
 
 update_customer_configs() 
 {
@@ -135,9 +136,9 @@ if [ -z "$BOARDTYPE" ]; then
 else
 	if [ $OPEN -eq 0 ]; then
 		update_customer_configs
+		(cd ${CUSTCONF}; bash ./update-makefiles.sh)
 	fi
 	(cd ${CONFIGPATH}; bash ./update-makefiles.sh)
-	(cd ${CUSTCONF}; bash ./update-makefiles.sh)
 	create_and_copy_files "$1" "$2"
 fi
 
