@@ -13,8 +13,8 @@ CONFIG=.config
 export CLEAN=0
 export IMPORT=0
 export OPEN=0
-export CONFIGPATH="package/iopsys-base-files/routermodel"
-export CUSTCONF="package/zustomers"
+export CONFIGPATH="package/zeta/base-files/routermodel"
+export CUSTCONF="package/zeta/customers"
 export VERBOSE=0
 
 set -e 
@@ -75,7 +75,7 @@ update_customer_configs()
 	else
 		(cd ${CUSTCONF}; git pull)
 		# delete empty folders in customer configs because they can appear as customer profiles that are invalid
-		for dir in `find package/zustomers -maxdepth 1 -type d`; do if [ `find $dir -type f | wc -l` == 0 ]; then echo "REMOVING empty folder: $dir"; rm -rf $dir; fi; done
+		for dir in `find package/zeta-customers -maxdepth 1 -type d`; do if [ `find $dir -type f | wc -l` == 0 ]; then echo "REMOVING empty folder: $dir"; rm -rf $dir; fi; done
 	fi
 }
 
