@@ -142,8 +142,8 @@ start_service() {
 
 stop_service() {
 	echo "Stopping ADSL"
-
-	xtmctl stop
+#xtmctl stop causes IRQ issues"
+#	xtmctl stop
 	remove_netdevices	
 }
 

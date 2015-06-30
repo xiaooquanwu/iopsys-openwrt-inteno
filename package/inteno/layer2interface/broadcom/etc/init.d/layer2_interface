@@ -89,7 +89,8 @@ start_service() {
 
 stop_service() {
 	echo "Stopping DSL"
-	xdslctl stop
+	# stop causes IRQ issues
+	#xdslctl stop
 }
 
 boot() {
