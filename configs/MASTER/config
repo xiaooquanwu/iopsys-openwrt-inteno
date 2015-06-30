@@ -538,6 +538,7 @@ CONFIG_PACKAGE_bcmkernel=y
 #
 # Profile and CFE
 #
+# CONFIG_BCM_OPEN is not set
 # CONFIG_BRCM_SDK_VER_414040 is not set
 # CONFIG_BRCM_SDK_VER_416021 is not set
 CONFIG_BRCM_SDK_VER_416030=y
