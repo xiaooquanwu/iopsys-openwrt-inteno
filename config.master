@@ -518,7 +518,7 @@ CONFIG_OPKGSMIME_PASSPHRASE=y
 #
 # Base system
 #
-CONFIG_PACKAGE_base-files=y
+# CONFIG_PACKAGE_base-files is not set
 CONFIG_PACKAGE_bcmhotproxy=y
 CONFIG_PACKAGE_bcmkernel=y
 
