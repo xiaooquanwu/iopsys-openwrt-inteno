@@ -16,3 +16,9 @@ service_triggers()
 	procd_add_reload_trigger "dhcp"
 }
 
+reload_service()
+{
+restart
+}
+
+
