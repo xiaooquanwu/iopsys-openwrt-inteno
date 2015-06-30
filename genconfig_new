@@ -69,13 +69,13 @@ if [ "$CUSTOMER" == "" ]; then CUSTOMER="field"; fi
 
 update_customer_configs() 
 {
+	if [ "${CUSTOMER}" == "open" ] ; then return; fi
 	if [ ! -d "$CUSTCONF" ]; then
 		git  clone  -b martin git@ihgsp.inteno.se:customerconfigs ${CUSTCONF}
-	elif [ $IMPORT -eq 1 ]; then
-		cd ${CUSTCONF}
-		v "git pull"
-		git pull
-		cd ..
+	else
+		(cd ${CUSTCONF}; git pull)
+		# delete empty folders in customer configs because they can appear as customer profiles that are invalid
+		for dir in `find package/zustomers -maxdepth 1 -type d`; do if [ `find $dir -type f | wc -l` == 0 ]; then echo "REMOVING empty folder: $dir"; rm -rf $dir; fi; done
 	fi
 }
 
@@ -85,6 +85,7 @@ create_and_copy_files()
 	echo "Selecting board ${BOARDTYPE} for customer ${CUSTOMER}"
 	cp config.master ${CONFIG}
 	echo "CONFIG_PACKAGE_routermodel-${BOARDTYPE,,}=y" >> ${CONFIG}
+	echo "CONFIG_PACKAGE_profile-${CUSTOMER,,}=y" >> ${CONFIG}
 	echo "CONFIG_PACKAGE_profile-${CUSTOMER,,}-${BOARDTYPE,,}=y" >> ${CONFIG}
 	#echo "CONFIG_PACKAGE_customer-${BOARDTYPE,,}=y" >> ${CONFIG}
 	#echo "CONFIG_TARGET_MODEL_NAME=\"${BOARDTYPE^^}-WU7P2U\"" >> ${CONFIG}
@@ -93,6 +94,7 @@ create_and_copy_files()
 	echo "CONFIG_TARGET_CUSTOMER=\"${CUSTOMER^^}\"" >> ${CONFIG}
 	
 	local BOARD_DIR="${CONFIGPATH}/${BOARDTYPE}"
+	local CUST_DIR="$CUSTCONF/$CUSTOMER-$BOARDTYPE"
 	if [ ! -d "${BOARD_DIR}" ]; then
 		echo "Could not find ${BOARDDIR}..."
 		exit 
@@ -100,15 +102,9 @@ create_and_copy_files()
 	
 	cat "${CONFIGPATH}/${BOARDTYPE}/config" >> ${CONFIG}
 	
-	if [ $OPEN -eq 0 ]; then
-		
-		# apply customer specific patch for the config
-		if [ ! -d "$CUSTCONF/$CUSTOMER/$BOARDTYPE" ]; then 
-			echo "Could not find $CUSTCONF/$CUSTOMER/$BOARDTYPE..."; 
-			exit
-		fi
-		
-		CONFIGPATCH="$CUSTCONF/$CUSTOMER/$BOARDTYPE/config.force"
+	# apply customer specific patch for the config
+	if [ -d "${CUST_DIR}" ]; then
+		CONFIGPATCH="${CUST_DIR}/config.force"
 		if [ -f "${CONFIGPATCH}" ]; then 
 			for line in `cat ${CONFIGPATCH}`; do
 				if [[ "$line" == "-"* ]]; then
@@ -120,6 +116,8 @@ create_and_copy_files()
 				fi
 			done
 		fi
+	else
+		echo "WARNING: could not find ${CUST_DIR}...";
 	fi
 	
 	echo "Updating .config dependencies..."
