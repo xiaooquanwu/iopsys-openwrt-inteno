@@ -26,13 +26,13 @@ define Package/endptcfg-open
   URL:=
 endef
 
-define Package/endptcfg/description
+define Package/endptcfg-open/description
         Broadcom endpoint driver configuration application pre compiled for open SDK
 endef
 
 
 
-define Package/natalie-dect-open/install
+define Package/endptcfg-open/install
 
 	ifeq ($(CONFIG_BCM_CHIP_ID),"63138")	
 	$(CP) $(PKG_BUILD_DIR)/endptcfg_arm $(1)/usr/bin/endptcfg
