@@ -3916,6 +3916,7 @@ CONFIG_PACKAGE_dectmngr=y
 # CONFIG_PACKAGE_dmesg is not set
 # CONFIG_PACKAGE_dropbearconvert is not set
 CONFIG_PACKAGE_endptcfg=y
+# CONFIG_PACKAGE_endptcfg-open is not set
 # CONFIG_PACKAGE_endptctl is not set
 # CONFIG_PACKAGE_fconfig is not set
 # CONFIG_PACKAGE_flock is not set
