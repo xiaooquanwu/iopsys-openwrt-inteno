@@ -84,7 +84,8 @@ start_service() {
 
 stop_service() {
 	echo "Stopping VDSL"
-	xtmctl stop
+# bug in broadcom stop casues IRQ issue
+#	xtmctl stop
 	remove_netdevices
 }
 
