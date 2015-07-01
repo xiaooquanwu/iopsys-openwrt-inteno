@@ -33,12 +33,13 @@ endef
 
 
 define Package/endptcfg-open/install
-
-	ifeq ($(CONFIG_BCM_CHIP_ID),"63138")	
-	$(CP) $(PKG_BUILD_DIR)/endptcfg_arm $(1)/usr/bin/endptcfg
-	else
-	$(CP) $(PKG_BUILD_DIR)/endptcfg_mips $(1)/usr/bin/endptcfg
-	endif	 	
+mkdir -p $(1)/usr/bin/
+ifeq ($(CONFIG_BCM_CHIP_ID),"63138")
+         $(CP)  $(PKG_BUILD_DIR)/endptcfg_arm $(1)/usr/bin/endptcfg	
+	
+else
+	$(CP)  $(PKG_BUILD_DIR)/endptcfg_mips $(1)/usr/bin/endptcfg
+endif	 	
 
 endef
 
