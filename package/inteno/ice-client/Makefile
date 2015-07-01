@@ -16,14 +16,14 @@ export PLATFORM_INCLUDE:=platforms/iopsys/build.mk
 export DATE:=$(shell date +%Y-%m-%d-%H-%M-%S)
 export LOGIN:=$(shell whoami)
 BASE_PKG_VERSION:=3.3.0
-PKG_RELEASE:=RC5
+PKG_RELEASE:=RC6
 PKG_VERSION:=$(BASE_PKG_VERSION)-$(PKG_RELEASE)_$(DATE)_$(LOGIN)
 export PKG_VERSION
 
 ###########################--RELEASE--################################
 
 PKG_SOURCE_URL:=ssh://git@iopsys.inteno.se/ice-client.git
-PKG_SOURCE_VERSION:=d4a113c4be77b9072d564c21a2f3614be50b9b41
+PKG_SOURCE_VERSION:=7f5d579c41685065647a2ad29d7da58383ea5d21
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(BASE_PKG_VERSION)
 PKG_SOURCE:=$(PKG_NAME)-$(BASE_PKG_VERSION)-$(PKG_RELEASE).tar.gz
 
@@ -117,6 +117,10 @@ define Package/ice-client/install
 	$(CP) $(PKG_BUILD_DIR)/modules/system/ubusevent/obj/iopsys/ubusevent $(1)/bin
 	$(INSTALL_DIR) $(1)/usr/lib
 	$(CP) $(PKG_BUILD_DIR)/core/lib/{systemService.so.1.0.1,libconfStore.so.1,networkService.so.1.0.1,packageService.so.1.0.1,monitorService.so.1.0.1,iperfService.so.1.0.1,logService.so.1.0.1} $(1)/usr/lib
+	$(INSTALL_DIR) $(1)/bin/ifs/iperf/execute
+	$(INSTALL_DIR) $(1)/bin/ifs/iperf/progress
+	$(INSTALL_DIR) $(1)/bin/ifs/iperf/result
+	$(CP) $(PKG_BUILD_DIR)/scripts/scheduleiperf.sh $(1)/bin/ifs/iperf/execute
 	$(INSTALL_DIR) $(1)/etc/config
 	$(CP) $(PKG_BUILD_DIR)/scripts/etc/config/ice $(1)/etc/config
 	$(INSTALL_DIR) $(1)/etc/cloudfriends
@@ -652,6 +656,10 @@ endef
 define Package/ice-client-iperf/install
 	$(INSTALL_DIR) $(1)/usr/lib
 	$(CP) $(PKG_BUILD_DIR)/core/lib/iperfService.so.1.0.1 $(1)/usr/lib
+	$(INSTALL_DIR) $(1)/bin/ifs/iperf/execute
+	$(INSTALL_DIR) $(1)/bin/ifs/iperf/progress
+	$(INSTALL_DIR) $(1)/bin/ifs/iperf/result
+	$(CP) $(PKG_BUILD_DIR)/scripts/scheduleiperf.sh $(1)/bin/ifs/iperf/execute
 endef
 
 define Package/ice-client-iperf/postinst
