@@ -8,13 +8,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=rpcd
-PKG_VERSION:=2015-05-17
+PKG_VERSION:=1.0.18
 PKG_RELEASE=$(PKG_SOURCE_VERSION)
 
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_URL:=https://github.com/mkschreder/openwrt-rpcd.git
+PKG_SOURCE_URL:=https://github.com/mkschreder/juci-rpcd.git
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)
-PKG_SOURCE_VERSION:=1606df5af09c641edf2d4626a2ecc54c3974072c
+PKG_SOURCE_VERSION:=master
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
 PKG_MAINTAINER:=Martin Schröder <mkschreder.uk@gmail.com>
 
