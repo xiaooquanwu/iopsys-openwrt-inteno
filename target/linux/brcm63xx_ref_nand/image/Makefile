@@ -102,8 +102,8 @@ define Image/Prepare
 	# add/set version info (.w.x.y)
 	#touch -c $(TOPDIR)/target/linux/brcm63xx_ref_nand/base-files/etc/banner
 	#cp $(TOPDIR)/target/linux/brcm63xx_ref_nand/base-files/etc/banner $(BUILD_DIR_ROOT)/etc/banner
-	#sed -i 's/^IOP Version.*/IOP Version: $(IHGSP_BUILD_VERSION)/gi' $(BUILD_DIR_ROOT)/etc/banner
-	#sed -i 's/^BrcmRef Base.*/BrcmRef Base: bcm963xx_4.16L.03/gi' $(BUILD_DIR_ROOT)/etc/banner
+	sed -i 's/^IOP Version.*/IOP Version: $(IHGSP_BUILD_VERSION)/gi' $(BUILD_DIR_ROOT)/etc/banner
+	sed -i 's/^BrcmRef Base.*/BrcmRef Base: bcm963xx_4.16L.03/gi' $(BUILD_DIR_ROOT)/etc/banner
 	#sed -i '7iIOP Version: $(IHGSP_BUILD_VERSION)' $(BUILD_DIR_ROOT)/etc/banner
 	mkdir -p $(BUILD_DIR_ROOT)/lib/db/version
 	echo $(IHGSP_BUILD_VERSION)  > $(BUILD_DIR_ROOT)/lib/db/version/iop_version
