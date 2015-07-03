@@ -49,4 +49,5 @@
 ./scripts/feeds install bluez-libs
 ./scripts/feeds install bluez-utils
 ./scripts/feeds install boost-system
+./scripts/feeds install collectd
 ./scripts/feeds install -a -p juci
