@@ -16,7 +16,7 @@ PKG_RELEASE:=1
 PKG_SOURCE_URL:=git@iopsys.inteno.se:bcmkernel-4.16L.03
 PKG_SOURCE_PROTO:=git
 
-PKG_SOURCE_VERSION:=c83b5c491f630e95eb902e6a4bdad00e51fcb0e7
+PKG_SOURCE_VERSION:=312ec840061452df5f91e3dba6c8395099abe317
 PKG_SOURCE:=$(PKG_NAME)-$(BRCM_SDK_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
 endif
 
@@ -244,6 +244,7 @@ define Package/bcmkernel/install
 	mkdir -p $(1)/lib/modules/$(BCM_KERNEL_VERSION)/extra
 
 	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/extra/*	$(1)/lib/modules/$(BCM_KERNEL_VERSION)/extra/
+	#cp -r $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/	$(1)/lib/modules/$(BCM_KERNEL_VERSION)/
 	find $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/lib/modules/$(BCM_KERNEL_VERSION)/kernel/ -name *.ko -exec cp {} $(1)/lib/modules/$(BCM_KERNEL_VERSION)/ \;
 
 	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/etc/wlan/*			$(1)/etc/wlan
