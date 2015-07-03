@@ -76,7 +76,7 @@ update_customer_configs()
 	else
 		(cd ${CUSTCONF}; git pull)
 		# delete empty folders in customer configs because they can appear as customer profiles that are invalid
-		for dir in `find package/zeta-customers -maxdepth 1 -type d`; do if [ `find $dir -type f | wc -l` == 0 ]; then echo "REMOVING empty folder: $dir"; rm -rf $dir; fi; done
+		for dir in `find package/zeta/customers -maxdepth 1 -type d`; do if [ `find $dir -type f | wc -l` == 0 ]; then echo "REMOVING empty folder: $dir"; rm -rf $dir; fi; done
 	fi
 }
 
