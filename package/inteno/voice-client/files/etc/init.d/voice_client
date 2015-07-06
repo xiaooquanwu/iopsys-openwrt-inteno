@@ -1959,6 +1959,10 @@ done
 #
 set_line_name()
 {
+	local curname
+	config_get curname $1 name
+	[ -n "$curname" ] && return
+
 	line_number=${1:4}
 	if [ "$line_number" -lt "$dectCount" ] ; then
 		uci_set voice_client $1 name "DECT $(( $line_number + 1 ))"
