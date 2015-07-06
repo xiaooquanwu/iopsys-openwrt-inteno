@@ -31,8 +31,11 @@ proto_4g_init_config() {
 proto_4g_setup() {
 	local config="$1"
 	local iface="$2"
-	local modem service comdev ipaddr hostname clientid vendorid broadcast reqopts apn username password pincode auto lte_apn_use lte_apn lte_username lte_password
-	json_get_vars modem service comdev ipaddr hostname clientid vendorid broadcast reqopts apn username password pincode auto data lte_apn_use lte_apn lte_username lte_password
+
+        json_get_var comdev comdev
+        json_get_var apn apn
+        json_get_var service service
+        json_get_var pincode pincode
 
 #	if [ -n "$modem" ]; then
 #		service=$(echo $modem | cut -d':' -f1)
