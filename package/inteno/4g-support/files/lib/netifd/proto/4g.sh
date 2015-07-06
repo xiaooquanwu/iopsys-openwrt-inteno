@@ -32,10 +32,31 @@ proto_4g_setup() {
 	local config="$1"
 	local iface="$2"
 
+        local ipaddr hostname clientid vendorid broadcast reqopts iface6rd sendopts delegate zone6rd zone
+        json_get_vars ipaddr hostname clientid vendorid broadcast reqopts iface6rd sendopts delegate zone6rd zone
+
+        local opt dhcpopts
+        for opt in $reqopts; do
+                append dhcpopts "-O $opt"
+        done
+
+        for opt in $sendopts; do
+                append dhcpopts "-x $opt"
+        done
+
+        [ "$broadcast" = 1 ] && broadcast="-B" || broadcast=
+        [ -n "$clientid" ] && clientid="-x 0x3d:${clientid//:/}" || clientid="-C"
+        [ -n "$iface6rd" ] && proto_export "IFACE6RD=$iface6rd"
+        [ "$iface6rd" != 0 -a -f /lib/netifd/proto/6rd.sh ] && append dhcpopts "-O 212"
+        [ -n "$zone6rd" ] && proto_export "ZONE6RD=$zone6rd"
+        [ -n "$zone" ] && proto_export "ZONE=$zone"
+        [ "$delegate" = "0" ] && proto_export "IFACE6RD_DELEGATE=0"
+
         json_get_var comdev comdev
         json_get_var apn apn
         json_get_var service service
         json_get_var pincode pincode
+
 
 #	if [ -n "$modem" ]; then
 #		service=$(echo $modem | cut -d':' -f1)
@@ -91,10 +112,9 @@ proto_4g_setup() {
 		-p /var/run/udhcpc-$iface.pid \
 		-s /lib/netifd/dhcp.script \
 		-f -t 0 -i "$iface" \
-		-x lease:60 \
-		${ipaddr:-r $ipaddr} \
-		${hostname:-H $hostname} \
-		${vendorid:-V $vendorid} \
+		${ipaddr:+-r $ipaddr} \
+		${hostname:+-H $hostname} \
+		${vendorid:+-V $vendorid} \
 		$clientid $broadcast $dhcpopts
 }
 
