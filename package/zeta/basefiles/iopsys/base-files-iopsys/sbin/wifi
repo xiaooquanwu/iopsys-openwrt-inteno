@@ -240,6 +240,7 @@ wif_encryption_settings() {
 	local qr_hidden=false
 	local qr_key="no"
 	local key=
+	local key_index=
 	local wsec=0
 	local wsec_r=0
 	local eap=0
@@ -266,6 +267,8 @@ wif_encryption_settings() {
 			wsec=1
 			nvset "$iface"_wep=enabled
 			config_get key "$vif" key
+			config_get key_index "$vif" key_index
+			[ -n "$key_index" ] && key=$key_index
 			case "$enc" in
 				*shared*) wlctl -i $iface auth 1; nvset "$iface"_auth=1;;
 			esac
