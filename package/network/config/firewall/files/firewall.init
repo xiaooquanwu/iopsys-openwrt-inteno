@@ -16,9 +16,7 @@ rematch_duidip6()
 			[ -n "$ip6" ] && uci set firewall."$1".dest_ip="$ip6"
 		fi
 	}
-	config_load firewall
 	config_foreach duid_to_ip6 rule
-	uci commit firewall
 }
 
 reindex_dmzhost()
@@ -34,7 +32,22 @@ reindex_dmzhost()
 	uci rename firewall.$cfgno=dmzhost
 	uci -q set firewall.dmzhost.path="$path"
 	uci -q set firewall.dmzhost.reload="1"
-	uci commit firewall
+}
+
+reconf_parental()
+{
+	local parental
+	reconf() {
+		config_get_bool parental "$1" parental
+		if [ "$parental" == "1" ]; then
+			uci set firewall."$1".src="*"
+			uci set firewall."$1".src_port=""
+			uci set firewall."$1".dest="*"
+			uci set firewall."$1".dest_port=""
+			uci set firewall."$1".proto="tcpudp"
+		fi
+	}
+	config_foreach reconf rule
 }
 
 validate_firewall_redirect()
@@ -93,5 +106,8 @@ boot() {
 	start
 }
 
+config_load firewall
 rematch_duidip6
+reconf_parental
 reindex_dmzhost
+uci commit firewall
