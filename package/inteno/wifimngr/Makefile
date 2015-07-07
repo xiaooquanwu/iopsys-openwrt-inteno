@@ -36,4 +36,9 @@ define Package/wifimngr/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/wifimngr $(1)/sbin/
 endef
 
+define Package/wifimngr/postinst
+	/etc/init.d/alljoyn restart
+	pidof alljoyn-daemon >/dev/null && wifimngr &
+endef
+
 $(eval $(call BuildPackage,wifimngr))
