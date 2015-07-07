@@ -1,0 +1,37 @@
+. /usr/share/libubox/jshn.sh
+
+local ifc6="wan6"
+local net6="$(uci -q get boardpanel.network.ipv6)"
+
+[ -n "$net6" ] && ifc6="$net6"
+
+[ ifupdate = "$ACTION" ] && {
+        case "$INTERFACE" in
+                "$ifc6")
+                        local up device nexthop metric valid
+                        json_load "$(ifstatus $ifc6)"
+                        json_get_var up up
+                        json_get_var device device
+                        if [ "$up" == "1" ]; then
+                                json_select route
+                                json_select 1
+                                json_get_var nexthop nexthop
+                                json_get_var metric metric
+                                #json_get_var valid valid
+                                json_select ..
+                                json_select ..
+                        fi
+                        json_close_object
+                        if ! ip -6 r | grep -q default; then
+                                if [ -n "$nexthop" -a -n "$device" ]; then
+                                        if [ -n "$metric" ]; then
+                                                ip -6 route add default via $nexthop dev $device metric $metric
+                                        else
+                                                ip -6 route add default via $nexthop dev $device
+                                        fi
+                                fi
+                        fi
+                ;;
+        esac
+}
+
