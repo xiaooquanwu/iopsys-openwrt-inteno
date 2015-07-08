@@ -521,6 +521,24 @@ wireless_sta(Client *clnt, Detail *dtl)
 	return there;
 }
 
+static bool
+wireless_sta6(Client6 *clnt, Detail *dtl)
+{
+	bool there = false;
+	int i = 0;
+
+	while(stas[i].exists) {
+		if (!strcasecmp(stas[i].macaddr, clnt->macaddr)) {
+			there = true;
+			strncpy(clnt->wdev, stas[i].wdev, sizeof(clnt->wdev));
+			dtl->snr = stas[i].snr;
+			break;
+		}
+		i++;
+	}
+	return there;
+}
+
 static int
 active_connections(char *ipaddr)
 {
@@ -664,11 +682,12 @@ ipv6_clients()
 			if (sscanf(line, "# %s %s %x %s %d %x %d %s", clients6[cno].device, clients6[cno].duid, &iaid, clients6[cno].hostname, &ts, &id, &length, clients6[cno].ip6addr)) {
 				clients6[cno].exists = true;
 				clear_macaddr();
-				if(!(clients6[cno].connected = ndisc (clients6[cno].hostname, clients6[cno].device, 0x8, 1, toms)))
+				if((clients6[cno].connected = ndisc (clients6[cno].hostname, clients6[cno].device, 0x8, 1, toms))) {
+					sprintf(clients6[cno].macaddr, get_macaddr());
+					if (wireless_sta6(&clients6[cno], &details6[cno]))
+						clients6[cno].wireless = true;
+				} else
 					recalc_sleep_time(true, toms);
-				sprintf(clients6[cno].macaddr, get_macaddr());
-				if(clients6[cno].connected && wireless_sta(&clients6[cno], &details6[cno]));
-					clients6[cno].wireless = true;
 
 				if (clients6[cno].connected)
 					conn++;
