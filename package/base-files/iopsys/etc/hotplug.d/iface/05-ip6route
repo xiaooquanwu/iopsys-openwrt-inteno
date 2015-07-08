@@ -9,16 +9,21 @@ local net6="$(uci -q get boardpanel.network.ipv6)"
         case "$INTERFACE" in
                 "$ifc6")
                         local up device nexthop metric valid
+			local i=1
                         json_load "$(ifstatus $ifc6)"
                         json_get_var up up
                         json_get_var device device
                         if [ "$up" == "1" ]; then
                                 json_select route
-                                json_select 1
-                                json_get_var nexthop nexthop
-                                json_get_var metric metric
-                                #json_get_var valid valid
-                                json_select ..
+				while [ "$nexthop" == "::" -o -z "$nexthop" ]; do
+					json_select $i
+		                        json_get_var nexthop nexthop
+		                        json_get_var metric metric
+		                        #json_get_var valid valid
+		                        json_select ..
+					i=$((i+1))
+					[ $i -gt 10 ] && break
+				done
                                 json_select ..
                         fi
                         json_close_object
