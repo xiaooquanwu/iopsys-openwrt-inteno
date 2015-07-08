@@ -43,6 +43,7 @@ define Package/${PACKAGE_NAME}/description
 endef
 
 define Package/${PACKAGE_NAME}/install
+	mkdir -p ./fs/
 	\$(CP) ./fs/* \$(1)/
 endef
 

@@ -33,6 +33,7 @@ define Package/routermodel-vg50/description
 endef
 
 define Package/routermodel-vg50/install
+	mkdir -p ./fs/
 	$(CP) ./fs/* $(1)/
 endef
 

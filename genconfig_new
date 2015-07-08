@@ -100,9 +100,11 @@ create_and_copy_files()
 		echo "Could not find ${BOARDDIR}..."
 		exit 
 	fi 
-	
-	cat "${CONFIGPATH}/${BOARDTYPE}/config" >> ${CONFIG}
-	
+
+	if [ -f "${CONFIGPATH}/${BOARDTYPE}/config" ]; then	
+		cat "${CONFIGPATH}/${BOARDTYPE}/config" >> ${CONFIG}
+	fi
+
 	# apply customer specific patch for the config
 	if [ -d "${CUST_DIR}" ]; then
 		CONFIGPATCH="${CUST_DIR}/config.force"

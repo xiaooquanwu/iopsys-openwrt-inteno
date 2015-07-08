@@ -33,6 +33,7 @@ define Package/routermodel-eg300/description
 endef
 
 define Package/routermodel-eg300/install
+	mkdir -p ./fs/
 	$(CP) ./fs/* $(1)/
 endef
 

@@ -33,6 +33,7 @@ define Package/routermodel-dg301/description
 endef
 
 define Package/routermodel-dg301/install
+	mkdir -p ./fs/
 	$(CP) ./fs/* $(1)/
 endef
 

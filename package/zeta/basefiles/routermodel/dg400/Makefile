@@ -33,6 +33,7 @@ define Package/routermodel-dg400/description
 endef
 
 define Package/routermodel-dg400/install
+	mkdir -p ./fs/
 	$(CP) ./fs/* $(1)/
 endef
 
