@@ -73,7 +73,7 @@ update_customer_configs()
 	if [ "${CUSTOMER}" == "open" ] ; then return; fi
 	if [ ! -d "$CUSTCONF" ]; then
 		git  clone  -b martin git@ihgsp.inteno.se:customerconfigs ${CUSTCONF}
-	else
+	elif [ "$IMPORT" == "1" ]; then
 		(cd ${CUSTCONF}; git pull origin martin)
 		# delete empty folders in customer configs because they can appear as customer profiles that are invalid
 		for dir in `find package/zeta/customers -maxdepth 1 -type d`; do if [ `find $dir -type f | wc -l` == 0 ]; then echo "REMOVING empty folder: $dir"; rm -rf $dir; fi; done

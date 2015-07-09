@@ -1,0 +1,14 @@
+#!/bin/sh
+
+if [ "$1" == "juci" ]; then 
+	sed -i 's/.*luci.*//gi' .config
+	sed -i 's/.*juci.*//gi' .config
+	echo "CONFIG_PACKAGE_iopsys-base-juci=y" >> .config
+	echo "CONFIG_PACKAGE_juci-theme-default=y" >> .config
+	scripts/feeds update juci
+	scripts/feeds install -a -p juci
+	make defconfig
+else
+	echo "Unknown webgui option!"; 
+	exit 1
+fi

@@ -44,7 +44,7 @@ endef
 
 define Package/${PACKAGE_NAME}/install
 	mkdir -p ./fs/
-	\$(CP) ./fs/* \$(1)/
+	-\$(CP) ./fs/* \$(1)/
 endef
 
 define Package/${PACKAGE_NAME}/postinst
