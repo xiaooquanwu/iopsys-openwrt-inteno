@@ -17,12 +17,21 @@ start_service() {
 	cat /proc/nvram/rfpi | tr -d ' ' | atohx > /tmp/rfpi
 	cat /proc/nvram/fixed_emc | tr -d ' ' | atohx > /tmp/fixed_emc
 	cat /proc/nvram/bcm_def_freq | tr -d ' ' | atohx > /tmp/bcm_def_freq
+	DECTANTDIV=`db get hw.board.DectAntennaDiversity`
+	if echo $DECTANTDIV | grep -qr "^[0-9]$"; then
+		echo "board.DectAntennaDiversity=$DECTANTDIV"
+	else
+		echo "board.DectAntennaDiversity not found, setting to 0 (both)"
+		DECTANTDIV=0
+	fi
+	echo -e "\x0$DECTANTDIV" > /tmp/dect_antenna_diversity
 
 	if [ ! -f /etc/dect/nvs ]; then
 		cp /etc/dect/nvs_default /etc/dect/nvs
 		dd of=/etc/dect/nvs if=/tmp/rfpi conv=notrunc bs=1 seek=0
 		dd of=/etc/dect/nvs if=/tmp/fixed_emc conv=notrunc bs=1 seek=10
 		dd of=/etc/dect/nvs if=/tmp/bcm_def_freq conv=notrunc bs=1 seek=6
+		dd of=/etc/dect/nvs if=/tmp/dect_antenna_diversity conv=notrunc bs=1 seek=34
 	fi
 	
 	# init dectproxy
