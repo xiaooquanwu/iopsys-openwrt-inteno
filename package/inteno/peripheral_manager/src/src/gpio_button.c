@@ -8,31 +8,31 @@
 
 void gpio_button_init(struct server_ctx *s_ctx);
 
-struct gpio_data {
+struct gpio_button_data {
 	int addr;
 	int active;
 	int state;
 	struct button_drv button;
 };
 
-static button_state_t gpio_get_state(struct button_drv *drv)
+static button_state_t gpio_button_get_state(struct button_drv *drv)
 {
 //	DBG(1, "state for %s",  drv->name);
-	struct gpio_data *p = (struct gpio_data *)drv->priv;
+	struct gpio_button_data *p = (struct gpio_button_data *)drv->priv;
 	int value;
 
 	value = board_ioctl( BOARD_IOCTL_GET_GPIO, 0, 0, NULL, p->addr, 0);
 
 	if(p->active)
-		p->state = value ? PRESSED : RELEASED;
+		p->state = !!value;
 	else
-		p->state = value ? RELEASED : PRESSED;
+		p->state = !value;
 
 	return p->state;
 }
 
 static struct button_drv_func func = {
-	.get_state = gpio_get_state,
+	.get_state = gpio_button_get_state,
 };
 
 void gpio_button_init(struct server_ctx *s_ctx) {
@@ -43,13 +43,13 @@ void gpio_button_init(struct server_ctx *s_ctx) {
 
 	ucix_get_option_list(s_ctx->uci_ctx, "hw" ,"gpio_buttons", "buttons", &buttons);
 	list_for_each_entry(node, &buttons, list) {
-		struct gpio_data *data;
+		struct gpio_button_data *data;
 		const char *s;
 
 		DBG(1, "value = [%s]",node->val);
 
-		data = malloc(sizeof(struct gpio_data));
-		memset(data,0,sizeof(struct gpio_data));
+		data = malloc(sizeof(struct gpio_button_data));
+		memset(data,0,sizeof(struct gpio_button_data));
 
 		data->button.name = node->val;
 
@@ -76,5 +76,5 @@ void gpio_button_init(struct server_ctx *s_ctx) {
 		button_add(&data->button);
 	}
 
-	gpio_open_ioctl();
+	gpio_init();
 }

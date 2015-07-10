@@ -18,6 +18,10 @@ config board 'board'
 	option wpsButtonGpio '22'
 	option fxsRelayGpio '8'
 	option hasBrcmAvs '0'
+	option gpio_shiftreg_clk 0
+	option gpio_shiftreg_dat 1
+	option gpio_shiftreg_mask 23
+	option gpio_shiftreg_bits 8
 
 config pci_slot 'pci'
         option 43a0 AC

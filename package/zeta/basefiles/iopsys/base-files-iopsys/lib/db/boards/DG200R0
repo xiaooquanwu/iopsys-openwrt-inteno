@@ -16,6 +16,11 @@ config board 'board'
 	option adslWanPort 'atm0'
 	option vdslWanPort 'ptm0'
 	option i2cGpioCustom 'bus0=0,23,22'
+	option sx9512_i2c_device '/dev/i2c-0'
+	option sx9512_i2c_address 2b
+	option sx9512_irq_pin 1
+	option sx9512_active_capsense_channels 0f
+	option sx9512_active_led_channels ff
 
 config pci_slot 'pci'
         option 43a0 AC

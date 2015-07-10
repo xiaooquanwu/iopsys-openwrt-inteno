@@ -21,13 +21,6 @@
 #include "touch_sx9512.h"
 #include "gpio.h"
 
-/* register names, from page 29, */
-#define SX9512_IRQSRC			0
-#define SX9512_TOUCHSTATUS		1
-#define SX9512_PROXSTATUS		2
-#define SX9512_LEDMAP1			0xC
-#define SX9512_LEDMAP2			0xD
-
 #define SX9512_IRQ_RESET		1<<7
 #define SX9512_IRQ_TOUCH		1<<6
 #define SX9512_IRQ_RELEASE		1<<5
@@ -36,21 +29,11 @@
 #define SX9512_IRQ_COM			1<<2
 #define SX9512_IRQ_CONV			1<<1
 
-/* CG300 config:
-
-   BL0: Proximity
-   BL1: Wireless button
-   BL2: WPS button, WPS LED
-   BL3: Dect button, Dect LED
-   BL4: Internet green LED
-   BL5: Internet red LED
-   BL6, BL7: Unused.
-*/
 
 struct i2c_reg_tab {
 	char addr;
 	char value;
-	char range;  
+	char range;  /* if set registers starting from addr to addr+range will be set to the same value */
 };
 
 struct i2c_touch{
@@ -60,9 +43,6 @@ struct i2c_touch{
 	int shadow_proximity;
 	int addr;
 	int irq_button;
-	const struct i2c_reg_tab *init_tab;
-	int init_tab_len;
-	const char *name;
 };
 
 struct led_data {
@@ -76,274 +56,12 @@ struct sx9512_list{
 	struct led_data *drv;
 };
 
-
 /* holds all leds that is configured to be used. needed for reset */
 static LIST_HEAD(sx9512_leds);
-
-static struct i2c_touch *i2c_touch_current;	/* pointer to current active table */
-
-//static void do_init_tab( struct i2c_touch *i2c_touch);
-//static struct i2c_touch * i2c_init(struct uci_context *uci_ctx, const char* i2c_dev_name, struct i2c_touch* i2c_touch_list, int len);
-
+static struct i2c_touch i2c_touch_current;	/* pointer to current active table */
 static int sx9512_led_set_state(struct led_drv *drv, led_state_t state);
 static led_state_t sx9512_led_get_state(struct led_drv *drv);
 static int sx9512_set_state(struct led_data *p, led_state_t state);
-
-
-/*addr,value,range*/
-static const struct i2c_reg_tab i2c_init_tab_cg300[]={
-    {0xFF, 0xDE, 0x00 },      /* Reset chip */
-    {0xFF, 0x00, 0x00 },      /* Reset chip */
-
-    {0x04, 0x00, 0x00 },      /* NVM Control */
-    {0x07, 0x00, 0x00 },      /* SPO2, set as interrupt  */
-    {0x08, 0x00, 0x00 },      /* Power key ctrl */
-    {0x09, 0x78, 0x00 },      /* Irq MASK */
-    {0x0C, 0x01, 0x00 },      /* LED map 1, BL0 (why?) */
-    {0x0D, 0x3c, 0x00 },      /* LED map 2 BL2 -> BL5*/
-    {0x0E, 0x10, 0x00 },      /* LED Pwm Frq */
-    {0x0F, 0x00, 0x00 },      /* LED Mode */
-    {0x10, 0xFF, 0x00 },      /* Led Idle LED on */
-    {0x11, 0x00, 0x00 },      /* Led 1 off delay */
-    {0x12, 0xFF, 0x00 },      /* Led 1 on */
-    {0x13, 0x00, 0x00 },      /* Led 1 fade */
-    {0x14, 0xFF, 0x00 },      /* Led 2 on   */
-    {0x15, 0x00, 0x00 },      /* Led 2 fade */
-    {0x16, 0xFF, 0x00 },      /* Led Pwr Idle */
-    {0x17, 0xFF, 0x00 },      /* Led Pwr On */
-    {0x18, 0x00, 0x00 },      /* Led Pwr Off */
-    {0x19, 0x00, 0x00 },      /* Led Pwr fade */
-    {0x1A, 0x00, 0x00 },      /* Led Pwr On Pw */
-    {0x1B, 0x00, 0x00 },      /* Disable BL7 as power button */
-    {0x1E, 0x0F, 0x00 },      /* Cap sens enabled, bl0-bl3 */
-    {0x1F, 0x43, 0x00 },      /* Cap sens BL0 */
-    {0x20, 0x41, 0x07 },      /* Cap sens range  20-27 BL1->BL7 */
-    {0x28, 0x02, 0x00 },      /* Cap sens thresh BL 0  */
-    {0x29, 0x04, 0x07 },      /* Cap sens thresh 28-30 */
-    {0x31, 0x54, 0x00 },      /* Cap sens Op */
-    {0x32, 0x70, 0x00 },      /* Cap Sens Mode, filter 1-1/8, report all */
-    {0x33, 0x01, 0x00 },      /* Cap Sens Debounce */
-    {0x34, 0x80, 0x00 },      /* Cap Sens Neg Comp Thresh */
-    {0x35, 0x80, 0x00 },      /* Cap Sens Pos Comp Thresh */
-    {0x36, 0x17, 0x00 },      /* Cap Sens Pos Filt, hyst 2, debounce 4, 1-1/128 */
-    {0x37, 0x15, 0x00 },      /* Cap Sens Neg Filt, hyst 2, debounce 4, 1-1/32 */
-    {0x38, 0x00, 0x00 },      /* Cap Sens */
-    {0x39, 0x00, 0x00 },      /* Cap Sens Frame Skip  */
-    {0x3A, 0x00, 0x00 },      /* Cap Sens Misc  */
-    {0x3B, 0x00, 0x00 },      /* Prox Comb Chan Mask */
-    {0x3E, 0xFF, 0x00 },      /* SPO Chan Map */
-    {0x00, 0x04, 0x00 },      /* Trigger compensation */
-};
-
-/* CG301 config:
-
-   BL0: Proximity, Status white LED
-   BL1: Service button, Service white LED
-   BL2: Service red LED
-   BL3: Pair button, Pair white LED
-   BL4: Cancel button, Cancel red LED
-   BL5: Communication button, Communication white LED
-   BL6: Communication red LED
-   BL7: Unused.
-*/
-
-static const struct i2c_reg_tab i2c_init_tab_cg301[]={
-    {0xFF, 0xDE, 0x00 },      /* Reset chip */
-    {0xFF, 0x00, 0x00 },      /* Reset chip */
-
-    {0x04, 0x00, 0x00 },      /* NVM Control */
-    {0x07, 0x00, 0x00 },      /* SPO2, set as interrupt  */
-    {0x08, 0x00, 0x00 },      /* Power key ctrl */
-    {0x09, 0x78, 0x00 },      /* Irq MASK, touch+release+near+far */
-    {0x0C, 0x00, 0x00 },      /* LED map 1, none */
-    {0x0D, 0x7f, 0x00 },      /* LED map 2, BL0 -> BL6 */
-    {0x0E, 0x10, 0x00 },      /* LED Pwm Frq */
-    {0x0F, 0x00, 0x00 },      /* LED Mode */
-    {0x10, 0xFF, 0x00 },      /* Led Idle LED on */
-    {0x11, 0x00, 0x00 },      /* Led 1 off delay */
-    {0x12, 0xFF, 0x00 },      /* Led 1 on */
-    {0x13, 0x00, 0x00 },      /* Led 1 fade */
-    {0x14, 0xFF, 0x00 },      /* Led 2 on   */
-    {0x15, 0x00, 0x00 },      /* Led 2 fade */
-    {0x16, 0xFF, 0x00 },      /* Led Pwr Idle */
-    {0x17, 0xFF, 0x00 },      /* Led Pwr On */
-    {0x18, 0x00, 0x00 },      /* Led Pwr Off */
-    {0x19, 0x00, 0x00 },      /* Led Pwr fade */
-    {0x1A, 0x00, 0x00 },      /* Led Pwr On Pw */
-    {0x1B, 0x00, 0x00 },      /* Disable BL7 as power button */
-    {0x1E, 0x3b, 0x00 },      /* Cap sens enabled, bl0,bl1,bl3-bl5 */
-    {0x1F, 0x43, 0x00 },      /* Cap sens range BL0 */
-    {0x20, 0x41, 0x07 },      /* Cap sens range BL1->BL7 [20-27] */
-    {0x28, 0x02, 0x00 },      /* Cap sens thresh BL0  */
-    {0x29, 0x04, 0x07 },      /* Cap sens thresh BL1->BL7 [29-30] */
-    {0x31, 0x54, 0x00 },      /* Cap sens Op */
-    {0x32, 0x70, 0x00 },      /* Cap Sens Mode, filter 1-1/8, report all */
-    {0x33, 0x01, 0x00 },      /* Cap Sens Debounce */
-    {0x34, 0x80, 0x00 },      /* Cap Sens Neg Comp Thresh */
-    {0x35, 0x80, 0x00 },      /* Cap Sens Pos Comp Thresh */
-    {0x36, 0x17, 0x00 },      /* Cap Sens Pos Filt, hyst 2, debounce 4, 1-1/128 */
-    {0x37, 0x15, 0x00 },      /* Cap Sens Neg Filt, hyst 2, debounce 4, 1-1/32 */
-    {0x38, 0x00, 0x00 },      /* Cap Sens */
-    {0x39, 0x00, 0x00 },      /* Cap Sens Frame Skip  */
-    {0x3A, 0x00, 0x00 },      /* Cap Sens Misc  */
-    {0x3B, 0x00, 0x00 },      /* Prox Comb Chan Mask */
-    {0x3E, 0xFF, 0x00 },      /* SPO Chan Map */
-    {0x00, 0x04, 0x00 },      /* Trigger compensation */
-};
-
-/* EG300 config:
-
-   BL0: Proximity, WAN green LED
-   BL1: Wireless button, WAN yellow LED
-   BL2: WPS button, WPS LED
-   BL3: Dect button, Dect LED
-   BL4: Internet green LED
-   BL5: Internet red LED
-   BL6: Ethernet LED
-   BL7: Voice LED
-
-   Only the led 1 and led2 maps differ from CG300.
-*/
-
-static const struct i2c_reg_tab i2c_init_tab_eg300[]={
-    {0xFF, 0xDE, 0x00 },      /* Reset chip */
-    {0xFF, 0x00, 0x00 },      /* Reset chip */
-
-    {0x04, 0x00, 0x00 },      /* NVM Control */
-    {0x07, 0x00, 0x00 },      /* SPO2, set as interrupt  */
-    {0x08, 0x00, 0x00 },      /* Power key ctrl */
-    {0x09, 0x78, 0x00 },      /* Irq MASK */
-    {0x0C, 0x00, 0x00 },      /* LED map 1, none */
-    {0x0D, 0xff, 0x00 },      /* LED map 2, all */
-    {0x0E, 0x10, 0x00 },      /* LED Pwm Frq */
-    {0x0F, 0x00, 0x00 },      /* LED Mode */
-    {0x10, 0xFF, 0x00 },      /* Led Idle LED on */
-    {0x11, 0x00, 0x00 },      /* Led 1 off delay */
-    {0x12, 0xFF, 0x00 },      /* Led 1 on */
-    {0x13, 0x00, 0x00 },      /* Led 1 fade */
-    {0x14, 0xFF, 0x00 },      /* Led 2 on   */
-    {0x15, 0x00, 0x00 },      /* Led 2 fade */
-    {0x16, 0xFF, 0x00 },      /* Led Pwr Idle */
-    {0x17, 0xFF, 0x00 },      /* Led Pwr On */
-    {0x18, 0x00, 0x00 },      /* Led Pwr Off */
-    {0x19, 0x00, 0x00 },      /* Led Pwr fade */
-    {0x1A, 0x00, 0x00 },      /* Led Pwr On Pw */
-    {0x1B, 0x00, 0x00 },      /* Disable BL7 as power button */
-    {0x1E, 0x0F, 0x00 },      /* Cap sens enabled, bl0-bl3 */
-    {0x1F, 0x43, 0x00 },      /* Cap sens BL0 */
-    {0x20, 0x43, 0x07 },      /* Cap sens range  20-27 BL1->BL7 */
-    {0x28, 0x02, 0x00 },      /* Cap sens thresh BL 0  */
-    {0x29, 0x04, 0x07 },      /* Cap sens thresh 28-30 */
-    {0x31, 0x54, 0x00 },      /* Cap sens Op */
-    {0x32, 0x70, 0x00 },      /* Cap Sens Mode, filter 1-1/8, report all */
-    {0x33, 0x01, 0x00 },      /* Cap Sens Debounce */
-    {0x34, 0x80, 0x00 },      /* Cap Sens Neg Comp Thresh */
-    {0x35, 0x80, 0x00 },      /* Cap Sens Pos Comp Thresh */
-    {0x36, 0x17, 0x00 },      /* Cap Sens Pos Filt, hyst 2, debounce 4, 1-1/128 */
-    {0x37, 0x15, 0x00 },      /* Cap Sens Neg Filt, hyst 2, debounce 4, 1-1/32 */
-    {0x38, 0x00, 0x00 },      /* Cap Sens */
-    {0x39, 0x00, 0x00 },      /* Cap Sens Frame Skip  */
-    {0x3A, 0x00, 0x00 },      /* Cap Sens Misc  */
-    {0x3B, 0x00, 0x00 },      /* Prox Comb Chan Mask */
-    {0x3E, 0xFF, 0x00 },      /* SPO Chan Map */
-    {0x00, 0x04, 0x00 },      /* Trigger compensation */
-};
-
-static struct i2c_touch i2c_touch_list[] = {
-	{.addr = 0x2b,
-	 .name = "CG300",
-	 .irq_button = 1,
-	 .init_tab = i2c_init_tab_cg300,
-	 .init_tab_len = sizeof(i2c_init_tab_cg300)/sizeof(struct i2c_reg_tab),
-	},
-
-	{.addr = 0x2b,
-	 .name = "CG301",
-	 .irq_button = 1,
-	 .init_tab = i2c_init_tab_cg301,
-	 .init_tab_len = sizeof(i2c_init_tab_cg301)/sizeof(struct i2c_reg_tab),
-	},
-
-	{.addr = 0x2b,
-	 .name = "DG200",
-	 .irq_button = 1,
-	 .init_tab = i2c_init_tab_eg300,
-	 .init_tab_len = sizeof(i2c_init_tab_eg300)/sizeof(struct i2c_reg_tab),
-	},
-
-	{.addr = 0x2b,
-	 .name = "EG300",
-	 .irq_button = 1,
-	 .init_tab = i2c_init_tab_eg300,
-	 .init_tab_len = sizeof(i2c_init_tab_eg300)/sizeof(struct i2c_reg_tab),
-	}
-};
-
-static void do_init_tab( struct i2c_touch *i2c_touch)
-{
-	const struct i2c_reg_tab *tab;
-	int i;
-
-	tab = i2c_touch->init_tab;
-
-	for (i = 0 ; i < i2c_touch->init_tab_len ; i++){
-		int y;
-		int ret;
-		for ( y = 0 ; y <= tab[i].range; y++ ){
-			DBG(3,"%s: addr %02X = %02X ",__func__,(unsigned char)tab[i].addr+y, (unsigned char)tab[i].value);
-			ret = i2c_smbus_write_byte_data(i2c_touch->dev, tab[i].addr+y, tab[i].value);
-			if (ret < 0){
-				perror("write to i2c dev\n");
-			}
-		}
-	}
-//  dump_i2c(i2c_touch->dev,0,13);
-}
-
-
-struct i2c_touch * i2c_init(struct uci_context *uci_ctx, const char* i2c_dev_name, struct i2c_touch* touch_list, int len)
-{
-	const char *p;
-	int i;
-	struct i2c_touch *i2c_touch;
-
-	p = ucix_get_option(uci_ctx, "hw", "board", "hardware");
-	if (p == 0){
-		syslog(LOG_INFO, "%s: Missing Hardware identifier in configuration. I2C is not started\n",__func__);
-		return 0;
-	}
-
-	
-	i2c_touch = NULL;
-	for (i = 0; i < len; i++) {
-		if (!strcmp(touch_list[i].name, p)) {
-			DBG(1,"I2C hardware platform %s found.\n", p);
-			i2c_touch = &touch_list[i];
-			break;
-		}
-	}
-
-	if (!i2c_touch) {
-		DBG(1,"No I2C hardware found: %s.\n", p);
-		return 0;
-	}
-
-	i2c_touch->dev = i2c_open_dev(i2c_dev_name, i2c_touch->addr,
-				      I2C_FUNC_SMBUS_READ_BYTE | I2C_FUNC_SMBUS_WRITE_BYTE);
-
-	if (i2c_touch->dev < 0) {
-		syslog(LOG_INFO,"%s: could not open i2c touch device\n",__func__);
-		i2c_touch->dev = 0;
-		return 0;
-	}
-
-	DBG(1,"Opened device and selected address %x \n", i2c_touch->addr);
-
-	do_init_tab(i2c_touch);
-
-	return i2c_touch;
-}
-
 extern struct uloop_timeout i2c_touch_reset_timer;
 
 
@@ -355,7 +73,8 @@ struct uloop_timeout i2c_touch_reset_timer = { .cb = sx9512_reset_handler };
 static void sx9512_reset_handler(struct uloop_timeout *timeout)
 {
 	struct list_head *i;
-	do_init_tab(i2c_touch_current);
+	//do_init_tab(i2c_touch_current);
+	sx9512_reset_restore_led_state(i2c_touch_current.dev);
 
 	list_for_each(i, &sx9512_leds) {
 		struct sx9512_list *node = list_entry(i, struct sx9512_list, list);
@@ -371,7 +90,7 @@ static int sx9512_set_state(struct led_data *p, led_state_t state)
 	int ret;
 	int bit = 1 << p->addr;
 
-	ret = i2c_smbus_read_byte_data(i2c_touch_current->dev, SX9512_LEDMAP2);
+	ret = i2c_smbus_read_byte_data(i2c_touch_current.dev, SX9512_REG_LED_MAP2);
 	if (ret < 0 )
 		syslog(LOG_ERR, "Could not read from i2c device, LedMap2 register\n");
 
@@ -386,7 +105,7 @@ static int sx9512_set_state(struct led_data *p, led_state_t state)
 
 	p->state = state;
 
-	ret = i2c_smbus_write_byte_data(i2c_touch_current->dev, SX9512_LEDMAP2, ret);
+	ret = i2c_smbus_write_byte_data(i2c_touch_current.dev, SX9512_REG_LED_MAP2, ret);
 	if (ret < 0 ) {
 		syslog(LOG_ERR, "Could not write to i2c device, LedMap2 register\n");
 		return -1;
@@ -399,7 +118,7 @@ static int sx9512_led_set_state(struct led_drv *drv, led_state_t state)
 {
 	struct led_data *p = (struct led_data *)drv->priv;
 
-	if (!i2c_touch_current || !i2c_touch_current->dev)
+	if (!i2c_touch_current.dev)
 		return -1;
 
 	if (p->addr > 7){
@@ -440,32 +159,32 @@ void sx9512_check(void)
 	int got_irq = 0;
 	int ret;
 
-	if (!i2c_touch_current || !i2c_touch_current->dev)
+	if (!i2c_touch_current.dev)
 		return;
 
-	if (i2c_touch_current->irq_button) {
+	if (i2c_touch_current.irq_button) {
 		int button;
-		button = board_ioctl( BOARD_IOCTL_GET_GPIO, 0, 0, NULL, i2c_touch_current->irq_button, 0);
+		button = board_ioctl( BOARD_IOCTL_GET_GPIO, 0, 0, NULL, i2c_touch_current.irq_button, 0);
 		if (button == 0)
 			got_irq = 1;
 	}
 	if ( got_irq ) {
 
-		ret = i2c_smbus_read_byte_data(i2c_touch_current->dev, SX9512_IRQSRC);
+		ret = i2c_smbus_read_byte_data(i2c_touch_current.dev, SX9512_REG_IRQ_SRC);
 		if (ret < 0 )
 			syslog(LOG_ERR, "Could not read from i2c device, irq status register\n");
-		i2c_touch_current->shadow_irq = ret;
+		i2c_touch_current.shadow_irq = ret;
 
-		ret = i2c_smbus_read_byte_data(i2c_touch_current->dev, SX9512_TOUCHSTATUS);
+		ret = i2c_smbus_read_byte_data(i2c_touch_current.dev, SX9512_REG_TOUCH_STATUS);
 		if (ret < 0 )
 			syslog(LOG_ERR, "Could not read from i2c device, touch register\n");
-		i2c_touch_current->shadow_touch = ret;
+		i2c_touch_current.shadow_touch = ret;
 
 
-		ret = i2c_smbus_read_byte_data(i2c_touch_current->dev, SX9512_PROXSTATUS);
+		ret = i2c_smbus_read_byte_data(i2c_touch_current.dev, SX9512_REG_PROX_STATUS);
 		if (ret < 0 )
 			syslog(LOG_ERR, "Could not read from i2c device, proximity register\n");
-		i2c_touch_current->shadow_proximity = ret;
+		i2c_touch_current.shadow_proximity = ret;
 	}
 #if 0
     DEBUG_PRINT("%02x %02x %02x: irq ->",
@@ -498,8 +217,8 @@ void sx9512_check(void)
   button address 8 proximity BL0 NEAR
   button address 9 proximity BL0 FAR
 
-  return RELEASED = no action on this button
-  return PRESSED = button pressed
+  return BUTTON_RELEASED = no action on this button
+  return BUTTON_PRESSED = button pressed
   return -1 = error
 */
 
@@ -508,49 +227,45 @@ static button_state_t sx9512_button_get_state(struct button_drv *drv)
 	struct button_data *p = (struct button_data *)drv->priv;
 	int bit = 1 << p->addr;
 
-	if (!i2c_touch_current || !i2c_touch_current->dev)
+	if (!i2c_touch_current.dev)
 		return -1;
 
 	if (p->addr < 8) {
-		if ( bit & i2c_touch_current->shadow_touch ) {
-			i2c_touch_current->shadow_touch = i2c_touch_current->shadow_touch & ~bit;
-			p->state = PRESSED;
-			return PRESSED;
+		if ( bit & i2c_touch_current.shadow_touch ) {
+			i2c_touch_current.shadow_touch = i2c_touch_current.shadow_touch & ~bit;
+			return p->state = BUTTON_PRESSED;
 		}
 
 		/* if the button was already pressed and we don't have a release irq report it as still pressed */
-		if( p->state == PRESSED){
-			if (! (i2c_touch_current->shadow_irq & SX9512_IRQ_RELEASE) ) {
-				return PRESSED;
+		if( p->state == BUTTON_PRESSED){
+			if (! (i2c_touch_current.shadow_irq & SX9512_IRQ_RELEASE) ) {
+				return BUTTON_PRESSED;
 			}
 		}
-		p->state = RELEASED;
-		return RELEASED;
+		return p->state = BUTTON_RELEASED;
 
 		/* proximity NEAR */
 	}else if (p->addr == 8 ) {
 		bit = 1<<7;
-		if( i2c_touch_current->shadow_irq & SX9512_IRQ_NEAR ) {
-			i2c_touch_current->shadow_irq &=  ~SX9512_IRQ_NEAR;
-			if ( bit & i2c_touch_current->shadow_proximity ) {
-				i2c_touch_current->shadow_proximity = i2c_touch_current->shadow_proximity & ~bit;
-				p->state = PRESSED;
-				return PRESSED;
+		if( i2c_touch_current.shadow_irq & SX9512_IRQ_NEAR ) {
+			i2c_touch_current.shadow_irq &=  ~SX9512_IRQ_NEAR;
+			if ( bit & i2c_touch_current.shadow_proximity ) {
+				i2c_touch_current.shadow_proximity = i2c_touch_current.shadow_proximity & ~bit;
+				return p->state = BUTTON_PRESSED;
 			}
 		}
-		return RELEASED;
+		return BUTTON_RELEASED;
 
 		/* proximity FAR */
 	}else if (p->addr == 9) {
-		if( i2c_touch_current->shadow_irq & SX9512_IRQ_FAR ) {
-			i2c_touch_current->shadow_irq &=  ~SX9512_IRQ_FAR;
-			p->state = PRESSED;
-			return PRESSED;
+		if( i2c_touch_current.shadow_irq & SX9512_IRQ_FAR ) {
+			i2c_touch_current.shadow_irq &=  ~SX9512_IRQ_FAR;
+			return p->state = BUTTON_PRESSED;
 		}
-		return RELEASED;
+		return BUTTON_RELEASED;
 	}else {
 		DBG(1,"Button address out of range %d\n",p->addr);
-		return RELEASED;
+		return BUTTON_RELEASED;
 	}
 }
 
@@ -631,30 +346,88 @@ static void sx9512_led_init(struct server_ctx *s_ctx) {
 	}
 }
 
-void sx9512_init(struct server_ctx *s_ctx) {
-
-	struct list_head *i;
-
-	DBG(1, "");
-
-	i2c_touch_current = i2c_init(s_ctx->uci_ctx,
-			     "/dev/i2c-0",
-			     i2c_touch_list,
-			     sizeof(i2c_touch_list)/sizeof(i2c_touch_list[0]));
-
-	if (i2c_touch_current != 0) {
-
-		sx9512_button_init(s_ctx);
-		sx9512_led_init(s_ctx);
-
-		/* Force set of initial state for leds. */
-		list_for_each(i, &sx9512_leds) {
-			struct sx9512_list *node = list_entry(i, struct sx9512_list, list);
-			sx9512_set_state(node->drv, node->drv->state);
-		}
-
-		/* start reset timer */
-		uloop_timeout_set(&i2c_touch_reset_timer, I2C_RESET_TIME);
+void sx9512_handler_init(struct server_ctx *s_ctx)
+{
+	char *s, *sx9512_i2c_device;
+	int i, fd, sx9512_i2c_address, sx9512_irq_pin, sx9512_active_capsense_channels, sx9512_active_led_channels;
+	struct sx9512_reg_nvm nvm;
+	struct list_head *il;
+	
+	if(!(sx9512_i2c_device = ucix_get_option(s_ctx->uci_ctx, "hw", "board", "sx9512_i2c_device"))) {
+		DBG(0, "Error: option is missing: sx9512_i2c_device");
+		return;
 	}
+	DBG(1, "sx9512_i2c_device = [%s]", sx9512_i2c_device);
+
+	if(!(s=ucix_get_option(s_ctx->uci_ctx, "hw", "board", "sx9512_i2c_address"))) {
+		DBG(0, "Warning: option is missing: sx9512_i2c_address, setting to default (%02X)", SX9512_I2C_ADDRESS);
+		sx9512_i2c_address = SX9512_I2C_ADDRESS;
+	} else
+		sx9512_i2c_address = strtol(s,0,16);
+	DBG(1, "sx9512_i2c_address = [%02X]", sx9512_i2c_address);
+
+	if(!(s=ucix_get_option(s_ctx->uci_ctx, "hw", "board", "sx9512_irq_pin"))) {
+		DBG(0, "Error: option is missing: sx9512_irq_pin");
+		return;
+	}
+	sx9512_irq_pin = strtol(s,0,0);
+	DBG(1, "sx9512_irq_pin = [%d]", sx9512_irq_pin);
+	
+	if(!(s=ucix_get_option(s_ctx->uci_ctx, "hw", "board", "sx9512_active_capsense_channels"))) {
+		DBG(0, "Error: option is missing: sx9512_active_capsense_channels");
+		return;
+	}
+	sx9512_active_capsense_channels = strtol(s,0,16);
+	DBG(1, "sx9512_active_capsense_channels = [%02X]", sx9512_active_capsense_channels);
+	
+	if(!(s=ucix_get_option(s_ctx->uci_ctx, "hw", "board", "sx9512_active_led_channels"))) {
+		DBG(0, "Error: option is missing: sx9512_active_led_channels");
+		return;
+	}
+	sx9512_active_led_channels = strtol(s,0,16);
+	DBG(1, "sx9512_active_led_channels = [%02X]", sx9512_active_led_channels);
+
+	sx9512_reg_nvm_init_defaults(&nvm, sx9512_active_capsense_channels, sx9512_active_led_channels);
+	
+	LIST_HEAD(sx9512_init_regs);
+	struct ucilist *node;
+	ucix_get_option_list(s_ctx->uci_ctx, "hw","sx9512_init_regs", "regs", &sx9512_init_regs);
+	list_for_each_entry(node,&sx9512_init_regs,list) {
+		sx9512_reg_t reg;
+		uint8_t val;
+		int repeat;
+		reg = strtol(node->val,0,16);
+		if(sx9512_reg_reserved(reg)) {
+			DBG(0, "Error: invalid sx9512 reg [%02X]", reg);
+			return;
+		}
+		s = ucix_get_option(s_ctx->uci_ctx, "hw", node->val, "val");
+		val = strtol(s,0,16);
+		if(!(s = ucix_get_option(s_ctx->uci_ctx, "hw", node->val, "repeat")))
+			repeat=1;
+		else
+			repeat=strtol(s,0,0);
+		for(i=0;i<repeat;i++) {
+			DBG(1, "sx9512_init_reg[%02X:%s=%02X]", reg, sx9512_reg_name(reg), val);
+			((uint8_t *)&nvm)[reg-SX9512_REG_NVM_AREA_START] = val;
+			reg++;
+		}
+	}
+
+	if((fd = sx9512_init(sx9512_i2c_device, sx9512_i2c_address, &nvm))<1)
+		return;
+	i2c_touch_current.dev=fd;
+	i2c_touch_current.addr=sx9512_i2c_address;
+	i2c_touch_current.irq_button=sx9512_irq_pin;
+
+	sx9512_button_init(s_ctx);
+	sx9512_led_init(s_ctx);
+	/* Force set of initial state for leds. */
+	list_for_each(il, &sx9512_leds) {
+		struct sx9512_list *node = list_entry(il, struct sx9512_list, list);
+		sx9512_set_state(node->drv, node->drv->state);
+	}
+	/* start reset timer */
+	uloop_timeout_set(&i2c_touch_reset_timer, I2C_RESET_TIME);
 }
 

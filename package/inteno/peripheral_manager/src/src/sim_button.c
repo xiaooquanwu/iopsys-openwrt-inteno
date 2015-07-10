@@ -75,10 +75,10 @@ static int sim_set_method(struct ubus_context *ubus_ctx, struct ubus_object *obj
 				struct sim_data *p = (struct sim_data *)bt->priv;
 
 				if(!strcasecmp("pressed", (char *)blobmsg_data(tb[SIM_STATE]))){
-					p->state = PRESSED;
+					p->state = BUTTON_PRESSED;
 				}
 				if(!strcasecmp("released", (char *)blobmsg_data(tb[SIM_STATE]))){
-					p->state = RELEASED;
+					p->state = BUTTON_RELEASED;
 				}
 			}else
 			DBG(1," button = %s not found",(char *)blobmsg_data(tb[SIM_NAME]));
@@ -104,7 +104,7 @@ static int sim_status_method(struct ubus_context *ubus_ctx, struct ubus_object *
 		const char *state;
 		struct sim_data *p = (struct sim_data *)node->drv->priv;
 
-		if(p->state == 	RELEASED)
+		if(p->state == 	BUTTON_RELEASED)
 			state = "Released";
 		else
 			state = "Pressed";

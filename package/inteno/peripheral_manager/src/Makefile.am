@@ -29,7 +29,7 @@ peripheral_manager_SOURCES = \
 
 if BRCM_BOARD
 
-bin_PROGRAMS += vox_test
+bin_PROGRAMS += vox_test gpio_test
 
 peripheral_manager_SOURCES += \
 	src/gpio_led.c \
@@ -38,8 +38,12 @@ peripheral_manager_SOURCES += \
 	src/gpio_button.h \
 	src/gpio.c \
 	src/gpio.h \
+	src/gpio_shift_register.c \
+	src/gpio_shift_register.h \
 	src/touch_sx9512.c \
 	src/touch_sx9512.h \
+	src/sx9512.c \
+	src/sx9512.h \
 	src/vox.h \
 	src/vox.c \
 	src/prox_px3220.c
@@ -48,6 +52,20 @@ vox_test_SOURCES = \
 	src/vox_test.c \
 	src/gpio.c \
 	src/gpio.h
+
+gpio_test_SOURCES = \
+	src/gpio_test.c \
+	src/gpio.c \
+	src/gpio.h \
+	src/gpio_shift_register.c \
+	src/gpio_shift_register.h \
+	src/smbus.c \
+	src/smbus.h \
+	src/i2c.c \
+	src/i2c.h \
+	src/sx9512.c \
+	src/sx9512.h
+
 endif
 
 peripheral_manager_LDADD = $(UCI_LIB) $(UBOX_LIB) $(UBUS_LIB) -lm
