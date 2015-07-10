@@ -15,6 +15,7 @@ config board 'board'
 	option ethernetWanPort 'eth4'
 	option adslWanPort 'atm0'
 	option vdslWanPort 'ptm0'
+	option i2cGpioCustom 'bus0=0,23,22'
 
 config pci_slot 'pci'
         option 43a0 AC
@@ -163,6 +164,8 @@ config gpio_led gpio_leds
         list leds Wireless_green
         list leds Wireless_blue
         list leds EXT_green
+        list leds wan_phy_green
+        list leds wan_phy_yellow
 
 config gpio_led Status_green
        option addr	39
@@ -185,20 +188,33 @@ config gpio_led Wireless_blue
        option mode	direct
 
 config gpio_led EXT_green
-       option addr	10
+       option addr	33
+       option active	low
+       option mode	direct
+
+config gpio_led wan_phy_green
+       option addr	9
+       option active	low
+       option mode	direct
+
+config gpio_led wan_phy_yellow
+       option addr	8
        option active	low
        option mode	direct
 
 ############### mapping led function to driver led
 config led_map led_map
-       list press_indicator led_wifi
-       list press_indicator led_wps
-       list press_indicator led_lan
-       list press_indicator led_wan       
-       list press_indicator led_internet
-       list press_indicator led_voice1
-       list press_indicator led_dect
-       list press_indicator led_ext
+       list functions wifi
+       list functions wps
+       list functions lan
+       list functions status
+       list functions wan
+       list functions wan_phy_link
+       list functions wan_phy_speed
+       list functions internet
+       list functions voice1
+#       list functions dect
+       list functions ext
 
 config led_map led_wifi
        list led_action_ok     'Wireless_green = ON'
@@ -257,6 +273,14 @@ config led_map led_wan
        list led_action_error	'WAN_green  = OFF'
        list led_action_error	'WAN_yellow = ON'
 
+config led_map led_wan_phy_link
+       list led_action_off      'wan_phy_green = OFF'
+       list led_action_ok       'wan_phy_green = ON'
+
+config led_map led_wan_phy_speed
+       list led_action_off      'wan_phy_yellow = OFF'
+       list led_action_ok       'wan_phy_yellow = ON'
+
 config led_map led_internet
        list led_action_ok	'Internet_green = ON'
        list led_action_ok     	'Internet_red   = OFF'
@@ -276,17 +300,19 @@ config led_map led_voice1
        list led_action_alert	Voice_green=FLASH_SLOW	
        list led_action_error	Voice_green=FLASH_FAST   
 
+# On DG200, there is no DECT, the DECT LED is used for EXT indication
+# and the EXT LED is normally not used (no symbol on panel).
 config led_map led_ext
-       list led_action_ok	EXT_green=ON
-       list led_action_off	EXT_green=OFF
-       list led_action_notice	EXT_green=FLASH_SLOW
-       list led_action_alert	EXT_green=FLASH_SLOW
-       list led_action_error	EXT_green=FLASH_FAST
-
-config led_map led_dect
        list led_action_ok	DECT_green=ON
        list led_action_off	DECT_green=OFF
        list led_action_notice	DECT_green=FLASH_SLOW
        list led_action_alert	DECT_green=FLASH_SLOW
        list led_action_error	DECT_green=FLASH_FAST
+
+#config led_map led_dect
+#       list led_action_ok	DECT_green=ON
+#       list led_action_off	DECT_green=OFF
+#       list led_action_notice	DECT_green=FLASH_SLOW
+#       list led_action_alert	DECT_green=FLASH_SLOW
+#       list led_action_error	DECT_green=FLASH_FAST
 

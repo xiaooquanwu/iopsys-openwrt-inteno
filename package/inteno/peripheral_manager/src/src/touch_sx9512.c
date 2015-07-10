@@ -265,6 +265,13 @@ static struct i2c_touch i2c_touch_list[] = {
 	},
 
 	{.addr = 0x2b,
+	 .name = "DG200",
+	 .irq_button = 1,
+	 .init_tab = i2c_init_tab_eg300,
+	 .init_tab_len = sizeof(i2c_init_tab_eg300)/sizeof(struct i2c_reg_tab),
+	},
+
+	{.addr = 0x2b,
 	 .name = "EG300",
 	 .irq_button = 1,
 	 .init_tab = i2c_init_tab_eg300,
