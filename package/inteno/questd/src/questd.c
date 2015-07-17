@@ -800,6 +800,61 @@ router_dump_keys(struct blob_buf *b, bool table)
 	if (table) blobmsg_close_table(b, t);
 }
 
+static int uci_get_value(const char *config_path, const char *varname, char *output, size_t out_size){
+	FILE *fp; 
+	char cmd[256], buffer[256]; 
+	char *ptr = output; 
+	snprintf(cmd, sizeof(cmd), "uci -c %s get %s", config_path, varname); 
+	
+	if(!(fp = popen(cmd, "r"))) return 0;  
+	
+	int len; 
+	memset(buffer, 0, sizeof(buffer)); 
+	
+	while(len = fgets(buffer, sizeof(buffer), fp)){
+		if(len > 0) {
+			remove_newline(buffer); 
+			strcpy(ptr, buffer); 
+			ptr += len; 
+		}
+		if(len >= (out_size - (ptr - output))) break; 
+	} 
+	
+	pclose(fp); 
+	
+	return len; 
+}
+
+static void router_dump_boardinfo(struct blob_buf *b){
+	void *t, *l, *p;
+	static char ports[256], port_order[256], lan_ports[256], wan_ports[256]; 
+	
+	t = blobmsg_open_table(b, "ethernet");
+	//p = blobmsg_open_array(b, "ports"); 
+	uci_get_value("/lib/db/config", "hw.board.ethernetPortNames", ports, sizeof(ports)); 
+	uci_get_value("/lib/db/config", "hw.board.ethernetPortOrder", port_order, sizeof(port_order)); 
+	uci_get_value("/lib/db/config", "hw.board.ethernetLanPorts", lan_ports, sizeof(lan_ports)); 
+	uci_get_value("/lib/db/config", "hw.board.ethernetWanPort", wan_ports, sizeof(wan_ports)); 
+	blobmsg_add_string(b, "port_names", ports);
+	blobmsg_add_string(b, "port_order", port_order);
+	blobmsg_add_string(b, "lan_ports", lan_ports);
+	blobmsg_add_string(b, "wan_port", wan_ports);
+	//blobmsg_close_array(b, p);
+	blobmsg_close_table(b, t);
+}
+
+static int
+quest_board_info(struct ubus_context *ctx, struct ubus_object *obj,
+		  struct ubus_request_data *req, const char *method,
+		  struct blob_attr *msg)
+{
+	blob_buf_init(&bb, 0);
+	router_dump_boardinfo(&bb);
+	ubus_send_reply(ctx, req, bb.head);
+
+	return 0;
+}
+
 static void
 router_dump_system_info(struct blob_buf *b, bool table)
 {
@@ -1679,6 +1734,7 @@ quest_reload(struct ubus_context *ctx, struct ubus_object *obj,
 
 static struct ubus_method router_object_methods[] = {
 	UBUS_METHOD_NOARG("info", quest_router_info),
+	UBUS_METHOD_NOARG("boardinfo", quest_board_info), 
 	UBUS_METHOD("quest", quest_router_specific, quest_policy),
 	UBUS_METHOD_NOARG("networks", quest_router_networks),
 	UBUS_METHOD_NOARG("dslstats", dslstats_rpc), 
