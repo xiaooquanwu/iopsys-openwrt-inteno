@@ -16,6 +16,7 @@ export OPEN=0
 export CONFIGPATH="package/zeta/basefiles/routermodel"
 export CUSTCONF="package/zeta/customers"
 export VERBOSE=0
+LOCAL_MIRROR="http://10.10.1.31/mirror"
 
 set -e 
 
@@ -60,6 +61,17 @@ while [ -n "$1" ]; do
 	esac
 	shift;
 done
+
+use_local_mirror()
+{
+    if wget $LOCAL_MIRROR >/dev/null 2>/dev/null
+    then
+	echo "mirror [$LOCAL_MIRROR] exists. Using local mirror"
+	sed -i "s;CONFIG_LOCALMIRROR=.*;CONFIG_LOCALMIRROR=$LOCAL_MIRROR;" ${CONFIG}
+    else
+	echo "mirror [$LOCAL_MIRROR] don't exists. Not using local mirror"
+    fi
+}
 
 # must do this here after we have parsed all the arguments
 export BOARDTYPE="$1"
@@ -146,6 +158,7 @@ else
 	fi
 	(cd ${CONFIGPATH}; bash ./update-makefiles.sh)
 	create_and_copy_files "$1" "$2"
+	use_local_mirror
 fi
 
 

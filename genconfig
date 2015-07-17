@@ -7,6 +7,8 @@ export CONFIGPATH="configs"
 export CUSTCONF="customerconfigs"
 export VERBOSE=0
 export TMPDIR="/tmp/builder/"
+LOCAL_MIRROR="http://10.10.1.31/mirror"
+
 v() {
 	[ "$VERBOSE" -ge 1 ] && echo "$@"
 }
@@ -30,6 +32,17 @@ usage() {
         echo "(if no customerconfig is chosen the Inteno Config will be used)"
 	echo 	
         exit 127
+}
+
+use_local_mirror()
+{
+    if wget $LOCAL_MIRROR >/dev/null 2>/dev/null
+    then
+	echo "mirror [$LOCAL_MIRROR] exists. Using local mirror"
+	sed -i "s;CONFIG_LOCALMIRROR=.*;CONFIG_LOCALMIRROR=$LOCAL_MIRROR;" .config
+    else
+	echo "mirror [$LOCAL_MIRROR] don't exists. Not using local mirror"
+    fi
 }
 
 generate_config()
@@ -95,7 +108,6 @@ create_and_copy_files()
     fi
 }
 
-
 ####### main #####
 if [ $# -eq 0 ]; then
     echo Current profile:
@@ -124,4 +136,5 @@ else
     [ -d $TMPDIR ] || mkdir $TMPDIR
     create_and_copy_files "$1" "$2"
     [ -d $TMPDIR ] && rm -rf $TMPDIR
+    use_local_mirror
 fi
