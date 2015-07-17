@@ -31,96 +31,97 @@ usage() {
 	echo 	
         exit 127
 }
+
 generate_config()
 {
-DIFFFILE="$1"
-MASTERFILE="$2"
-while read p; do
-  v  "$p"
-  sed -r -i  "$p" $MASTERFILE
-done < $DIFFFILE
+    DIFFFILE="$1"
+    MASTERFILE="$2"
+    while read p; do
+	v  "$p"
+	sed -r -i  "$p" $MASTERFILE
+    done < $DIFFFILE
 }
 
 create_and_copy_files()
 {
-local BOARDTYPE=$1
-local CUSTOMER=$2
-v "cp  $CONFIGPATH/MASTER/config .config"
-cp  $CONFIGPATH/MASTER/config .config
-if [ $OPEN -eq 0 ]; then
- if [ ! -d "$CUSTCONF" ]; then
-   git  clone  git@ihgsp.inteno.se:customerconfigs
- elif [ $IMPORT -eq 1 ]; then
-  cd customerconfigs
-  v "git pull"
-  git pull
-  cd ..
- fi
-fi
+    local BOARDTYPE=$1
+    local CUSTOMER=$2
+    v "cp  $CONFIGPATH/MASTER/config .config"
+    cp  $CONFIGPATH/MASTER/config .config
+    if [ $OPEN -eq 0 ]; then
+	if [ ! -d "$CUSTCONF" ]; then
+	    git  clone  git@ihgsp.inteno.se:customerconfigs
+	elif [ $IMPORT -eq 1 ]; then
+	    cd customerconfigs
+	    v "git pull"
+	    git pull
+	    cd ..
+	fi
+    fi
 
-if [ ! -d "$CONFIGPATH/$BOARDTYPE" ]; then
-  echo "Hardware profile does not exist"
-  exit 0
-elif  [ ! -d "$CUSTCONF/$BOARDTYPE/$CUSTOMER/" -a $OPEN -eq 0 ]; then
-  echo "Customer profile does not exist"
-  exit 0
-fi
-v  "Config $BOARDTYPE selected"
-if [ ! -d "$FILEDIR" ]; then
-  mkdir $FILEDIR
-elif  [ -d "$FILEDIR" -a $CLEAN -eq 1 ]; then
-  v "rm -rf $FILEDIR*"	
-  rm -rf $FILEDIR*
-fi
- # first build config based on boardid
-  v "cp -r $CONFIGPATH/$BOARDTYPE/fs/* $FILEDIR"
-  cp -rL $CONFIGPATH/$BOARDTYPE/fs/* $FILEDIR 2>/dev/null
-  v "cp -r $CONFIGPATH/$BOARDTYPE/* $FILEDIR"
-  [ -e "$CONFIGPATH/$BOARDTYPE/$BOARDTYPE.diff" ] && generate_config $CONFIGPATH/$BOARDTYPE/$BOARDTYPE.diff .config
-  echo $BOARDTYPE > .current_config_file
+    if [ ! -d "$CONFIGPATH/$BOARDTYPE" ]; then
+	echo "Hardware profile does not exist"
+	exit 0
+    elif  [ ! -d "$CUSTCONF/$BOARDTYPE/$CUSTOMER/" -a $OPEN -eq 0 ]; then
+	echo "Customer profile does not exist"
+	exit 0
+    fi
+    v  "Config $BOARDTYPE selected"
+    if [ ! -d "$FILEDIR" ]; then
+	mkdir $FILEDIR
+    elif  [ -d "$FILEDIR" -a $CLEAN -eq 1 ]; then
+	v "rm -rf $FILEDIR*"	
+	rm -rf $FILEDIR*
+    fi
+    # first build config based on boardid
+    v "cp -r $CONFIGPATH/$BOARDTYPE/fs/* $FILEDIR"
+    cp -rL $CONFIGPATH/$BOARDTYPE/fs/* $FILEDIR 2>/dev/null
+    v "cp -r $CONFIGPATH/$BOARDTYPE/* $FILEDIR"
+    [ -e "$CONFIGPATH/$BOARDTYPE/$BOARDTYPE.diff" ] && generate_config $CONFIGPATH/$BOARDTYPE/$BOARDTYPE.diff .config
+    echo $BOARDTYPE > .current_config_file
 
-# second add diff for customer config if if customer code
-if [ -n "$CUSTOMER" ]; then
-  v "cp -r $CUSTCONF/$BOARDTYPE/$CUSTOMER/fs/* $FILEDIR"
-  cp -rL $CUSTCONF/$BOARDTYPE/$CUSTOMER/fs/* $FILEDIR
-  echo "$BOARDTYPE $CUSTOMER" > .current_config_file  
-  [ -e "$CUSTCONF/$BOARDTYPE/$CUSTOMER/$BOARDTYPE.diff" ] && generate_config $CUSTCONF/$BOARDTYPE/$CUSTOMER/$BOARDTYPE.diff .config
-fi
+    # second add diff for customer config if if customer code
+    if [ -n "$CUSTOMER" ]; then
+	v "cp -r $CUSTCONF/$BOARDTYPE/$CUSTOMER/fs/* $FILEDIR"
+	cp -rL $CUSTCONF/$BOARDTYPE/$CUSTOMER/fs/* $FILEDIR
+	echo "$BOARDTYPE $CUSTOMER" > .current_config_file  
+	[ -e "$CUSTCONF/$BOARDTYPE/$CUSTOMER/$BOARDTYPE.diff" ] && generate_config $CUSTCONF/$BOARDTYPE/$CUSTOMER/$BOARDTYPE.diff .config
+    fi
 
 
-##### if open change to open kernel and remove building of nand tool
-if [ $OPEN -eq 1 ]; then
-  [ -e "$CONFIGPATH/OPEN/open.diff" ] && generate_config $CONFIGPATH/OPEN/open.diff .config
-fi
+    ##### if open change to open kernel and remove building of nand tool
+    if [ $OPEN -eq 1 ]; then
+	[ -e "$CONFIGPATH/OPEN/open.diff" ] && generate_config $CONFIGPATH/OPEN/open.diff .config
+    fi
 }
 
 
 ####### main #####
 if [ $# -eq 0 ]; then
-  echo Current profile:
-  cat .current_config_file
-  echo "Try ./iop_get_config.sh -h' to get instructions if you want to change current config"
-  exit 0
+    echo Current profile:
+    cat .current_config_file
+    echo "Try ./iop_get_config.sh -h' to get instructions if you want to change current config"
+    exit 0
 else
- 
-while [ -n "$1" ]; do 
+    
+    while [ -n "$1" ]; do 
 	case "$1" in
 
-		-c) export CLEAN=1;;
-		-u) export IMPORT=1;;
-		-o) export OPEN=1;;
-		-v) export VERBOSE="$(($VERBOSE + 1))";;
-		-h) usage;;
-		-*)
-			echo "Invalid option: $1 "
-			echo "Try  -h' for more information."
-		  exit 1
+	    -c) export CLEAN=1;;
+	    -u) export IMPORT=1;;
+	    -o) export OPEN=1;;
+	    -v) export VERBOSE="$(($VERBOSE + 1))";;
+	    -h) usage;;
+	    -*)
+		echo "Invalid option: $1 "
+		echo "Try  -h' for more information."
+		exit 1
 		;;
-		*) break;;
+	    *) break;;
 	esac
 	shift;
-done
-  [ -d $TMPDIR ] || mkdir $TMPDIR
-  create_and_copy_files "$1" "$2"
-  [ -d $TMPDIR ] && rm -rf $TMPDIR
+    done
+    [ -d $TMPDIR ] || mkdir $TMPDIR
+    create_and_copy_files "$1" "$2"
+    [ -d $TMPDIR ] && rm -rf $TMPDIR
 fi
