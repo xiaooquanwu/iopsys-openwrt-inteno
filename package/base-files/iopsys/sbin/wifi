@@ -1369,6 +1369,23 @@ wifi_onoff() {
 	[ "$status" == "1" ] && wifi_updown "enable"
 }
 
+wifi_toggle() {
+	local wlstatus="$(uci -q get wireless.status.wlan)"
+	if [ "$wlstatus" == "0" ]; then
+		echo "Enabling WIFI adapters"
+		uci -q set wireless.status.wlan="1"
+		uci commit wireless
+		ubus call network reload
+		wifi_updown "enable" "$2"
+	else
+		echo "Disabling WIFI adapters"
+		uci -q set wireless.status.wlan="0"
+		uci commit wireless
+		ubus call network reload
+		wifi_updown "disable" "$2"
+	fi
+}
+
 wifi_toggle_iface() {
 	[ -z "$2" ] && return
 	local wif="$2"
@@ -1495,6 +1512,7 @@ fi
 case "$1" in
 	disable|enable) wifi_toggle_iface "$1" "$2" ;;
 	down) wifi_updown "disable" "$2" ;;
+	toggle) wifi_toggle "$2" ;;
 	reload) check_md5sum; wifi_reload "$2" ;;
 	reload_legacy) wifi_reload_legacy "$2" ;;
 	*) ubus call network reload; wifi_updown "enable" "$2";;
