@@ -53,6 +53,7 @@ define Package/sqlite3-cli/description
 	that can evaluate queries interactively and display the results in \\\
 	multiple formats.
 endef
+TARGET_CFLAGS += -DSQLITE_ENABLE_MEMORY_MANAGEMENT
 
 define Build/Configure
 	$(call Build/Configure/Default, \
