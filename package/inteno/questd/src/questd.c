@@ -93,7 +93,7 @@ static const struct blobmsg_policy host_policy[__HOST_MAX] = {
 	[IP_ADDR] = { .name = "ipaddr", .type = BLOBMSG_TYPE_STRING },
 	[MAC_ADDR] = { .name = "macaddr", .type = BLOBMSG_TYPE_STRING },
 };
-
+/*
 enum {
 	PIN,
 	__PIN_MAX,
@@ -102,7 +102,7 @@ enum {
 
 static const struct blobmsg_policy pin_policy[__PIN_MAX] = {
 	[PIN] = { .name = "pin", .type = BLOBMSG_TYPE_STRING },
-};
+};*/
 /* END POLICIES */
 
 pthread_t tid[1];
@@ -1737,7 +1737,7 @@ static struct ubus_method router_object_methods[] = {
 	UBUS_METHOD_NOARG("boardinfo", quest_board_info), 
 	UBUS_METHOD("quest", quest_router_specific, quest_policy),
 	UBUS_METHOD_NOARG("networks", quest_router_networks),
-	UBUS_METHOD_NOARG("dslstats", dslstats_rpc), 
+	//UBUS_METHOD_NOARG("dslstats", dslstats_rpc), 
 	UBUS_METHOD("client", quest_router_network_clients, network_policy),
 	UBUS_METHOD_NOARG("clients", quest_router_clients),
 	UBUS_METHOD_NOARG("clients6", quest_router_clients6),
@@ -1766,6 +1766,7 @@ static struct ubus_object router_object = {
 /* END OF ROUTER OBJECT */
 
 /* WPS OBJECT */
+/* MOVED to juci 
 
 static int
 wps_status(struct ubus_context *ctx, struct ubus_object *obj,
@@ -1963,6 +1964,7 @@ static struct ubus_object wps_object = {
 	.methods = wps_object_methods,
 	.n_methods = ARRAY_SIZE(wps_object_methods),
 };
+*/
 /* END OF WPS OBJECT */
 
 static void
@@ -2022,7 +2024,7 @@ quest_ubus_init(const char *path)
 	quest_ubus_add_fd();
 
 	quest_add_object(&router_object);
-	quest_add_object(&wps_object);
+	//quest_add_object(&wps_object);
 
 	return 0;
 }
