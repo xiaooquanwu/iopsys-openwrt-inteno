@@ -22,7 +22,7 @@ include $(INCLUDE_DIR)/package.mk
 define Package/inteno-base
  # SECTION:=base
   CATEGORY:=Base System
-  DEPENDS:=+netifd +libc +procd +jsonfilter +ice-client +ice-client-guest
+  DEPENDS:=+netifd +minidlna +miniupnpd +libc +procd +jsonfilter +ice-client +ice-client-guest
   TITLE:=Base filesystem for OpenWrt and IOPSYS
   URL:=http://openwrt.org/
   VERSION:=$(PKG_RELEASE)-$(REVISION)
