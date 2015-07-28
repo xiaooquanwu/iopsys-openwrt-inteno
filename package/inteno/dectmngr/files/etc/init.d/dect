@@ -18,13 +18,11 @@ start_service() {
 	cat /proc/nvram/fixed_emc | tr -d ' ' | atohx > /tmp/fixed_emc
 	cat /proc/nvram/bcm_def_freq | tr -d ' ' | atohx > /tmp/bcm_def_freq
 	DECTANTDIV=`db get hw.board.DectAntennaDiversity`
-	if echo $DECTANTDIV | grep -qr "^[0-9]$"; then
-		echo "board.DectAntennaDiversity=$DECTANTDIV"
-	else
-		echo "board.DectAntennaDiversity not found, setting to 0 (both)"
-		DECTANTDIV=0
-	fi
-	echo -e "\x0$DECTANTDIV" > /tmp/dect_antenna_diversity
+	case "$DECTANTDIV" in
+		1|off) echo -e "\x01" > /tmp/dect_antenna_diversity ;;
+		2) echo -e "\x02" > /tmp/dect_antenna_diversity ;;
+		*) echo -e "\x00" > /tmp/dect_antenna_diversity ;;
+	esac
 
 	if [ ! -f /etc/dect/nvs ]; then
 		cp /etc/dect/nvs_default /etc/dect/nvs

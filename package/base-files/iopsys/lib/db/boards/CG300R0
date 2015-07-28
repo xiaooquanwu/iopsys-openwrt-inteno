@@ -18,7 +18,7 @@ config board 'board'
 	option wpsButtonGpio '0'
 	option fxsRelayGpio '0'
 	option i2cGpioCustom 'bus0=0,23,22'
-	option DectAntennaDiversity 1
+	option DectAntennaDiversity off
 
 config pci_slot 'pci'
         option 43a0 AC

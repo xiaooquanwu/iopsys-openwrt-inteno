@@ -18,7 +18,6 @@ config board 'board'
 	option wpsButtonGpio '22'
 	option fxsRelayGpio '8'
 	option hasBrcmAvs '0'
-	option DectAntennaDiversity 0
 
 config pci_slot 'pci'
         option 43a0 AC
