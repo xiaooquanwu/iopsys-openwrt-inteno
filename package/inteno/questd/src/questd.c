@@ -827,7 +827,7 @@ static int uci_get_value(const char *config_path, const char *varname, char *out
 
 static void router_dump_boardinfo(struct blob_buf *b){
 	void *t, *l, *p;
-	static char ports[256], port_order[256], lan_ports[256], wan_ports[256]; 
+	static char ports[256], port_order[256], lan_ports[256], wan_ports[256], adsl_ports[256], vdsl_ports[256]; 
 	
 	t = blobmsg_open_table(b, "ethernet");
 	//p = blobmsg_open_array(b, "ports"); 
@@ -840,6 +840,16 @@ static void router_dump_boardinfo(struct blob_buf *b){
 	blobmsg_add_string(b, "lan_ports", lan_ports);
 	blobmsg_add_string(b, "wan_port", wan_ports);
 	//blobmsg_close_array(b, p);
+	blobmsg_close_table(b, t);
+	
+	t = blobmsg_open_table(b, "adsl");
+	uci_get_value("/lib/db/config", "hw.board.adslWanPort", adsl_ports, sizeof(adsl_ports)); 
+	blobmsg_add_string(b, "ports", adsl_ports);
+	blobmsg_close_table(b, t);
+	
+	t = blobmsg_open_table(b, "vdsl");
+	uci_get_value("/lib/db/config", "hw.board.vdslWanPort", vdsl_ports, sizeof(vdsl_ports)); 
+	blobmsg_add_string(b, "ports", vdsl_ports);
 	blobmsg_close_table(b, t);
 }
 
