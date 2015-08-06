@@ -26,15 +26,7 @@ config board 'board'
 	option sx9512_active_led_channels 3c
 	
 config sx9512_init_reg sx9512_init_regs
-	list regs 0c
-	list regs 0d
 	list regs 20
-
-config sx9512_init_reg 0c
-	option val 01
-
-config sx9512_init_reg 0d
-	option val 3c
 
 config sx9512_init_reg 20
 	option val 41
