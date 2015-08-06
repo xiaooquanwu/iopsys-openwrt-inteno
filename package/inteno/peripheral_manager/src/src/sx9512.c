@@ -274,7 +274,8 @@ void sx9512_reg_nvm_init_defaults(struct sx9512_reg_nvm *p, uint8_t capsense_cha
 	p->irq_mask.prox_far=1;
 	if(led_channels) {
 		p->led_map[0]=0x00;
-		p->led_map[1]=led_channels;
+		//p->led_map[1]=led_channels;
+		p->led_map[1]=0x00; //default all leds off
 		p->led_pwm_freq=0x10;
 		p->led_idle=0xff;
 		p->led1_on=0xff;
