@@ -21,7 +21,7 @@ endef
 
 define Package/routermodel-dg400
 	TITLE:=routermodel-dg400
-	DEPENDS:= +inteno-base +inteno-base-voice +inteno-base-dect2
+	DEPENDS:= +inteno-base +inteno-base-voice +inteno-base-dect-external
 endef
 
 define Package/routermodel-dg400/config

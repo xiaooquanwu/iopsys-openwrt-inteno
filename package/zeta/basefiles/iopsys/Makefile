@@ -154,14 +154,14 @@ define Package/inteno-base-dect/description
  Inteno dect default packages
 endef
 
-define Package/inteno-base-dect2
+define Package/inteno-base-dect-external
   CATEGORY:=Config
-  DEPENDS:=+inteno-base-voice +natalie-dect +natalie-dect-h +dectmngr2
-  TITLE:=Preselected packages for dect based on dectmngr2
+  DEPENDS:=+inteno-base-voice +natalie-dect-h +dectmngr2
+  TITLE:=Preselected packages for external dect
 endef
-$(eval $(call BuildPackage,inteno-base-dect2))
-define Package/inteno-base-dect2/description
- Inteno dect default packages based on dectmngr2
+$(eval $(call BuildPackage,inteno-base-dect-external))
+define Package/inteno-base-dect-external/description
+ Inteno dect default packages for external dect
 endef
 
 define Package/inteno-base-juci

@@ -5,7 +5,7 @@ dg301: +inteno-base +inteno-base-voice +inteno-base-dect
 dg301al: +inteno-base +inteno-base-voice
 eg200: +inteno-base +inteno-base-voice
 dg200: +inteno-base +inteno-base-voice
-dg400: +inteno-base +inteno-base-voice +inteno-base-dect2
+dg400: +inteno-base +inteno-base-voice +inteno-base-dect-external
 eg300: +inteno-base +inteno-base-voice +inteno-base-dect +block-mount +luci-app-sfp-removed +luci-app-catv-removed
 vg50: +inteno-base 
 vox25: +inteno-base +inteno-base-voice 
