@@ -10,7 +10,7 @@ useradd()
 	local password
 	config_get user $1 user
 	config_get password $1 password
-	#grep -q $user /etc/passwd || adduser $user -s /bin/false -D -H -h  /mnt/$user
+	grep -rq "^$user:" /etc/passwd || adduser $user -s /bin/false -D -H -h  /mnt/$user
 	smbpasswd -a $user -p $password
 }
 
@@ -122,7 +122,7 @@ start_service() {
 stop_service() {
 	service_stop /usr/sbin/smbd
 	service_stop /usr/sbin/nmbd
-	#purgepasswd
+	purgepasswd
 	purgesmbpasswd
 }
 
