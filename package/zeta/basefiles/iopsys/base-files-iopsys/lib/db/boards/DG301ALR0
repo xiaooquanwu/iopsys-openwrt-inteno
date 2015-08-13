@@ -179,7 +179,9 @@ config gpio_led WAN_yellow
 
 ############### mapping led function to driver led
 config led_map led_map
+	list functions wan
 	list functions dsl
+	list functions broadband
 	list functions wifi
 	list functions wps
 	list functions lan
@@ -189,12 +191,26 @@ config led_map led_map
 	list functions internet
 	list functions eco
 
+config led_map led_wan
+
 config led_map led_dsl
-       list led_action_ok     Broadband_green=ON
-       list led_action_off    Broadband_green=OFF
-       list led_action_notice Broadband_green=FLASH_SLOW
-       list led_action_alert  Broadband_green=FLASH_SLOW
-       list led_action_error  Broadband_green=FLASH_FAST
+
+config led_map led_broadband
+	list led_action_ok     Broadband_green=ON
+	list super_ok          wan_ok
+	list super_ok          dsl_ok
+	list led_action_off    Broadband_green=OFF
+	list super_off         wan_off
+	list super_off         dsl_off
+	list led_action_notice Broadband_green=FLASH_SLOW
+	list super_notice      wan_notice
+	list super_notice      dsl_notice
+	list led_action_alert  Broadband_green=FLASH_SLOW
+	list super_alert       wan_alert
+	list super_alert       dsl_alert
+	list led_action_error  Broadband_green=FLASH_FAST
+	list super_error       wan_error
+	list super_error       dsl_error
 
 config led_map led_wifi
        list led_action_ok     Wireless_green=ON
