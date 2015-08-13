@@ -2917,7 +2917,7 @@ CONFIG_PACKAGE_asterisk18-mod-app-read=y
 # CONFIG_PACKAGE_asterisk18-mod-app-sms is not set
 # CONFIG_PACKAGE_asterisk18-mod-app-softhangup is not set
 # CONFIG_PACKAGE_asterisk18-mod-app-stack is not set
-# CONFIG_PACKAGE_asterisk18-mod-app-system is not set
+CONFIG_PACKAGE_asterisk18-mod-app-system=y
 # CONFIG_PACKAGE_asterisk18-mod-app-talkdetect is not set
 CONFIG_PACKAGE_asterisk18-mod-app-transfer=y
 # CONFIG_PACKAGE_asterisk18-mod-app-verbose is not set
