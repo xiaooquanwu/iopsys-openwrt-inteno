@@ -166,7 +166,7 @@ endef
 
 define Package/inteno-base-juci
   CATEGORY:=Config
-  DEPENDS:=+uhttpd +rpcd +uhttpd-mod-ubus +juci-ubus-core +juci +questd +uci +ubus +juci-backend-iptv +juci-backend-broadcom-dsl +juci-backend-broadcom-wireless +juci-backend-opkg +juci-backend-sysupgrade
+  DEPENDS:=+uhttpd +rpcd +uhttpd-mod-ubus +juci-ubus-core +juci +questd +lua +uci +ubus +juci-backend-iptv +juci-backend-broadcom-dsl +juci-backend-broadcom-wireless +juci-backend-opkg +juci-backend-sysupgrade
   TITLE:=Preselected packages for voice
 endef
 $(eval $(call BuildPackage,inteno-base-juci))
