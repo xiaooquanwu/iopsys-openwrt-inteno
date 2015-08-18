@@ -252,11 +252,9 @@ define Package/bcmkernel/install
 
 #	rm -rf $(1)/lib/modules/$(BCM_KERNEL_VERSION)/bcm_usb.ko
 
-    ifneq ($(CONFIG_BCM_OPEN),y)
 	# Alternative DECT modules taken from the Natalie package and if that is not selected, no DECT modules should be loaded
 	rm -f $(1)/lib/modules/$(BCM_KERNEL_VERSION)/extra/dect.ko
-	rm -f $(1)/lib/modules/$(BCM_KERNEL_VERSION)/extra/dectshim.ko
-    endif
+
 
 	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/kernel/linux-3.4rt/vmlinux $(KDIR)/vmlinux.bcm.elf
 	$(KERNEL_CROSS)strip --remove-section=.note --remove-section=.comment $(KDIR)/vmlinux.bcm.elf
