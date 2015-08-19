@@ -39,4 +39,5 @@ genconfig.last
 package/zeta/basefiles/routermodel/*/Makefile
 package/zeta/customers/
 .mirror*
+mirror*
 .config.master
