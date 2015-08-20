@@ -70,7 +70,7 @@ case "$ACTION" in
 					ubus call led.lan set '{"state":"ok"}'
 				;;
 				WAN*)
-					ubus call led.wan           set '{"state" : "notice"}'
+					ubus call led.wan           set '{"state" : "ok"}'
 					ubus call led.wan_phy_link  set '{"state" : "ok"}'
 					ubus call led.wan_phy_speed set '{"state" : "off"}'
 					$(gigatest) && ubus call led.wan_phy_speed set '{"state":"ok"}'
