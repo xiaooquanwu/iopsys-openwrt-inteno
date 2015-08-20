@@ -1487,6 +1487,73 @@ quest_router_network_clients(struct ubus_context *ctx, struct ubus_object *obj,
 }
 
 static int
+quest_router_wl(struct ubus_context *ctx, struct ubus_object *obj,
+		  struct ubus_request_data *req, const char *method,
+		  struct blob_attr *msg)
+{
+	struct blob_attr *tb[__WL_MAX];
+	char wldev[8];
+	bool nthere = false;
+	int i;
+
+	blobmsg_parse(wl_policy, __WL_MAX, tb, blob_data(msg), blob_len(msg));
+
+	if (!(tb[RADIO_NAME]) && !(tb[VIF_NAME]))
+		return UBUS_STATUS_INVALID_ARGUMENT;
+
+	if (tb[RADIO_NAME] && strchr(blobmsg_data(tb[RADIO_NAME]), '.'))
+		return UBUS_STATUS_INVALID_ARGUMENT;
+
+	memset(wldev, '\0', sizeof(wldev));
+	if (tb[VIF_NAME])
+		strcpy(wldev, blobmsg_data(tb[VIF_NAME]));
+	else
+		strcpy(wldev, blobmsg_data(tb[RADIO_NAME]));
+
+	for (i=0; wireless[i].device; i++)
+		if(!strcmp(wireless[i].vif, wldev)) {
+			nthere = true;
+			break;
+		}
+
+	if (!(nthere))
+		return UBUS_STATUS_INVALID_ARGUMENT;
+
+	void *t;
+	int freq = 2;
+	int bw = 20;
+	int channel;
+
+	const char *chanspec = strdup(chrCmd("wlctl -i %s chanspec | awk '{print$1}'", wldev));
+	const char *bssid = strdup(chrCmd("wl -i %s cur_etheraddr | awk '{print$2}'", wldev));
+	int isup = atoi(strdup(chrCmd("wlctl -i %s isup", wldev)));
+
+
+	if (strstr(chanspec, "/80") && sscanf(chanspec, "%d/80", &channel) == 1)
+		bw = 80;
+	else if ((strstr(chanspec, "u") || strstr(chanspec, "l")) &&
+			(sscanf(chanspec, "%dl", &channel) == 1 || sscanf(chanspec, "%du", &channel) == 1))
+		bw = 40;
+	else
+		channel = atoi(chanspec);
+
+	if (channel >= 36)
+		freq = 5;
+
+	blob_buf_init(&bb, 0);
+	blobmsg_add_string(&bb, "wldev", wldev);
+	blobmsg_add_u32(&bb, "radio", isup);
+	blobmsg_add_string(&bb, "bssid", bssid);
+	blobmsg_add_u32(&bb, "frequency", freq);
+	blobmsg_add_u32(&bb, "channel", channel);
+	blobmsg_add_u32(&bb, "bandwidth", bw);
+
+	ubus_send_reply(ctx, req, bb.head);
+
+	return 0;
+}
+
+static int
 quest_router_connected_clients6(struct ubus_context *ctx, struct ubus_object *obj,
 		  struct ubus_request_data *req, const char *method,
 		  struct blob_attr *msg)
@@ -1748,6 +1815,7 @@ static struct ubus_method router_object_methods[] = {
 	UBUS_METHOD_NOARG("boardinfo", quest_board_info), 
 	UBUS_METHOD("quest", quest_router_specific, quest_policy),
 	UBUS_METHOD_NOARG("networks", quest_router_networks),
+	UBUS_METHOD("wl", quest_router_wl, wl_policy),
 	//UBUS_METHOD_NOARG("dslstats", dslstats_rpc), 
 	UBUS_METHOD("client", quest_router_network_clients, network_policy),
 	UBUS_METHOD_NOARG("clients", quest_router_clients),
