@@ -877,6 +877,7 @@ router_dump_system_info(struct blob_buf *b, bool table)
 	blobmsg_add_string(b, "boardid", router.boardid);
 	blobmsg_add_string(b, "firmware", router.firmware);
 	blobmsg_add_string(b, "brcmver", router.brcmver);
+	blobmsg_add_string(b, "filesystem", router.filesystem);
 	blobmsg_add_string(b, "socmod", router.socmod);
 	blobmsg_add_string(b, "socrev", router.socrev);
 	blobmsg_add_string(b, "cfever", router.cfever);

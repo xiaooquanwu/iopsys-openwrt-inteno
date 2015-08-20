@@ -132,6 +132,7 @@ typedef struct {
 	char *boardid;
 	char *firmware;
 	char *brcmver;
+	char *filesystem;
 	char *socmod;
 	char *socrev;
 	char *cfever;
