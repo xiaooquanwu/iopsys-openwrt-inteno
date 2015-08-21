@@ -17,10 +17,4 @@ check_module () {
   return $?
 }
 
-init_iface() {
-	insmod switch-core
-	check_module switch-robo || check_module switch-adm || rmmod switch-core
-}
-
 boot_hook_add preinit_main set_preinit_iface
-boot_hook_add preinit_main init_iface
