@@ -5,8 +5,8 @@
 
 
 determine_external_root() {
-	include /lib/functions/extmount.sh
-	include /lib/functions/mount.sh
+	. /lib/functions/extmount.sh
+	. /lib/functions/mount.sh
 
 	local OLD_UCI_CONFIG_DIR="$UCI_CONFIG_DIR"
 	local OLD_PATH="$PATH"
