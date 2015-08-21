@@ -451,6 +451,8 @@ ubus call system upgrade > /dev/null
 touch /tmp/sysupgrade
 
 if [ ! -f /tmp/failsafe ] ; then
+	kill_network
+	sleep 1
 	kill_remaining TERM
 	sleep 3
 	kill_remaining KILL
