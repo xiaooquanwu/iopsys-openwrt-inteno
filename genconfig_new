@@ -146,8 +146,8 @@ create_and_copy_files()
 	
 	
 	# remove any references to luci and lua
-	sed -i 's/.*luci.*//gi' ${CONFIG}
-	sed -i 's/.*lua.*//gi' ${CONFIG}
+	# sed -i 's/.*luci.*//gi' ${CONFIG}
+	# sed -i 's/.*lua.*//gi' ${CONFIG}
 	
 ##### if open change to open kernel and remove building of nand tool
 #if [ $OPEN -eq 1 ]; then

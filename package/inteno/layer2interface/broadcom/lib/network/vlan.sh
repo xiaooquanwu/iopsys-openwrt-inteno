@@ -77,7 +77,7 @@ addbrcmvlan ()
 		echo "first ret=$ret"
 		if [ "$ret" -eq 0 ]; then
 			ifconfig $baseifname up
-			echo "vlanctl --if-create $ifname"
+			echo "vlanctl --if-create $ifname" > /dev/console
 			if [ "$bridge" -eq 1 ]; then
 				vlanctl --if-create $baseifname $vlan8021q
 				vlanctl --if $baseifname --set-if-mode-rg

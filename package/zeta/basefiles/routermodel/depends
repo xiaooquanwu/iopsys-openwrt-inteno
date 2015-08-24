@@ -2,7 +2,7 @@ cg300: +inteno-base +inteno-base-voice +inteno-base-dect
 cg301: +inteno-base +inteno-base-voice +inteno-base-dect 
 dg150: +inteno-base +inteno-base-voice
 dg301: +inteno-base +inteno-base-voice +inteno-base-dect
-dg301al: +inteno-base +inteno-base-voice
+dg301al: +inteno-base 
 eg200: +inteno-base +inteno-base-voice
 dg200: +inteno-base +inteno-base-voice
 dg400: +inteno-base +inteno-base-voice +inteno-base-dect-external
