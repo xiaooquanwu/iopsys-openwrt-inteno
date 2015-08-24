@@ -1,6 +1,6 @@
 #
 # Automatically generated make config: don't edit
-# OpenWrt version: Attitude Adjustment (r36052)
+# OpenWrt version: Barrier Breaker (r45951)
 # Thu Apr 30 18:57:32 2015
 #
 CONFIG_PACKAGE_inteno-configs=y

@@ -138,6 +138,7 @@ dump_static_router_info(Router *router)
 	get_db_hw_value("routerModel", &router->model);
 	get_db_hw_value("iopVersion", &router->firmware);
 	get_db_hw_value("brcmVersion", &router->brcmver);
+	get_db_hw_value("filesystem", &router->filesystem);
 	get_db_hw_value("socModel", &router->socmod);
 	get_db_hw_value("socRevision", &router->socrev);
 	get_db_hw_value("cfeVersion", &router->cfever);
