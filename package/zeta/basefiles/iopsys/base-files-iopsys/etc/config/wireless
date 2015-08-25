@@ -12,7 +12,7 @@ config wifi-settings preferred
 	option hw2g 'auto'
 	option country 'EU/13'
 	option apsd '1'
-	option extrassid '1'
+	option extrassid '0'
 	option guest '0'
 
 config wifi-status 'status'
