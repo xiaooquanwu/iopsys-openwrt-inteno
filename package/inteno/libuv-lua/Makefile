@@ -4,7 +4,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=libuv-lua
-PKG_VERSION:=5cacca474200eb1165bbd4ed13e0393b3e63fa84
+PKG_VERSION:=e72cc70a0d91e2b04badf0b038516c0043bc670b
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
