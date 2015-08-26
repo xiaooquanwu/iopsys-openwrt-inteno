@@ -56,11 +56,12 @@ case "$ACTION" in
 		case $(uci get dect.dect.radio) in
 			auto|off)
 				uci set dect.dect.radio=on
-				;;
+			;;
 			on)
 				uci set dect.dect.radio=off
-				;;
+			;;
 		esac
+		uci commit dect
 		/usr/bin/dect -c | logger -t hotplug -p user.info
 		/usr/bin/dect -b 2 | logger -t hotplug -p user.info
         }
