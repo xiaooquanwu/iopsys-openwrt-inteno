@@ -226,6 +226,7 @@ config led_map led_map
 	list functions wan_phy_speed
 	list functions internet
 	list functions eco
+	list functions voice1
 
 config led_map led_wan
 
