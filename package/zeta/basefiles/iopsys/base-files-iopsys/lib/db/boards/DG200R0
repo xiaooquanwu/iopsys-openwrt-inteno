@@ -41,6 +41,7 @@ config wifi-chip '43a2'
 config wifi-chip '43bc'
         option bands 'a'
         option is_ac '1'
+        option radarthrs '0x6a4 0x30 0x6a4 0x30 0x6a0 0x30 0x6ac 0x30 0x6a6 0x30 0x69c 0x30'
 
 ###############################################################################
 #
@@ -96,7 +97,7 @@ config button_map RESET
 
 config button_map DECT
        list button 9512_dect
-       option hotplug dectbutton
+       option hotplug extbutton
        option minpress 1000
 
 config button_map WPS
@@ -112,10 +113,12 @@ config button_map Wireless
 config button_map THOUCH_NEAR
        list button 9512_touch_near
        option hotplug touch_near
+       option minpress 0
 
 config button_map THOUCH_FAR
        list button 9512_touch_far
        option hotplug touch_far
+       option minpress 0
 
 #
 #		Button config , end
@@ -209,6 +212,13 @@ config gpio_led wan_phy_yellow
 
 ############### mapping led function to driver led
 config led_map led_map
+       list press_indicator led_wifi
+       list press_indicator led_wps
+       list press_indicator led_lan
+       list press_indicator led_wan
+       list press_indicator led_internet
+       list press_indicator led_voice1
+       list press_indicator led_ext
        list functions wifi
        list functions wps
        list functions lan
@@ -218,7 +228,6 @@ config led_map led_map
        list functions wan_phy_speed
        list functions internet
        list functions voice1
-#       list functions dect
        list functions ext
 
 config led_map led_wifi
