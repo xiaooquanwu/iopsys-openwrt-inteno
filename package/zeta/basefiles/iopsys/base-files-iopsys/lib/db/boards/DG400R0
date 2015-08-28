@@ -16,8 +16,6 @@ option ethernetLanPorts 'eth1 eth2 eth3 eth4'
 option ethernetWanPort 'eth0'
 option adslWanPort ''
 option vdslWanPort ''
-option lednames 'Logo Status WAN Internet Voice Wireless WPS DECT EXT'
-option buttonnames 'RESET Status Wireless WPS DECT TOUCH_NEAR TOUCH_FAR'
 #option wpsButtonGpio '0'
 option hasBrcmAvs '1'
 option gpio_shiftreg_clk 1
@@ -130,7 +128,7 @@ option minpress 1000
 
 config button_map EXT
 list button 9512_ext
-#	option hotplug extbutton
+option hotplug extbutton
 option minpress 1000
 
 config button_map TOUCH_NEAR
@@ -152,39 +150,7 @@ option hotplug touch_far
 #
 
 ############### 9512 led, driver config
-#config 9512_led 9512_leds
-#	list leds Internet_green
-#	list leds Internet_red
-#	list leds WAN_green
-#	list leds WAN_yellow
-#	list leds Voice_green
-#	list leds Ethernet_green
-#	list leds WPS_green
-#	list leds DECT_green
-
-#config 9512_led Internet_green
-#       option addr     4
-
-#config 9512_led Internet_red
-#       option addr     5
-
-#config 9512_led WAN_green
-#       option addr     0
-
-#config 9512_led WAN_yellow
-#       option addr     1
-
-#config 9512_led Voice_green
-#       option addr     7
-
-#config 9512_led Ethernet_green
-#       option addr     6
-
-#config 9512_led WPS_green
-#       option addr     2
-
-#config 9512_led DECT_green
-#       option addr     3
+## No 9512 LEDs used
 
 ############### gpio led, driver config
 config gpio_led gpio_leds
@@ -427,3 +393,4 @@ list led_action_alert	ext_blue=OFF
 list led_action_error	ext_red=OFF
 list led_action_error	ext_green=FLASH_FAST
 list led_action_error	ext_blue=OFF
+
