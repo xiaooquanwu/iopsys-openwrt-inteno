@@ -204,6 +204,10 @@ find_network() {
 	done
 }
 
+find_network_of() {
+	. /lib/network/config.sh && get_network_of $1
+}
+
 create_qr_code() {
 	local wifc=$1
 	local wssd=$2
@@ -215,8 +219,6 @@ create_qr_code() {
 
 set_wifi_down() {
 	local device="$1"
-	local iface
-	local network
 	[ -n "$2" -a "$device" != "$2" ] && continue
 	uci_revert_state wireless "$device"
 	wlctl -i $device down
@@ -361,6 +363,7 @@ wif_general_settings() {
 	config_get mode "$vif" mode "ap"
 	config_get ssid "$vif" ssid
 	config_get network "$vif" network
+	[ -n "$network" ] || network="$(find_network_of $iface)"
 	config_get bss_max "$vif" bss_max "16"
 	config_get_bool isolate "$vif" isolate "0"
 	config_get_bool vlan_mode "$vif" vlan_mode "0"
@@ -487,6 +490,7 @@ wif_setup() {
 	local device network disabled vifs wmm
 	config_get device "$vif" device
 	config_get network "$vif" network
+	[ -n "$network" ] || network="$(find_network_of $iface)"
 	config_get_bool disabled "$vif" disabled
 	config_get wmm "$device" wmm "1"
 
@@ -587,6 +591,8 @@ create_vif() {
 		iface="$device"."$_cno"
 	fi
 
+	[ -n "$network" ] || network="$(find_network_of $iface)"
+
 	mbssnum=$(uci show wireless | grep "wifi-iface" | grep -c "device=$device")
 	mbssmac="$(mbss_macddr $device $mbssnum $_cno | tr '[a-z]' '[A-Z]')"
 
@@ -623,6 +629,8 @@ kill_vif() {
 	else
 		iface="$device"."$_cno"
 	fi
+
+	[ -n "$network" ] || network="$(find_network_of $iface)"
 
 	# remove ebtables wme rules
 	remove_ebtables_wme_rules $iface
