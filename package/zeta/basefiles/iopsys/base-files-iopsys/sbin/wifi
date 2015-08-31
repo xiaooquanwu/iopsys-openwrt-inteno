@@ -220,16 +220,8 @@ set_wifi_down() {
 	[ -n "$2" -a "$device" != "$2" ] && continue
 	uci_revert_state wireless "$device"
 	wlctl -i $device down
-	for iface in $(grep "$device" /proc/net/dev | awk -F':' '{print$1}'); do
-		# remove ebtables wme rules
-		remove_ebtables_wme_rules $iface
-		network="$(find_network $iface)"
-		wlctl -i "$iface" bss down
-		wlctl -i "$iface" ssid ""
-		ifconfig "$iface" down >/dev/null 2>&1 && {
-			[ -n "$network" ] && ubus call network.interface."$network" remove_device "{ \"name\": \"$iface\" }" 2>/dev/null && uci_revert_state wireless "$iface"
-		}
-	done
+	#config_foreach kill_vif wifi-iface "$device"
+	kill_vifs "$device"
 	ubus call led.wifi  set '{"state" : "off"}'
 }
 
@@ -616,6 +608,46 @@ create_vif() {
 	}
 
 	_cno=$((_cno+1))
+}
+
+kill_vif() {
+	local vif="$1"
+	local device iface network
+	config_get device "$vif" device
+	config_get network "$vif" network
+
+	[ "$2" == "$device" ] || continue
+
+	if [ $_cno -eq 0 ]; then
+		iface="$device"
+	else
+		iface="$device"."$_cno"
+	fi
+
+	# remove ebtables wme rules
+	remove_ebtables_wme_rules $iface
+	wlctl -i "$iface" bss down
+	wlctl -i "$iface" ssid ""
+	ifconfig "$iface" down >/dev/null 2>&1 && {
+		[ -n "$network" ] && ubus call network.interface."$network" remove_device "{ \"name\": \"$iface\" }" 2>/dev/null && uci_revert_state wireless "$iface"
+	}
+}
+
+kill_vifs() {
+	local device=$1
+	local vifs=$(nvram get "$device"_vifs)
+	local iface network bss
+
+	for iface in $vifs; do
+		network=$(nvram get "$iface"_network)
+		# remove ebtables wme rules
+		remove_ebtables_wme_rules $iface
+		wlctl -i "$iface" bss down
+		wlctl -i "$iface" ssid ""
+		ifconfig "$iface" down >/dev/null 2>&1 && {
+			[ -n "$network" ] && ubus call network.interface."$network" remove_device "{ \"name\": \"$iface\" }" 2>/dev/null && uci_revert_state wireless "$iface"
+		}
+	done
 }
 
 wdev_assured_settings() {
@@ -1095,7 +1127,6 @@ wifi_updown() {
 	local action="$1"
 	local wdev="$2"
 
-	cleanup $wdev
 	kill_related_daemons
 
 	config_load wireless
@@ -1103,6 +1134,8 @@ wifi_updown() {
 	# disable wireless device
 	config_foreach set_wifi_down wifi-device $wdev
 	run_hooks wifi-device $DISABLE_HOOKS # ANYFI
+
+	cleanup $wdev
 
 	# handle wireless led
 	ubus call led.wifi  set '{"state" : "off"}'
