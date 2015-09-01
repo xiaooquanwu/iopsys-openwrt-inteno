@@ -58,7 +58,7 @@ while [ -n "$1" ]; do
 done
 
 export CONFFILES=/tmp/sysupgrade.conffiles
-export CONF_TAR=/tmp/sysupgrade.tgz
+export CONF_TAR=/sysupgrade.tgz
 
 export ARGV="$*"
 export ARGC="$#"
@@ -132,7 +132,7 @@ upgrade-option:
 	-d <delay>   add a delay before rebooting
 	-f <config>  restore configuration from .tar.gz (file or url)
 	-i           interactive mode
-	-c           attempt to preserve all changed files in /etc/
+	-c           attempt to preserve all changed files in at least /etc/ (copy overlay)
 	-n           do not save configuration over reflash
 	-T | --test
 	             Verify image and config .tar.gz but do not actually flash.
@@ -179,26 +179,6 @@ EOF
 [ "$CONF_BACKUP" = "-" ] && export VERBOSE=0
 [ "$CONF_SELECTED_BACKUP" = "-" ] && export VERBOSE=0
 
-add_uci_conffiles() {
-	local file="$1"
-	( find $(sed -ne '/^[[:space:]]*$/d; /^#/d; p' \
-		/etc/sysupgrade.conf /lib/upgrade/keep.d/* 2>/dev/null) \
-		-type f 2>/dev/null;
-	  opkg list-changed-conffiles ) | sort -u > "$file"
-	return 0
-}
-
-add_overlayfiles() {
-	local file="$1"
-	find /overlay/etc/ -type f | sed \
-		-e 's,^/overlay/,/,' \
-		-e '\,/META_[a-zA-Z0-9]*$,d' \
-		-e '\,/functions.sh$,d' \
-		-e '\,/[^/]*-opkg$,d' \
-	> "$file"
-	return 0
-}
-
 save_selected() {
 	local config="$1"
 	config_get service services $config
@@ -217,11 +197,22 @@ add_selected_conffiles() {
 	return 0
 }
 
+add_uci_backup_files() {
+	local file="$1"
+	for item in `uci show backup.services`
+		do
+			CONFNAME=$(echo $item | sed -n 's/backup\.services\.\(.*\)=.*/\1/p')
+			case $(echo $item | sed -n 's/backup\.services\..*=\(.*\)/\1/p') in
+			1) FILES="$FILES $(uci show backup.$CONFNAME.file | sed -n 's/backup.*=\(.*\)/\1/p')" ;;
+		esac
+		done
+		echo $FILES | tr ' ' '\n' > "$file"
+		return 0
+}
+
 # hooks
 sysupgrade_image_check="platform_check_image"
-[ $SAVE_OVERLAY = 0 -o ! -d /overlay/etc ] && \
-	sysupgrade_init_conffiles="add_uci_conffiles" || \
-	sysupgrade_init_conffiles="add_overlayfiles"
+sysupgrade_init_conffiles="add_uci_backup_files"
 
 include /lib/upgrade
 
@@ -321,7 +312,7 @@ do_save_selected_conffiles() {
 
 	handle_etc 1
 
-	add_selected_conffiles
+	add_uci_backup_files "/tmp/selected_backup_files"
 
 	v "Saving config files ..."
 	[ "$VERBOSE" -gt 1 ] && TAR_V="v" || TAR_V=""
@@ -364,7 +355,7 @@ do_save_conffiles_uci() {
 
 
 if [ $CONF_BACKUP_LIST -eq 1 ]; then
-	add_uci_conffiles "$CONFFILES"
+	add_uci_backup_files "$CONFFILES"
 	cat "$CONFFILES"
 	rm -f "$CONFFILES"
 	exit 0

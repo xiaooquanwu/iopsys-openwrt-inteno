@@ -34,9 +34,14 @@ copy_old_config() {
 		fi
 
 		mount -t ubifs -o ro,noatime $old_vol /mnt
-		if [ -e /mnt/overlay/SAVE_CONFIG ]; then
+		if [ -e /mnt/overlay/SAVE_OVERLAY ]; then
 			echo "Copying overlay..."
 			cp -rfdp /mnt/overlay/* /overlay/
+			rm /overlay/SAVE_OVERLAY
+		fi
+		if [ -e /mnt/overlay/SAVE_CONFIG ]; then
+			echo "Unpacking old config..."
+			tar xvzf /mnt/overlay/sysupgrade.tgz -C /
 			rm /overlay/SAVE_CONFIG
 		fi
 		umount /mnt
@@ -53,7 +58,7 @@ copy_old_config() {
 		fi
 
 		mount -t jffs2 $old_fs_mtd /mnt
-		if [ -e /mnt/overlay/SAVE_CONFIG ]; then
+		if [ -e /mnt/overlay/SAVE_OVERLAY ]; then
 			if [ "$new_fs_type" == "ubifs" ]; then
 				echo "Copying etc..."
 				cp -rfdp /mnt/overlay/etc /overlay/
@@ -61,6 +66,11 @@ copy_old_config() {
 				echo "Copying overlay..."
 			cp -rfdp /mnt/overlay/* /overlay/
 			fi
+			rm -f /overlay/SAVE_OVERLAY
+		fi
+		if [ -e /mnt/overlay/SAVE_CONFIG ]; then
+			echo "Unpacking old config..."
+			tar xvzf /mnt/overlay/sysupgrade.tgz -C /
 			rm -f /overlay/SAVE_CONFIG
 		fi
 		umount /mnt
