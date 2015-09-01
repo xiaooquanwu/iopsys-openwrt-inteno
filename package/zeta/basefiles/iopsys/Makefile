@@ -165,9 +165,33 @@ define Package/inteno-base-dect-external/description
 endef
 
 define Package/inteno-base-juci
-  CATEGORY:=Config
-  DEPENDS:=+uhttpd +rpcd +uhttpd-mod-ubus +juci-ubus-core +juci +questd +lua +uci +ubus +juci-backend-iptv +juci-backend-broadcom-dsl +juci-backend-broadcom-wireless +juci-backend-opkg +juci-backend-sysupgrade
-  TITLE:=Preselected packages for voice
+	CATEGORY:=Config
+	DEPENDS:=+juci \
+		+PACKAGE_asterisk18-mod:juci-asterisk \
+		+PACKAGE_bcmkernel:juci-broadcom-dsl \
+		+PACKAGE_bcmkernel:juci-broadcom-ethernet \
+		+PACKAGE_bcmkernel:juci-broadcom-wl \
+		+PACKAGE_bcmkernel:juci-broadcom-vlan \
+		+juci-ddns \
+		+juci-diagnostics \
+		+PACKAGE_dnsmasq:juci-dnsmasq-dhcp \
+		+PACKAGE_dropbear:juci-dropbear \
+		+juci-event \
+		+PACKAGE_firewall:juci-firewall-fw3 \
+		+PACKAGE_igmpproxy:juci-igmpinfo \
+		+juci-inteno-router \
+		+juci-jquery-console \
+		+juci-macdb \
+		+PACKAGE_minidlna:juci-minidlna \
+		+juci-mod-status \
+		+juci-mod-system \
+		+juci-netmode \
+		+PACKAGE_netifd:juci-network-netifd \
+		+PACKAGE_samba36-server:juci-mod-samba \
+		+PACKAGE_inteno-base:juci-sysupgrade \
+		+PACKAGE_miniupnpd:juci-upnp \
+		+USB_SUPPORT:juci-usb 
+	TITLE:=Preselected packages for juci
 endef
 $(eval $(call BuildPackage,inteno-base-juci))
 define Package/inteno-base-juci/description
