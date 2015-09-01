@@ -30,8 +30,8 @@ config_load firewall
 config_get enabled dmz enabled "1"
 config_get dmzhost dmz host
 
-[ "$enabled" == "1" ] || exit
-[ -n "$dmzhost" ] || exit
+[ "$enabled" == "1" ] || exit 0
+[ -n "$dmzhost" ] || exit 0
 
 config_get exclude_ports dmz exclude_ports
 [ -n "$exclude_ports" ] && PORTS="$PORTS $exclude_ports"

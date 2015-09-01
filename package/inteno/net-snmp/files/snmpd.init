@@ -111,8 +111,8 @@ snmpd_pass_add() {
 	priority=${priority:+-p $priority}
 	echo "$pass $priority $miboid $prog" >> $RUN_C
 }
-#snmpd_exec_add() {
-#	local cfg="$1"
+snmpd_exec_add() {
+	local cfg="$1"
 
 	config_get name "$cfg" name
 	[ -n "$name" ] || return 0

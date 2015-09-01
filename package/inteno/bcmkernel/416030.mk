@@ -16,7 +16,7 @@ PKG_RELEASE:=1
 PKG_SOURCE_URL:=git@iopsys.inteno.se:bcmkernel-4.16L.03
 PKG_SOURCE_PROTO:=git
 
-PKG_SOURCE_VERSION:=5569c33344c2bdbee738f2338213c7f2ab18f79d
+PKG_SOURCE_VERSION:=0e120d8a35a085446e9c1aa4d68d6b58c1269b51
 PKG_SOURCE:=$(PKG_NAME)-$(BRCM_SDK_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
 endif
 
@@ -251,6 +251,10 @@ define Package/bcmkernel/install
 	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/targets/$(BCM_BS_PROFILE)/fs/etc/telephonyProfiles.d		$(1)/etc/
 
 #	rm -rf $(1)/lib/modules/$(BCM_KERNEL_VERSION)/bcm_usb.ko
+
+	# Alternative DECT modules taken from the Natalie package and if that is not selected, no DECT modules should be loaded
+	rm -f $(1)/lib/modules/$(BCM_KERNEL_VERSION)/extra/dect.ko
+
 
 	cp -R $(PKG_BUILD_DIR)/$(BCM_SDK_VERSION)/kernel/linux-3.4rt/vmlinux $(KDIR)/vmlinux.bcm.elf
 	$(KERNEL_CROSS)strip --remove-section=.note --remove-section=.comment $(KDIR)/vmlinux.bcm.elf

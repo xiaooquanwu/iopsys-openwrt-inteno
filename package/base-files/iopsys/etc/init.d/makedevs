@@ -1,8 +1,0 @@
-#!/bin/sh /etc/rc.common
-
-START=01
-
-start() {
-	echo "Copying device files from /lib/dev to /dev ...again"
-	cp -a /lib/dev/* /dev
-}

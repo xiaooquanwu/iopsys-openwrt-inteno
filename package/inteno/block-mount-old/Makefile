@@ -61,8 +61,8 @@ define Package/block-mount-old/install
 	$(INSTALL_DATA) ./files/extmount.sh $(1)/lib/functions/
 	$(INSTALL_DIR) $(1)/lib/preinit
 	$(INSTALL_DATA) ./files/50_determine_usb_root $(1)/lib/preinit/
-	$(INSTALL_DATA) ./files/55_determine_extroot_sysupgrade $(1)/lib/preinit/
-	$(INSTALL_DATA) ./files/60_pivot_usb_root $(1)/lib/preinit/
+	#$(INSTALL_DATA) ./files/55_determine_extroot_sysupgrade $(1)/lib/preinit/
+	#$(INSTALL_DATA) ./files/60_pivot_usb_root $(1)/lib/preinit/
 	echo "extroot_settle_time=\"$(CONFIG_EXTROOT_SETTLETIME)\"" >$(1)/lib/preinit/00_extroot.conf
 	$(INSTALL_DIR) $(1)/overlay
 endef

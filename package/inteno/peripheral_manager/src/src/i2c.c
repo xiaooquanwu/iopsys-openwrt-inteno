@@ -26,32 +26,31 @@ void dump_i2c(int fd,int start,int stop)
 	}
 }
 
-int i2c_open_dev (const char *bus, int addr, unsigned long needed)
+int i2c_open_dev (const char *bus, int addr, unsigned long funcs_needed)
 {
 	int fd = open(bus, O_RDWR);
 	if (fd < 0) {
-		syslog(LOG_INFO,"%s: could not open /dev/i2c-0\n",__func__);
+		syslog(LOG_INFO,"%s: could not open %s\n",__func__, bus);
 		return -1;
 	}
 	if (ioctl(fd, I2C_SLAVE, addr) < 0) {
 		syslog(LOG_INFO,"%s: could not set address %x for i2c chip\n",
 		       __func__, addr);
-	error:
+error:
 		close (fd);
 		return -1;
 	}
-	if (needed) {
+	if(funcs_needed) {
 		unsigned long funcs;
 		if (ioctl(fd, I2C_FUNCS, &funcs) < 0) {
 			syslog(LOG_INFO,"%s: could not get I2C_FUNCS\n",__func__);
 			goto error;
 		}
-		if ( (funcs & needed) != needed) {
+		if((funcs & funcs_needed) != funcs_needed) {
 			syslog(LOG_INFO,"%s: lacking I2C capabilities, have %lx, need %lx\n",
-			       __func__, funcs, needed);
+			       __func__, funcs, funcs_needed);
 			goto error;
 		}
 	}
 	return fd;
 }
-

@@ -154,9 +154,19 @@ define Package/inteno-base-dect/description
  Inteno dect default packages
 endef
 
+define Package/inteno-base-dect-external
+  CATEGORY:=Config
+  DEPENDS:=+inteno-base-voice +natalie-dect-h +dectmngr2
+  TITLE:=Preselected packages for external dect
+endef
+$(eval $(call BuildPackage,inteno-base-dect-external))
+define Package/inteno-base-dect-external/description
+ Inteno dect default packages for external dect
+endef
+
 define Package/inteno-base-juci
   CATEGORY:=Config
-  DEPENDS:=+uhttpd +rpcd +uhttpd-mod-ubus +juci-ubus-core +juci +questd +uci +ubus +juci-backend-broadcom-dsl +juci-backend-broadcom-wireless +juci-backend-opkg +juci-backend-sysupgrade
+  DEPENDS:=+uhttpd +rpcd +uhttpd-mod-ubus +juci-ubus-core +juci +questd +lua +uci +ubus +juci-backend-iptv +juci-backend-broadcom-dsl +juci-backend-broadcom-wireless +juci-backend-opkg +juci-backend-sysupgrade
   TITLE:=Preselected packages for voice
 endef
 $(eval $(call BuildPackage,inteno-base-juci))

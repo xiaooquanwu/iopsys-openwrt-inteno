@@ -39,7 +39,7 @@ void server_start(struct uci_context *uci_ctx, struct ubus_context *ubus_ctx)
 	gpio_led_init(&server);
 	gpio_button_init(&server);
 
-	sx9512_init(&server);
+	sx9512_handler_init(&server);
 
 	px3220_init(&server);
 

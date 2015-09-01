@@ -37,7 +37,7 @@
 struct i2c_reg_tab {
 	char addr;
 	char value;
-	char range;  
+	char range;  /* if set registers starting from addr to addr+range will be set to the same value */
 };
 
 struct button_data {
@@ -60,7 +60,6 @@ static const struct i2c_reg_tab i2c_init_tab_vox25[]={
 
 int dev;
 int shadow_proximity;
-
 
 void do_init_tab(const struct i2c_reg_tab *tab, int len );
 
@@ -118,20 +117,18 @@ static button_state_t px3220_button_get_state(struct button_drv *drv)
         if (p->addr == 0 ){
                 if (shadow_proximity & 1 ) {
                         shadow_proximity &= ~0x1;
-                        p->state = PRESSED;
-			return PRESSED;
+                        return p->state = BUTTON_PRESSED;
                 }
         }
 
         if (p->addr == 1 ){
                 if (shadow_proximity & 2 ) {
                         shadow_proximity &= ~0x2;
-                        p->state = PRESSED;
-			return PRESSED;
+                        return p->state = BUTTON_PRESSED;
                 }
         }
 
-        p->state = RELEASED;
+        p->state = BUTTON_RELEASED;
         return p->state;
 }
 

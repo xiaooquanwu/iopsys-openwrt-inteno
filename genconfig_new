@@ -20,6 +20,10 @@ LOCAL_MIRROR="http://10.10.1.31/mirror"
 
 set -e 
 
+# get rid of the stupid files folder that will mess up our brand new build
+# (I haz deleted your files, but don't worry, you shall thank me later!..)
+rm -rf ./files
+
 echo "$0 $1 $2 $3 $4" > genconfig.last 
 
 usage() {
@@ -47,7 +51,9 @@ usage() {
 
 while [ -n "$1" ]; do 
 	case "$1" in
-		-c) export CLEAN=1;;
+		-c) 
+			export CLEAN=1
+		;;
 		-u) export IMPORT=1;;
 		-o) export OPEN=1;;
 		-v) export VERBOSE="$(($VERBOSE + 1))";;
@@ -140,14 +146,15 @@ create_and_copy_files()
 	
 	
 	# remove any references to luci and lua
-	sed -i 's/.*luci.*//gi' ${CONFIG}
-	sed -i 's/.*lua.*//gi' ${CONFIG}
+	# sed -i 's/.*luci.*//gi' ${CONFIG}
+	# sed -i 's/.*lua.*//gi' ${CONFIG}
 	
 ##### if open change to open kernel and remove building of nand tool
 #if [ $OPEN -eq 1 ]; then
 #  [ -e "$CONFIGPATH/OPEN/open.diff" ] && generate_config $CONFIGPATH/OPEN/open.diff .config
 #fi
 }
+
 
 echo "Using boardtype: $BOARDTYPE"
 if [ -z "$BOARDTYPE" ]; then

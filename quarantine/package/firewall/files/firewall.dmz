@@ -29,7 +29,7 @@ config_load firewall
 
 config_get dmzhost dmz host
 
-[ -n "$dmzhost" ] || exit
+[ -n "$dmzhost" ] || exit 0
 
 config_get exclude_ports dmz exclude_ports
 [ -n "$exclude_ports" ] && PORTS="$PORTS $exclude_ports"

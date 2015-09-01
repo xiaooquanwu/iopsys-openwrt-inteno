@@ -630,9 +630,6 @@ wdev_assured_settings() {
 
 wdev_static_settings() {
 	local device=$1
-	wlctl -i $device txbf 0
-	wlctl -i $device txbf_bfr_cap 0
-	wlctl -i $device txbf_bfe_cap 0
 	wlctl -i $device stbc_rx 0
 	wlctl -i $device stbc_tx -1
 	wlctl -i $device fcache 1 || dhdctl -i $device fcache 1
@@ -899,7 +896,8 @@ wdev_wme_settings() {
 
 wdev_tweak_settings() {
 	local device=$1
-	local fb frag rts dtim bi
+	local fb frag rts dtim bi bf
+	config_get_bool bf "$device" beamforming "1"
 	config_get_bool fb "$device" frameburst "0"
 	config_get frag "$device" frag "2346"
 	config_get rts "$device" rts "2347"
@@ -911,6 +909,16 @@ wdev_tweak_settings() {
 	wlctl -i $device dtim $dtim
 	wlctl -i $device bi $bi
 	wlctl -i $device frameburst $fb
+
+	if [ "$bf" == "1" ]; then
+		wlctl -i $device txbf_bfr_cap 255
+		wlctl -i $device txbf_bfe_cap 255
+		wlctl -i $device txbf 1
+	else
+		wlctl -i $device txbf 0
+		wlctl -i $device txbf_bfr_cap 0
+		wlctl -i $device txbf_bfe_cap 0
+	fi
 }
 
 wdev_antenna_settings() {
@@ -921,6 +929,7 @@ wdev_antenna_settings() {
 
 	wlctl -i $device antdiv $rxant
 	wlctl -i $device txant $txant
+	wlctl -i $device antgain ag0=0x0 ag1=0x0
 }
 
 wdev_power_settings() {
@@ -1140,13 +1149,14 @@ wifi_detect() {
 	local WLDIR="/tmp/wireless"
 	local wls="wl0 wl1"
 	local vnos="0 1 2 3 4 5 6 7 8"
-	local bands band bwidth country hwmode pcid wl bno doth dfsc scntmr freq ch vdev vn
+	local bands band bwidth country hwmode pcid wl bno doth dfsc scntmr freq ch vdev vn apsd
 	local BMAC=$(cat /proc/nvram/BaseMacAddr | tr '[a-z]' '[A-Z]')
 	local DMAC=$(echo $BMAC | awk '{print$NF}')
 	BMAC=${BMAC// /}
 	local BSSID=$(printf "%X\n" $((0x$BMAC + 2)))
-	local BSSID4=${BSSID:6:4}
-	local BSSID6=${BSSID:4:6}
+	local BSSID2=$(echo -n $BSSID | tail -c 2)
+	local BSSID4=$(echo -n $BSSID | tail -c 4)
+	local BSSID6=$(echo -n $BSSID | tail -c 6)
 	local DECIMAL=$(printf "%d\n" 0x${DMAC/:/})
 	DECIMAL=$((DECIMAL+100))
 	local WPAKEY=$(cat /proc/nvram/WpaKey)
@@ -1174,6 +1184,16 @@ wifi_detect() {
 	local PTMR="$(uci -q get wireless.preferred.scntmr)"
 	local PEXT="$(uci -q get wireless.preferred.extrassid)"
 	local PGST="$(uci -q get wireless.preferred.guest)"
+	local PGNT="$(uci -q get wireless.preferred.gnet)"
+	local PGEN="$(uci -q get wireless.preferred.genc)"
+	local PGKY="$(uci -q get wireless.preferred.gkey)"
+	local PGDS="$(uci -q get wireless.preferred.gdis)"
+	local PAPS="$(uci -q get wireless.preferred.apsd)"
+
+	local GNET="${PGNT:-guest}"
+	local GENC="${PGEN:-none}"
+	local GKEY="$PGKY"
+	local GDIS="${PGDS:-1}"
 
 	[ -n "$SSID" ] || SSID="${PSID:-Inteno-$BSSID4}"
 	[ -n "$ENCR" ] || ENCR=$PENC
@@ -1207,6 +1227,7 @@ wifi_detect() {
 			pcid=$(pcID $wl)
 			country="${PCNT:-EU/13}"
 			scntmr="${PTMR:-120}"
+			apsd="${PAPS:-1}"
 			if $(is5G $pcid); then
 				freq="5G"
 				hwmode="${PHW5:-auto}"
@@ -1240,7 +1261,7 @@ config wifi-device '$wl'
 	option scantimer '$scntmr'
 	option wmm '1'
 	option wmm_noack '0'
-	option wmm_apsd '0'
+	option wmm_apsd '$apsd'
 	option txpower '100'
 	option rateset 'default'
 	option frag '2346'
@@ -1255,10 +1276,6 @@ config wifi-device '$wl'
 	option maxassoc '32'
 	option doth '$doth'
 
-EOF
-				fi
-				if [ "$PGST" == "1" ]; then
-					cat >> /etc/config/wireless <<EOF
 config wifi-iface
 	option device '$wl'
 	option network '${NET:-lan}'
@@ -1296,15 +1313,16 @@ EOF
 					cat >> /etc/config/wireless <<EOF
 config wifi-iface
 	option device '$wl'
-	option network 'guest'
+	option network '${GNET:-guest}'
 	option mode 'ap'
 	option ssid '${SSID}-Guest'
-	option encryption 'none'
+	option encryption '${GENC:-none}'
+	option key '${GKEY:-$WPAKEY}'
 	option macfilter '0'
 	option wps_pbc '0'
 	option wmf_bss_enable '1'
 	option bss_max '16'
-	option disabled '1'
+	option disabled '$GDIS'
 
 EOF
 				fi
@@ -1372,17 +1390,17 @@ wifi_onoff() {
 	[ "$status" == "1" ] && wifi_updown "enable"
 }
 
-wifi_toggle() {
-	local wlstatus="$(uci -q get wireless.status.wlan)"
-	if [ "$wlstatus" == "0" ]; then
-		echo "Enabling WIFI adapters"
-		uci -q set wireless.status.wlan="1"
+wifi_toggle_device() {
+	local wlstatus="$(uci -q get wireless.$1.disabled)"
+	if [ "$wlstatus" == "1" ]; then
+		echo "Enabling WiFi Radio $1"
+		uci -q set wireless.$1.disabled=0
 		uci commit wireless
 		ubus call network reload
 		wifi_updown "enable" "$2"
 	else
-		echo "Disabling WIFI adapters"
-		uci -q set wireless.status.wlan="0"
+		echo "Disabling WiFi Radio $1"
+		uci -q set wireless.$1.disabled=1
 		uci commit wireless
 		ubus call network reload
 		wifi_updown "disable" "$2"
@@ -1515,7 +1533,7 @@ fi
 case "$1" in
 	disable|enable) wifi_toggle_iface "$1" "$2" ;;
 	down) wifi_updown "disable" "$2" ;;
-	toggle) wifi_toggle "$2" ;;
+	toggle) wifi_toggle_device "$2" ;;
 	reload) check_md5sum; wifi_reload "$2" ;;
 	reload_legacy) wifi_reload_legacy "$2" ;;
 	*) ubus call network reload; wifi_updown "enable" "$2";;

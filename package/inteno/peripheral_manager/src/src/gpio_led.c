@@ -9,24 +9,26 @@
 #include "log.h"
 #include "server.h"
 #include "gpio.h"
+#include "gpio_shift_register.h"
 
+gpio_shift_register_t led_gpio_shift_register;
 
 void gpio_led_init(struct server_ctx *s_ctx);
 
 typedef enum {
-	UNKNOWN,
 	LOW,
 	HI,
+	UNKNOWN,
 } active_t;
 
 typedef enum {
 	MODE_UNKNOWN,
 	DIRECT,
-	SHIFTREG2,
-	SHIFTREG3,
+	SHIFTREG_BRCM,
+	SHIFTREG_GPIO,
 } gpio_mode_t;
 
-struct gpio_data {
+struct gpio_led_data {
 	int addr;
 	active_t active;
 	int state;
@@ -34,66 +36,30 @@ struct gpio_data {
 	struct led_drv led;
 };
 
-#define SR_MAX 16
-static int shift_register_state[SR_MAX];
-
-static void shift_register3_set(int address, int bit_val) {
-	int i;
-
-	if (address>=SR_MAX-1) {
-		DBG(1,"address index %d too large\n", address);
-		return;
-	}
-
-	// Update internal register copy
-	shift_register_state[address] = bit_val;
-
-	// pull down shift register load (load gpio 23)
-	board_ioctl(BOARD_IOCTL_SET_GPIO, 0, 0, NULL, 23, 0);
-
-	// clock in bits
-	for (i=0 ; i<SR_MAX ; i++) {
-		//set clock low
-		board_ioctl( BOARD_IOCTL_SET_GPIO, 0, 0, NULL, 0, 0);
-		//place bit on data line
-		board_ioctl( BOARD_IOCTL_SET_GPIO, 0, 0, NULL, 1, shift_register_state[SR_MAX-1-i]);
-		//set clock high
-		board_ioctl( BOARD_IOCTL_SET_GPIO, 0, 0, NULL, 0, 1);
-	}
-
-	// issue shift register load
-	board_ioctl( BOARD_IOCTL_SET_GPIO, 0, 0, NULL, 23, 1);
-}
-
-static int gpio_set_state(struct led_drv *drv, led_state_t state)
+static int gpio_led_set_state(struct led_drv *drv, led_state_t state)
 {
-	struct gpio_data *p = (struct gpio_data *)drv->priv;
+	struct gpio_led_data *p = (struct gpio_led_data *)drv->priv;
 	int bit_val = 0;
 
-	if (state == OFF) {
-		if (p->active == HI)
-			bit_val = 0;
-		else if (p->active == LOW)
-			bit_val = 1;
-
-	}else if (state == ON) {
-		if (p->active == HI)
-			bit_val = 1;
-		else if (p->active == LOW)
-			bit_val = 0;
+	if(state) {
+		if(p->active)
+			bit_val=1;
+	} else {
+		if(!p->active)
+			bit_val=1;
 	}
 
 	p->state = state;
 
 	switch (p->mode) {
-	case DIRECT :
+	case DIRECT:
 		board_ioctl( BOARD_IOCTL_SET_GPIO, 0, 0, NULL, p->addr, bit_val);
 		break;
-	case SHIFTREG2:
+	case SHIFTREG_BRCM:
 		board_ioctl( BOARD_IOCTL_LED_CTRL, 0, 0, NULL, p->addr, bit_val);
 		break;
-	case SHIFTREG3:
-		shift_register3_set(p->addr, bit_val);
+	case SHIFTREG_GPIO:
+		gpio_shift_register_cached_set(&led_gpio_shift_register, p->addr, bit_val);
 		break;
 	default:
 		DBG(1,"access mode not supported [%d,%s]", p->mode, p->led.name);
@@ -102,35 +68,50 @@ static int gpio_set_state(struct led_drv *drv, led_state_t state)
 	return p->state;
 }
 
-static led_state_t gpio_get_state(struct led_drv *drv)
+static led_state_t gpio_led_get_state(struct led_drv *drv)
 {
-	struct gpio_data *p = (struct gpio_data *)drv->priv;
+	struct gpio_led_data *p = (struct gpio_led_data *)drv->priv;
 	DBG(1, "state for %s",  drv->name);
 
 	return p->state;
 }
 
 static struct led_drv_func func = {
-	.set_state = gpio_set_state,
-	.get_state = gpio_get_state,
+	.set_state = gpio_led_set_state,
+	.get_state = gpio_led_get_state,
 };
 
 void gpio_led_init(struct server_ctx *s_ctx) {
 
 	LIST_HEAD(leds);
 	struct ucilist *node;
+	int gpio_shiftreg_clk=0, gpio_shiftreg_dat=1, gpio_shiftreg_mask=2, gpio_shiftreg_bits=0;
+	char *s;
 
 	DBG(1, "");
 
+	if((s=ucix_get_option(s_ctx->uci_ctx, "hw", "board", "gpio_shiftreg_clk")))
+		gpio_shiftreg_clk = strtol(s,0,0);
+	DBG(1, "gpio_shiftreg_clk = [%d]", gpio_shiftreg_clk);
+	if((s=ucix_get_option(s_ctx->uci_ctx, "hw", "board", "gpio_shiftreg_dat")))
+		gpio_shiftreg_dat = strtol(s,0,0);
+	DBG(1, "gpio_shiftreg_dat = [%d]", gpio_shiftreg_dat);
+	if((s=ucix_get_option(s_ctx->uci_ctx, "hw", "board", "gpio_shiftreg_mask")))
+		gpio_shiftreg_mask = strtol(s,0,0);
+	DBG(1, "gpio_shiftreg_mask = [%d]", gpio_shiftreg_mask);
+	if((s=ucix_get_option(s_ctx->uci_ctx, "hw", "board", "gpio_shiftreg_bits")))
+		gpio_shiftreg_bits = strtol(s,0,0);
+	DBG(1, "gpio_shiftreg_bits = [%d]", gpio_shiftreg_bits);
+	
 	ucix_get_option_list(s_ctx->uci_ctx, "hw" ,"gpio_leds", "leds", &leds);
 	list_for_each_entry(node,&leds,list){
-		struct gpio_data *data;
+		struct gpio_led_data *data;
 		const char *s;
 
 		DBG(1, "value = [%s]",node->val);
 
-		data = malloc(sizeof(struct gpio_data));
-		memset(data,0,sizeof(struct gpio_data));
+		data = malloc(sizeof(struct gpio_led_data));
+		memset(data,0,sizeof(struct gpio_led_data));
 
 		data->led.name = node->val;
 
@@ -147,9 +128,9 @@ void gpio_led_init(struct server_ctx *s_ctx) {
 			if (!strncasecmp("direct",s,3))
 				data->mode =  DIRECT;
 			else if (!strncasecmp("sr",s,5))
-				data->mode =  SHIFTREG2;
+				data->mode =  SHIFTREG_BRCM;
 			else if (!strncasecmp("csr",s,4))
-				data->mode =  SHIFTREG3;
+				data->mode =  SHIFTREG_GPIO;
 			else
 				DBG(1, "Mode %s : Not supported!", s);
 		}
@@ -167,5 +148,6 @@ void gpio_led_init(struct server_ctx *s_ctx) {
 		data->led.priv = data;
 		led_add(&data->led);
 	}
-	gpio_open_ioctl();
+	gpio_init();
+	gpio_shift_register_init(&led_gpio_shift_register, gpio_shiftreg_clk, gpio_shiftreg_dat, gpio_shiftreg_mask, gpio_shiftreg_bits);
 }

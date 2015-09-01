@@ -5,8 +5,8 @@
 #
 
 
-include /lib/functions/block.sh
-include /lib/functions/fsck.sh
+. /lib/functions/block.sh
+. /lib/functions/fsck.sh
 
 config_mount_by_section() {
 	local cfg="$1"

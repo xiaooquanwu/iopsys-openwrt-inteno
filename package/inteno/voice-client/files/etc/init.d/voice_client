@@ -254,36 +254,6 @@ read_lines()
 	echo "${lines%??}"
 }
 
-# Read BRCM lines that should receive incoming calls for
-# a SIP provider. Append line number to SIP user (second argument) 
-# to create a contact string. This string (user_XYZ) will then be
-# used as extension in:
-# "register => user[:secret[:authuser]]@host[:port][/extension]"
-format_sip_contact()
-{
-	local contact_line_suffix
-	config_get contact_line_suffix SIP contact_line_suffix
-
-	if [ "$contact_line_suffix" != "1" ] ; then
-		echo $2
-		return
-	fi
-
-	local lines=""
-	local call_lines
-	config_get call_lines $1 call_lines
-	for i in $call_lines ; do
-		if [ "${i:0:5}" == "BRCM/" ] ; then
-			lines=$lines"${i:5}"
-		fi
-	done
-	if [ -n "$lines" ]; then
-		lines="_$lines"
-	fi
-	lines=$2$lines	
-	echo $lines
-}
-
 get_bindaddr() {
 	local intf="$1"
 	local bindaddr=""
@@ -757,7 +727,7 @@ configure_sip_provider()
 	sed -i "s/|AUTOFRAMING|/$autoframing/"			$WORKDIR/sip_provider.tmp
 
 	# Set registered extension so that incoming calls match the correct peer                     
-	sed -i "s/|CONTACT_USER|/$(format_sip_contact $1 $user)/g"      $WORKDIR/sip_provider.tmp 
+	sed -i "s/|CONTACT_USER|/$user/g"      $WORKDIR/sip_provider.tmp
 
 	# Add SIP Provider configuration to the temp file containing all SIP Provider configs.
 	cat $WORKDIR/sip_provider.tmp >> $WORKDIR/sip_providers.tmp
@@ -778,7 +748,7 @@ configure_sip_provider()
 	else
 		sed -i "s/|PORT|//"			$WORKDIR/sip_reg.tmp
 	fi
-	sed -i "s/|CONTACT_USER|/$(format_sip_contact $1 $user)/g"	$WORKDIR/sip_reg.tmp
+	sed -i "s/|CONTACT_USER|/$user/g"		$WORKDIR/sip_reg.tmp
 
 	# Add SIP Provider registration info to temp file containing all SIP Provider registrations
 	cat $WORKDIR/sip_reg.tmp >> $WORKDIR/sip_registrations.tmp
@@ -1358,7 +1328,6 @@ configure_extensions_provider()
 	local enabled
 	local displayname
 	local user
-	local user_without_suffix
 	local cbbs_key
 	local cbbs_maxretry
 	local cbbs_retrytime
@@ -1394,8 +1363,6 @@ configure_extensions_provider()
 
 	# check that SIP Provider has a configured user
 	config_get user $1 user
-	user_without_suffix=$user
-	user=$(format_sip_contact $1 $user)
 	if [ -z "$user" ] ; then
 		return
 	fi
@@ -1469,7 +1436,7 @@ configure_extensions_provider()
 	
 	#common settings
 	sed -i "s/|PROVIDER|/$1/g"			$WORKDIR/extensions_provider.tmp
-	sed -i "s/|USERNAME|/$user_without_suffix/g"	$WORKDIR/extensions_provider.tmp
+	sed -i "s/|USERNAME|/$user/g"			$WORKDIR/extensions_provider.tmp
 	sed -i "s/|CUSTOM_OUTGOING|/$custom_outgoing/"	$WORKDIR/extensions_provider.tmp
 	sed -i "s/|SPEED_DIAL|/$speed_dial/"		$WORKDIR/extensions_provider.tmp
 	sed -i "s/|CALL_FILTER|/$call_filter_macro/"	$WORKDIR/extensions_provider.tmp
