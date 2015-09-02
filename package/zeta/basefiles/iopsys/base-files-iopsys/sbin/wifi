@@ -937,7 +937,7 @@ wdev_wme_settings() {
 wdev_tweak_settings() {
 	local device=$1
 	local fb frag rts dtim bi bf
-	config_get_bool bf "$device" beamforming "1"
+	config_get_bool bf "$device" beamforming "0"
 	config_get_bool fb "$device" frameburst "0"
 	config_get frag "$device" frag "2346"
 	config_get rts "$device" rts "2347"
