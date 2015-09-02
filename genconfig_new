@@ -70,7 +70,7 @@ done
 
 use_local_mirror()
 {
-    if wget $LOCAL_MIRROR >/dev/null 2>/dev/null
+    if wget -O /dev/null $LOCAL_MIRROR >/dev/null 2>/dev/null
     then
 	echo "mirror [$LOCAL_MIRROR] exists. Using local mirror"
 	sed -i "s;CONFIG_LOCALMIRROR=.*;CONFIG_LOCALMIRROR=$LOCAL_MIRROR;" ${CONFIG}
