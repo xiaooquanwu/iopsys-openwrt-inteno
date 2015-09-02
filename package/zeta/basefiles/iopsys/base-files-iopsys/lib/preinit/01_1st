@@ -1,0 +1,63 @@
+#!/bin/sh
+# we need to print out the reason as fast as possible to get the correct value
+# before we start things that can go wrong.
+
+# Reset
+Color_Off='\033[0m'       # Text Reset
+
+# Regular Colors
+Black='\033[0;30m'        # Black
+Red='\033[0;31m'          # Red
+Green='\033[0;32m'        # Green
+Yellow='\033[0;33m'       # Yellow
+Blue='\033[0;34m'         # Blue
+Purple='\033[0;35m'       # Purple
+Cyan='\033[0;36m'         # Cyan
+White='\033[0;37m'        # White
+
+
+boot_reason() {
+    manual=$(cat /overlay/etc/reboot 2>/dev/null)
+    reason=$(cat /proc/watchdog  | grep reason | cut -d= -f2)
+
+    store=""
+
+    if [ "$reason" == "POR" ]
+    then
+	reason_long="Power ON"
+	store="POR"
+    else
+	if [ "$reason" == "HW" ]
+	then
+	    reason_long="Hardware reset"
+	    store="HW"
+	else
+	    if [ -z "$manual" ]
+	    then
+		reason_long="Watchdog"
+		store="WD"
+	    else
+		reason_long="$manual"
+		store="MR"
+	    fi
+	fi
+    fi
+
+    # store the reason for the boot to later
+    rm -f /overlay/etc/reboot
+    echo "$store" > /overlay/etc/boot_reason
+
+    # start the watch dog using the auto trigger of the WD interrupt.
+    # start the user mode app later. but this will prevent a hard lockup that
+    # hang the system.
+    echo "1 5000000 0 4 " >/proc/watchdog
+
+    # tell the world about the status
+    echo -e "$Red"
+    echo "*******************************************************************************"
+    echo "                      Boot reason is $reason_long"
+    echo "*******************************************************************************"
+    echo -e "$Color_Off"
+}
+
+boot_hook_add preinit_main boot_reason
