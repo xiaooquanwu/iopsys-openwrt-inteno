@@ -19,10 +19,11 @@ PKG_BUILD_DEPENDS:=opkg/host
 
 include $(INCLUDE_DIR)/package.mk
 
+#+ice-client +ice-client-guest
 define Package/inteno-base
- # SECTION:=base
-  CATEGORY:=Base System
-  DEPENDS:=+netifd +minidlna +miniupnpd +libc +procd +jsonfilter +ice-client +ice-client-guest
+  SECTION:=base
+  CATEGORY:=Base system
+  DEPENDS:=+netifd +minidlna +miniupnpd +libc +procd +jsonfilter
   TITLE:=Base filesystem for OpenWrt and IOPSYS
   URL:=http://openwrt.org/
   VERSION:=$(PKG_RELEASE)-$(REVISION)

@@ -108,7 +108,11 @@ create_and_copy_files()
 	echo "CONFIG_PACKAGE_profile-${CUSTOMER,,}-${BOARDTYPE,,}=y" >> ${CONFIG}
 	#echo "CONFIG_PACKAGE_customer-${BOARDTYPE,,}=y" >> ${CONFIG}
 	#echo "CONFIG_TARGET_MODEL_NAME=\"${BOARDTYPE^^}-WU7P2U\"" >> ${CONFIG}
-	echo "CONFIG_TARGET_VERSION=\"${GITVERSION^^}\"" >> ${CONFIG}
+	if [ $OPEN -eq 0 ]; then
+		echo "CONFIG_TARGET_VERSION=\"${GITVERSION^^}\"" >> ${CONFIG}
+	else
+		echo "CONFIG_TARGET_VERSION=\"3.3.1RC5\"" >> ${CONFIG}
+	fi
 	#echo "CONFIG_TARGET_IBOARDID=\"${BOARDTYPE^^}\"" >> ${CONFIG}
 	echo "CONFIG_TARGET_CUSTOMER=\"${CUSTOMER^^}\"" >> ${CONFIG}
 	
@@ -166,7 +170,7 @@ else
 	fi
 	(cd ${CONFIGPATH}; bash ./update-makefiles.sh)
 	create_and_copy_files "$1" "$2"
-	use_local_mirror
+#	use_local_mirror
 fi
 
 
