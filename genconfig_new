@@ -134,7 +134,7 @@ create_and_copy_files()
 				if [[ "$line" == "-"* ]]; then
 					OPTION=${line#-}
 					sed -i "s/^${OPTION}.*/# ${OPTION} is not set/g" ${CONFIG}
-				else
+				elif [[ "$line" == "+"* ]]; then
 					OPTION=${line#+}
 					sed -i "s/.*${OPTION}.*/${OPTION}=y/g" ${CONFIG}
 				fi
