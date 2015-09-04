@@ -22,7 +22,7 @@ include $(INCLUDE_DIR)/package.mk
 define Package/inteno-base
  # SECTION:=base
   CATEGORY:=Base System
-  DEPENDS:=+netifd +minidlna +miniupnpd +libc +procd +jsonfilter +ice-client +ice-client-guest
+  DEPENDS:=+netifd +minidlna +miniupnpd +libc +procd +jsonfilter
   TITLE:=Base filesystem for OpenWrt and IOPSYS
   URL:=http://openwrt.org/
   VERSION:=$(PKG_RELEASE)-$(REVISION)
@@ -133,6 +133,16 @@ define Package/inteno-asterisk-modules/description
  Inteno asterisk modules preselection package
 endef
 $(eval $(call BuildPackage,inteno-asterisk-modules))
+
+define Package/bice-client
+	CATEGORY:=Config
+	DEPENDS:=+ice-client +ice-client-camerawatch +ice-client-guest +ice-client-iperf +ice-client-logreader +ice-client-monitor +ice-client-netrounds +ice-client-rshell +ice-client-torrent 
+	TITLE:=ICE client base
+endef
+$(eval $(call BuildPackage,bice-client))
+define Package/bice-client/description
+	Base package for ice client
+endef
 
 define Package/inteno-base-voice
   CATEGORY:=Config
