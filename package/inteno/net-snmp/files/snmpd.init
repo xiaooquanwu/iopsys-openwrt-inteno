@@ -156,3 +156,8 @@ stop_service() {
 	[ -f $PID_F ] && rm -f $PID_F
 	[ -f $RUN_C ] && rm -f $RUN_C
 }
+reload_service() {                                                        
+        stop                              
+        start                             
+}
+

@@ -18,7 +18,7 @@ LDFLAGS+= \
 
 define Package/ifsi
   CATEGORY:=Utilities
-  DEPENDS:=libubox +ubus
+  DEPENDS:=+ubus +libubox
   TITLE:=Inteno Functional Script Interface
 endef
 

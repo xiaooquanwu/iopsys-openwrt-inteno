@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2013-2014 OpenWrt.org
+# Copyright (C) 2013-2015 OpenWrt.org
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,7 +8,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=rpcd
-PKG_VERSION:=1.0.18
+PKG_VERSION:=2015-05-17
 PKG_RELEASE=$(PKG_SOURCE_VERSION)
 
 PKG_SOURCE_PROTO:=git
@@ -16,7 +16,7 @@ PKG_SOURCE_URL:=https://github.com/mkschreder/juci-rpcd.git
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)
 PKG_SOURCE_VERSION:=master
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
-PKG_MAINTAINER:=Martin Schröder <mkschreder.uk@gmail.com>
+PKG_MAINTAINER:=Jo-Philipp Wich <jow@openwrt.org>
 
 PKG_LICENSE:=ISC
 PKG_LICENSE_FILES:=
@@ -34,8 +34,8 @@ endef
 
 define Package/rpcd/default
   SECTION:=utils
-  CATEGORY:=UBUS
-  TITLE:=JUCI ubus RPC backend server
+  CATEGORY:=Base system
+  TITLE:=OpenWrt ubus RPC backend server
   DEPENDS:=+libubus +libubox
 endef
 
@@ -93,4 +93,3 @@ endef
 
 $(eval $(call BuildPackage,rpcd))
 $(eval $(call BuildPlugin,file,,Provides ubus calls for file and directory operations.))
-#$(eval $(call BuildPlugin,iwinfo,+libiwinfo,Provides ubus calls for accessing iwinfo data.))

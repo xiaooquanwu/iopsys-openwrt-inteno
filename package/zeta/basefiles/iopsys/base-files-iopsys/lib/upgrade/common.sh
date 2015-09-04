@@ -664,6 +664,16 @@ default_do_upgrade() {
 		brcm_fw_tool set -u 0
 		v "Current Software Upgrade Count: $(get_rootfs_sequence_number)"
 
+		if [ "$SAVE_OVERLAY" -eq 1 -a -z "$USE_REFRESH" ]; then
+			v "Creating save overlay file marker"
+			touch /SAVE_OVERLAY
+			sync
+		else
+			v "Not saving overlay files"
+			touch /SAVE_OVERLAY
+			rm /SAVE_OVERLAY
+			sync
+		fi
 		if [ "$SAVE_CONFIG" -eq 1 -a -z "$USE_REFRESH" ]; then
 			v "Creating save config file marker"
 			touch /SAVE_CONFIG

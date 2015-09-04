@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2010-2014 Jo-Philipp Wich <jow@openwrt.org>
+# Copyright (C) 2010-2015 Jo-Philipp Wich <jow@openwrt.org>
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -17,6 +17,7 @@ PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
 PKG_SOURCE_VERSION:=f91788b809d9726126e9cf4384fedbbb0c5b8a73
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
 PKG_MAINTAINER:=Felix Fietkau <nbd@openwrt.org>
+PKG_LICENSE:=ISC
 
 PKG_BUILD_DEPENDS = ustream-ssl
 
@@ -45,10 +46,8 @@ define Package/uhttpd/config
   config PACKAGE_uhttpd_debug
     bool "Build with debug messages"
     default n
-  config PACKAGE_uhttpd_no_same_origin
-    bool "Build without same origin policy"
-    default n
 endef
+
 
 define Package/uhttpd-mod-tls
   $(Package/uhttpd/default)
@@ -108,13 +107,13 @@ define Package/uhttpd/conffiles
 /etc/uhttpd.key
 endef
 
+ifneq ($(CONFIG_USE_GLIBC),)
+  TARGET_CFLAGS += -D_DEFAULT_SOURCE
+endif
+
 TARGET_LDFLAGS += -lcrypt
 
 CMAKE_OPTIONS = -DTLS_SUPPORT=on
-
-ifeq ($(CONFIG_PACKAGE_uhttpd_no_same_origin),y)
-    TARGET_LDFLAGS += -DDISABLE_SAME_ORIGIN_POLICY
-endif
 
 define Package/uhttpd/install
 	$(INSTALL_DIR) $(1)/etc/init.d

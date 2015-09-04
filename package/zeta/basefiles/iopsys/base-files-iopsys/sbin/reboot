@@ -1,0 +1,9 @@
+#! /bin/sh
+
+# record that we are doing a manual reboot
+# this to be able to detect a reboot done by watchdog
+
+echo manual >/etc/reboot
+sync
+
+/bin/busybox reboot

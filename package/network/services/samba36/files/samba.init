@@ -89,6 +89,7 @@ smb_add_share() {
 	local create_mask
 	local dir_mask
 	local browseable
+	local dirpath
 
 	config_get name $1 name
 	config_get path $1 path
@@ -98,6 +99,8 @@ smb_add_share() {
 	config_get create_mask $1 create_mask
 	config_get dir_mask $1 dir_mask
 	config_get browseable $1 browseable
+	config_get dirpath $1 dirpath
+	path="$path/$dirpath"
 
 	[ -z "$name" -o -z "$path" ] && return
 
