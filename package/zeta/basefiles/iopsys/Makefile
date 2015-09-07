@@ -82,9 +82,6 @@ define Package/inteno-base/install
 	$(CP) ./base-files-openwrt/* $(1)/
 	$(CP) ./base-files-iopsys/* $(1)/
 	
-	# TODO: remove this after all customers have upgraded to 3.0
-	rm -f $(1)/etc/dsl/b_adsl_phy.bin
-	
 	# setup root filesystem
 	mkdir -p $(1)/CONTROL
 	mkdir -p $(1)/dev
