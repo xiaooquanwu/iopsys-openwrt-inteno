@@ -34,17 +34,24 @@ boot_reason() {
 	else
 	    if [ -z "$manual" ]
 	    then
-		reason_long="Watchdog"
-		store="WD"
+		if [ -n "$FIRST_BOOT" ]
+		then
+		    reason_long="upgrade"
+		    store="upgrade"
+		else
+		    reason_long="Watchdog"
+		    store="WD"
+		fi
 	    else
 		reason_long="$manual"
-		store="MR"
+		store="$manual"
 	    fi
 	fi
     fi
 
     # store the reason for the boot to later
     rm -f /overlay/etc/reboot
+    mkdir -p /overlay/etc/
     echo "$store" > /overlay/etc/boot_reason
 
     # start the watch dog using the auto trigger of the WD interrupt.

@@ -3,7 +3,13 @@
 # record that we are doing a manual reboot
 # this to be able to detect a reboot done by watchdog
 
-echo manual >/etc/reboot
-sync
+if [ -n "$REBOOT_REASON" ]
+then
+    echo $REBOOT_REASON >/etc/reboot
+else
+    echo manual >/etc/reboot
+fi
 
-/bin/busybox reboot
+sync
+/bin/busybox reboot $@
+

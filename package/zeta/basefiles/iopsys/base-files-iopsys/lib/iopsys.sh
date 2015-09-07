@@ -163,6 +163,8 @@ iopsys_upgrade_handling() {
 	# Skip if not first boot
 	[ -e /IOP3 ] || return
 
+	export FIRST_BOOT="yes"
+	
 	mount proc /proc -t proc
 
 	if cat /proc/mounts | grep -q '/tmp tmpfs'; then
