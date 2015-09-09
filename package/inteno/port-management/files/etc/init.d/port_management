@@ -1,0 +1,94 @@
+#!/bin/sh /etc/rc.common
+
+START=15
+USE_PROCD=1
+
+. /lib/functions.sh
+
+get_port_no() {
+	local ports="0 1 2 3 4 5 6 7"
+	local port="$1"
+	local ifname
+
+	for p in $ports; do
+		ifname="$(ethswctl getifname $p | awk '{print$NF}')"
+		if [ "$ifname" == "$port" ]; then
+			echo "$p"
+			break
+		fi
+	done
+}
+
+get_current_status() {
+	local port="$1"
+	local media="$(ethctl $port media-type 2>&1)"
+	if echo $media | grep "Auto-negotiation enabled" >/dev/null; then
+		echo "auto"
+	elif echo $media | grep "100 mbps, full-duplex" >/dev/null; then
+		echo "100FD"
+	elif echo $media | grep "100 mbps, half-duplex" >/dev/null; then
+		echo "100HD"
+	elif echo $media | grep "10 mbps, full-duplex" >/dev/null; then
+		echo "10FD"
+	elif echo $media | grep "10 mbps, half-duplex" >/dev/null; then
+		echo "10HD"
+	fi
+}
+
+set_port_status() {
+	local port="$1"
+	local status="$2"
+	local curstatus=$(get_current_status $port)
+	local portno
+
+	ifconfig $port >/dev/null 2>&1 || return
+
+	case "$status" in
+		disabled)
+			ethctl $port phy-power down
+		;;
+		*)
+			if [ "$status" != "$curstatus" ]; then
+				case "$status" in
+					1000*)
+						portno=$(get_port_no $port)
+						case "$status" in
+							1000FD) ethswctl -c phymode -p $portno -y 1000 -z 1 ;;
+							1000HD) ethswctl -c phymode -p $portno -y 1000 -z 0 ;;
+						esac
+					;;
+					10*AUTO)
+						ethctl $port media-type advertise $status
+					;;
+					10*)
+						ethctl $port media-type $status
+					;;
+					*)
+					        ethctl $port media-type advertise 1000FDAUTO
+						ethctl $port media-type auto
+					;;
+				esac
+			else
+				ethctl $port phy-power up
+			fi
+		;;
+	esac
+}
+
+configure_ethports() {
+	local port status
+	for port in $(db get hw.board.ethernetPortOrder); do
+		config_get status "$1" $port
+		set_port_status $port $status
+	done
+}
+
+start_service() {
+	config_load ports
+	config_foreach configure_ethports ethports
+}
+
+service_triggers() {
+        procd_add_reload_trigger ports
+}
+

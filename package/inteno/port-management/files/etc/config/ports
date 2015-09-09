@@ -1,0 +1,7 @@
+config ethports ethports
+        option eth0 'auto'
+        option eth1 'auto'
+        option eth2 'auto'
+        option eth3 'auto'
+        option eth4 'auto'
+
