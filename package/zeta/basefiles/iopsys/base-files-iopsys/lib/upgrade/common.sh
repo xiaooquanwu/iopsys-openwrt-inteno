@@ -486,6 +486,7 @@ create_springboard_preinit() {
 			   /dev/mtd$mtd_no $from
 		echo "Reboot into new filesystem..."
 		sync
+		export REBOT_REASON=springboard
 		reboot -f
 		sleep 10
 	EOF
@@ -710,6 +711,7 @@ default_do_upgrade() {
 		[ -n "$DELAY" ] && sleep "$DELAY"
 		v "Rebooting system ..."
 		sync
+		export REBOOT_REASON=upgrade
 		reboot -f
 	else
 		if [ "$SAVE_CONFIG" -eq 1 -a -z "$USE_REFRESH" ]; then
@@ -755,6 +757,7 @@ do_upgrade() {
 	[ -n "$DELAY" ] && sleep "$DELAY"
 	ask_bool 1 "Reboot" && {
 		v "Rebooting system..."
+		export REBOOT_REASON=upgrade
 		reboot -f
 		sleep 5
 		echo b 2>/dev/null >/proc/sysrq-trigger
