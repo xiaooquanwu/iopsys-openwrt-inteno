@@ -486,7 +486,7 @@ create_springboard_preinit() {
 			   /dev/mtd$mtd_no $from
 		echo "Reboot into new filesystem..."
 		sync
-		export REBOT_REASON=springboard
+		export REBOOT_REASON=springboard
 		reboot -f
 		sleep 10
 	EOF
