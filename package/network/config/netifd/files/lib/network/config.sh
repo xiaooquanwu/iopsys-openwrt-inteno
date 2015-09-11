@@ -133,3 +133,17 @@ interfacename() {
 	    *wl*) echo "WLAN" ;;
 	esac
 }
+
+get_port_number() {
+	local ports="0 1 2 3 4 5 6 7 8"
+	local port="$1"
+	local ifname
+
+	for p in $ports; do
+		ifname="$(ethswctl getifname $p | awk '{print$NF}')"
+		if [ "$ifname" == "$port" ]; then
+			echo "$p"
+			break
+		fi
+	done
+}
