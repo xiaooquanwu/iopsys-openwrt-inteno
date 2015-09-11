@@ -1,9 +1,47 @@
 #!/bin/sh /etc/rc.common
 
+DEBUG=1
+
 START=15
 USE_PROCD=1
 
 . /lib/functions.sh
+. /lib/network/config.sh
+
+check_for_config(){
+	if [ -s "/etc/config/ports" ]
+	then 
+		debug_print "file exists and has content" 
+		if uci -q show ports >/dev/null #are there any valid content then continue
+		then 
+			return 0
+		else
+			rm -f /etc/config/ports
+		fi
+	fi
+	debug_print "file doesent exsists or is empty"
+	touch /etc/config/ports
+	local portnames="$(db get hw.board.ethernetPortNames)"
+	local portorder="$(db get hw.board.ethernetPortOrder)"
+	for port in $portorder
+	do
+		uci add ports ethport
+		uci rename ports.@ethport[-1]=$port
+		uci set ports.@ethport[-1].name="$(interfacename $port)"
+		uci set ports.@ethport[-1].speed='auto'
+		uci set ports.@ethport[-1].pause=0
+	done
+	uci commit ports
+	[ $DEBUG ] && cat /etc/config/ports
+}
+
+
+debug_print(){
+	if [ $DEBUG = "1" ]
+	then
+	echo -e $1 >/dev/console
+	fi
+}
 
 get_port_no() {
 	local ports="0 1 2 3 4 5 6 7"
@@ -22,6 +60,7 @@ get_port_no() {
 get_current_status() {
 	local port="$1"
 	local media="$(ethctl $port media-type 2>&1)"
+	#echo Media: $media >/dev/console
 	if echo $media | grep "Auto-negotiation enabled" >/dev/null; then
 		echo "auto"
 	elif echo $media | grep "100 mbps, full-duplex" >/dev/null; then
@@ -46,7 +85,7 @@ set_port_status() {
 	case "$status" in
 		disabled)
 			ethctl $port phy-power down
-		;;
+		;;	
 		*)
 			if [ "$status" != "$curstatus" ]; then
 				case "$status" in
@@ -64,7 +103,7 @@ set_port_status() {
 						ethctl $port media-type $status
 					;;
 					*)
-					        ethctl $port media-type advertise 1000FDAUTO
+					    ethctl $port media-type advertise 1000FDAUTO
 						ethctl $port media-type auto
 					;;
 				esac
@@ -75,15 +114,17 @@ set_port_status() {
 	esac
 }
 
-configure_ethports() {
-	local port speed pause
-	config_get port "$1" port
-	config_get speed "$1" speed
-	config_get pause "$1" pause
-	set_port_status $port $speed
+ech
+#arg1: ethX
+#arg2: 0 or 1
+set_port_pause() {
+	local pause="$2"
+	portno=$(get_port_no $1)
+	ethswctl -c pause -p $portno -v $pause
 }
 
 start_service() {
+	check_for_config
 	config_load ports
 	config_foreach configure_ethports ethport
 }

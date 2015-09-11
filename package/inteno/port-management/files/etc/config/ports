@@ -1,7 +1,29 @@
-config ethports ethports
-        option eth0 'auto'
-        option eth1 'auto'
-        option eth2 'auto'
-        option eth3 'auto'
-        option eth4 'auto'
+config ethport
+	option port eth0
+	option name WAN
+    option speed 'auto'
+	option pause 1
 
+config ethport
+	option port eth1
+	option name LAN1
+    option speed 'auto'
+	option pause 1
+
+config ethport
+	option port eth2
+	option name LAN3
+    option speed '10FD'
+	option pause 1
+
+config ethport
+	option port eth3
+	option name LAN2
+    option speed '100HD'
+	option pause 1
+
+config ethport
+	option port eth4
+	option name LAN4
+    option speed '10HD'
+	option pause 1
