@@ -4086,3 +4086,4 @@ CONFIG_PACKAGE_usbreset=y
 # CONFIG_JUCI_UBUS_CORE is not set
 CONFIG_PACKAGE_rpcd=y
 CONFIG_PACKAGE_iwatchdog=y
+CONFIG_PACKAGE_crashlog=y

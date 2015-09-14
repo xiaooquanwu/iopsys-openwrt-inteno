@@ -1,0 +1,34 @@
+#!/bin/sh /etc/rc.common
+
+START=99
+
+send_log()
+{
+	nr=$(db get hw.board.serialNumber)
+	hw=$(db get hw.board.hardware)
+	hwv=$(db get hw.board.hardwareVersion)
+	bid=$(db get hw.board.boardId)
+
+	server=$(/sbin/uci get system.cashlog.server)
+    
+	scp  -S /usr/sbin/logssh /proc/last_kmsg log@${server}:log/${bid}_${hwv}_${hw}_${nr}
+}
+
+boot()
+{
+    # is crashlog enabled ?
+    enable=$(/sbin/uci get system.cashlog.enable)
+    case $enable in
+	0|no|NO|false|FALSE)
+	    exit 0
+	    ;;
+    esac
+
+    # is this boot a result from a crash ?
+    reason=$(cat /etc/boot_reason)
+    case $reason in
+	HW|WD)
+	    send_log
+	    ;;
+    esac
+}

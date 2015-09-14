@@ -1,0 +1,51 @@
+#! /bin/bash
+# authorized_keys command="/home/boxi/my_scp",no-port-forwarding,no-agent-forwarding,no-X11-forwarding
+
+val=`expr match "$SSH_ORIGINAL_COMMAND" "scp"`
+if [ $val != 3 ]
+then
+    echo "only scp is allowed for this rsa key"
+    exit 1
+fi
+
+#strip out "scp" as getopts barf on anything not an option
+
+args=${SSH_ORIGINAL_COMMAND:3}
+
+# we must set args to positional paramters otherwise it's next to impossible
+# to get to the rest of the line that is not arguments.
+
+set -- $args
+while getopts "rftdvpq" Option
+do
+  case $Option in
+    r ) echo "recursive not allowed";exit 1;;
+    f ) echo "reading files not allowed";exit 1;;
+    t ) ;;
+    d ) ;;
+    v ) ;;
+    p ) ;;
+    q ) ;;
+    * ) ;;   # Default.
+  esac
+done
+
+shift $(($OPTIND - 1))
+
+file="$*"
+
+if [ "$file" == "." ]
+then
+    echo "Implicit filename \".\" not allowed."
+    echo "You must specify the exact target filename"
+    exit 1
+fi
+
+# try to create uniq files
+EXTRA=$((0))
+while [ -e "${file}_${EXTRA}" ]
+do
+    EXTRA=$((EXTRA +1))
+done
+
+exec ${SSH_ORIGINAL_COMMAND}_${EXTRA}
