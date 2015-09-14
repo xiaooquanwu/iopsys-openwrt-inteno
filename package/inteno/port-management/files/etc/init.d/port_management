@@ -26,8 +26,8 @@ check_for_config(){
 	for port in $portorder
 	do
 		uci add ports ethport
-		uci rename ports.@ethport[-1]=$port
-		uci set ports.@ethport[-1].name="$(interfacename $port)"
+		uci rename ports.@ethport[-1]="$(interfacename $port)"
+		uci set ports.@ethport[-1].ifname=$port
 		uci set ports.@ethport[-1].speed='auto'
 		uci set ports.@ethport[-1].pause=0
 	done
@@ -114,7 +114,15 @@ set_port_status() {
 	esac
 }
 
-ech
+configure_ethports(){
+	local port ifname pause speed
+	name=$1
+	config_get speed $name speed 
+	config_get ifname $name ifname
+	config_get pause $name pause
+	set_port_status $ifname $speed
+	set_port_pause $ifname $pause
+}
 #arg1: ethX
 #arg2: 0 or 1
 set_port_pause() {
