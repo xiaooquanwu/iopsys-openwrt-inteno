@@ -106,7 +106,22 @@ boot() {
 	start
 }
 
-config_load firewall
+update_enabled() {                              
+	config_get name "$1" name             
+	local section=$1
+	echo "Name: $name, section: $section";
+	if [ "$name" == "wan" ]; then
+		if [ $(uci get firewall.settings.disabled) == "1" ]; then
+			uci set firewall.$section.input="ACCEPT";
+		else
+			uci set firewall.$section.input="REJECT";
+		fi                             
+		uci commit firewall            
+	fi                                               
+}
+
+config_load firewall                                        
+config_foreach update_enabled zone
 rematch_duidip6
 reconf_parental
 reindex_dmzhost
