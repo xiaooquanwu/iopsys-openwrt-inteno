@@ -1,0 +1,8 @@
+nf_conntrack hashsize=3985
+nf_defrag_ipv4
+nf_conntrack_ipv4
+xt_state
+iptable_raw
+xt_NOTRACK
+xt_CT
+xt_conntrack
