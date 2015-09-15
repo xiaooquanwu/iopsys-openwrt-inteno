@@ -150,6 +150,7 @@ define Image/Build/CFE
 		-o $(BIN_DIR)/$(IHGSP_BUILD_VERSION)_cfe \
 		$(IMAGETAG_IMAGE_ARGS)
 
+    ifeq (1,0)
     ifneq ($(CONFIG_TARGET_ROOTFS_UBIFS),)
 	# Make header (.z)
 	$(call Image/Build/Header,header.z,cfe$(CONFIG_BCM_CHIP_ID)_nand.v,void,void)
@@ -162,6 +163,7 @@ define Image/Build/CFE
 	# Attach checksum to combined image (.z)
 	md5sum $(BIN_DIR)/$(IHGSP_BUILD_VERSION).z |awk '{printf "%s",$$$$1}' \
 		>> $(BIN_DIR)/$(IHGSP_BUILD_VERSION).z
+    endif
     endif
 
 	$(eval CFE_BUILT:=1)
@@ -208,6 +210,7 @@ define Image/Build/ubi
 	cat $(KDIR)/nvram_marker $(KDIR)/lotsof.ff \
 		| head --bytes=131072 > $(KDIR)/nvram.bin
 
+    ifeq (1,0)
 	# Concat cfe, nvram, vmlinux and ubi images together (.x)
 	cat $(BIN_DIR)/$(IHGSP_BUILD_VERSION)_cfe \
 	    $(KDIR)/nvram.bin \
@@ -219,13 +222,16 @@ define Image/Build/ubi
 	cat $(KDIR)/temp_x.img \
 	    $(KDIR)/root.ubi > $(KDIR)/cfe_nvram_vmlinux_ubi_image_128
 
-	rm $(KDIR)/temp_x.img $(KDIR)/lotsof.ff
+	rm $(KDIR)/temp_x.img
 
 	# Tag the combined image (.x)
 	$(STAGING_DIR_HOST)/bin/imagetag_nand \
 		-f $(KDIR)/cfe_nvram_vmlinux_ubi_image_128 \
 		-o $(BIN_DIR)/$(IHGSP_BUILD_VERSION).x \
 		$(IMAGETAG_IMAGE_ARGS)
+    endif
+
+	rm $(KDIR)/lotsof.ff
 
 	# Make header (.y)
 	$(call Image/Build/Header,header.y,cfe$(CONFIG_BCM_CHIP_ID)_nand.v,vmlinux.jffs2,root.ubifs)
