@@ -30,7 +30,12 @@ check_for_config(){
 		uci set ports.@ethport[-1].name="$(interfacename $port)"
 		uci set ports.@ethport[-1].ifname=$port
 		uci set ports.@ethport[-1].speed='auto'
-		uci set ports.@ethport[-1].pause=0
+		if [ "$(interfacename $port)" = "WAN" ]
+		then 
+			uci set ports.@ethport[-1].pause=1
+		else
+			uci set ports.@ethport[-1].pause=0
+		fi
 	done
 	uci commit ports
 	[ $DEBUG ] && cat /etc/config/ports
