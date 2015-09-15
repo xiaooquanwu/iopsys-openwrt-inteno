@@ -27,6 +27,7 @@ check_for_config(){
 	do
 		uci add ports ethport
 		uci rename ports.@ethport[-1]="$(interfacename $port)"
+		uci set ports.@ethport[-1].name="$(interfacename $port)"
 		uci set ports.@ethport[-1].ifname=$port
 		uci set ports.@ethport[-1].speed='auto'
 		uci set ports.@ethport[-1].pause=0
