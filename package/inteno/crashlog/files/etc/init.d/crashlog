@@ -8,10 +8,10 @@ send_log()
 	hw=$(db get hw.board.hardware)
 	hwv=$(db get hw.board.hardwareVersion)
 	bid=$(db get hw.board.boardId)
-
+	sw=$(db get hw.board.iopVersion)
 	server=$(/sbin/uci get system.cashlog.server)
     
-	scp  -S /usr/sbin/logssh /proc/last_kmsg log@${server}:log/${bid}_${hwv}_${hw}_${nr}
+	scp  -S /usr/sbin/logssh /proc/last_kmsg log@${server}:log/${bid}_${hwv}_${hw}_${sw}_${nr}
 }
 
 boot()
