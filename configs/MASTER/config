@@ -4,9 +4,9 @@
 # Fri Jun 26 15:51:16 2015
 #
 
-# CONFIG_TARGET_NO_5G is not set
 # CONFIG_TARGET_NO_BLUETOOTH is not set
 # CONFIG_TARGET_NO_DECT is not set
+# CONFIG_TARGET_NO_DHD is not set
 # CONFIG_TARGET_NO_DSL is not set
 # CONFIG_TARGET_NO_DSL_ANNEX_A is not set
 # CONFIG_TARGET_NO_DSL_ANNEX_B is not set

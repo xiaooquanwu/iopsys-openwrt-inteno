@@ -112,15 +112,6 @@ define Image/Prepare
 	rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.3.8
 	rm -rf $(BUILD_DIR_ROOT)/usr/lib/libvorbisenc*
 
-    ifeq ($(CONFIG_TARGET_IBOARDID),"VOX25")
-		rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.4.11-rt19/bluetooth.ko
-		rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.4.11-rt19/btusb.ko
-		rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.4.11-rt19/extra/dect.ko
-		rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.4.11-rt19/extra/dectshim.ko
-		rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.4.11-rt19/extra/dhd.ko
-		rm -rf $(BUILD_DIR_ROOT)/etc/wlan/dhd
-    endif
-
     ifeq ($(CONFIG_TARGET_NO_DSL),)
 		rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.4.11-rt19/extra/adsldd.ko
 		rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.4.11-rt19/extra/bcmxtmcfg.ko
@@ -147,7 +138,7 @@ define Image/Prepare
 		rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.4.11-rt19/extra/dectshim.ko
     endif
 
-    ifeq ($(CONFIG_TARGET_NO_5G),)
+    ifeq ($(CONFIG_TARGET_NO_DHD),)
 		rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.4.11-rt19/extra/dhd.ko
 		rm -rf $(BUILD_DIR_ROOT)/etc/wlan/dhd
     endif
