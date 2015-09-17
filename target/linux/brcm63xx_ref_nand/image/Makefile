@@ -120,6 +120,42 @@ define Image/Prepare
 		rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.4.11-rt19/extra/dhd.ko
 		rm -rf $(BUILD_DIR_ROOT)/etc/wlan/dhd
     endif
+
+    ifeq ($(CONFIG_TARGET_NO_DSL),)
+		rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.4.11-rt19/extra/adsldd.ko
+		rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.4.11-rt19/extra/bcmxtmcfg.ko
+		rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.4.11-rt19/extra/bcmxtmrtdrv.ko
+		rm -rf $(BUILD_DIR_ROOT)/etc/dsl
+    endif
+
+    ifeq ($(CONFIG_TARGET_NO_DSL_ANNEX_A),)
+		rm -rf $(BUILD_DIR_ROOT)/etc/dsl/a_adsl_phy.bin
+    endif
+
+    ifeq ($(CONFIG_TARGET_NO_DSL_ANNEX_B),)
+		rm -rf $(BUILD_DIR_ROOT)/etc/dsl/b_adsl_phy.bin
+    endif
+
+    ifeq ($(CONFIG_TARGET_NO_VOICE),)
+		rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.4.11-rt19/extra/endpointdd.ko
+		rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.4.11-rt19/extra/dect.ko
+		rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.4.11-rt19/extra/dectshim.ko
+    endif
+
+    ifeq ($(CONFIG_TARGET_NO_DECT),)
+		rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.4.11-rt19/extra/dect.ko
+		rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.4.11-rt19/extra/dectshim.ko
+    endif
+
+    ifeq ($(CONFIG_TARGET_NO_5G),)
+		rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.4.11-rt19/extra/dhd.ko
+		rm -rf $(BUILD_DIR_ROOT)/etc/wlan/dhd
+    endif
+
+    ifeq ($(CONFIG_TARGET_NO_BLUETOOTH),)
+		rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.4.11-rt19/bluetooth.ko
+		rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.4.11-rt19/btusb.ko
+    endif
 endef
 
 define Image/Build/Header

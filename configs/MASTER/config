@@ -3,6 +3,15 @@
 # OpenWrt version: Barrier Breaker (r45951)
 # Fri Jun 26 15:51:16 2015
 #
+
+# CONFIG_TARGET_NO_5G is not set
+# CONFIG_TARGET_NO_BLUETOOTH is not set
+# CONFIG_TARGET_NO_DECT is not set
+# CONFIG_TARGET_NO_DSL is not set
+# CONFIG_TARGET_NO_DSL_ANNEX_A is not set
+# CONFIG_TARGET_NO_DSL_ANNEX_B is not set
+# CONFIG_TARGET_NO_VOICE is not set
+
 CONFIG_HAVE_DOT_CONFIG=y
 # CONFIG_TARGET_ppc40x is not set
 # CONFIG_TARGET_ppc44x is not set
