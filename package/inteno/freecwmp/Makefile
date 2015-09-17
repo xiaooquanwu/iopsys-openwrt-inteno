@@ -8,7 +8,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=cwmp
-PKG_VERSION:=2.3-2015-09-15
+PKG_VERSION:=2.3-2015-09-16
 PKG_FIXUP:=autoreconf
 ifeq ($(CONFIG_BCM_OPEN),y)
 PKG_SOURCE_URL:=http://ihgsp.inteno.se/git/freecwmp.git
@@ -16,7 +16,7 @@ else
 PKG_SOURCE_URL:=ssh://git@iopsys.inteno.se/freecwmp.git
 endif
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=f16c7cd8b9c174472d1a389841c299fdec09626a
+PKG_SOURCE_VERSION:=c874a4e2a1a2a961b4f95f10228d49bd20ba7665
 PKG_RELEASE=$(PKG_SOURCE_VERSION)
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
