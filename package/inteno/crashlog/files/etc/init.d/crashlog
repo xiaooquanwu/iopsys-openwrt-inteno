@@ -10,8 +10,17 @@ send_log()
 	bid=$(db get hw.board.boardId)
 	sw=$(db get hw.board.iopVersion)
 	server=$(/sbin/uci get system.cashlog.server)
-    
-	scp  -S /usr/sbin/logssh /proc/last_kmsg log@${server}:log/${bid}_${hwv}_${hw}_${sw}_${nr}
+
+	while true
+	do
+	    scp  -S /usr/sbin/logssh /proc/last_kmsg log@${server}:log/${bid}_${hwv}_${hw}_${sw}_${nr}
+	    if [ $? == 0 ]
+	    then
+	       break;
+	    fi
+	    # wait for another minute then try again
+	    sleep 60
+	done
 }
 
 boot()
