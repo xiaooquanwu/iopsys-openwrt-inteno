@@ -1,0 +1,49 @@
+#! /bin/sh
+
+TMP_CORE=/tmp/new_core
+# first test if we can contact the log server.
+# if not abort directly the core file takes up memory
+alive()
+{
+	ping -c1 $server
+
+	if [ $? != 0 ]
+	then
+		# drain core file from kernel
+		cat >/dev/null
+		exit 0
+	fi
+}
+
+
+# is corelog enabled ?
+enable=$(/sbin/uci get system.corelog.enable)
+case $enable in
+    0|no|NO|false|FALSE|"")
+	# drain core file from kernel
+	cat >/dev/null
+	exit 0
+	;;
+esac
+
+server=$(/sbin/uci get system.corelog.server)
+
+alive
+
+# dump out the core to disk we need this as scp needs a size before we send data
+# and this is the only way to know how much data there is
+cat >$TMP_CORE
+
+# in case filesystem/memory is full at least kill the core in the kernel memory should give us some
+# more memory to work with. normally this would do nothing.
+cat >/dev/null
+
+nr=$(db get hw.board.serialNumber)
+hw=$(db get hw.board.hardware)
+hwv=$(db get hw.board.hardwareVersion)
+bid=$(db get hw.board.boardId)
+sw=$(db get hw.board.iopVersion)
+
+scp -S /usr/sbin/logssh $TMP_CORE log@${server}:log/core_${1}_${2}_${bid}_${hwv}_${hw}_${sw}_${nr}
+rm $TMP_CORE
+

@@ -9,7 +9,7 @@ send_log()
 	hwv=$(db get hw.board.hardwareVersion)
 	bid=$(db get hw.board.boardId)
 	sw=$(db get hw.board.iopVersion)
-	server=$(/sbin/uci get system.cashlog.server)
+	server=$(/sbin/uci get system.crashlog.server)
 
 	while true
 	do
@@ -26,7 +26,7 @@ send_log()
 boot()
 {
     # is crashlog enabled ?
-    enable=$(/sbin/uci get system.cashlog.enable)
+    enable=$(/sbin/uci get system.crashlog.enable)
     case $enable in
 	0|no|NO|false|FALSE)
 	    exit 0

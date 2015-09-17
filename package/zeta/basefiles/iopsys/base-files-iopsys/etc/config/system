@@ -16,9 +16,13 @@ config 'timeserver' 'ntp'
 	list server     ntp1.gbg.netnod.se
 
 config log1 crashlog
-       option enable 0
+       option enable 1
        option server crash.inteno.se
 
-config log2 watchdog
+config log2 corelog
+       option enable 1
+       option server crash.inteno.se
+
+config log3 watchdog
        option enable 1
 
