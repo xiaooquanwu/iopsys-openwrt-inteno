@@ -13,6 +13,6 @@ export DEVICENAME="${DEVPATH##*/}"
 
 [ \! -z "$1" -a -d /etc/hotplug.d/$1 ] && {
 	for script in $(ls /etc/hotplug.d/$1/* 2>&-); do (
-		[ -f $script ] && chmod +x $script && $script
+		[ -f $script ] && . $script
 	); done
 }
