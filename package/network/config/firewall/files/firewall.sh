@@ -16,7 +16,7 @@ check_forward(){
 	config_get src_dport $1 src_dport
 	case $src_dport in
 	"80")
-		if [ $src = "wan" ]; then
+		if [ $src == "wan" ]; then
 			lan_and_wan=1
 		fi
 		;;
@@ -37,10 +37,10 @@ check_rule(){
 	config_get src $1 src
 	config_get dest_port $1 dest_port
 	config_get hidden $1 hidden
-	if [ "$target" = "ACCEPT" ] && [ "$src" = "wan" ] && [ "$dest_port" = "80" ] && [ "$hidden" = "1" ];then
+	if [ "$target" == "ACCEPT" ] && [ "$src" == "wan" ] && [ "$dest_port" == "80" ] && [ "$hidden" == "1" ];then
 		noRule=0
-		uci set firewall.$1.dest_port=$port
-		uci commit firewall
+		uci -q set firewall.$1.dest_port=$port
+		uci -q commit firewall
 	fi
 }
 check_includes_for_rule(){
@@ -108,22 +108,22 @@ http_port_management(){
 	#check all redirects if port 80 on wan is forwared and looks for free port
 	config_foreach check_forward redirect
 	#any free ports??
-	[ "$((used8080 + used8081 + used8008 + used8888 ))" = "4" ] && return
+	[ "$((used8080 + used8081 + used8008 + used8888 ))" == "4" ] && return
 	local port
 	case "0" in
-		$used8080)
+		"$used8080")
 			port="8080";;
-		$used8081)
+		"$used8081")
 			port="8081";;
-		$used8008)
+		"$used8008")
 			port="8008";;	
-		$used8888)
+		"$used8888")
 			port="8888";;
 	esac
 	#looks for exsisting rule on port 80 and if it finds it moves it to $port
-	[ "$lan_and_wan" = "1" ] && config_foreach check_rule rule $port
+	[ "$lan_and_wan" == "1" ] && config_foreach check_rule rule $port
 	#if no rule is found all includes are checked for rule and fixed
-	[ "$noRule" = "1" ] && config_foreach check_includes_for_rule include $port
+	[ "$noRule" == "1" ] && config_foreach check_includes_for_rule include $port
 	#change the port the webserver listes on
 	[ -f /etc/lighttpd/lighttpd.conf ] && change_webserver_listen_port $port
 	change_webserver_listen_port_uci $port
@@ -135,7 +135,7 @@ rematch_duidip6()
 		config_get duid "$1" duid
 		if [ -n "$duid" ]; then
 			ip6=$( grep "$duid" /tmp/hosts/odhcpd | head -1 | awk '{print$NF}')
-			[ -n "$ip6" ] && uci set firewall."$1".dest_ip="$ip6"
+			[ -n "$ip6" ] && uci -q set firewall."$1".dest_ip="$ip6"
 		fi
 	}
 	config_foreach duid_to_ip6 rule
@@ -148,9 +148,9 @@ reindex_dmzhost()
 	enabled=$(uci -q get firewall.dmzhost.enabled)
 	[ "$enabled" == "0" ] && return
 	path=$(uci -q get firewall.dmzhost.path)
-	uci delete firewall.dmzhost
+	uci -q delete firewall.dmzhost
 	cfgno=$(uci -q add firewall include)
-	uci rename firewall.$cfgno=dmzhost
+	uci -q rename firewall.$cfgno=dmzhost
 	uci -q set firewall.dmzhost.path="$path"
 	uci -q set firewall.dmzhost.reload="1"
 }
@@ -160,11 +160,11 @@ reconf_parental()
 	reconf() {
 		config_get_bool parental "$1" parental
 		if [ "$parental" == "1" ]; then
-			uci set firewall."$1".src="*"
-			uci set firewall."$1".src_port=""
-			uci set firewall."$1".dest="*"
-			uci set firewall."$1".dest_port=""
-			uci set firewall."$1".proto="tcpudp"
+			uci -q set firewall."$1".src="*"
+			uci -q set firewall."$1".src_port=""
+			uci -q set firewall."$1".dest="*"
+			uci -q set firewall."$1".dest_port=""
+			uci -q set firewall."$1".proto="tcpudp"
 		fi
 	}
 	config_foreach reconf rule
@@ -174,22 +174,22 @@ update_enabled() {
 	local section=$1
 	echo "Name: $name, section: $section";
 	if [ "$name" == "wan" ]; then
-		if [ $(uci get firewall.settings.disabled) == "1" ]; then
-			uci set firewall.$section.input="ACCEPT";
+		if [ "$(uci -q get firewall.settings.disabled)" == "1" ]; then
+			uci -q set firewall.$section.input="ACCEPT";
 		else
-			uci set firewall.$section.input="REJECT";
+			uci -q set firewall.$section.input="REJECT";
 		fi                             
-		uci commit firewall            
+		uci -q commit firewall            
 	fi                                               
 }
 
 firewall_preconf() {
-	config_load firewall                                        
+	config_load firewall 
 	config_foreach update_enabled zone
 	rematch_duidip6
 	reconf_parental
 	reindex_dmzhost
 	http_port_management
-	uci commit firewall
+	uci -q commit firewall
 }
 
