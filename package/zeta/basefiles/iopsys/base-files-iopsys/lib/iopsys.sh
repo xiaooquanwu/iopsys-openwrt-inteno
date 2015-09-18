@@ -40,8 +40,14 @@ copy_old_config() {
 			rm /overlay/SAVE_OVERLAY
 		fi
 		if [ -e /mnt/overlay/SAVE_CONFIG ]; then
-			echo "Unpacking old config..."
-			tar xvzf /mnt/overlay/sysupgrade.tgz -C /
+			if [ -e /mnt/overlay/sysupgrade.tgz ]; then
+				echo "Unpacking old config..."
+				tar xvzf /mnt/overlay/sysupgrade.tgz -C /
+			else
+				echo "Conservative copy of old config..."
+				cp -rfdp /mnt/overlay/etc/dropbear/* /overlay/etc/dropbear
+				for file in network dhcp wireless firewall dropbear ; do cp -rp /mnt/overlay/etc/config/$file /overlay/etc/config/ ; done
+			fi
 			rm /overlay/SAVE_CONFIG
 		fi
 		umount /mnt
@@ -69,8 +75,14 @@ copy_old_config() {
 			rm -f /overlay/SAVE_OVERLAY
 		fi
 		if [ -e /mnt/overlay/SAVE_CONFIG ]; then
-			echo "Unpacking old config..."
-			tar xvzf /mnt/overlay/sysupgrade.tgz -C /
+			if [ -e /mnt/overlay/sysupgrade.tgz ]; then
+				echo "Unpacking old config..."
+				tar xvzf /mnt/overlay/sysupgrade.tgz -C /
+			else
+				echo "Conservative copy of old config..."
+				cp -rfdp /mnt/overlay/etc/dropbear/* /overlay/etc/dropbear
+				for file in network dhcp wireless firewall dropbear ; do cp -rp /mnt/overlay/etc/config/$file /overlay/etc/config/ ; done
+			fi
 			rm -f /overlay/SAVE_CONFIG
 		fi
 		umount /mnt
