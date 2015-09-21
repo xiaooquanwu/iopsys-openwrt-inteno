@@ -1,0 +1,58 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2014 OpenWrt.org
+
+START=10
+USE_PROCD=1
+
+validate_system_section()
+{
+	uci_validate_section system system "${1}" \
+		'hostname:string:OpenWrt' \
+		'conloglevel:uinteger' \
+		'buffersize:uinteger' \
+		'timezone:string:UTC' \
+		'zonename:string' 
+}
+
+system_config() {
+	local cfg="$1"
+
+	local hostname conloglevel buffersize timezone zonename
+
+	validate_system_section "${1}" || {
+		echo "validation failed"
+		return 1
+	}
+
+	echo "$hostname" > /proc/sys/kernel/hostname
+	[ -z "$conloglevel" -a -z "$buffersize" ] || dmesg ${conloglevel:+-n $conloglevel} ${buffersize:+-s $buffersize}
+	echo "$timezone" > /tmp/TZ
+	[ -n "$zonename" ] && [ -f "/usr/share/zoneinfo/$zonename" ] && ln -s "/usr/share/zoneinfo/$zonename" /tmp/localtime 
+
+	# apply timezone to kernel
+	date -k
+	
+	local ping_interval
+	config_get ping_interval $cfg ping_interval 5
+	if grep -q "/sbin/testnet timed_check" /etc/crontabs/root
+	then 
+		sed -i '/\/sbin\/testnet timed_check/s/\*\/[0-9]\+/\*\/'$ping_interval'/g' /etc/crontabs/root
+	else
+		echo "*/"$ping_interval" * * * * /sbin/testnet timed_check >/dev/null 2>&1" >>/etc/crontabs/root
+	fi
+}
+
+reload_service() {
+	config_load system
+	config_foreach system_config system
+}
+
+service_triggers()
+{
+	procd_add_reload_trigger "system"
+	procd_add_validation validate_system_section
+}
+
+start_service() {
+	reload_service
+}

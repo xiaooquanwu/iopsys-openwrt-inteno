@@ -4,8 +4,13 @@ local netcon=0
 local tvcon=0
 local wanip=0
 
-local IFACE=$1
-local timed_check=$2
+local timed_check IFACE
+if [ "$1" == "timed_check" ];then
+	timed_check=1
+else
+	IFACE=$1
+fi
+
 
 test_connection() {
 	local addr="$1"
