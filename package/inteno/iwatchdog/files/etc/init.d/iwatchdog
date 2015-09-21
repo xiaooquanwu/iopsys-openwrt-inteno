@@ -7,11 +7,30 @@ USE_PROCD=1
 NAME=iwatchdog
 PROG=/sbin/iwatchdog
 
+fill_in_default()
+{
+    /sbin/uci add system log
+    /sbin/uci rename system.@log[-1]=watchdog
+    /sbin/uci set system.watchdog.enable=no
+    /sbin/uci commit
+}
+
 start_service() {
-	procd_open_instance
-	procd_set_param command "$PROG"
-	procd_set_param respawn
-	procd_close_instance
+    enable=$(/sbin/uci get system.watchdog.enable)
+    case $enable in
+       0|no|NO|false|FALSE)
+           exit 0
+           ;;
+	"")
+	    fill_in_default
+	    exit 0
+	    ;;
+     esac
+
+    procd_open_instance
+    procd_set_param command "$PROG"
+    procd_set_param respawn
+    procd_close_instance
 }
 
 #stop() {

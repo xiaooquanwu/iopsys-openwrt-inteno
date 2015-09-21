@@ -23,12 +23,25 @@ send_log()
 	done
 }
 
+fill_in_default()
+{
+    /sbin/uci add system log
+    /sbin/uci rename system.@log[-1]=crashlog
+    /sbin/uci set system.crashlog.enable=no
+    /sbin/uci set system.crashlog.server="crash.inteno.se"
+    /sbin/uci commit
+}
+
 boot()
 {
     # is crashlog enabled ?
     enable=$(/sbin/uci get system.crashlog.enable)
     case $enable in
 	0|no|NO|false|FALSE)
+	    exit 0
+	    ;;
+	"")
+	    fill_in_default
 	    exit 0
 	    ;;
     esac

@@ -3,11 +3,22 @@
 # record that we are doing a manual reboot
 # this to be able to detect a reboot done by watchdog
 
+if [-e /etc/reboot ]
+then
+    fnotice="/etc/reboot"
+else if [-e /rom/etc/reboot ]
+     then
+	 fnotice="/rom/etc/reboot"
+     else
+	 fnotice="/dev/null"
+     fi
+fi
+
 if [ -n "$REBOOT_REASON" ]
 then
-    echo $REBOOT_REASON >/etc/reboot
+    echo $REBOOT_REASON > $fnotice
 else
-    echo manual >/etc/reboot
+    echo manual > $fnotice
 fi
 
 sync

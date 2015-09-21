@@ -15,13 +15,25 @@ alive()
 	fi
 }
 
+fill_in_default()
+{
+    /sbin/uci add system log
+    /sbin/uci rename system.@log[-1]=corelog
+    /sbin/uci set system.corelog.enable=no
+    /sbin/uci set system.corelog.server="crash.inteno.se"
+    /sbin/uci commit
+}
 
 # is corelog enabled ?
 enable=$(/sbin/uci get system.corelog.enable)
 case $enable in
-    0|no|NO|false|FALSE|"")
+    0|no|NO|false|FALSE)
 	# drain core file from kernel
 	cat >/dev/null
+	exit 0
+	;;
+    "")
+	fill_in_default
 	exit 0
 	;;
 esac
