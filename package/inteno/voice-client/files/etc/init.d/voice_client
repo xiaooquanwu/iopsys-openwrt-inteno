@@ -694,7 +694,7 @@ configure_sip_provider()
 
 	# Set or remove outboundproxy
 	if [ -z "$outboundproxy" ] ; then
-		sed -i "s/outboundproxy=|OUTBOUNDPROXY|//g"	$WORKDIR/sip_provider.tmp
+		sed -i "s/outboundproxy=.*//g"		$WORKDIR/sip_provider.tmp
 	else
 		sed -i "s/|OUTBOUNDPROXY|/$outboundproxy/g"	$WORKDIR/sip_provider.tmp
 	fi
