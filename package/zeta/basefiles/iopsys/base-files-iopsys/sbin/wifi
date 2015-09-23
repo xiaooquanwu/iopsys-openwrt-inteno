@@ -1263,6 +1263,12 @@ wifi_detect() {
 		sed -i '/^$/d' /$WLDIR/$1"_chanspecs"
 	}
 
+	if ! uci -q get wireless.status; then
+		uci add wireless wifi-status
+		uci rename wireless.@wifi-status[-1]=status
+		uci set wireless.status.wlan=1
+	fi
+
 	mkdir -p $WLDIR
 	for wl in $wls; do
 		if wlctl -i $wl ap >/dev/null 2>&1; then
