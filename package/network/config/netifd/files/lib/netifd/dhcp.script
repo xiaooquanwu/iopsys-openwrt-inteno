@@ -87,7 +87,7 @@ iup() {
 	if [ $vendorspecinf ]; then
 		url=${vendorspecinf%%,*}; rest=${vendorspecinf#*,}
 		provisioningcode=${rest%%,*};
-		uci_set_state provisioning iup url "$url"
+		uci_set_state provisioning iup urlcwmp "$url"
 		uci_set_state provisioning iup provisioningcode "$provisioningcode"
 	elif [ $httpurl128 ]; then
 		uci_set_state provisioning iup url "$httpurl128"
