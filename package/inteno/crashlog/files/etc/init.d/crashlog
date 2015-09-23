@@ -50,7 +50,7 @@ boot()
     reason=$(cat /etc/boot_reason)
     case $reason in
 	HW|WD)
-	    send_log
+	    send_log&
 	    ;;
     esac
 }
