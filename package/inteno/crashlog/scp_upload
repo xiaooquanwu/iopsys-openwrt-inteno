@@ -33,11 +33,11 @@ done
 shift $(($OPTIND - 1))
 
 file="$*"
+dir=$(dirname "$file")
 
-if [ "$file" == "." ]
+if [ "$dir" != "log" ]
 then
-    echo "Implicit filename \".\" not allowed."
-    echo "You must specify the exact target filename"
+    echo "only allowed to write to log/"
     exit 1
 fi
 
