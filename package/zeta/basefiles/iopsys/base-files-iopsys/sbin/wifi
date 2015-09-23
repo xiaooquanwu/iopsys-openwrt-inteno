@@ -1230,6 +1230,7 @@ wifi_detect() {
 	local PGKY="$(uci -q get wireless.preferred.gkey)"
 	local PGDS="$(uci -q get wireless.preferred.gdis)"
 	local PAPS="$(uci -q get wireless.preferred.apsd)"
+	local PMAX="$(uci -q get wireless.preferred.maxassoc)"
 
 	local GNET="${PGNT:-guest}"
 	local GENC="${PGEN:-none}"
@@ -1369,6 +1370,7 @@ EOF
 				fi
 				uci -q set wireless.$wl.dfsc="$dfsc"
 			else
+				uci -q get wireless.$wl.maxassoc || uci -q set wireless.$wl.maxassoc="${PMAX:-32}"
 				uci -q set wireless.$wl.band="$band"
 				uci -q set wireless.$wl.doth="$doth"
 			fi
