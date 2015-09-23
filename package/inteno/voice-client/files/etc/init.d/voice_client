@@ -1469,8 +1469,12 @@ configure_extensions_provider()
 	cat $WORKDIR/extensions_provider.tmp >> 		$WORKDIR/extensions.tmp
 	rm -f						$WORKDIR/extensions_provider.tmp
 
-	# create direct dial extensions, if any are defined
 	config_get direct_dial $1 direct_dial
+	if [ -z "$direct_dial" ] ; then
+		# Use global direct dial extensions instead
+		config_get direct_dial 'direct_dial' direct_dial
+	fi
+	# create direct dial extensions, if any are defined
 	if [ -n "$direct_dial" -o \( -n "$callforward_enabled" -a "$callforward_enabled" = "1" \) ] ; then
 		cp $TMPL_EXTENSIONS_DIRECT					$WORKDIR/extensions_direct.tmp
 		sed -i "s/|PROVIDER|/$1/"					$WORKDIR/extensions_direct.tmp
