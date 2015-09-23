@@ -16,6 +16,30 @@ mk_mtd_devnode() {
 	echo $dev_node
 }
 
+copy_mounted_overlay() {
+	if [ -e /mnt/overlay/SAVE_OVERLAY ]; then
+		echo "Copying overlay..."
+		cp -rfdp /mnt/overlay/* /
+		rm /SAVE_OVERLAY
+	fi
+}
+
+copy_config_from_mounted_overlay() {
+	if [ -e /mnt/overlay/SAVE_CONFIG ]; then
+		if [ -e /mnt/overlay/sysupgrade.tgz ]; then
+			echo "Unpacking old config..."
+			tar xvzf /mnt/overlay/sysupgrade.tgz -C /
+		else
+			echo "Conservative copy of old config..."
+			mkdir -p /etc/dropbear
+			cp -rfdp /mnt/overlay/etc/dropbear/* /etc/dropbear/
+			mkdir -p /etc/config
+			for file in network dhcp wireless firewall dropbear ; do cp -rfp /mnt/overlay/etc/config/$file /etc/config/ ; done
+		fi
+		rm -f /SAVE_CONFIG
+	fi
+}
+
 copy_old_config() {
 
 	local iVersion=$1
@@ -33,23 +57,10 @@ copy_old_config() {
 			old_vol="ubi:rootfs_0"
 		fi
 
+		echo "Mount $old_vol on /mnt"
 		mount -t ubifs -o ro,noatime $old_vol /mnt
-		if [ -e /mnt/overlay/SAVE_OVERLAY ]; then
-			echo "Copying overlay..."
-			cp -rfdp /mnt/overlay/* /overlay/
-			rm /overlay/SAVE_OVERLAY
-		fi
-		if [ -e /mnt/overlay/SAVE_CONFIG ]; then
-			if [ -e /mnt/overlay/sysupgrade.tgz ]; then
-				echo "Unpacking old config..."
-				tar xvzf /mnt/overlay/sysupgrade.tgz -C /
-			else
-				echo "Conservative copy of old config..."
-				cp -rfdp /mnt/overlay/etc/dropbear/* /overlay/etc/dropbear
-				for file in network dhcp wireless firewall dropbear ; do cp -rp /mnt/overlay/etc/config/$file /overlay/etc/config/ ; done
-			fi
-			rm /overlay/SAVE_CONFIG
-		fi
+		copy_mounted_overlay
+		copy_config_from_mounted_overlay
 		umount /mnt
 
 	elif [ "$iVersion" == "03 " ]; then
@@ -63,28 +74,10 @@ copy_old_config() {
 			old_fs_mtd=$(mk_mtd_devnode mtd_hi)
 		fi
 
-		mount -t jffs2 $old_fs_mtd /mnt
-		if [ -e /mnt/overlay/SAVE_OVERLAY ]; then
-			if [ "$new_fs_type" == "ubifs" ]; then
-				echo "Copying etc..."
-				cp -rfdp /mnt/overlay/etc /overlay/
-			else
-				echo "Copying overlay..."
-			cp -rfdp /mnt/overlay/* /overlay/
-			fi
-			rm -f /overlay/SAVE_OVERLAY
-		fi
-		if [ -e /mnt/overlay/SAVE_CONFIG ]; then
-			if [ -e /mnt/overlay/sysupgrade.tgz ]; then
-				echo "Unpacking old config..."
-				tar xvzf /mnt/overlay/sysupgrade.tgz -C /
-			else
-				echo "Conservative copy of old config..."
-				cp -rfdp /mnt/overlay/etc/dropbear/* /overlay/etc/dropbear
-				for file in network dhcp wireless firewall dropbear ; do cp -rp /mnt/overlay/etc/config/$file /overlay/etc/config/ ; done
-			fi
-			rm -f /overlay/SAVE_CONFIG
-		fi
+		echo "Mount $old_fs_mtd on /mnt"
+		mount -t jffs2 -o ro $old_fs_mtd /mnt
+		copy_mounted_overlay
+		copy_config_from_mounted_overlay
 		umount /mnt
 
 	else
