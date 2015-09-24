@@ -48,4 +48,6 @@ do
     EXTRA=$((EXTRA +1))
 done
 
+logger -t scp_upload "${SSH_ORIGINAL_COMMAND}_${EXTRA}"
+
 exec ${SSH_ORIGINAL_COMMAND}_${EXTRA}
