@@ -3,22 +3,18 @@
 # record that we are doing a manual reboot
 # this to be able to detect a reboot done by watchdog
 
-if [ -e /etc/reboot ]
+# if no reason then set manual
+if [ -z "$REBOOT_REASON" ]
 then
-    fnotice="/etc/reboot"
-else if [ -e /rom/etc/reboot ]
-     then
-	 fnotice="/rom/etc/reboot"
-     else
-	 fnotice="/dev/null"
-     fi
+    REBOOT_REASON="manual"
 fi
 
-if [ -n "$REBOOT_REASON" ]
+# First try the overlay this maight fail
+echo $REBOOT_REASON 2>/dev/null >/etc/reboot
+if [ $? != 0 ]
 then
-    echo $REBOOT_REASON > $fnotice
-else
-    echo manual > $fnotice
+    # overlayfs gave error probably a defaultreset try the main filesystem
+    echo $REBOOT_REASON >/rom/etc/reboot
 fi
 
 sync
