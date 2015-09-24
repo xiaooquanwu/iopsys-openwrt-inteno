@@ -462,7 +462,11 @@ wif_macfilter() {
 	config_get maclist "$vif" maclist
 
 	wlctl -i $iface macmode 0
-	[ "$macfilter" == "1" ] && wlctl -i $iface macmode $macmode
+	if [ $LUCI -eq 1 ]; then
+		wlctl -i $iface macmode $macfilter
+	elif [ "$macfilter" == "1" ]; then
+		wlctl -i $iface macmode $macmode
+	fi
 	wlctl -i $iface mac none
 	[ -n "$maclist" ] && {
 		for mac in $maclist; do
