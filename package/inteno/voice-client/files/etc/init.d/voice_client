@@ -2038,7 +2038,7 @@ start_service() {
 	############################
 	config_foreach configure_sip sip_advanced
 	config_foreach configure_sip_provider sip_service_provider
-	config_foreach configure_direct_dial direct_dial
+	#config_foreach configure_direct_dial direct_dial
 	config_foreach encrypt_password sip_service_provider
 	config_foreach configure_extensions_provider sip_service_provider
 
