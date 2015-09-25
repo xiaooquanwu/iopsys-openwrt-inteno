@@ -1390,6 +1390,8 @@ EOF
 				vdev="$(uci get wireless.@wifi-iface[$vn].device)"
 				if [ $vdev == "$wl" ]; then
 					uci -q delete wireless.@wifi-iface[$vn]
+				else
+					uci -q get wireless.@wifi-iface[$vn].bss_max || uci -q set wireless.@wifi-iface[$vn].bss_max=16
 				fi
 			done
 		fi
