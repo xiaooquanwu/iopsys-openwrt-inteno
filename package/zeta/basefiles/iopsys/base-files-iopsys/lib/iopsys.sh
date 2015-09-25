@@ -1,21 +1,6 @@
 #!/bin/sh
 # (C) 2015 Inteno Broadband Technology AB
 
-mk_mtd_devnode() {
-	local part=$(awk -F: "/\"$1\"/ { print \$1 }" /proc/mtd)
-	if [ -z "$part" ]; then
-		echo notfound
-		return
-	fi
-
-	local mtd_no=${part##mtd}
-	local dev_node=/dev/mtdblock$mtd_no
-
-	[ -e $dev_node ] || mknod -m 644 $dev_node b 31 $mtd_no
-
-	echo $dev_node
-}
-
 copy_mounted_overlay() {
 	if [ -e /mnt/overlay/SAVE_OVERLAY ]; then
 		echo "Copying overlay..."
@@ -24,20 +9,18 @@ copy_mounted_overlay() {
 	fi
 }
 
-copy_config_from_mounted_overlay() {
-	if [ -e /mnt/overlay/SAVE_CONFIG ]; then
-		if [ -e /mnt/overlay/sysupgrade.tgz ]; then
-			echo "Unpacking old config..."
-			tar xvzf /mnt/overlay/sysupgrade.tgz -C /
-		else
-			echo "Conservative copy of old config..."
-			mkdir -p /etc/dropbear
-			cp -rfdp /mnt/overlay/etc/dropbear/* /etc/dropbear/
-			mkdir -p /etc/config
-			for file in network dhcp wireless firewall dropbear ; do cp -rfp /mnt/overlay/etc/config/$file /etc/config/ ; done
-		fi
-		rm -f /SAVE_CONFIG
+copy_config_from() {
+	if [ -e $1/sysupgrade.tgz ]; then
+		echo "Unpacking old config..."
+		tar xvzf $1/sysupgrade.tgz -C /
+	else
+		echo "Conservative copy of old config..."
+		mkdir -p /etc/dropbear
+		cp -rfdp $1/etc/dropbear/* /etc/dropbear/
+		mkdir -p /etc/config
+		for file in network dhcp wireless firewall dropbear ; do cp -rfp $1/etc/config/$file /etc/config/ ; done
 	fi
+	rm -f /SAVE_CONFIG
 }
 
 copy_old_config() {
@@ -60,7 +43,9 @@ copy_old_config() {
 		echo "Mount $old_vol on /mnt"
 		mount -t ubifs -o ro,noatime $old_vol /mnt
 		copy_mounted_overlay
-		copy_config_from_mounted_overlay
+		if [ -e /mnt/overlay/SAVE_CONFIG ]; then
+			copy_config_from /mnt/overlay
+		fi
 		umount /mnt
 
 	elif [ "$iVersion" == "03 " ]; then
@@ -69,19 +54,34 @@ copy_old_config() {
 		echo "Upgrading $new_fs_type from iVersion 3"
 
 		if [ "$new_fs_type" == "jffs2" ]; then
-			old_fs_mtd=$(mk_mtd_devnode rootfs_update)
+			old_fs_mtd="mtd:rootfs_update"
 		else
-			old_fs_mtd=$(mk_mtd_devnode mtd_hi)
+			old_fs_mtd="mtd:mtd_hi"
 		fi
 
 		echo "Mount $old_fs_mtd on /mnt"
 		mount -t jffs2 -o ro $old_fs_mtd /mnt
 		copy_mounted_overlay
-		copy_config_from_mounted_overlay
+		if [ -e /mnt/overlay/SAVE_CONFIG ]; then
+			copy_config_from /mnt/overlay
+		fi
 		umount /mnt
 
 	else
-		echo "Unexpected iVersion \"$iVersion\" in nvram, config lost"
+		# IOP2 jffs2 layout -> jffs2/ubifs upgrade
+		echo "Upgrading $new_fs_type from unknown iVersion"
+		
+		if [ "$new_fs_type" == "jffs2" ]; then
+			old_fs_mtd="mtd:image_update"
+		else
+			old_fs_mtd="mtd:mtd_hi_overlay"
+		fi
+		
+		echo "Mount $old_fs_mtd on /mnt"
+		mount -t jffs2 -o ro $old_fs_mtd /mnt
+		#Always copies config from IOP2
+		copy_config_from /mnt
+		umount /mnt
 		echo 03 > /proc/nvram/iVersion
 	fi
 
