@@ -27,6 +27,17 @@ IMAGETAG_KERNEL_ARGS := -K -i $(KDIR)/vmlinux.lzma -o $(KDIR)/vmlinux.lz -e $(KE
 IMAGETAG_IMAGE_ARGS  := -c $(CONFIG_BCM_CHIP_ID) -q NAND128 -b $(BOARD_ID)
 endif
 
+ifeq ($(CONFIG_BRCM_SDK_VER_414040),y)
+BRCMREF_STR := 4.14L.04
+else ifeq ($(CONFIG_BRCM_SDK_VER_416021),y)
+BRCMREF_STR := 4.16L.02A
+else ifeq ($(CONFIG_BRCM_SDK_VER_416030),y)
+BRCMREF_STR := 4.16L.03
+else ifeq ($(CONFIG_BRCM_SDK_VER_416040),y)
+BRCMREF_STR := 4.16L.04
+else
+BRCMREF_STR := <FIXME!>
+endif
 
 # NOTE:
 #
@@ -101,7 +112,7 @@ define Image/Prepare
 
 	# add/set version info (.w.x.y)
 	sed -i 's/^IOP Version.*/IOP Version: $(IHGSP_BUILD_VERSION)/gi' $(BUILD_DIR_ROOT)/etc/banner
-	sed -i 's/^BrcmRef Base.*/BrcmRef Base: bcm963xx_4.16L.03/gi' $(BUILD_DIR_ROOT)/etc/banner
+	sed -i 's/^BrcmRef Base.*/BrcmRef Base: $(BRCMREF_STR)/gi' $(BUILD_DIR_ROOT)/etc/banner
 	#sed -i '7iIOP Version: $(IHGSP_BUILD_VERSION)' $(BUILD_DIR_ROOT)/etc/banner
 	mkdir -p $(BUILD_DIR_ROOT)/lib/db/version
 	echo $(IHGSP_BUILD_VERSION)  > $(BUILD_DIR_ROOT)/lib/db/version/iop_version
