@@ -182,7 +182,7 @@ define Package/inteno-base-juci
 		+juci-ddns \
 		+juci-diagnostics \
 		+PACKAGE_dnsmasq:juci-dnsmasq-dhcp \
-		+PACKAGE_dropbear:juci-dropbear \
+		+juci-dropbear \
 		+juci-event \
 		+PACKAGE_firewall:juci-firewall-fw3 \
 		+PACKAGE_igmpproxy:juci-igmpinfo \
