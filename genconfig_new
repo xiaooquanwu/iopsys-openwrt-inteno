@@ -130,7 +130,7 @@ create_and_copy_files()
 	fi
 
 	echo "Updating .config dependencies..."
-	make defconfig #1>/dev/null
+	make defconfig 1>/dev/null
 	
 	# apply customer specific patch for the config
 	if [ -d "${CUST_DIR}" ]; then
