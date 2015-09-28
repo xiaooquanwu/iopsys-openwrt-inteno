@@ -9,10 +9,10 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=mtd-utils
 PKG_VERSION:=1.5.1
-PKG_RELEASE:=1
+PKG_RELEASE:=2
 PKG_INSTALL:=1
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=1627a29d45121fe96fa19f07eb41ccef5638b9ec
+PKG_SOURCE_VERSION:=6d4e751fd861dea1f494b1a91768b3bf401bbab5
 
 ifeq ($(CONFIG_BCM_OPEN),y)
 PKG_SOURCE_URL:=http://ihgsp.inteno.se/git/mtd-utils
