@@ -68,20 +68,17 @@ copy_old_config() {
 		umount /mnt
 
 	else
-		# IOP2 jffs2 layout -> jffs2/ubifs upgrade
-		echo "Upgrading $new_fs_type from unknown iVersion"
-		
 		if [ "$new_fs_type" == "jffs2" ]; then
-			old_fs_mtd="mtd:image_update"
+			# IOP2 jffs2 layout -> IOP3 jffs2 upgrade
+			echo "Upgrading $new_fs_type from unknown iVersion"
+			echo "Mount mtd:image_update on /mnt"
+			mount -t jffs2 -o ro $old_fs_mtd /mnt
+			#Always copies config from IOP2
+			copy_config_from /mnt
+			umount /mnt
 		else
-			old_fs_mtd="mtd:mtd_hi_overlay"
+			echo "Cannot copy config files to UBIFS from unknown iVersion"
 		fi
-		
-		echo "Mount $old_fs_mtd on /mnt"
-		mount -t jffs2 -o ro $old_fs_mtd /mnt
-		#Always copies config from IOP2
-		copy_config_from /mnt
-		umount /mnt
 		echo 03 > /proc/nvram/iVersion
 	fi
 
