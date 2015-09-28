@@ -72,7 +72,7 @@ copy_old_config() {
 			# IOP2 jffs2 layout -> IOP3 jffs2 upgrade
 			echo "Upgrading $new_fs_type from unknown iVersion"
 			echo "Mount mtd:image_update on /mnt"
-			mount -t jffs2 -o ro $old_fs_mtd /mnt
+			mount -t jffs2 -o ro mtd:image_update /mnt
 			#Always copies config from IOP2
 			copy_config_from /mnt
 			umount /mnt
