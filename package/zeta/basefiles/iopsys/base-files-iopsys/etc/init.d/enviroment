@@ -20,16 +20,16 @@ handle_threads()
 	# set affinity
 	if [ -n "$pid_wl0" -a -n "$pid_wl1" ]; then
 		# bind to TP0
-		taskset -p $pid_wl0 1
+		taskset -p 1 $pid_wl0
 		# bind to TP1
-		taskset -p $pid_wl1 2
+		taskset -p 2 $pid_wl1
 	else
 		if [ "$pid_wl0" == "$pid_dhd0" ]; then
 			# bind to TP0
-			taskset -p $pid_wl0 1
+			taskset -p 1 $pid_wl0
 		else
 			# bind to TP1
-			taskset -p $pid_wl0 2
+			taskset -p 2 $pid_wl0
 		fi
 	fi
 
