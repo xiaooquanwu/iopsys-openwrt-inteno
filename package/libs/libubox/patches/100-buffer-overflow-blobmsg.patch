@@ -1,0 +1,18 @@
+diff --git a/blobmsg.c b/blobmsg.c
+index 80b984a..67647fc 100644
+--- a/blobmsg.c
++++ b/blobmsg.c
+@@ -130,11 +130,11 @@ int blobmsg_parse(const struct blobmsg_policy *policy, int policy_len,
+ {
+ 	struct blobmsg_hdr *hdr;
+ 	struct blob_attr *attr;
+-	uint8_t *pslen;
++	size_t *pslen;
+ 	int i;
+ 
+ 	memset(tb, 0, policy_len * sizeof(*tb));
+-	pslen = alloca(policy_len);
++	pslen = alloca(policy_len * sizeof(size_t*));
+ 	for (i = 0; i < policy_len; i++) {
+ 		if (!policy[i].name)
+ 			continue;
