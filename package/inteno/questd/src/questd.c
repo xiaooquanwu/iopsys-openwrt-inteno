@@ -2111,9 +2111,9 @@ quest_ubus_init(const char *path)
 void *dump_router_info(void *arg)
 {
 	int lpcnt = 0;
+	bool popc = true;
 
 	jiffy_counts_t cur_jif = {0}, prev_jif = {0};
-	
 	
 	init_db_hw_config();
 	load_networks();
@@ -2125,7 +2125,12 @@ void *dump_router_info(void *arg)
 	while (true) {
 		dump_sysinfo(&router, &memory);
 		dump_cpuinfo(&router, &prev_jif, &cur_jif);
-		populate_clients();
+		if (popc) {
+			populate_clients();
+			popc = false;
+		} else
+			popc = true;
+
 		get_jif_val(&prev_jif);
 		usleep(sleep_time);
 		recalc_sleep_time(false, 0);
