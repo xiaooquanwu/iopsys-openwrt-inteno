@@ -694,7 +694,7 @@ wdev_static_settings() {
 	wlctl -i $device bg_mrate 0
 	wlctl -i $device afterburner_override 0
 	wlctl -i $device amsdu 0
-	wlctl -i $device rx_amsdu_in_ampdu 0
+	wlctl -i $device rx_amsdu_in_ampdu 1
 	wlctl -i $device ampdu 255
 	wlctl -i $device ampdu_tx 255
 	wlctl -i $device ampdu_rx 255
