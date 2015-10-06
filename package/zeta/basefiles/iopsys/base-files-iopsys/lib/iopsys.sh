@@ -5,22 +5,22 @@ copy_mounted_overlay() {
 	if [ -e /mnt/overlay/SAVE_OVERLAY ]; then
 		echo "Copying overlay..."
 		cp -rfdp /mnt/overlay/* /
-		rm /SAVE_OVERLAY
+		rm -f /overlay/SAVE_OVERLAY
 	fi
 }
 
 copy_config_from() {
 	if [ -e $1/sysupgrade.tgz ]; then
 		echo "Unpacking old config..."
-		tar xvzf $1/sysupgrade.tgz -C /
+		tar xvzf $1/sysupgrade.tgz -C /overlay/
 	else
 		echo "Conservative copy of old config..."
-		mkdir -p /etc/dropbear
-		cp -rfdp $1/etc/dropbear/* /etc/dropbear/
-		mkdir -p /etc/config
-		for file in network dhcp wireless firewall dropbear ; do cp -rfp $1/etc/config/$file /etc/config/ ; done
+		mkdir -p /overlay/etc/dropbear
+		cp -rfdp $1/etc/dropbear/* /overlay/etc/dropbear/
+		mkdir -p /overlay/etc/config
+		for file in network dhcp wireless firewall dropbear ; do cp -rfp $1/etc/config/$file /overlay/etc/config/ ; done
 	fi
-	rm -f /SAVE_CONFIG
+	rm -f /overlay/SAVE_CONFIG
 }
 
 copy_old_config() {
