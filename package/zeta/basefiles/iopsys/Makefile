@@ -185,16 +185,18 @@ define Package/inteno-base-juci
 		+juci-dropbear \
 		+juci-event \
 		+PACKAGE_firewall:juci-firewall-fw3 \
-		+PACKAGE_igmpproxy:juci-igmpinfo \
+		+juci-igmpinfo \
 		+juci-inteno-router \
 		+juci-jquery-console \
 		+juci-macdb \
 		+PACKAGE_minidlna:juci-minidlna \
 		+juci-mod-status \
 		+juci-mod-system \
+		+juci-ethernet \
 		+juci-netmode \
+		+juci-natalie-dect \
 		+PACKAGE_netifd:juci-network-netifd \
-		+PACKAGE_samba36-server:juci-mod-samba \
+		+PACKAGE_samba36-server:juci-samba \
 		+PACKAGE_inteno-base:juci-sysupgrade \
 		+PACKAGE_miniupnpd:juci-upnp \
 		+USB_SUPPORT:juci-usb 
