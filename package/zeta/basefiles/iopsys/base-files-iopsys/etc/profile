@@ -15,5 +15,5 @@ export SSL_CERT_DIR=/etc/ssl/certs
 [ -x /usr/bin/ldd ] || ldd() { LD_TRACE_LOADED_OBJECTS=1 $*; }
 
 # Debugging tool
-alias bs="bdmf_shell -c `cat /var/bdmf_sh_id` -cmd "
+alias bs="bdmf_shell -c \$(cat /var/bdmf_sh_id) -cmd "
 

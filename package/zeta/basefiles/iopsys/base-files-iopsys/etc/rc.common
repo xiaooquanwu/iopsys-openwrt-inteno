@@ -8,8 +8,6 @@ initscript=$1
 action=${2:-help}
 shift 2
 
-cwmpcache $initscript $action &
-
 start() {
 	return 0
 }

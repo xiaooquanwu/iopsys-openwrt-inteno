@@ -27,6 +27,17 @@ IMAGETAG_KERNEL_ARGS := -K -i $(KDIR)/vmlinux.lzma -o $(KDIR)/vmlinux.lz -e $(KE
 IMAGETAG_IMAGE_ARGS  := -c $(CONFIG_BCM_CHIP_ID) -q NAND128 -b $(BOARD_ID)
 endif
 
+ifeq ($(CONFIG_BRCM_SDK_VER_414040),y)
+BRCMREF_STR := 4.14L.04
+else ifeq ($(CONFIG_BRCM_SDK_VER_416021),y)
+BRCMREF_STR := 4.16L.02A
+else ifeq ($(CONFIG_BRCM_SDK_VER_416030),y)
+BRCMREF_STR := 4.16L.03
+else ifeq ($(CONFIG_BRCM_SDK_VER_416040),y)
+BRCMREF_STR := 4.16L.04
+else
+BRCMREF_STR := <FIXME!>
+endif
 
 # NOTE:
 #
@@ -101,7 +112,7 @@ define Image/Prepare
 
 	# add/set version info (.w.x.y)
 	sed -i 's/^IOP Version.*/IOP Version: $(IHGSP_BUILD_VERSION)/gi' $(BUILD_DIR_ROOT)/etc/banner
-	sed -i 's/^BrcmRef Base.*/BrcmRef Base: bcm963xx_4.16L.03/gi' $(BUILD_DIR_ROOT)/etc/banner
+	sed -i 's/^BrcmRef Base.*/BrcmRef Base: $(BRCMREF_STR)/gi' $(BUILD_DIR_ROOT)/etc/banner
 	#sed -i '7iIOP Version: $(IHGSP_BUILD_VERSION)' $(BUILD_DIR_ROOT)/etc/banner
 	mkdir -p $(BUILD_DIR_ROOT)/lib/db/version
 	echo $(IHGSP_BUILD_VERSION)  > $(BUILD_DIR_ROOT)/lib/db/version/iop_version
@@ -112,13 +123,40 @@ define Image/Prepare
 	rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.3.8
 	rm -rf $(BUILD_DIR_ROOT)/usr/lib/libvorbisenc*
 
-    ifeq ($(CONFIG_TARGET_IBOARDID),"VOX25")
-		rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.4.11-rt19/bluetooth.ko
-		rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.4.11-rt19/btusb.ko
+    ifeq ($(CONFIG_TARGET_NO_DSL),y)
+		rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.4.11-rt19/extra/adsldd.ko
+		rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.4.11-rt19/extra/bcmxtmcfg.ko
+		rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.4.11-rt19/extra/bcmxtmrtdrv.ko
+		rm -rf $(BUILD_DIR_ROOT)/etc/dsl
+    endif
+
+    ifeq ($(CONFIG_TARGET_NO_DSL_ANNEX_A),y)
+		rm -rf $(BUILD_DIR_ROOT)/etc/dsl/a_adsl_phy.bin
+    endif
+
+    ifeq ($(CONFIG_TARGET_NO_DSL_ANNEX_B),y)
+		rm -rf $(BUILD_DIR_ROOT)/etc/dsl/b_adsl_phy.bin
+    endif
+
+    ifeq ($(CONFIG_TARGET_NO_VOICE),y)
+		rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.4.11-rt19/extra/endpointdd.ko
 		rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.4.11-rt19/extra/dect.ko
 		rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.4.11-rt19/extra/dectshim.ko
+    endif
+
+    ifeq ($(CONFIG_TARGET_NO_DECT),y)
+		rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.4.11-rt19/extra/dect.ko
+		rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.4.11-rt19/extra/dectshim.ko
+    endif
+
+    ifeq ($(CONFIG_TARGET_NO_DHD),y)
 		rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.4.11-rt19/extra/dhd.ko
 		rm -rf $(BUILD_DIR_ROOT)/etc/wlan/dhd
+    endif
+
+    ifeq ($(CONFIG_TARGET_NO_BLUETOOTH),y)
+		rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.4.11-rt19/bluetooth.ko
+		rm -rf $(BUILD_DIR_ROOT)/lib/modules/3.4.11-rt19/btusb.ko
     endif
 endef
 
@@ -150,6 +188,7 @@ define Image/Build/CFE
 		-o $(BIN_DIR)/$(IHGSP_BUILD_VERSION)_cfe \
 		$(IMAGETAG_IMAGE_ARGS)
 
+    ifeq (1,0)
     ifneq ($(CONFIG_TARGET_ROOTFS_UBIFS),)
 	# Make header (.z)
 	$(call Image/Build/Header,header.z,cfe$(CONFIG_BCM_CHIP_ID)_nand.v,void,void)
@@ -162,6 +201,7 @@ define Image/Build/CFE
 	# Attach checksum to combined image (.z)
 	md5sum $(BIN_DIR)/$(IHGSP_BUILD_VERSION).z |awk '{printf "%s",$$$$1}' \
 		>> $(BIN_DIR)/$(IHGSP_BUILD_VERSION).z
+    endif
     endif
 
 	$(eval CFE_BUILT:=1)
@@ -208,6 +248,7 @@ define Image/Build/ubi
 	cat $(KDIR)/nvram_marker $(KDIR)/lotsof.ff \
 		| head --bytes=131072 > $(KDIR)/nvram.bin
 
+    ifeq (1,0)
 	# Concat cfe, nvram, vmlinux and ubi images together (.x)
 	cat $(BIN_DIR)/$(IHGSP_BUILD_VERSION)_cfe \
 	    $(KDIR)/nvram.bin \
@@ -219,13 +260,16 @@ define Image/Build/ubi
 	cat $(KDIR)/temp_x.img \
 	    $(KDIR)/root.ubi > $(KDIR)/cfe_nvram_vmlinux_ubi_image_128
 
-	rm $(KDIR)/temp_x.img $(KDIR)/lotsof.ff
+	rm $(KDIR)/temp_x.img
 
 	# Tag the combined image (.x)
 	$(STAGING_DIR_HOST)/bin/imagetag_nand \
 		-f $(KDIR)/cfe_nvram_vmlinux_ubi_image_128 \
 		-o $(BIN_DIR)/$(IHGSP_BUILD_VERSION).x \
 		$(IMAGETAG_IMAGE_ARGS)
+    endif
+
+	rm $(KDIR)/lotsof.ff
 
 	# Make header (.y)
 	$(call Image/Build/Header,header.y,cfe$(CONFIG_BCM_CHIP_ID)_nand.v,vmlinux.jffs2,root.ubifs)

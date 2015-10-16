@@ -23,7 +23,7 @@ include $(INCLUDE_DIR)/package.mk
 define Package/inteno-base
   SECTION:=base
   CATEGORY:=Base system
-  DEPENDS:=+netifd +minidlna +miniupnpd +libc +procd +jsonfilter
+  DEPENDS:=+netifd +minidlna +miniupnpd +libc +procd +jsonfilter +port-management
   TITLE:=Base filesystem for OpenWrt and IOPSYS
   URL:=http://openwrt.org/
   VERSION:=$(PKG_RELEASE)-$(REVISION)
@@ -83,9 +83,6 @@ define Package/inteno-base/install
 	$(CP) ./base-files-openwrt/* $(1)/
 	$(CP) ./base-files-iopsys/* $(1)/
 	
-	# TODO: remove this after all customers have upgraded to 3.0
-	rm -f $(1)/etc/dsl/b_adsl_phy.bin
-	
 	# setup root filesystem
 	mkdir -p $(1)/CONTROL
 	mkdir -p $(1)/dev
@@ -135,6 +132,16 @@ define Package/inteno-asterisk-modules/description
 endef
 $(eval $(call BuildPackage,inteno-asterisk-modules))
 
+define Package/bice-client
+	CATEGORY:=Config
+	DEPENDS:=+ice-client +ice-client-camerawatch +ice-client-guest +ice-client-iperf +ice-client-logreader +ice-client-monitor +ice-client-netrounds +ice-client-rshell +ice-client-torrent 
+	TITLE:=ICE client base
+endef
+$(eval $(call BuildPackage,bice-client))
+define Package/bice-client/description
+	Base package for ice client
+endef
+
 define Package/inteno-base-voice
   CATEGORY:=Config
   DEPENDS:=+asterisk18 +inteno-asterisk-modules +voice-client +endptcfg +alsa-lib 
@@ -176,19 +183,21 @@ define Package/inteno-base-juci
 		+juci-ddns \
 		+juci-diagnostics \
 		+PACKAGE_dnsmasq:juci-dnsmasq-dhcp \
-		+PACKAGE_dropbear:juci-dropbear \
+		+juci-dropbear \
 		+juci-event \
 		+PACKAGE_firewall:juci-firewall-fw3 \
-		+PACKAGE_igmpproxy:juci-igmpinfo \
+		+juci-igmpinfo \
 		+juci-inteno-router \
 		+juci-jquery-console \
 		+juci-macdb \
 		+PACKAGE_minidlna:juci-minidlna \
 		+juci-mod-status \
 		+juci-mod-system \
+		+juci-ethernet \
 		+juci-netmode \
+		+juci-natalie-dect \
 		+PACKAGE_netifd:juci-network-netifd \
-		+PACKAGE_samba36-server:juci-mod-samba \
+		+PACKAGE_samba36-server:juci-samba \
 		+PACKAGE_inteno-base:juci-sysupgrade \
 		+PACKAGE_miniupnpd:juci-upnp \
 		+USB_SUPPORT:juci-usb 

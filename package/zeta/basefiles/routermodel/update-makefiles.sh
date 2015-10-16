@@ -59,6 +59,6 @@ EOF
 
 for ROUTERMODEL in `ls -d */|sed 's/\([^\/]*\)\/$/\1/gi'`; do
 	mkdir -p "$ROUTERMODEL/fs"
-	echo "$ROUTERMODEL"; 
+	printf "updating routermodel makefile: $ROUTERMODEL\r"; 
 	$(create_routermodel_makefile $ROUTERMODEL "$ROUTERMODEL/Makefile"); 
 done

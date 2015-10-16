@@ -462,7 +462,11 @@ wif_macfilter() {
 	config_get maclist "$vif" maclist
 
 	wlctl -i $iface macmode 0
-	[ "$macfilter" == "1" ] && wlctl -i $iface macmode $macmode
+	if [ $LUCI -eq 1 ]; then
+		wlctl -i $iface macmode $macfilter
+	elif [ "$macfilter" == "1" ]; then
+		wlctl -i $iface macmode $macmode
+	fi
 	wlctl -i $iface mac none
 	[ -n "$maclist" ] && {
 		for mac in $maclist; do
@@ -690,7 +694,7 @@ wdev_static_settings() {
 	wlctl -i $device bg_mrate 0
 	wlctl -i $device afterburner_override 0
 	wlctl -i $device amsdu 0
-	wlctl -i $device rx_amsdu_in_ampdu 0
+	wlctl -i $device rx_amsdu_in_ampdu 1
 	wlctl -i $device ampdu 255
 	wlctl -i $device ampdu_tx 255
 	wlctl -i $device ampdu_rx 255
@@ -1230,6 +1234,7 @@ wifi_detect() {
 	local PGKY="$(uci -q get wireless.preferred.gkey)"
 	local PGDS="$(uci -q get wireless.preferred.gdis)"
 	local PAPS="$(uci -q get wireless.preferred.apsd)"
+	local PMAX="$(uci -q get wireless.preferred.maxassoc)"
 
 	local GNET="${PGNT:-guest}"
 	local GENC="${PGEN:-none}"
@@ -1261,6 +1266,12 @@ wifi_detect() {
 		wlctl -i $1 chanspecs -b $bno -w 80 | awk '{print$1}' >> /$WLDIR/$1"_chanspecs"
 		sed -i '/^$/d' /$WLDIR/$1"_chanspecs"
 	}
+
+	if ! uci -q get wireless.status; then
+		uci add wireless wifi-status
+		uci rename wireless.@wifi-status[-1]=status
+		uci set wireless.status.wlan=1
+	fi
 
 	mkdir -p $WLDIR
 	for wl in $wls; do
@@ -1369,6 +1380,7 @@ EOF
 				fi
 				uci -q set wireless.$wl.dfsc="$dfsc"
 			else
+				uci -q get wireless.$wl.maxassoc || uci -q set wireless.$wl.maxassoc="${PMAX:-32}"
 				uci -q set wireless.$wl.band="$band"
 				uci -q set wireless.$wl.doth="$doth"
 			fi
@@ -1378,6 +1390,8 @@ EOF
 				vdev="$(uci get wireless.@wifi-iface[$vn].device)"
 				if [ $vdev == "$wl" ]; then
 					uci -q delete wireless.@wifi-iface[$vn]
+				else
+					uci -q get wireless.@wifi-iface[$vn].bss_max || uci -q set wireless.@wifi-iface[$vn].bss_max=16
 				fi
 			done
 		fi
@@ -1435,6 +1449,7 @@ wifi_toggle_device() {
 	local wlstatus="$(uci -q get wireless.$1.disabled)"
 	if [ "$wlstatus" == "1" ]; then
 		echo "Enabling WiFi Radio $1"
+		uci -q set wireless.status.wlan=1
 		uci -q set wireless.$1.disabled=0
 		uci commit wireless
 		ubus call network reload

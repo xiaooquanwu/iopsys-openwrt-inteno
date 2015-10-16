@@ -14,8 +14,8 @@ option ethernetPortNames 'LAN1 LAN2 LAN3 LAN4 WAN'
 option ethernetPortOrder 'eth1 eth2 eth3 eth4 eth0'
 option ethernetLanPorts 'eth1 eth2 eth3 eth4'
 option ethernetWanPort 'eth0'
-option adslWanPort ''
-option vdslWanPort ''
+option adslWanPort 'atm0'
+option vdslWanPort 'ptm0'
 #option wpsButtonGpio '0'
 option hasBrcmAvs '1'
 option gpio_shiftreg_clk 1
@@ -28,21 +28,26 @@ option sx9512_irq_pin 36
 option sx9512_active_capsense_channels 3f
 option sx9512_active_led_channels 00
 
+config pci_slot 'pci'
+        option 43a0 AC
+        option 43a2 AC
+        option 43bc AC
+
 config wifi-chip '435f'
-option bands 'b'
+        option bands 'b'
 
 config wifi-chip '43a0'
-option bands 'a'
-option is_ac '1'
+        option bands 'a'
+        option is_ac '1'
 
 config wifi-chip '43a2'
-option bands 'a'
-option is_ac '1'
+        option bands 'a'
+        option is_ac '1'
 
 config wifi-chip '43bc'
-option bands 'a'
-option is_ac '1'
-
+	option bands 'a'
+	option is_ac '1'
+	option radarthrs '0x6ae 0x30 0x6a8 0x30 0x6a4 0x30 0x6aa 0x30 0x6aa 0x30 0x6a4 0x30'
 
 ###############################################################################
 #
@@ -172,6 +177,8 @@ list leds dect_blue
 list leds ext_red
 list leds voice_green
 list leds voice_red
+list leds wan_phy_green
+list leds wan_phy_yellow
 
 config gpio_led status_green
 option addr	27
@@ -263,6 +270,16 @@ option addr	15
 option active	high
 option mode	csr
 
+config gpio_led wan_phy_green
+option addr	108
+option active	low
+option mode	direct
+
+config gpio_led wan_phy_yellow
+option addr	109
+option active	low
+option mode	direct
+
 ############### mapping led function to driver led
 config led_map led_map
 list press_indicator led_logo
@@ -277,6 +294,9 @@ list press_indicator led_ext
 list functions logo
 list functions status
 list functions wan
+list functions wan_phy_link
+list functions wan_phy_speed
+list functions wan_phy_link_speed
 list functions internet
 list functions voice1
 list functions wifi
@@ -319,6 +339,21 @@ list led_action_alert	'broadband_red = FLASH_SLOW'
 list led_action_alert	'broadband_green  = OFF'
 list led_action_error	'broadband_red = ON'
 list led_action_error	'broadband_green  = OFF'
+
+config led_map led_wan_phy_link
+
+config led_map led_wan_phy_speed
+
+config led_map led_wan_phy_link_speed
+list led_action_off	'wan_phy_green = OFF'
+list led_action_off	'wan_phy_yellow = OFF'
+list super_off		'wan_phy_link_off'
+list led_action_ok	'wan_phy_green = ON'
+list led_action_ok	'wan_phy_yellow = OFF'
+list super_ok		'wan_phy_link_ok, wan_phy_speed_ok'
+list led_action_notice	'wan_phy_green = OFF'
+list led_action_notice	'wan_phy_yellow = ON'
+list super_notice	'wan_phy_link_ok, wan_phy_speed_off'
 
 config led_map led_internet
 list led_action_ok	'internet_green = ON'

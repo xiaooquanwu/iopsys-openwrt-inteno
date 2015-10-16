@@ -1,0 +1,6 @@
+#!/bin/sh
+# we need to have the -y option to dropbear to not halt the scp when
+# transfering the log file to a new server for the first time.
+# since we already need this also put in the keyfile
+
+ssh -y -i /etc/dropbear/logid $@

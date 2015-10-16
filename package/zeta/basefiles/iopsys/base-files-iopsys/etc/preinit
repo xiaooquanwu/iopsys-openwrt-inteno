@@ -2,9 +2,12 @@
 # Copyright (C) 2006 OpenWrt.org
 # Copyright (C) 2010 Vertical Communications
 
-. /lib/iopsys.sh
+if [ -z "$PREINIT" ]
+then
+    . /lib/iopsys.sh
 
-iopsys_upgrade_handling
+    iopsys_upgrade_handling
+fi
 
 [ -z "$PREINIT" ] && exec /sbin/init
 

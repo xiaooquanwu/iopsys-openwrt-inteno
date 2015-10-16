@@ -1,0 +1,42 @@
+Install scp server.
+
+Create a user account on a server and make sure it's possible to login to it
+using ssh.
+
+For now the user has to be called "log"
+
+USER is the user name of the account
+HOME is the user home directory.
+Both should be changed to the correct value in all following example commands.
+
+create HOME/bin
+Put scp_upload in HOME/bin
+make it executable "chmod a+x HOME/bin/scp_upload" 
+
+create home/.ssh   (observer the dot .shh)
+
+create an empty file HOME/.ssh/authorized_keys
+
+-------------------------------
+Now everyhting is setup for use but we have not added any clients.
+What we need is the public key for the clients.
+
+For dropbear "dropbearkey -y -f files/etc/dropbear/logid" will generate the public key.
+
+----------
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCwn9RaDAzxW1dTmIhXgFBnpi1lhj8xhYpCVQiPxxdk9IEmH8zjo4y9j3sPkqKOlRnkwjpZIpLEKBnpQTwVIMCU/AG7nDJX3OH9RfS9mLJQLfFL8HyGCyqDezFWldbyovhJZvdUeK4tAXJWv2W3OVHiz2L8IlncBgP/E9DJElsyhhQHsM96UE6tBkXsvXkoDbMSYXFcLbgiUwBKfmM2BF/aPDL45iznGur7/2j9v95PwJ0gtMu9jjNRq+pXCXhTh3bsnczm0MpZC1aiRc9nJAeGIMmhrf15E4jBKgTnrstzJxGVAdajKeR954KcNsS33cS2Wmui2YjmPbBXjqf1frzJ log@inteno
+----------
+
+The public key should be just one line. Add that line to the 
+HOME/.ssh/authorized_keys file on the scp server. Then add the follwoing as
+the first text on the same line. that is insert before the key data.
+
+command="HOME/bin/scp_upload",no-port-forwarding,no-agent-forwarding,no-X11-forwarding 
+
+Do not forget to change HOME to the correct value for the server and there 
+should be one space separating the key data and the above text.
+---------------------------------
+Now test to make sure that you can upload new files, not download files
+and not overwrite files from the client.
+
+

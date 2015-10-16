@@ -694,7 +694,7 @@ configure_sip_provider()
 
 	# Set or remove outboundproxy
 	if [ -z "$outboundproxy" ] ; then
-		sed -i "s/outboundproxy=|OUTBOUNDPROXY|//g"	$WORKDIR/sip_provider.tmp
+		sed -i "s/outboundproxy=.*//g"		$WORKDIR/sip_provider.tmp
 	else
 		sed -i "s/|OUTBOUNDPROXY|/$outboundproxy/g"	$WORKDIR/sip_provider.tmp
 	fi
@@ -1469,8 +1469,12 @@ configure_extensions_provider()
 	cat $WORKDIR/extensions_provider.tmp >> 		$WORKDIR/extensions.tmp
 	rm -f						$WORKDIR/extensions_provider.tmp
 
-	# create direct dial extensions, if any are defined
 	config_get direct_dial $1 direct_dial
+	if [ -z "$direct_dial" ] ; then
+		# Use global direct dial extensions instead
+		config_get direct_dial 'direct_dial' direct_dial
+	fi
+	# create direct dial extensions, if any are defined
 	if [ -n "$direct_dial" -o \( -n "$callforward_enabled" -a "$callforward_enabled" = "1" \) ] ; then
 		cp $TMPL_EXTENSIONS_DIRECT					$WORKDIR/extensions_direct.tmp
 		sed -i "s/|PROVIDER|/$1/"					$WORKDIR/extensions_direct.tmp
@@ -2034,7 +2038,7 @@ start_service() {
 	############################
 	config_foreach configure_sip sip_advanced
 	config_foreach configure_sip_provider sip_service_provider
-	config_foreach configure_direct_dial direct_dial
+	#config_foreach configure_direct_dial direct_dial
 	config_foreach encrypt_password sip_service_provider
 	config_foreach configure_extensions_provider sip_service_provider
 

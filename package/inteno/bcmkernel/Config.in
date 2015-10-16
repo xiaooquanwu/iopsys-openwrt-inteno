@@ -26,6 +26,10 @@ config BRCM_SDK_VER_416030
        bool
        prompt "bcmkernel-4.16L.03"
 
+config BRCM_SDK_VER_416040
+       bool
+       prompt "bcmkernel-4.16L.04"
+
 endchoice
 
 config BCM_KERNEL_PROFILE

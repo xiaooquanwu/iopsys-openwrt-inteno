@@ -3,6 +3,15 @@
 # OpenWrt version: Barrier Breaker (r45951)
 # Fri Jun 26 15:51:16 2015
 #
+
+# CONFIG_TARGET_NO_BLUETOOTH is not set
+# CONFIG_TARGET_NO_DECT is not set
+# CONFIG_TARGET_NO_DHD is not set
+# CONFIG_TARGET_NO_DSL is not set
+# CONFIG_TARGET_NO_DSL_ANNEX_A is not set
+# CONFIG_TARGET_NO_DSL_ANNEX_B is not set
+# CONFIG_TARGET_NO_VOICE is not set
+
 CONFIG_HAVE_DOT_CONFIG=y
 # CONFIG_TARGET_ppc40x is not set
 # CONFIG_TARGET_ppc44x is not set
@@ -408,7 +417,7 @@ CONFIG_TARGET_ROOTFS_UBIFS=y
 # Image naming
 #
 CONFIG_TARGET_MODEL_NAME="DG301-W7P2U"
-CONFIG_TARGET_VERSION="3.3.1RC5"
+CONFIG_TARGET_VERSION="3.4.0RC4"
 CONFIG_TARGET_CUSTOMER="INT"
 CONFIG_TARGET_IBOARDID="D301"
 
@@ -542,6 +551,7 @@ CONFIG_PACKAGE_bcmkernel=y
 # CONFIG_BRCM_SDK_VER_414040 is not set
 # CONFIG_BRCM_SDK_VER_416021 is not set
 CONFIG_BRCM_SDK_VER_416030=y
+# CONFIG_BRCM_SDK_VER_416040 is not set
 CONFIG_BCM_KERNEL_PROFILE="963268GWV"
 CONFIG_BCM_CFE_PASSWORD=""
 CONFIG_BCM_CHIP_ID="63268"
@@ -2255,6 +2265,7 @@ CONFIG_PACKAGE_natalie-dect-h=y
 CONFIG_PACKAGE_netifd=y
 CONFIG_PACKAGE_opkg=y
 # CONFIG_PACKAGE_opkg-smime is not set
+CONFIG_PACKAGE_port-management=y
 CONFIG_PACKAGE_procd=y
 CONFIG_PACKAGE_qos-scripts=y
 CONFIG_PACKAGE_resolveip=y
@@ -3902,8 +3913,8 @@ CONFIG_PACKAGE_collectd-mod-syslog=m
 # CONFIG_PACKAGE_collectd-mod-wireless is not set
 # CONFIG_PACKAGE_collectd-mod-write-http is not set
 CONFIG_PACKAGE_comgt=y
-CONFIG_PACKAGE_cwmp-curl=y
-# CONFIG_PACKAGE_cwmp-zstream is not set
+CONFIG_PACKAGE_icwmp-curl=y
+# CONFIG_PACKAGE_icwmp-zstream is not set
 CONFIG_CWMP_SCRIPTS_FULL=y
 CONFIG_CWMP_ACS_MULTI=y
 # CONFIG_CWMP_ACS_HDM is not set
@@ -4085,3 +4096,5 @@ CONFIG_PACKAGE_usbreset=y
 # CONFIG_PACKAGE_juci-ubus-core is not set
 # CONFIG_JUCI_UBUS_CORE is not set
 CONFIG_PACKAGE_rpcd=y
+CONFIG_PACKAGE_iwatchdog=y
+CONFIG_PACKAGE_crashlog=y

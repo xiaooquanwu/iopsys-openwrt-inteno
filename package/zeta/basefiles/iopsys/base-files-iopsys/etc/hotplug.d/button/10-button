@@ -8,8 +8,16 @@ wifibutton_action() {
         [ "$bten" == "0" ] && return
 	local wlstatus="$(uci -q get wireless.status.wlan)"
 	if [ "$wlstatus" == "0" ]; then
+		if opkg list_installed | grep -q "luci-mod-admin-full"; then
+			uci -q set wireless.wl0.disabled=0
+			uci -q set wireless.wl1.disabled=0
+		fi
 		uci -q set wireless.status.wlan="1"
 	else
+		if opkg list_installed | grep -q "luci-mod-admin-full"; then
+			uci -q set wireless.wl0.disabled=1
+			uci -q set wireless.wl1.disabled=1
+		fi
 		uci -q set wireless.status.wlan="0"
 	fi
 	uci commit wireless

@@ -70,7 +70,7 @@ done
 
 use_local_mirror()
 {
-    if wget -O /dev/null $LOCAL_MIRROR >/dev/null 2>/dev/null
+    if wget -T 3 -t 2 -O /dev/null $LOCAL_MIRROR >/dev/null 2>/dev/null
     then
 	echo "mirror [$LOCAL_MIRROR] exists. Using local mirror"
 	sed -i "s;CONFIG_LOCALMIRROR=.*;CONFIG_LOCALMIRROR=$LOCAL_MIRROR;" ${CONFIG}
@@ -100,6 +100,14 @@ update_customer_configs()
 
 create_and_copy_files()
 {
+	local BOARD_DIR="${CONFIGPATH}/${BOARDTYPE}"
+	local CUST_DIR="$CUSTCONF/$CUSTOMER-$BOARDTYPE"
+	
+	if [ ! -d "$CUST_DIR" ]; then 
+		echo "Specified board/profile combination does not exist!"; 
+		exit -1
+	fi 
+
 	local GITVERSION=$(git describe --tags --abbrev=0)
 	echo "Selecting board ${BOARDTYPE} for customer ${CUSTOMER}"
 	cp config.master ${CONFIG}
@@ -116,19 +124,17 @@ create_and_copy_files()
 	#echo "CONFIG_TARGET_IBOARDID=\"${BOARDTYPE^^}\"" >> ${CONFIG}
 	echo "CONFIG_TARGET_CUSTOMER=\"${CUSTOMER^^}\"" >> ${CONFIG}
 	
-	local BOARD_DIR="${CONFIGPATH}/${BOARDTYPE}"
-	local CUST_DIR="$CUSTCONF/$CUSTOMER-$BOARDTYPE"
 	if [ ! -d "${BOARD_DIR}" ]; then
 		echo "Could not find ${BOARDDIR}..."
 		exit 
 	fi 
 
-	if [ -f "${CONFIGPATH}/${BOARDTYPE}/config" ]; then	
-		cat "${CONFIGPATH}/${BOARDTYPE}/config" >> ${CONFIG}
+	if [ -f "${BOARD_DIR}/config" ]; then	
+		cat "${BOARD_DIR}/config" >> ${CONFIG}
 	fi
 
 	echo "Updating .config dependencies..."
-	make defconfig #1>/dev/null
+	make defconfig 1>/dev/null
 	
 	# apply customer specific patch for the config
 	if [ -d "${CUST_DIR}" ]; then
@@ -138,7 +144,7 @@ create_and_copy_files()
 				if [[ "$line" == "-"* ]]; then
 					OPTION=${line#-}
 					sed -i "s/^${OPTION}.*/# ${OPTION} is not set/g" ${CONFIG}
-				else
+				elif [[ "$line" == "+"* ]]; then
 					OPTION=${line#+}
 					sed -i "s/.*${OPTION}.*/${OPTION}=y/g" ${CONFIG}
 				fi

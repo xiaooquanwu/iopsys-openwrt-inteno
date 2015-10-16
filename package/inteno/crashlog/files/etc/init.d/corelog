@@ -1,0 +1,11 @@
+#!/bin/sh /etc/rc.common
+
+START=01
+
+start()
+{
+    if [ -e /proc/sys/kernel/core_pattern ]
+    then
+	echo "|/sbin/logcore %e %s" > /proc/sys/kernel/core_pattern
+    fi
+}
